@@ -39,6 +39,7 @@ function U3DObject() constructor {
 	function free(){
 		signaler.signal("free");
 		signaler.clear();
+		
 		delete signaler;
 		delete super;
 	}

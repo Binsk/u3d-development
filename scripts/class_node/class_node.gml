@@ -2,12 +2,21 @@
 /// Represents a basic 'physical' point in 3D space with a position, rotation,
 /// and scale.
 
+/// SIGNALS
+///		"set_position"  (from, to)		-	thrown when the position has been modified
+///		"set_rotation"  (from, to)		-	thrown when the rotation has been modified
+///		"set_scale" 	(from, to)		-	thrown when the scale has been modified
+
 /// @desc	a 3D point in space with a position, rotation, and scale
 /// @param	{vec}	 position		a position represented by a vector
 /// @param	{quat}	rotation		a rotation represented by a quaternion
 /// @param	{scale}   scale		   a scale represented by a vector
 function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constructor {
 	#region PROPERTIES
+	static AXIS_FORWARD = vec(1, 0, 0); // Global axes for convenient access
+	static AXIS_UP = vec(0, 1, 0);
+	static AXIS_RIGHT = vec(0, 0, 1);
+	
 	self.position = position;
 	self.rotation = rotation;
 	self.scale = scale;
@@ -18,33 +27,48 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 	
 	#region METHODS
 	function set_position(position=vec(), relative=false){
+		var value_start = self.position;
 		if (relative)
 			self.position = vec_add_vec(self.position, position);
 		else
 			self.position = position;
 			
+		if (vec_equals_vec(value_start, self.position))
+			return;
+			
 		matrix_model = undefined;
 		matrix_inv_model = undefined;
+		signaler.signal("set_position", [value_start, self.position]);
 	}
 	
 	function set_rotation(rotation=quat(), relative=false){
+		var value_start = self.rotation;
 		if (relative)
 			self.rotation = quat_mul_quat(self.rotation, rotation);
 		else
 			self.rotation = rotation;
 			
+		if (quat_equals_quat(value_start, self.rotation))
+			return;
+			
 		matrix_model = undefined;
 		matrix_inv_model = undefined;
+		signaler.signal("set_rotation", [value_start, self.rotation]);
 	}
 	
 	function set_scale(scale=vec(), relative=false){
+		var value_start = self.scale;
 		if (relative)
 			self.scale = vec_add_vec(self.scale, scale)
 		else
 			self.scale = scale;
 			
+		if (vec_equals_vec(value_start, self.scale))
+			return;
+			
 		matrix_model = undefined;
 		matrix_inv_model = undefined;
+		signaler.signal("set_scale", [value_start, self.scale]);
 	}
 	
 	/// @desc	rotates the node to face the specified point from its current position.

@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"class_body",
+  "%Name":"class_bvh",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"class_body",
+  "name":"class_bvh",
   "parent":{
-    "name":"General",
-    "path":"folders/Upset 3D/Classes/General.yy",
+    "name":"Space Partitioning",
+    "path":"folders/Upset 3D/Classes/Space Partitioning.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

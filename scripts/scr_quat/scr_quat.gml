@@ -46,6 +46,22 @@ function quat_normalize(quaternion){
 	return quat(quaternion.x / m, quaternion.y / m, quaternion.z / m, quaternion.w / m);
 }
 
+function quat_equals_quat(q1, q2){
+	if (q1.x != q2.x)
+		return false;
+	
+	if (q1.y != q2.y)
+		return false;
+	
+	if (q1.z != q2.z)
+		return false;
+	
+	if (q1.w != q2.w)
+		return false;
+	
+	return true;
+}
+
 /// @desc	Takes a quaternion and returns a vector + angle pair.
 function quat_to_veca(quaternion){
 	var angle = 2.0 * arccos(quaternion.w);
@@ -70,14 +86,40 @@ function quat_to_veca(quaternion){
 	return vec_to_veca(vector, angle);
 }
 
-/// @desc	Given an axis-angle, converts it into a quaternion.
-function veca_to_quat(vector){
-	var asin = sin(vector.a * 0.5);
-	var quaternion = quat(vector.x * asin,
-						  vector.y * asin,
-						  vector.z * asin,
-						  cos(vector.a * 0.5));
+/// @desc	Given a veca(), converts it into a quaternion.
+function veca_to_quat(vectora){
+	var asin = sin(vectora.a * 0.5);
+	var quaternion = quat(vectora.x * asin,
+						  vectora.y * asin,
+						  vectora.z * asin,
+						  cos(vectora.a * 0.5));
 	return quat_normalize(quaternion);
+}
+
+/// @desc	Given a directonal vector, returns the quaternion required to rotate
+///			vec(1, 0, 0) to equal that vector. Note that there are a few cases
+///			where this will fail! Namely if the forward and directional vectors
+///			are exact opposites! It is better to use veca_to_quat when possible.
+function vec_to_quat(vector){
+	vector = vec_normalize(vector);
+	if (vec_equals_vec(vector, Node.AXIS_FORWARD) or vec_is_zero(vector))
+		return quat();	// Identity quat
+	
+	var rotation_axis;
+	var rotation_angle;
+	
+	if (vec_equals_vec(vector, vec_reverse(Node.AXIS_FORWARD))){
+		// If exactly opposite, attempt to rotate around an arbitrary perp vector.
+		// This will NOT work in all cases.
+		rotation_axis = vec_get_perpendicular(vector);
+		rotation_angle = pi;
+	}
+	else {
+		rotation_axis = vec_normalize(vec_cross(Node.AXIS_FORWARD, vector));
+		rotation_angle = vec_angle_difference(Node.AXIS_FORWARD, vector);
+	}
+	
+	return veca_to_quat(vec_to_veca(rotation_axis, rotation_angle));
 }
 
 /// @desc	Multiplies two quaternions together; this is the same as applying one

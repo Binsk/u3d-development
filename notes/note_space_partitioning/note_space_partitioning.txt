@@ -1,0 +1,9 @@
+# Space Partitioning
+## About
+Space partitioning in 3D game development is a method to divide 3D space 
+into smaller, manageable sections. This can aid in efficient rendering and 
+collision detection, among other things, by quickly ruling out areas that
+are not applicable to the current task.
+
+Space partitioning can be attached to the collision system to help speed-up
+collision scans as well as the renderer for instance culling.

@@ -1,6 +1,7 @@
 /// ABOUT
 /// The render controller handles executing the rendering pipeline and merging camera
 /// buffers together onto the screen.
+
 #region PROPERTIES
 body_map = {};	// Map of all bodies in the scene; sorted via IDs
 camera_map = {};	// Map of all cameras to render

@@ -27,6 +27,10 @@ function is_vec(value){
 	return true;
 }
 
+function vec_duplicate(vector){
+	return vec(vector.x, vector.y, vector.z);
+}
+
 /// @desc	A convenient container to represent a vec + angle of rotation in 
 ///			radians. Generally should not be processed directly, but can be used
 ///			to transfer data between functions easily.
@@ -262,6 +266,19 @@ function vec_project(vector, normal){
 	var normal_mag = vec_mul_scalar(normal, dot);
 	return vec_sub_vec(vector, normal_mag);
 }
+
+/// @desc	Returns an arbitrary perpendicular vector to the one specified.
+function vec_get_perpendicular(vector){
+	if (vector.x == 0 and vector.y == 0){
+		if (vector.z == 0)
+			throw new Exception("cannot calculate perpendicular vector for zero-vector!");
+		
+		return vec(0, vector.z, 0);
+	}
+	
+	return vec(vector.x, vector.z, -vector.y);
+}
+
 function vec_is_zero(vector){
 	return (vector.x == 0 and vector.y == 0 and vector.z == 0);
 }
