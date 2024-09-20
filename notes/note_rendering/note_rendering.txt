@@ -1,0 +1,9 @@
+# Rendering
+
+## About
+The rendering section contains classes for visual elements and 
+visual element handlers. This covers both 2D and 3D visual elements.
+
+Many visual elements, such as primitives, can be created once and
+used in multiple places and, in fact, **should** be re-used as much
+as possible to help speed up the rendering system.
