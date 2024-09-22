@@ -16,8 +16,10 @@ function PartitionNode(position=vec(), extends=vec()) constructor {
 	
 	#region METHODS
 	function add_child(node){
-		if (not is_instanceof(node, PartitionNode))
-			throw new Exception("invalid type, expected [PartitionNode]!");
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return false;
+		}
 			
 		for (var i = array_length(child_array) - 1; i >= 0; --i){
 			if (child_array[i].index == node.index)

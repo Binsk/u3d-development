@@ -13,8 +13,10 @@ function Super(class) constructor {
 	/// @desc	Marks a function name to be recorded into the super. This should be
 	///			done just before overriding a parent function so as to store the parent's version.
 	function mark(name=""){
-		if (is_undefined(class[$ name]))
-			throw new Exception(string_ext("failed to mark [{0}] as super; method doesn't exist!", [name]));
+		if (is_undefined(class[$ name])){
+			Exception.throw_conditional(string_ext("failed to mark [{0}] as super; method doesn't exist!", [name]));
+			return;
+		}
 		
 		var array = data[$ name] ?? [];
 		array_push(array, class[$ name]);

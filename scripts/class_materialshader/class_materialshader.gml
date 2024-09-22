@@ -24,7 +24,7 @@ function MaterialShader(shader) : Material() constructor {
 	
 	#region INIT
 	if (not shader_is_compiled(shader))
-		throw new Exception(string_ext("shader [{0}] is not compiled!", [shader_get_name(shader)]));
+		Exception.throw_conditional(string_ext("shader [{0}] is not compiled!", [shader_get_name(shader)]));
 	
 /// @stub	Add rendering uniform checks for the shader and record the ones that exist in the shader
 ///			so that they are provided upon apply.

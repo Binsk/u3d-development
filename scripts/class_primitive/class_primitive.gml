@@ -1,6 +1,6 @@
 /// ABOUT
-/// A primitive defines a single generalized 3D shape. When paired with other primitives
-/// and Materials you have a Mesh that can represent an in-game renderable thing.
+/// A primitive defines a single generalized 3D shape. Renderable 3D elements in-game
+/// often consist of multiple primitives put together.
 ///
 /// When defining the vertex buffer, each element can be added separate as long as
 /// the vertex index they belong to is in order. Once the definition ends, the final 

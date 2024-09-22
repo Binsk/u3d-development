@@ -72,11 +72,13 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 	}
 	
 	/// @desc	rotates the node to face the specified point from its current position.
-	function look_at(position, up=vec(0, 1, 0)){
+	function look_at(position, up=Node.AXIS_UP){
 		var look = vec_sub_vec(position, self.position);
 		var nlook = vec_normalize(look);
-		if (vec_equals_vec(nlook, up))
-			throw new Exception("Cannot calculate up vector!");
+		if (vec_equals_vec(nlook, up)){
+			Exception.throw_conditional("Cannot calculate up vector!");
+			return vec();
+		}
 		
 		var right = vec_cross(look, up);
 		var nup = vec_normalize(vec_cross(right, nlook)); // Adjusted up vector

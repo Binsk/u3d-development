@@ -270,8 +270,10 @@ function vec_project(vector, normal){
 /// @desc	Returns an arbitrary perpendicular vector to the one specified.
 function vec_get_perpendicular(vector){
 	if (vector.x == 0 and vector.y == 0){
-		if (vector.z == 0)
-			throw new Exception("cannot calculate perpendicular vector for zero-vector!");
+		if (vector.z == 0){
+			Exception.throw_conditional("cannot calculate perpendicular vector for zero-vector!");
+			return vec();
+		}
 		
 		return vec(0, vector.z, 0);
 	}

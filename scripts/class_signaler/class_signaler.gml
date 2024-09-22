@@ -67,8 +67,10 @@ function Signaler() constructor{
 	/// @param  {string}    name        name to give the signal
 	/// @param  {method}    method      method/callale to execute upon call
 	function add_signal(_name, _method){
-		if (not is_method(_method) and not is_instanceof(_method, Callable))
-			throw new Exception("[argument1] invalid type, expected [method] or [Callable]!");
+		if (not is_method(_method) and not is_instanceof(_method, Callable)){
+			Exception.throw_conditional("[argument1] invalid type, expected [method] or [Callable]!");
+			return;
+		}
 		
 		// Grab our signal array:
 		var array = (signal_map[$ _name] ?? []);
@@ -80,8 +82,10 @@ function Signaler() constructor{
 	/// @desc	Performs the same as add_signal() except the signal is added to the front
 	///			of the execution order.
 	function add_signal_front(_name, _method){
-		if (not is_method(_method) and not is_instanceof(_method, Callable))
-			throw new Exception("[argument1] invalid type, expected [method] or [Callable]!");
+		if (not is_method(_method) and not is_instanceof(_method, Callable)){
+			Exception.throw_conditional("[argument1] invalid type, expected [method] or [Callable]!");
+			return;
+		}
 		
 		// Grab our signal array:
 		var array = (signal_map[$ _name] ?? []);

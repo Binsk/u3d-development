@@ -1,9 +1,6 @@
-var cx = room_width * 0.5;
-var cy = room_height * 0.5;
-dir++;
-vector = vec(dcos(dir), -dsin(dir));
-
-var quat = vec_to_quat(vector);
-var rotated_axis = quat_rotate_vec(quat, axis);
-draw_circle_color(cx, cy, 8, c_red, c_red, false);
-draw_circle_color(cx + rotated_axis.x, cy + rotated_axis.y, 24, c_white, c_white, false);
+gpu_set_zwriteenable(true);
+gpu_set_ztestenable(true);
+gpu_set_cullmode(cull_noculling);
+matrix_set(matrix_view, matrix_build_lookat(cos(current_time / 2000) * 10, 5, sin(current_time / 2000) * 10, 0, 0, 0, 0, 1, 0));
+matrix_set(matrix_projection, matrix_build_projection_perspective_fov(-50, -room_width / room_height, 0.01, 1024));
+vertex_submit(vbuffer, pr_trianglestrip, -1);

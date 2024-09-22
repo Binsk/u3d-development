@@ -69,16 +69,18 @@ function GLTFLoader() : U3DObject() constructor {
 	/// @desc	Attempts to load a GLTF model from the disk; supports both
 	///			binary and text data.
 	///	@note	Only supports version 2 of the spec (the only version at the time of this implementation)
-	/// @param	{string}	directory	directory the model file is located in
 	/// @param	{string}	name		file name + extension of the file to load
-	function load(directory="", name=""){
-		if (not string_ends_with(directory, "/") and not string_ends_with(directory, "\\"))
+	/// @param	{string}	directory	directory the model file is located in
+	function load(name="", directory=""){
+		if (not string_ends_with(directory, "/") and not string_ends_with(directory, "\\") and directory != "")
 			directory += "/";
 		
-		if (not file_exists(directory + name))
-			throw new Exception(string_ext("file does not exist [{0}{1}]!", [directory, name]));
+		if (not file_exists(directory + name)){
+			Exception.throw_conditional(string_ext("file does not exist [{0}{1}]!", [directory, name]));
+			return false;
+		}
 		
-		free();	// Wipe and free up all old data
+		free(true);	// Wipe and free up all old data
 		load_directory = directory;
 		
 		#region IMPORT FUNC
@@ -89,7 +91,7 @@ function GLTFLoader() : U3DObject() constructor {
 				return false; // No buffer array
 				
 			var buffer_array = json_header.buffers;
-			for (var i = 0; i < array_length(buffer_array)){
+			for (var i = 0; i < array_length(buffer_array); ++i){
 				var buffer_json = buffer_array[i];
 				// If no URI, the buffer is already loaded
 				if (is_undefined(buffer_json[$ "uri"]))
@@ -148,10 +150,10 @@ function GLTFLoader() : U3DObject() constructor {
 		
 		#region READ BINARY
 		// At this point, we know the system is binary so treat it as such
-		gltf_version = real(json.asset[$ "version"] ?? 0);
+		gltf_version = buffer_read(buffer, buffer_u32);
 		if (gltf_version != 2)
 			throw new Exception(string_ext("unsupported glTF version[{0}]", [gltf_version]));	
-		
+			
 		var data_length = buffer_read(buffer, buffer_u32); // Data left in the file; excluding the header
 		var json = {};
 		// GLTF will have betweet 1 and 2 chunks. Chunk 1 is ALWAYS JSON (but we parse dynamically, anyway) and
@@ -184,10 +186,11 @@ function GLTFLoader() : U3DObject() constructor {
 		buffer_delete(buffer);
 		buffer = undefined;
 		#endregion
-		
-		json_structure = json;
+
+		json_header = json;
 		try{
 			var success = import_buffers(directory);
+
 			if (not success)
 				free();
 		}
@@ -338,7 +341,7 @@ function GLTFLoader() : U3DObject() constructor {
 	}
 	
 	super.mark("free");
-	function free(){
+	function free(ignore_super=false){
 		for (var i = array_length(binary_buffer_array) - 1; i >= 0; --i)
 			buffer_delete(binary_buffer_array[i]);
 		
@@ -347,7 +350,8 @@ function GLTFLoader() : U3DObject() constructor {
 		json_header = {};
 		load_directory = undefined;
 		
-		super.execute("free");
+		if (not ignore_super)
+			super.execute("free");
 	}
 	#endregion
 }

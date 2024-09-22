@@ -1,22 +1,14 @@
 /// ABOUT
-/// A 3D mesh that can be displayed in the 3D game world. Each mesh can be constructed
-///	out of numerous primitives and materials and will be rendered out together.
+/// A 3D mesh is a collection of primitives that are paired with material indices.
+///	Meshes do not contain material data themselves and rely on the rendering model
+/// to provide the correct material data upon render based on the index.
 
 function Mesh() : U3DObject() constructor {
 	#region PROPERTIES
-	material_data = {};	// Contains index -> material pairs
 	primitive_array = [];	// Contains an array of structs of primitive / material values
 	#endregion
 	
 	#region METHODS
-	/// @desc	Will assign a material to the specified index in the mesh.
-	function set_material(material, material_index){
-		if (not is_instanceof(material, Material))
-			throw new Exception("invalid type, expected [Material]!");
-			
-		material_data[$ material_index] = material;
-	}
-	
 	/// @desc	Adds a primitive into the system to be rendered and pairs it with
 	///			a material index. Note that primitives can be added multiple times
 	///			with different materials, if necessary.

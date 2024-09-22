@@ -29,3 +29,15 @@ function modwrap(value, wrap){
 	
 	return value;
 }
+
+/// @desc	Returns if the specified value is in a set range
+function in_range(value, minimum, maximum, min_inclusive=true, max_inclusive=true){
+	var nvalue = clamp(value, minimum, maximum);
+	if (not min_inclusive and nvalue <= minimum)
+		return false;
+	
+	if (not max_inclusive and nvalue >= maximum)
+		return false
+	
+	return (value == nvalue);
+}
