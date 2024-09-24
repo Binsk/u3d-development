@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// The PartitionNode is a special class used internally by the partitioning system.
 /// It is a generic container that represents an axis-aligned area of space within
 /// the partitioning structure.

@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A special struct that helps implement function inheritence by marking and 
 /// executing parent functions on behalf of its owner class.
 

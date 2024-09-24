@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A generic light class that all light types inherit from.
 function Light() : Node() constructor {
 	#region PROPERTIES

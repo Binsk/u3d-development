@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A number of generic global math functions.
 
 /// @desc	Returns the value furthest away from 0.

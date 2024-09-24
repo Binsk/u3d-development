@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// Contains a number of scripts dealing with 4D rotational quaternions.
 /// The quaternion struct is also commonly used as a simple 4-value container.
 

@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// Defines a number of scripts dealing with 3D mathematical vectors.
 
 /// @desc	Generates a new vector
@@ -342,4 +342,11 @@ function vec_min_component(vector){
 
 function vec_max_component(vector){
 	return max(vector.x, vector.y, vector.z);
+}
+
+
+/// @desc	A bit of a hack to easily convert a 4-component struct to a color. Done 
+///			to simplify color data loading in the glTF loader.
+function vec_to_color(vector){
+	return make_color_rgb(vector.x * 255, vector.y * 255, vector.z * 255);
 }

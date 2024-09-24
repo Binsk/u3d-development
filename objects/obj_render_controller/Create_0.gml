@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// The render controller handles executing the rendering pipeline and merging camera
 /// buffers together onto the screen.
 

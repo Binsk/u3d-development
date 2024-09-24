@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// Handles loading GLTF data from disk into RAM as well as some basic 
 /// data navigation and parsing.
 
@@ -303,7 +303,7 @@ function GLTFLoader() : U3DObject() constructor {
 		for (var i = 0; i < element_count; ++i){
 			index = element_size * i;
 			for (var j = 0; j < element_size; ++j)
-				data[index + j] = clamp(data[index * j], minimum[j], maximum[j]);
+				data[index + j] = clamp(data[index + j], minimum[j], maximum[j]);
 		}
 		
 		// Parse data into types

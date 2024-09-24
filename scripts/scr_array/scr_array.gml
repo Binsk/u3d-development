@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// Contains several generic array functions.
 
 /// @desc	Creates a shallow copy of the specified array and returns the result.

@@ -72,6 +72,7 @@
     {"id":{"name":"class_vertexformat","path":"scripts/class_vertexformat/class_vertexformat.yy",},},
     {"id":{"name":"scr_array","path":"scripts/scr_array/scr_array.yy",},},
     {"id":{"name":"scr_buffer","path":"scripts/scr_buffer/scr_buffer.yy",},},
+    {"id":{"name":"scr_general","path":"scripts/scr_general/scr_general.yy",},},
     {"id":{"name":"scr_math","path":"scripts/scr_math/scr_math.yy",},},
     {"id":{"name":"scr_quat","path":"scripts/scr_quat/scr_quat.yy",},},
     {"id":{"name":"scr_u3d_init","path":"scripts/scr_u3d_init/scr_u3d_init.yy",},},

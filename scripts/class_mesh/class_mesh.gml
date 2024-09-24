@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A 3D mesh is a collection of primitives that are paired with material indices.
 ///	Meshes do not contain material data themselves and rely on the rendering model
 /// to provide the correct material data upon render based on the index.

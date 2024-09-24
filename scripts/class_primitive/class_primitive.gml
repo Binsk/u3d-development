@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A primitive defines a single generalized 3D shape. Renderable 3D elements in-game
 /// often consist of multiple primitives put together.
 ///
@@ -62,12 +62,22 @@ function Primitive(vformat) : U3DObject() constructor {
 				}
 				else 
 					throw new Exception("data does not match type!");
-				
+
 				array[index] = array_duplicate_shallow(data, 0, 3);
 			break;
 			
-			// Define as array[real] >= 2
+			// Define as array[real] >= 2, quat (r,g,b,a), vec(r, g, b)
 			case VERTEX_DATA.color:
+				if (is_quat(data)){
+					array[index] = [vec_to_color(data), data.w];
+					break;
+				}
+				else if (is_vec(data)){
+					array[index] = [vec_to_color(data), 1.0];
+					break;
+				}
+			
+			// Define as array[real] >= 2
 			case VERTEX_DATA.texture:
 				if (not is_array(data) or array_length(data) < 2)
 					throw new Exception("data does not match type!");
@@ -138,7 +148,7 @@ function Primitive(vformat) : U3DObject() constructor {
 			for (var j = 0; j < format_components; ++j){
 				var format = vformat.vformat_array[j];
 				var data = definition_data[$ format][i];
-				switch (vformat_array[i]){
+				switch (format){
 					case VERTEX_DATA.position:
 						vertex_position_3d(vbuffer, data[0], data[1], data[2]);
 						break;

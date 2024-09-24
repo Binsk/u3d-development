@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// Represents a basic 'physical' point in 3D space with a position, rotation,
 /// and scale.
 

@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A generic data container for U3D systems to inherit from to guarantee base
 /// system elements are available, such as index numbers and metadata functions.
 ///

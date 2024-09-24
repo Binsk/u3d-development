@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A Model is a collection of 1 or more Mesh instances as well as a number of
 /// indexed Material instances.
 

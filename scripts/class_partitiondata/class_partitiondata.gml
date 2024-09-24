@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A generic data container that can be added into a partition system. Usually
 /// used as a wraper for a Body or some other complex structure.
 

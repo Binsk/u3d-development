@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A 3D camera that handles rendering for a specific view in 3D space.
 /// Can assume to look down the x+ axis w/ a y+up value
 

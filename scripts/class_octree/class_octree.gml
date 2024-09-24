@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// This is a strict Octree that subdivides spaces into equally-sized octants.
 /// This partitioning system excells at partitioning 3D points that do not
 /// have any volume. Octrees CAN be used to partition physical bodies, and loose

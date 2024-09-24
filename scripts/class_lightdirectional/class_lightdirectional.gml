@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A directional light that has an equal effect on all elements in the scene.
 /// The light faces down the x-axis by default and can be rotated via a
 /// quaternion.

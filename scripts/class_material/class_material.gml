@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A generic material class that is fairly worthless on its own, however it is
 /// a common base for all other material types.
 

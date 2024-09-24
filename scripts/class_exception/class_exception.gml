@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A simple data container to help display and determine custom exception types.
 /// Special types should inherit and be determined through is_instanceof() but the
 /// generic 'index' property can also be used to help distinguish types.
@@ -74,6 +74,6 @@ function Exception(message=undefined, index=0) constructor {
 	#endregion
 	
 	#region INIT
-	_update_message(1);
+	_update_message(2);
 	#endregion
 }

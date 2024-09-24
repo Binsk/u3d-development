@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// An exceptionally basic material that allows you to specify a custom shader
 /// to execute as part of the render pipeline. The custom shader is expected
 ///	to render out to the necessary GBuffer surfaces and the shader will be

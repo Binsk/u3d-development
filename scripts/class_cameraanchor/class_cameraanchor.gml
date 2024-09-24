@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A camera anchor specifies where on the screen the specified camera instance
 /// should be rendered.
 function CameraAnchor(camera) constructor {

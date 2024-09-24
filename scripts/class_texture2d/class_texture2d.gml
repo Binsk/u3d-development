@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// A special texture container that can be used with Materials to specify 
 /// textures in more detail.
 

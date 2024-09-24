@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// To simplify GLTF model loading w/ dynamic vertex format types, this provides
 /// a way to store a raw vertex format as well as its defining order.
 
@@ -31,6 +31,46 @@ function VertexFormat(vformat_array=[]) : U3DObject() constructor {
 	static get_format_instance = function(vformat_array=[]){
 		var hash = md5_string_utf8(string(vformat_array));
 		return VertexFormat.FORMAT_MAP[$ hash] ?? new VertexFormat(vformat_array);
+	}
+	
+	/// @desc	Given a VERTEX_DATA value, returns the glTF look-up label
+	static get_vertex_data_gltf_label = function(value){
+		static LABELS = [
+			"POSITION",
+			"COLOR_0",		// Only support 1 vertex color!
+			"TEXCOORD_0",	// Only support 1 texture!
+			"NORMAL",
+			"TANGENT",
+			"JOINTS_0",
+			"WEIGHTS_0"
+		];
+		
+		if (value < 0)
+			return undefined;
+		if (value >= array_length(LABELS))
+			return undefined;
+		
+		return LABELS[value];
+	}
+	
+	/// @desc	Given a VERTEX_DATA value, returns a default value for an 'undefined' element
+	static get_vertex_data_default = function(value){
+		static DEFAULTS = [
+			vec(),
+			quat(1, 1, 1, 1),	// rgba; this due to glTF loading style
+			[0, 0],
+			vec(0, 0, 1),
+			vec(),
+			quat(),
+			quat()
+		];
+		
+		if (value < 0)
+			return undefined;
+		if (value >= array_length(DEFAULTS))
+		
+			return undefined;
+		return DEFAULTS[value];
 	}
 	#endregion
 	
