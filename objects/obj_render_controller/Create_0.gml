@@ -2,6 +2,12 @@
 /// The render controller handles executing the rendering pipeline and merging camera
 /// buffers together onto the screen.
 
+enum RENDER_STAGE {
+	build_gbuffer,
+	light_pass,
+	post_processing
+}
+
 #region PROPERTIES
 body_map = {};	// Map of all bodies in the scene; sorted via IDs
 camera_map = {};	// Map of all cameras to render

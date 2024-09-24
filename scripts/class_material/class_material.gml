@@ -11,7 +11,8 @@ function Material() : U3DObject() constructor {
 	/// @desc	Should apply the necessary shaders, uniforms, and so-forth for
 	///			the material. It will be automatically executed by the rendering
 	///			system.
-	function apply(){
+	/// @param	{RENDER_STAGE}	render_stage		the current rendering stage being executed
+	function apply(render_stage){
 		throw new Exception("cannot call virtual function!");
 	}
 	

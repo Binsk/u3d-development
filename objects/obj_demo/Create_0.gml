@@ -21,5 +21,4 @@ show_debug_message(string_ext("Primitive count [0]: {0}", [gltf.get_primitive_co
 box = gltf.generate_primitive(0, 0, vformat);
 
 camera = new Camera();
-camera.set_position(vec(10, 10, 10));
-camera.look_at_up(vec());
+material = new MaterialSpatial();

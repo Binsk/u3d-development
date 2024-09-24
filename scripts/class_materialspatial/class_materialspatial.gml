@@ -4,8 +4,10 @@
 /// in the pipline, however the shaders used CAN be changed to something custom.
 ///
 /// If a custom shader is set, it will be provided with a number of uniforms and
-/// samplers that you can choose to use. Please see the details in the FRAGMENT
-/// and VERTEX portions below to help you design your shader.
+/// samplers that you can choose to use. Please see the details in GBUFFER UNIFORMS
+/// and LIGHTING UNIFORMS sections to see what uniforms / samplers are available.
+/// If your shader does not use a specified uniform it will simply not be sent to
+/// the shader.
 
 #region SHADER DETAILS
 // The rendering pipeline is a deferred shading system that splits transluscent objects
@@ -41,17 +43,18 @@
 // simply render out without modification.
 #endregion
 
-#region FRAGMENT DETAILS
-#endregion
-
-#region VERTEX DETAILS
-#endregion
-
 function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
 	// Default shaders:
 	shader_gbuffer = shd_build_gbuffer;
 	shader_lighting = undefined;
+	
+	#region GBUFFER UNIFORMS
+	#endregion
+	
+	#region LIGHTING UNIFORMS
+	#endregion
+	
 	#endregion
 	
 	#region METHODS
@@ -62,6 +65,35 @@ function MaterialSpatial() : Material() constructor {
 			shader_lighting		// Stage 2
 		];
 	}
+	
+	/// @desc	Sets the shader to be used when generating the GBuffer
+	function shader_set_gbuffer(shader){
+		if (not shader_is_compiled(shader)){
+			Exception.throw_conditional(string_ext("shader [{0}] is not compiled!", [shader_get_name(shader)]));
+			return;
+		}
+		
+		shader_gbuffer = shader;
+		
+		// Assign uniforms (if they don't exist they won't be sent when rendering)
+	}
+	
+	function apply(render_stage){
+		if (render_stage == RENDER_STAGE.build_gbuffer){
+			if (shader_current() != shader_gbuffer)
+				shader_set(shader_gbuffer);
+			
+			return;
+		}
+		
+		if (render_stage == RENDER_STAGE.light_pass){
+			if (shader_current() != shader_lighting)
+				shader_set(shader_lighting);
+			
+			return;
+		}
+	}
+	
 	#endregion
 	
 	#region INIT

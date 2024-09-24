@@ -93,6 +93,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var vertex_index_count = array_length(vertex_index_array);
 		var missing_data = [];	// Record which data is missing so we can spit a warning
 		var primitive_map = {};
+		var component_type_map = {};
 		for (var i = array_length(format.vformat_array) - 1; i >= 0; --i){
 			var array;
 			var format_label = VertexFormat.get_vertex_data_gltf_label(format.vformat_array[i]);
@@ -101,9 +102,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			if (is_undefined(accessor_index)){ // Mesh doesn't contain data we are requesting; fill w/ defaults
 				array = array_create(vertex_index_count, VertexFormat.get_vertex_data_default(format.vformat_array[i]));
 				array_push(missing_data, format_label);
+				show_debug_message(format_label + " : UNDEFINED");
 			}
-			else
+			else{
 				array = read_accessor(accessor_index);
+				component_type_map[$ format_label] = get_buffer_ctype_from_gltf_ctype(get_structure(accessor_index, "accessors").componentType);
+			}
 			
 			primitive_map[$ format_label] = array;
 		}
@@ -118,9 +122,33 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = array_length(format.vformat_array) - 1; i >= 0; --i){
 			var format_label = VertexFormat.get_vertex_data_gltf_label(format.vformat_array[i]);
 			var array = primitive_map[$ format_label];
+			var component_type = (component_type_map[$ format_label] ?? buffer_f32);
 			for (var j = 0; j < vertex_index_count; ++j){
 				var data = array[vertex_index_array[j]];
+					// Colors can come in various datatypes; handle the integer versions
+				#region COLOR DATA SPECIAL-HANDLING
+				if (format.vformat_array[i] == VERTEX_DATA.color){
+					var div_value = 0;
+					if (component_type == buffer_u16)
+						div_value = 65535;
+					else if (component_type == buffer_u8)
+						div_value = 255;
+					
+					data = (is_quat(data) ? quat_to_array(data) : vec_to_array(data));
+					if (div_value > 0){
+						for (var k = array_length(data) - 1; k >= 0; --k)
+							data[k] /= div_value;
+					}
+					data = [make_color_rgb(data[0] * 255, data[1] * 255, data[2] * 255), array_length(data) > 3 ? data[3] : 1.0];
+					for (var k = array_length(data) - 1; k >= 0; --k)
+						data[k] = clamp(data[k], 0, 1); // Demanded by the spec
+				}
+				#endregion
+				
+				#region TANGENT DATA SPECIAL-HANDLING
 /// @stub	handle tangents being vec(0,0,0) (aka., unset) and auto-calculate them
+				#endregion
+				
 				primitive.define_add_data(format.vformat_array[i], data);
 			}
 		}
