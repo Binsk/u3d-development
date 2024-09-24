@@ -71,30 +71,56 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 		signaler.signal("set_scale", [value_start, self.scale]);
 	}
 	
-	/// @desc	rotates the node to face the specified point from its current position.
-	function look_at(position, up=Node.AXIS_UP){
+	/// @desc	Rotates the node to face the specified point from its current position.
+	///			If relative, the rotation is added to the instance's current rotation.
+	///			If NOT relative it is generated from the identity rotation which will
+	///			result in a different 'up' and 'right' angle.
+	function look_at(position, relative=true){
+		var forward_vector = (relative ? get_forward_vector() : Node.AXIS_FORWARD);
 		var look = vec_sub_vec(position, self.position);
-		var nlook = vec_normalize(look);
-		if (vec_equals_vec(nlook, up)){
-			Exception.throw_conditional("Cannot calculate up vector!");
-			return vec();
-		}
+		if (vec_is_zero(look))	// No need to rotate; same position
+			return self.rotation;
 		
-		var right = vec_cross(look, up);
-		var nup = vec_normalize(vec_cross(right, nlook)); // Adjusted up vector
-/// @stub	Set rotation from these values
+		var nlook = vec_normalize(look);
+		var dot = vec_dot(forward_vector, nlook);
+		if (dot >= 1.0){ // Pointing same direction, don't rotate
+			if (not relative)
+				self.rotation = quat();
+				
+			return self.rotation;
+		}
+		var up;
+		if (dot <= -1.0){ // Opposite directions, rotate 180 degrees
+			if (not relative){
+				self.rotation = quat(0, 1, 0, 0); // Rotate 180 degrees on y axis
+				return self.rotation;
+			}
+			
+			up = vec_get_perpendicular(forward_vector); // Arbitrary perpendicular vector to rotate around
+		}
+		else
+			up = vec_cross(forward_vector, look); // Vector to rotate around
+
+		var nup = vec_normalize(up);
+		var angle = vec_angle_difference(forward_vector, look);
+		if (not relative)
+			self.rotation = veca_to_quat(vec_to_veca(nup, angle));
+		else 
+			self.rotation = quat_mul_quat(self.rotation, veca_to_quat(vec_to_veca(nup, angle)));
+			
+		return self.rotation;
 	}
 	
 	function get_forward_vector(){
-		return quat_rotate_vec(rotation, vec3(1, 0, 0));
+		return quat_rotate_vec(rotation, vec(1, 0, 0));
 	}
 	
 	function get_up_vector(){
-		return quat_rotate_vec(rotation, vec3(0, 1, 0));
+		return quat_rotate_vec(rotation, vec(0, 1, 0));
 	}
 	
 	function get_right_vector(){
-		return quat_rotate_vec(rotation, vec3(0, 0, 1));
+		return quat_rotate_vec(rotation, vec(0, 0, 1));
 	}
 	
 	function get_model_matrix(){

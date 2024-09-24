@@ -16,7 +16,7 @@ function Material() : U3DObject() constructor {
 	}
 	
 	/// @desc	Should return the appropriate shader to apply for this material.
-	function get_shader(){
+	function get_shaders(){
 		throw new Exception("cannot call virtual function!");
 	}
 	
