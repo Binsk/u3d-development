@@ -40,7 +40,7 @@ function CameraAnchor(camera) constructor {
 	}
 	
 	function get_dy(canvas_height){
-		return (canvas_width * anchor.y2 + margin.y2) - (canvas_width * anchor.y1 + margin.y1);
+		return (canvas_height * anchor.y2 + margin.y2) - (canvas_height * anchor.y1 + margin.y1);
 	}
 	#endregion
 	

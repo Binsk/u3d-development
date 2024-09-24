@@ -19,3 +19,7 @@ var gltf = new GLTFBuilder("block.glb");
 show_debug_message(string_ext("Model count: {0}", [gltf.get_mesh_count()]));
 show_debug_message(string_ext("Primitive count [0]: {0}", [gltf.get_primitive_count(0)]));
 box = gltf.generate_primitive(0, 0, vformat);
+
+camera = new Camera();
+camera.set_position(vec(10, 10, 10));
+camera.look_at_up(vec());

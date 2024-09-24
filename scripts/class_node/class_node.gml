@@ -44,7 +44,7 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 	function set_rotation(rotation=quat(), relative=false){
 		var value_start = self.rotation;
 		if (relative)
-			self.rotation = quat_mul_quat(self.rotation, rotation);
+			self.rotation = quat_mul_quat(rotation, self.rotation);
 		else
 			self.rotation = rotation;
 			
@@ -72,11 +72,8 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 	}
 	
 	/// @desc	Rotates the node to face the specified point from its current position.
-	///			If relative, the rotation is added to the instance's current rotation.
-	///			If NOT relative it is generated from the identity rotation which will
-	///			result in a different 'up' and 'right' angle.
-	function look_at(position, relative=true){
-		var forward_vector = (relative ? get_forward_vector() : Node.AXIS_FORWARD);
+	function look_at(position){
+		var forward_vector = Node.AXIS_FORWARD;
 		var look = vec_sub_vec(position, self.position);
 		if (vec_is_zero(look))	// No need to rotate; same position
 			return self.rotation;
@@ -84,31 +81,50 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 		var nlook = vec_normalize(look);
 		var dot = vec_dot(forward_vector, nlook);
 		if (dot >= 1.0){ // Pointing same direction, don't rotate
-			if (not relative)
-				self.rotation = quat();
-				
+			set_rotation(quat());
 			return self.rotation;
 		}
-		var up;
-		if (dot <= -1.0){ // Opposite directions, rotate 180 degrees
-			if (not relative){
-				self.rotation = quat(0, 1, 0, 0); // Rotate 180 degrees on y axis
-				return self.rotation;
-			}
 			
-			up = vec_get_perpendicular(forward_vector); // Arbitrary perpendicular vector to rotate around
+		var axis;
+		if (dot <= -1.0){ // Opposite directions, rotate 180 degrees
+			set_rotation(quat(0, 1, 0, 0)); // Rotate 180 degrees on y axis
+			return self.rotation;
 		}
 		else
-			up = vec_cross(forward_vector, look); // Vector to rotate around
+			axis = vec_cross(forward_vector, look); // Vector to rotate around
 
-		var nup = vec_normalize(up);
+		var naxis = vec_normalize(axis);
 		var angle = vec_angle_difference(forward_vector, look);
-		if (not relative)
-			self.rotation = veca_to_quat(vec_to_veca(nup, angle));
-		else 
-			self.rotation = quat_mul_quat(self.rotation, veca_to_quat(vec_to_veca(nup, angle)));
+		set_rotation(veca_to_quat(vec_to_veca(naxis, angle)));
 			
 		return self.rotation;
+	}
+	
+	/// @desc	The same as look_at but attempts to keep the up vector as close to the
+	///			specified up vector as possible
+	function look_at_up(position, up=Node.AXIS_UP){
+		look_at(position); // Perform regular look_at
+		
+		// Add another rotation to point 'up'
+		var up_vector = get_up_vector();
+		var forward_vector = get_forward_vector();
+		var left = vec_cross(up, forward_vector);
+		var target_vector = vec_normalize(vec_cross(forward_vector, left));
+		
+		var dot = vec_dot(target_vector, up_vector);
+		if (dot >= 1.0) // Pointing same direction, don't rotate
+			return self.rotation;
+			
+		var angle = vec_angle_difference(up_vector, target_vector);
+		
+			// Invert the rotation angle if the axis is backwards
+		if (dot > -1.0 and vec_dot(forward_vector, vec_cross(up_vector, target_vector)) < 0)
+			angle = -angle;
+		
+		set_rotation(veca_to_quat(vec_to_veca(forward_vector, angle)), true);
+			
+		return self.rotation;
+		
 	}
 	
 	function get_forward_vector(){

@@ -10,3 +10,10 @@ function print_traced(prefix="WARNING"){
 	message = string_upper(prefix) + " ::: [" + array_glue(", ", trace) + "] " + message;
 	show_debug_message(message);
 }
+
+/// @desc	Returns if the system is using DirectX for rendering. DirectX handles
+///			rendering a bit different than OpenGL so we need to change some calculations
+///			in these cases.
+function get_is_directx_pipeline(){
+	return (os_type == os_windows or os_type == os_xboxone or os_type == os_xboxseriesxs);
+}

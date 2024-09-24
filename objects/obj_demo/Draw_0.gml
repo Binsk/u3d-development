@@ -1,7 +1,14 @@
+camera.generate_gbuffer();
+camera.set_position(vec(10 * cos(current_time / 1000), 10, 10 * sin(current_time / 1000)));
+camera.look_at_up(vec());
+// camera.look_at(vec());
+// show_debug_message(string_ext("{0} :: {1}", [camera.get_forward_vector(), camera.get_up_vector()]));
 gpu_set_zwriteenable(true);
 gpu_set_ztestenable(true);
 gpu_set_cullmode(cull_noculling);
-matrix_set(matrix_view, matrix_build_lookat(cos(current_time / 2000) * 10, 5, sin(current_time / 2000) * 10, 0, 0, 0, 0, 1, 0));
-matrix_set(matrix_projection, matrix_build_projection_perspective_fov(-50, -room_width / room_height, 0.01, 1024));
+// matrix_set(matrix_view, matrix_build_lookat(cos(current_time / 2000) * 10, 5, sin(current_time / 2000) * 10, 0, 0, 0, 0, 1, 0));
+// matrix_set(matrix_projection, matrix_build_projection_perspective_fov(-50, -room_width / room_height, 0.01, 1024));
+matrix_set(matrix_view, camera.get_view_matrix());
+matrix_set(matrix_projection, camera.get_projection_matrix());
 vertex_submit(vbuffer, pr_trianglestrip, -1);
 vertex_submit(box.vbuffer, pr_trianglelist, -1);

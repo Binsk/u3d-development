@@ -31,6 +31,22 @@ function is_quat(value){
 	return true;
 }
 
+function quat_is_identity(quaternion){
+	if (quaternion.x != 0)
+		return false;
+	
+	if (quaternion.y != 0)
+		return false;
+		
+	if (quaternion.z != 0)
+		return false;
+	
+	if (quaternion.w != 1)
+		return false;
+	
+	return true;
+}
+
 function quat_to_array(quaternion){
 	return [
 		quaternion.x, quaternion.y, quaternion.z, quaternion.w
@@ -122,8 +138,8 @@ function vec_to_quat(vector){
 	return veca_to_quat(vec_to_veca(rotation_axis, rotation_angle));
 }
 
-/// @desc	Multiplies two quaternions together; this is the same as applying one
-///			rotation over the other rotation.
+/// @desc	Multiplies two quaternions together; this is the same as rotating quat2
+///			by quat1.
 function quat_mul_quat(quat1, quat2){
 	return quat(
 		quat1.w * quat2.x + quat1.x * quat2.w + quat1.y * quat2.z - quat1.z * quat2.y,

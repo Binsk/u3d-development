@@ -24,6 +24,8 @@ function Camera() : Node() constructor{
 	anchor = new CameraAnchor(self);
 	tonemap = CAMERA_TONEMAP.none;
 	exposure = 1.0;		// (only applies when tonemap != none), the exposure level for the camera
+	buffer_width = undefined;
+	buffer_height = undefined;
 	
 	gbuffer = {
 		surfaces : {},
@@ -42,13 +44,40 @@ function Camera() : Node() constructor{
 		var forward = get_forward_vector();
 		var up = get_up_vector();
 		var to = vec_add_vec(position, forward);
+		// up = vec(0, 1, 0);
 		return matrix_build_lookat(position.x, position.y, position.z, to.x, to.y, to.z, up.x, up.y, up.z);
 	}
 	
 	/// @desc	Build the projection matrix required for this camera.
-	function get_projection_matrix(){
-/// @stub	Build proper projection matrix for platforms
-		return matrix_build_identity();
+	/// @param	{real}	znear=0.01		nearest point to render relative to the camera
+	/// @param	{real}	zfar=1024		furthest point to render relative to the camera
+	/// @param	{real}	fov=auto		xfov for the camera; if unset a dynamic value is calculated
+	function get_projection_matrix(znear=0.01, zfar=1024, fov=undefined){
+		if (is_undefined(buffer_width)) // Cannot determine render size
+			return matrix_build_identity();
+		
+		var aspect = buffer_width / buffer_height;
+			// Auto FOV is subjective and arbitrary; this calculates a value I personally
+			// found pleasant for simple 3rd person games.
+		if (is_undefined(fov))
+			fov = max(lerp(110, 72, aspect), 10) + 10;
+			
+		var yfov = -2 * arctan(dtan(fov/2) * aspect);
+		
+		if (get_is_directx_pipeline())
+			aspect = -aspect;
+		
+		var h = 1 / tan(yfov * 0.5);
+		var w = h / aspect;
+		var a = zfar / (zfar - znear);
+		var b = (-znear * zfar) / (zfar - znear);
+		var matrix = [
+			w, 0, 0, 0,
+			0, h, 0, 0,
+			0, 0, a, 1,
+			0, 0, b, 0
+			];
+		return matrix;
 	}
 	
 	function generate_gbuffer(){
@@ -59,8 +88,8 @@ function Camera() : Node() constructor{
 		///			taken from the depth buffer of the albedo surface
 		var screen_width = surface_get_width(application_surface);
 		var screen_height = surface_get_height(application_surface);
-		var buffer_width = anchor.get_dx(screen_width);
-		var buffer_height = anchor.get_dy(screen_height);
+		buffer_width = anchor.get_dx(screen_width);
+		buffer_height = anchor.get_dy(screen_height);
 		var surfaces = gbuffer.surfaces;
 		var textures = gbuffer.textures;
 		
