@@ -19,13 +19,16 @@ enum CAMERA_TONEMAP {
 
 /// @desc	Creates a new 3D camera that can be moved around the world and added
 ///			to the rendering pipeline.
-function Camera() : Node() constructor{
+function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 	#region PROPERTIES
 	anchor = new CameraAnchor(self);
 	tonemap = CAMERA_TONEMAP.none;
 	exposure = 1.0;		// (only applies when tonemap != none), the exposure level for the camera
 	buffer_width = undefined;
 	buffer_height = undefined;
+	self.znear = znear;
+	self.zfar = zfar;
+	self.fov = fov;
 	
 	gbuffer = {
 		surfaces : {},
@@ -49,18 +52,15 @@ function Camera() : Node() constructor{
 	}
 	
 	/// @desc	Build the projection matrix required for this camera.
-	/// @param	{real}	znear=0.01		nearest point to render relative to the camera
-	/// @param	{real}	zfar=1024		furthest point to render relative to the camera
-	/// @param	{real}	fov=auto		xfov for the camera; if unset a dynamic value is calculated
-	function get_projection_matrix(znear=0.01, zfar=1024, fov=undefined){
+	function get_projection_matrix(){
 		if (is_undefined(buffer_width)) // Cannot determine render size
 			return matrix_build_identity();
 		
 		var aspect = buffer_width / buffer_height;
 			// Auto FOV is subjective and arbitrary; this calculates a value I personally
 			// found pleasant for simple 3rd person games.
-		if (is_undefined(fov))
-			fov = max(lerp(110, 72, aspect), 10) + 10;
+		// if (is_undefined(fov))
+		// 	fov = max(lerp(110, 72, aspect), 10) + 10;
 			
 		var yfov = -2 * arctan(dtan(fov/2) * aspect);
 		
@@ -78,6 +78,18 @@ function Camera() : Node() constructor{
 			0, 0, b, 0
 			];
 		return matrix;
+	}
+	
+	function set_znear(znear){
+		self.znear = znear;
+	}
+	
+	function set_zfar(zfar){
+		self.zfar = zfar;
+	}
+	
+	function set_fow(fow){
+		self.fow = fow;
 	}
 	
 	function generate_gbuffer(){
@@ -122,6 +134,12 @@ function Camera() : Node() constructor{
 		
 		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.pbr]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.pbr]) != buffer_height)
 			surface_resize(surfaces[$ CAMERA_GBUFFER.pbr], buffer_width, buffer_height);
+	}
+	
+	/// @desc	Given an array of renderable bodies, the camera will render them
+	///			out to the GBuffer.
+	function render_gbuffer(body_array=[]){
+/// @stub	Implement
 	}
 	
 	super.mark("free");

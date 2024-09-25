@@ -9,6 +9,16 @@ function Model() : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc Add a new mesh into the model container, to render in-order.
+	function add_mesh(mesh){
+		if (not is_instanceof(mesh, Mesh)){
+			Exception.throw_conditional("invalid type, expected [Mesh]!");
+			return;
+		}
+		
+		array_push(mesh_array, mesh);
+	}
+	
 	/// @desc	Will assign a material to the specified index in the mesh.
 	function set_material(material, material_index){
 		if (not is_instanceof(material, Material)){
@@ -17,6 +27,11 @@ function Model() : U3DObject() constructor {
 		}
 			
 		material_data[$ material_index] = material;
+	}
+	
+	function render(render_stage=RENDER_STAGE.build_gbuffer){
+		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
+			mesh_array[i].render(material_data, render_stage);
 	}
 	#endregion
 }

@@ -102,7 +102,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			if (is_undefined(accessor_index)){ // Mesh doesn't contain data we are requesting; fill w/ defaults
 				array = array_create(vertex_index_count, VertexFormat.get_vertex_data_default(format.vformat_array[i]));
 				array_push(missing_data, format_label);
-				show_debug_message(format_label + " : UNDEFINED");
 			}
 			else{
 				array = read_accessor(accessor_index);
@@ -155,6 +154,83 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return primitive;
 /// @stub	Implement
 	}
+	
+	/// @desc	Given a mesh index, attempts to generate a Mesh. See generate_primitive for more
+	///			specifics in regards to data handling.
+	function generate_mesh(mesh_index, format){
+		var count = get_primitive_count(mesh_index);
+		if (count <= 0)
+			return undefined;
+		
+		var primitive_array = array_create(count, undefined);
+		var is_invalid = false;
+		var i;
+		for (i = 0; i < count; ++i){
+			var primitive = generate_primitive(mesh_index, i, format);
+			if (is_undefined(primitive)){
+				is_invalid = true;
+				break;
+			}
+			
+			primitive_array[i] = primitive;
+		}
+		
+		if (is_invalid){
+			for (var j = 0; j < i; ++j){
+				primitive_array[j].free();
+				delete primitive_array[j];
+			}
+			Exception.throw_conditional(string_ext("failed to build mesh, invalid primitive [{0}].", [i]));
+			return undefined;
+		}
+
+/// @stub	Determine material IDs and add to mesh! (Don't generate materials; just get their IDs)		
+		var mesh = new Mesh();
+		for (var i = 0; i < count; ++i)
+			mesh.add_primitive(primitive_array[i], 0);
+		
+		return mesh;
+	}
+	
+	/// @desc	This will generate a Model that contains all the Mesh and Primitives
+	///			defined in the file, along with their respective materials. Each
+	///			element MUST be cleaned up manually!
+	function generate_model(format){
+/// @stub	Remove the 'format' argument, it is just for testing
+		var count = get_mesh_count();
+		if (count <= 0)
+			return undefined;
+		
+		var mesh_array = array_create(count, undefined);
+		var is_invalid = false;
+		var i;
+		for (i = 0; i < count; ++i){
+/// @stub	Determine proper format automatically
+			var mesh = generate_mesh(i, format);
+			if (is_undefined(mesh)){
+				is_invalid = true;
+				break;
+			}
+			
+			mesh_array[i] = mesh;
+		}
+		
+		if (is_invalid){
+			for (var j = 0; j < i; ++j){
+				mesh_array[j].free();
+				delete mesh_array[j];
+			}
+			Exception.throw_conditional(string_ext("failed to build model, invalid mesh [{0}].", [i]));
+			return undefined;
+		}
+		
+		var model = new Model();
+		for (var i = 0; i < count; ++i)
+			model.add_mesh(mesh_array[i]);
+		
+		return model;
+	}
+	
 	#endregion
 	
 	#region INIT
