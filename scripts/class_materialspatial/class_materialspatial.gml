@@ -56,9 +56,14 @@ function MaterialSpatial() : Material() constructor {
 		pbr : undefined
 	};
 	
+	scalar = {
+		albedo : [1, 1, 1, 1]
+	}
+	
 	#region GBUFFER UNIFORMS
 	uniform_gbuffer_sampler_albedo = -1;		// u_sAlbedo		(sampler2D)
 	uniform_gbuffer_albedo_uv = -1;				// u_vAlbedoUV		(vec4)
+	uniform_gbuffer_albedo_scalar = -1;			// u_vAlbedo		(vec4)
 	uniform_gbuffer_sampler_normal = -1;		// u_sNormal		(sampler2D)
 	uniform_gbuffer_normal_uv = -1;				// u_vNormalUV		(vec4)
 	uniform_gbuffer_sampler_pbr = -1;			// u_sPBR			(sampler2D)
@@ -107,11 +112,16 @@ function MaterialSpatial() : Material() constructor {
 		// Assign uniforms (if they don't exist they won't be sent when rendering)
 		uniform_gbuffer_sampler_albedo = shader_get_sampler_index(shader, "u_sAlbedo");
 		uniform_gbuffer_albedo_uv = shader_get_uniform(shader, "u_vAlbedoUV");
+		uniform_gbuffer_albedo_scalar = shader_get_uniform(shader, "u_vAlbedo");
 		uniform_gbuffer_sampler_normal = shader_get_sampler_index(shader, "u_sNormal");
 		uniform_gbuffer_normal_uv = shader_get_uniform(shader, "u_vNormalUV");
 		uniform_gbuffer_sampler_pbr = shader_get_sampler_index(shader, "u_sPBR");
 		uniform_gbuffer_pbr_uv = shader_get_uniform(shader, "u_vPBRUV");
 	}
+	
+	function shader_set_lighting(shader){
+/// @stub	Implement
+	};
 	
 	function apply(render_stage){
 		if (render_stage == RENDER_STAGE.build_gbuffer){
@@ -134,6 +144,9 @@ function MaterialSpatial() : Material() constructor {
 				shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
 			}
 			
+			// Send PBR scalars:
+			shader_set_uniform_f(uniform_gbuffer_albedo_scalar, scalar.albedo[0], scalar.albedo[1], scalar.albedo[2], scalar.albedo[3]);
+			
 			return;
 		}
 		
@@ -143,6 +156,17 @@ function MaterialSpatial() : Material() constructor {
 			
 			return;
 		}
+	}
+	
+	function duplicate(){
+		var material = new MaterialSpatial();
+		material.shader_set_gbuffer(shader_gbuffer);
+		material.shader_set_lighting(shader_lighting);
+		var texture_keys = struct_get_names(texture);
+		for (var i = array_length(texture_keys) - 1; i >= 0; --i)
+			material.set_texture(texture_keys[i], texture[$ texture_keys[i]]);
+			
+		return material;
 	}
 	
 	#endregion

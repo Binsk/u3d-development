@@ -35,6 +35,93 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 /// @stub implement
 	}
 	
+	/// @desc	Generates an array of spatial materials. Note that the materials
+	///			will have dynamically-generated sprites attached to them that will
+	///			be automatically freed upon material free, thus invalidating the
+	///			attached texture!
+	function generate_material_array(){
+		var material_data_array = json_header[$ "materials"];
+		var material_array = array_create(array_length(material_data_array), undefined);
+		var sprite_data_array = json_header[$ "images"];
+		var sprite_array = array_create(array_length(sprite_data_array), undefined); // Contains generated sprites
+		
+		// First add new sprites to the system:
+		for (var i = 0; i < array_length(sprite_data_array); ++i){
+			var data = sprite_array[i];
+			var sprite;
+			if (not is_undefined(data[$ "uri"])){ // External file, load normally
+				if (not file_exists(directory + data.uri)){
+					Exception.throw_conditional(string_ext("failed to find image [{0}]", [directory + data.uri]));
+					continue;
+				}
+				
+				sprite = sprite_add(directory + data.uri, 0, false, false, 0, 0);
+				sprite_array[i] = sprite;
+				continue;
+			}
+			
+			// Data buffer, must write to disk to re-load as PNG
+			if (string_lower(data.mimeType) != "image/png" and string_lower(data.mimeType) != "image/jpeg"){
+				Exception.throw_conditional(string_ext("unsupported mime type [{0}].", [data.mimeType]));
+				continue;
+			}
+			
+			var buffer = read_buffer_view(json_header.bufferViews[data.bufferView]);
+			if (is_undefined(buffer)){
+				Exception.throw_conditional(string_ext("failed to read buffer view [{0}].", [data.bufferView]));
+				continue;
+			}
+			
+			buffer_save_ext(buffer, "__import", 0, buffer_get_size(buffer));
+			sprite = sprite_add("__import", 0, false, false, 0, 0);
+			sprite_array[i] = sprite;
+	
+			buffer_delete(buffer);
+			file_delete("__import");
+		}
+		
+		// Next generate the material data:
+		for (var i = 0; i < array_length(material_data_array); ++i){
+			var material_data = material_data_array[i];
+			var pbr_data = material_data[$ "pbrMetallicRoughness"]; // May not be set!
+			// First, a quick check to see if we failed to load the sprite and fill w/ 'no texture'
+			if (not is_undefined(pbr_data) and not is_undefined(pbr_data[$ "baseColorTexture"]) and is_undefined(sprite_array[pbr_data[$ "baseColorTexture"]])){
+				material_array[i] = U3D.RENDERING.MATERIAL.missing_texture.duplicate();
+				continue;
+			}
+			
+			// Defaults:
+			var color_base = [1, 1, 1, 1];
+			var color_sprite = undefined;
+			
+			if (not is_undefined(pbr_data)){
+				color_base = pbr_data[$ "baseColorFactor"] ?? color_base;
+				if (not is_undefined(pbr_data[$ "baseColorTexture"])){
+/// @stub	Add support for pulling the texture UV index?
+					var texture_index = get_structure(pbr_data[$ "baseColorTexture"].index, "textures").source;
+					color_sprite = sprite_array[texture_index];
+				}
+/// @stub	Implement metallic, etc
+			}
+			
+			var material = new MaterialSpatial();
+			if (not is_undefined(color_sprite))
+				material.set_texture("albedo", sprite_get_texture(color_sprite, 0));
+				
+			material.scalar.albedo = color_base;
+			
+			// Attach free method to free up sprites as needed:
+			material.signaler.add_signal("free", new Callable(material, function(albedo){
+				if (not is_undefined(color_sprite))
+					sprite_delete(color_sprite);
+			}, [color_sprite]))
+			
+			material_array[i] = material;
+		}
+		
+		return material_array;
+	}
+	
 	/// @desc	Given a mesh and primitive index, attempts to generate a Primitive.
 	///			The Primitive will contain the properties specified according to the 
 	///			specified format. If the format contains values that are undefined by the
@@ -184,10 +271,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 
-/// @stub	Determine material IDs and add to mesh! (Don't generate materials; just get their IDs)		
+		// Add each primitive to the mesh and attach the material index
 		var mesh = new Mesh();
 		for (var i = 0; i < count; ++i)
-			mesh.add_primitive(primitive_array[i], 0);
+			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i].material);
 		
 		return mesh;
 	}

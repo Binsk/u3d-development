@@ -8,7 +8,7 @@ gpu_set_tex_filter(false);
 matrix_set(matrix_view, camera.get_view_matrix());
 matrix_set(matrix_projection, camera.get_projection_matrix());
 
-material.apply(RENDER_STAGE.build_gbuffer);
+material_array[0].apply(RENDER_STAGE.build_gbuffer);
 box.render();
 // vertex_submit(box.vbuffer, pr_trianglelist, -1);
 shader_reset();
