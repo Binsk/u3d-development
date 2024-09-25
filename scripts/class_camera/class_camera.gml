@@ -47,7 +47,6 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 		var forward = get_forward_vector();
 		var up = get_up_vector();
 		var to = vec_add_vec(position, forward);
-		// up = vec(0, 1, 0);
 		return matrix_build_lookat(position.x, position.y, position.z, to.x, to.y, to.z, up.x, up.y, up.z);
 	}
 	
@@ -139,7 +138,27 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 	/// @desc	Given an array of renderable bodies, the camera will render them
 	///			out to the GBuffer.
 	function render_gbuffer(body_array=[]){
-/// @stub	Implement
+		generate_gbuffer();	// Re-generate if not yet generated
+		gpu_set_zwriteenable(true);
+		gpu_set_ztestenable(true);
+		gpu_set_cullmode(cull_noculling);
+		gpu_set_tex_filter(false);
+		gpu_set_blendmode_ext(bm_one, bm_zero);
+		
+		// surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
+		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
+		draw_clear_alpha(0, 0);
+		matrix_set(matrix_view, get_view_matrix());
+		matrix_set(matrix_projection, get_projection_matrix());
+		for (var i = array_length(body_array) - 1; i >= 0; --i){
+			var body = body_array[i];
+			// Make sure model is renderable for this camera
+			if (is_undefined(body.model_instance))
+				continue;
+			
+			body.model_instance.render(RENDER_STAGE.build_gbuffer);
+		}
+		surface_reset_target();
 	}
 	
 	super.mark("free");

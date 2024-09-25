@@ -9,5 +9,8 @@ for (var i = 0; i < array_length(material_array); ++i)
 	box.set_material(material_array[i], i);
 
 camera = new Camera();
-// material = new MaterialSpatial();
-// material.set_texture("albedo", sprite_get_texture(spr_missing_texture, 0));
+body = new Body();
+body.set_model(box);
+instance_create_depth(0, 0, 0, obj_render_controller);
+obj_render_controller.add_body(body);
+obj_render_controller.add_camera(camera);
