@@ -139,9 +139,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 						for (var k = array_length(data) - 1; k >= 0; --k)
 							data[k] /= div_value;
 					}
+						
 					data = [make_color_rgb(data[0] * 255, data[1] * 255, data[2] * 255), array_length(data) > 3 ? data[3] : 1.0];
-					for (var k = array_length(data) - 1; k >= 0; --k)
-						data[k] = clamp(data[k], 0, 1); // Demanded by the spec
 				}
 				#endregion
 				

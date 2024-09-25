@@ -3,6 +3,10 @@ attribute vec3 in_Normal;           // Vertex normal
 attribute vec4 in_Colour;           // Vertex color
 attribute vec2 in_TextureCoord0;    // Texture UV
 
+uniform vec4 u_vAlbedoUV;
+uniform vec4 u_vNormalUV;
+uniform vec4 u_vPBRUV;
+
 varying vec2 v_vTexcoord;
 varying vec4 v_vColor;
 
@@ -12,5 +16,5 @@ void main()
     gl_Position = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     
     v_vColor = in_Colour;
-    v_vTexcoord = in_TextureCoord0;
+    v_vTexcoord = mix(u_vAlbedoUV.xy, u_vAlbedoUV.zw, in_TextureCoord0);
 }

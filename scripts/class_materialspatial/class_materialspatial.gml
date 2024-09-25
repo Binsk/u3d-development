@@ -46,10 +46,23 @@
 function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
 	// Default shaders:
-	shader_gbuffer = shd_build_gbuffer;
+	shader_gbuffer = undefined;
 	shader_lighting = undefined;
 	
+	// Textures
+	texture = {
+		albedo : undefined,
+		normal : undefined,
+		pbr : undefined
+	};
+	
 	#region GBUFFER UNIFORMS
+	uniform_gbuffer_sampler_albedo = -1;		// u_sAlbedo		(sampler2D)
+	uniform_gbuffer_albedo_uv = -1;				// u_vAlbedoUV		(vec4)
+	uniform_gbuffer_sampler_normal = -1;		// u_sNormal		(sampler2D)
+	uniform_gbuffer_normal_uv = -1;				// u_vNormalUV		(vec4)
+	uniform_gbuffer_sampler_pbr = -1;			// u_sPBR			(sampler2D)
+	uniform_gbuffer_pbr_uv = -1;				// u_vPBRUV			(vec4)
 	#endregion
 	
 	#region LIGHTING UNIFORMS
@@ -58,6 +71,22 @@ function MaterialSpatial() : Material() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Sets the texture for the specified label (see constructor). Texture
+	///			must be a valid texture, -1, or undefined.
+	function set_texture(label, texture){
+		label = string_lower(label);
+		
+		if (is_undefined(texture) or texture < 0){ // Wipe the texture if unset
+			self.texture[$ label] = undefined;
+			return;
+		}
+
+		self.texture[$ label] = {
+			texture : texture,
+			uv : texture_get_uvs(texture)
+		};
+	}
+	
 	/// @desc	Return an array of shaders in their respective execution orders (see header notes)
 	function get_shaders(){
 		return [
@@ -76,12 +105,34 @@ function MaterialSpatial() : Material() constructor {
 		shader_gbuffer = shader;
 		
 		// Assign uniforms (if they don't exist they won't be sent when rendering)
+		uniform_gbuffer_sampler_albedo = shader_get_sampler_index(shader, "u_sAlbedo");
+		uniform_gbuffer_albedo_uv = shader_get_uniform(shader, "u_vAlbedoUV");
+		uniform_gbuffer_sampler_normal = shader_get_sampler_index(shader, "u_sNormal");
+		uniform_gbuffer_normal_uv = shader_get_uniform(shader, "u_vNormalUV");
+		uniform_gbuffer_sampler_pbr = shader_get_sampler_index(shader, "u_sPBR");
+		uniform_gbuffer_pbr_uv = shader_get_uniform(shader, "u_vPBRUV");
 	}
 	
 	function apply(render_stage){
 		if (render_stage == RENDER_STAGE.build_gbuffer){
 			if (shader_current() != shader_gbuffer)
 				shader_set(shader_gbuffer);
+			
+			// Send textures
+			if (uniform_gbuffer_sampler_albedo >= 0 and not is_undefined(texture[$ "albedo"])){
+				texture_set_stage(uniform_gbuffer_sampler_albedo, texture.albedo.texture);
+				shader_set_uniform_f(uniform_gbuffer_albedo_uv, texture.albedo.uv[0], texture.albedo.uv[1], texture.albedo.uv[2], texture.albedo.uv[3]);
+			}
+			
+			if (uniform_gbuffer_sampler_normal >= 0 and not is_undefined(texture[$ "normal"])){
+				texture_set_stage(uniform_gbuffer_sampler_normal, texture.normal.texture);
+				shader_set_uniform_f(uniform_gbuffer_normal_uv, texture.normal.uv[0], texture.normal.uv[1], texture.normal.uv[2], texture.normal.uv[3]);
+			}
+			
+			if (uniform_gbuffer_sampler_pbr >= 0 and not is_undefined(texture[$ "pbr"])){
+				texture_set_stage(uniform_gbuffer_sampler_pbr, texture.pbr.texture);
+				shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
+			}
 			
 			return;
 		}
@@ -97,5 +148,6 @@ function MaterialSpatial() : Material() constructor {
 	#endregion
 	
 	#region INIT
+	shader_set_gbuffer(shd_build_gbuffer);
 	#endregion
 }
