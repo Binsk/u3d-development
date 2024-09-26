@@ -200,7 +200,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		#endregion
 		
 		if (array_length(missing_data) > 0)
-			print_traced("WARNING", "primitive definition missing requested data ", string_replace_all(json_stringify(missing_data, false), "\"", ""));
+			print_traced("WARNING", "primitive definition missing requested data ", string_replace_all(json_stringify(missing_data, false), "\"", "") + "!");
 		
 		// Build the primitive itself:
 		var primitive = new Primitive(format);

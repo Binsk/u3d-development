@@ -3,7 +3,7 @@ var gpu_state = gpu_get_state();
 // Regenerate camera GBuffers as needed
 var camera_keys = struct_get_names(camera_map);
 	
-// Render camera GBuffers
+// Render camera scenes
 for (var i = array_length(camera_keys) - 1; i >= 0; --i){
 	var camera = camera_map[$ camera_keys[i]];
 	
@@ -13,8 +13,15 @@ for (var i = array_length(camera_keys) - 1; i >= 0; --i){
 	var body_array = array_create(array_length(body_keys), undefined);
 	for (var j = array_length(body_keys) - 1; j >= 0; --j)
 		body_array[j] = body_map[$ body_keys[j]];
+		
+	var light_keys = struct_get_names(light_map);
+	var light_array = array_create(array_length(light_keys), undefined);
+	for (var j = array_length(light_keys) - 1; j >= 0; --j)
+		light_array[j] = light_map[$ light_keys[j]];
 	
 	camera.render_gbuffer(body_array);
+	camera.render_lighting(light_array, body_array);
+	camera.render_post_processing();
 }
 
 if (shader_current() >= 0)

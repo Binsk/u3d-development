@@ -9,8 +9,9 @@ enum RENDER_STAGE {
 }
 
 #region PROPERTIES
-body_map = {};	// Map of all bodies in the scene; sorted via IDs
-camera_map = {};	// Map of all cameras to render
+body_map = {};		// Map of all bodies in the scene
+camera_map = {};	// Map of all cameras in the scene
+light_map = {};		// Map of all lights in the scene
 #endregion
 
 #region METHODS
@@ -44,6 +45,39 @@ function remove_body(body){
 	
 	struct_remove(body_map, body.get_index());
 	body.signaler.remove_signal("free", new Callable(id, remove_body, [body])); // Remove 'auto-free' signal
+	return true;
+}
+
+/// @desc	Add a light to the rendering system if it isn't already added. Returns
+///			if successful.
+function add_light(light){
+	if (not is_instanceof(light, Light)){
+		Exception.throw_conditional("invalid type, expected [Light]!");
+		return false;
+	}
+	
+	// If the light already exists in the system, exit early
+	if (not is_undefined(light_map[$ light.get_index()]))
+		return false;
+	
+	light_map[$ light.get_index()] = light;
+	light.signaler.add_signal("free", new Callable(id, remove_light, [light])); // Attach signal to auto-remove if the light is freed
+	return true;
+}
+
+/// @desc	Removes the specified light from the rendering system
+function remove_light(light){
+	if (not is_instanceof(light, Light)){
+		Exception.throw_conditional("invalid type, expected [Light]!");
+		return false;
+	}
+	
+	// If the light doesn't exist, don't bother
+	if (is_undefined(light_map[$ light.get_index()]))
+		return false;
+	
+	struct_remove(light_map, light.get_index());
+	light.signaler.remove_signal("free", new Callable(id, remove_light, [light])); // Remove 'auto-free' signal
 	return true;
 }
 

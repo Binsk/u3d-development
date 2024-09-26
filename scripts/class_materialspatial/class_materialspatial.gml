@@ -43,11 +43,18 @@
 // simply render out without modification.
 #endregion
 
+/// @note	The PBR color index for roughness and metalness are defined as part
+///			of the glTF spec. We are choosing to use R as the specular channel.
+enum PBR_COLOR_INDEX {
+	specular,		// R channel
+	roughness,		// G channel
+	metalness,		// B channel
+}
+
 function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
 	// Default shaders:
 	shader_gbuffer = undefined;
-	shader_lighting = undefined;
 	
 	// Textures
 	texture = {
@@ -56,18 +63,25 @@ function MaterialSpatial() : Material() constructor {
 		pbr : undefined
 	};
 	
+	/// @note	scalar albedo is multiplicative, however if no texture exists and no vertex
+	///			color exists, it will be used as-is for the color in LINEAR space! Vertex
+	///			colors act similarly and are ALSO in LINEAR space! Albedo textures are
+	///			assumed to be in sRGB space and will be converted to LINEAR for lighting.
 	scalar = {
-		albedo : [1, 1, 1, 1]
+		albedo : [1, 1, 1, 1],
+		pbr : [1, 1, 1] // See PBR_COLOR_INDEX for layout
 	}
 	
 	#region GBUFFER UNIFORMS
-	uniform_gbuffer_sampler_albedo = -1;		// u_sAlbedo		(sampler2D)
-	uniform_gbuffer_albedo_uv = -1;				// u_vAlbedoUV		(vec4)
-	uniform_gbuffer_albedo_scalar = -1;			// u_vAlbedo		(vec4)
-	uniform_gbuffer_sampler_normal = -1;		// u_sNormal		(sampler2D)
-	uniform_gbuffer_normal_uv = -1;				// u_vNormalUV		(vec4)
-	uniform_gbuffer_sampler_pbr = -1;			// u_sPBR			(sampler2D)
-	uniform_gbuffer_pbr_uv = -1;				// u_vPBRUV			(vec4)
+	uniform_gbuffer_sampler_albedo = -1;		// u_sAlbedo			(sampler2D)		4color material w/o lighting
+	uniform_gbuffer_albedo_uv = -1;				// u_vAlbedoUV			(vec4)			UV bounds on texture page for albed
+	uniform_gbuffer_albedo_scalar = -1;			// u_vAlbedo			(vec4)			color multiplier (or direct color if no texture)
+	uniform_gbuffer_sampler_normal = -1;		// u_sNormal			(sampler2D)		normal direction texture in tangent space
+	uniform_gbuffer_normal_uv = -1;				// u_vNormalUV			(vec4)			UV bounds on texture page for normal
+	uniform_gbuffer_sampler_pbr = -1;			// u_sPBR				(sampler2D)		PBR material in [R: specular, G: roughness, B: metallic] layout
+	uniform_gbuffer_pbr_uv = -1;				// u_vPBRUV				(vec4)			UV bounds on texture page for PBR
+	uniform_gbuffer_pbr_scalar = -1;			// u_vPBR				(vec3)			PBR multiplier (or direct value if no nexture)
+	uniform_gbuffer_sampler_toggles = -1;		// u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
 	#endregion
 	
 	#region LIGHTING UNIFORMS
@@ -95,8 +109,7 @@ function MaterialSpatial() : Material() constructor {
 	/// @desc	Return an array of shaders in their respective execution orders (see header notes)
 	function get_shaders(){
 		return [
-			shader_gbuffer,		// Stage 1
-			shader_lighting		// Stage 2
+			shader_gbuffer		// Stage 1
 		];
 	}
 	
@@ -117,6 +130,8 @@ function MaterialSpatial() : Material() constructor {
 		uniform_gbuffer_normal_uv = shader_get_uniform(shader, "u_vNormalUV");
 		uniform_gbuffer_sampler_pbr = shader_get_sampler_index(shader, "u_sPBR");
 		uniform_gbuffer_pbr_uv = shader_get_uniform(shader, "u_vPBRUV");
+		uniform_gbuffer_pbr_scalar = shader_get_uniform(shader, "u_vPBR");
+		uniform_gbuffer_sampler_toggles = shader_get_uniform(shader, "u_iSamplerToggles");
 	}
 	
 	function shader_set_lighting(shader){
@@ -129,30 +144,31 @@ function MaterialSpatial() : Material() constructor {
 				shader_set(shader_gbuffer);
 			
 			// Send textures
+			var sampler_toggles = [0, 0, 0];
 			if (uniform_gbuffer_sampler_albedo >= 0 and not is_undefined(texture[$ "albedo"])){
 				texture_set_stage(uniform_gbuffer_sampler_albedo, texture.albedo.texture);
 				shader_set_uniform_f(uniform_gbuffer_albedo_uv, texture.albedo.uv[0], texture.albedo.uv[1], texture.albedo.uv[2], texture.albedo.uv[3]);
+				sampler_toggles[0] = 1;
 			}
 			
 			if (uniform_gbuffer_sampler_normal >= 0 and not is_undefined(texture[$ "normal"])){
 				texture_set_stage(uniform_gbuffer_sampler_normal, texture.normal.texture);
 				shader_set_uniform_f(uniform_gbuffer_normal_uv, texture.normal.uv[0], texture.normal.uv[1], texture.normal.uv[2], texture.normal.uv[3]);
+				sampler_toggles[1] = 1;
 			}
 			
 			if (uniform_gbuffer_sampler_pbr >= 0 and not is_undefined(texture[$ "pbr"])){
 				texture_set_stage(uniform_gbuffer_sampler_pbr, texture.pbr.texture);
 				shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
+				sampler_toggles[2] = 1;
 			}
+			
+			// Set samplers; if no texture then the values are used directly otherwise they are multiplied
+			shader_set_uniform_i_array(uniform_gbuffer_sampler_toggles, sampler_toggles);
 			
 			// Send PBR scalars:
 			shader_set_uniform_f(uniform_gbuffer_albedo_scalar, scalar.albedo[0], scalar.albedo[1], scalar.albedo[2], scalar.albedo[3]);
-			
-			return;
-		}
-		
-		if (render_stage == RENDER_STAGE.light_pass){
-			if (shader_current() != shader_lighting)
-				shader_set(shader_lighting);
+			shader_set_uniform_f(uniform_gbuffer_pbr_scalar, scalar.pbr[PBR_COLOR_INDEX.specular], scalar.pbr[PBR_COLOR_INDEX.roughness], scalar.pbr[PBR_COLOR_INDEX.metalness]);
 			
 			return;
 		}
@@ -161,7 +177,6 @@ function MaterialSpatial() : Material() constructor {
 	function duplicate(){
 		var material = new MaterialSpatial();
 		material.shader_set_gbuffer(shader_gbuffer);
-		material.shader_set_lighting(shader_lighting);
 		var texture_keys = struct_get_names(texture);
 		for (var i = array_length(texture_keys) - 1; i >= 0; --i)
 			material.set_texture(texture_keys[i], texture[$ texture_keys[i]]);
