@@ -1,6 +1,7 @@
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal]);
 
-var gltf = new GLTFBuilder("ohelmet.gltf");
+var gltf = new GLTFBuilder("helmet.glb");
+// var gltf = new GLTFBuilder("ohelmet.gltf");
 box = gltf.generate_model(vformat);
 
 /// @stub	The generate_model() function will need to generate materials

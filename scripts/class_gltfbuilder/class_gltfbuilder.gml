@@ -69,8 +69,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				Exception.throw_conditional(string_ext("unsupported mime type [{0}].", [data.mimeType]));
 				continue;
 			}
-			
-			var buffer = read_buffer_view(json_header.bufferViews[data.bufferView]);
+
+			var buffer = read_buffer_view(data.bufferView);
 			if (is_undefined(buffer)){
 				Exception.throw_conditional(string_ext("failed to read buffer view [{0}].", [data.bufferView]));
 				continue;
