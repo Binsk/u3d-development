@@ -30,3 +30,17 @@ function array_glue(glue, array, offset=0, count=-1){
 	
 	return str;
 }
+
+/// @desc	Treats all the values in the array as an N-dimensional vector and
+///			normalizes the result.
+function array_normalize(array){
+	var value = 0;
+	for (var i = 0; i < array_length(array); ++i)
+		value += sqr(array[i]);
+	
+	var m = sqrt(value);
+	for (var i = 0; i < array_length(array); ++i)
+		array[i] /= m;
+	
+	return array;
+}

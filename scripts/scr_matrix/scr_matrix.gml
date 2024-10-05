@@ -248,3 +248,37 @@ function matrix_build_translation(tx, ty, tz){
 	matrix[14] = tz;
 	return matrix;
 }
+
+function matrix_build_quat(qx, qy, qz, qw){
+	var quat = array_normalize([qx, qy, qz, qw]);
+	qx = quat[0];
+	qy = quat[1];
+	qz = quat[2];
+	qw = quat[3];
+	
+	var matrix = matrix_build_identity();
+	
+	matrix[0] = 1 - 2 * (sqr(qy) + sqr(qz));
+	matrix[1] = 2 * (qx * qy + qz * qw);
+	matrix[2] = 2 * (qx * qz - qy * qw);
+	
+	matrix[4] = 2 * (qx * qy - qz * qw);
+	matrix[5] = 1 - 2 * (sqr(qx) + sqr(qz));
+	matrix[6] = 2 * (qy * qz + qx * qw);
+	
+	matrix[8] = 2 * (qx * qz + qy * qw);
+	matrix[9] = 2 * (qy * qz - qx * qw);
+	matrix[10] = 1 - 2 * (sqr(qx) + sqr(qy));
+	
+	return matrix;
+}
+
+/// @desc	Takes an arbitrary number of matrices as arguments and post-multiplies
+///			them together
+function matrix_multiply_post(){
+	var result = argument[argument_count - 1];
+	for (var i = argument_count - 2; i >= 0; --i)
+		result = matrix_multiply(argument[i], result);
+	
+	return result;
+}

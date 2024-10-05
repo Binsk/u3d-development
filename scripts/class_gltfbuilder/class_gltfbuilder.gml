@@ -47,15 +47,18 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// First add new sprites to the system:
 		for (var i = 0; i < array_length(sprite_data_array); ++i){
-			var data = sprite_array[i];
+			var data = sprite_data_array[i];
 			var sprite;
 			if (not is_undefined(data[$ "uri"])){ // External file, load normally
 				if (not file_exists(directory + data.uri)){
-					Exception.throw_conditional(string_ext("failed to find image [{0}]", [directory + data.uri]));
+					Exception.throw_conditional(string_ext("failed to find image [{0}].", [directory + data.uri]));
 					continue;
 				}
 				
 				sprite = sprite_add(directory + data.uri, 0, false, false, 0, 0);
+				if (sprite < 0)
+					throw new Exception(string_ext("failed to add sprite [{0}]!", [directory + data.uri]));
+					
 				sprite_array[i] = sprite;
 				continue;
 			}
@@ -72,12 +75,19 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			}
 			
-			buffer_save_ext(buffer, "__import", 0, buffer_get_size(buffer));
-			sprite = sprite_add("__import", 0, false, false, 0, 0);
+			var ext = string_delete(data.mimeType, 1, 6);
+			buffer_save_ext(buffer, "__import." + ext, 0, buffer_get_size(buffer));
+			sprite = sprite_add("__import." + ext, 0, false, false, 0, 0);
+			
+			if (sprite < 0){
+				Exception.throw_conditional("failed to add from buffer!");
+				sprite = spr_missing_texture;
+			}
+			
 			sprite_array[i] = sprite;
 	
 			buffer_delete(buffer);
-			file_delete("__import");
+			file_delete("__import." + ext);
 		}
 		
 		// Next generate the material data:
@@ -130,7 +140,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{int}	mesh_index				index of the mesh to read from
 	/// @param	{int}	primitive_index			index of the primitive to generate
 	/// @param	{VertexFormat} vertex_format	vertex format to specify data layout and inclusion
-	function generate_primitive(mesh_index, primitive_index, format) {
+	/// @param	{int}	transform=undefined		transform matrix to apply to each vertex position
+	function generate_primitive(mesh_index, primitive_index, format, transform=undefined) {
 		if (not in_range(mesh_index, 0, get_mesh_count() - 1))	// Invalid mesh index
 			return undefined;
 		
@@ -203,6 +214,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			print_traced("WARNING", "primitive definition missing requested data ", string_replace_all(json_stringify(missing_data, false), "\"", "") + "!");
 		
 		// Build the primitive itself:
+		var is_custom_transform = not is_undefined(transform);
 		var primitive = new Primitive(format);
 		primitive.define_begin();
 		for (var i = array_length(format.vformat_array) - 1; i >= 0; --i){
@@ -229,9 +241,17 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					data = [make_color_rgb(data[0] * 255, data[1] * 255, data[2] * 255), array_length(data) > 3 ? data[3] : 1.0];
 				}
 				#endregion
+				else if (format.vformat_array[i] == VERTEX_DATA.position and is_custom_transform){
+					var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 1.0);
+					data = vec(result[0], result[1], result[2]);
+				}
+				else if (format.vformat_array[i] == VERTEX_DATA.normal and is_custom_transform){
+					var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 0.0);
+					data = vec_normalize(vec(result[0], result[1], result[2]));
+				}
 				
 				#region TANGENT DATA SPECIAL-HANDLING
-/// @stub	handle tangents being vec(0,0,0) (aka., unset) and auto-calculate them
+/// @stub	handle tangents being vec(0,0,0) (aka., unset) and auto-calculate them, make sure to multiply by transform matrix
 				#endregion
 				
 				primitive.define_add_data(format.vformat_array[i], data);
@@ -244,16 +264,30 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	
 	/// @desc	Given a mesh index, attempts to generate a Mesh. See generate_primitive for more
 	///			specifics in regards to data handling.
-	function generate_mesh(mesh_index, format){
+	function generate_mesh(mesh_index, format, apply_transforms=true){
 		var count = get_primitive_count(mesh_index);
 		if (count <= 0)
 			return undefined;
+			
+		var transform = undefined;
+		// Calculate transform matrix for this mesh (if one exists and apply transforms is enabled)
+		if (apply_transforms){
+			var node_array = (json_header[$ "nodes"] ?? []);
+			for (var i = array_length(node_array) - 1; i >= 0; --i){
+				var node = node_array[i];
+				if ((node[$ "mesh"] ?? -1) != mesh_index)
+					continue;
+				
+				transform = get_node_transform(i);
+				break;
+			}
+		}
 		
 		var primitive_array = array_create(count, undefined);
 		var is_invalid = false;
 		var i;
 		for (i = 0; i < count; ++i){
-			var primitive = generate_primitive(mesh_index, i, format);
+			var primitive = generate_primitive(mesh_index, i, format, transform);
 			if (is_undefined(primitive)){
 				is_invalid = true;
 				break;
@@ -282,7 +316,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	This will generate a Model that contains all the Mesh and Primitives
 	///			defined in the file, along with their respective materials. Each
 	///			element MUST be cleaned up manually!
-	function generate_model(format){
+	/// @param	{VertexFormat}	vformat		VertexFormat to generate with, will attempt to fill missing data
+	/// @param	{bool}			apply=true	Whether or not node transforms should be applied to the primitives
+	function generate_model(format, apply_transforms=true){
 /// @stub	Remove the 'format' argument, it is just for testing
 		var count = get_mesh_count();
 		if (count <= 0)
@@ -292,8 +328,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var is_invalid = false;
 		var i;
 		for (i = 0; i < count; ++i){
-/// @stub	Determine proper format automatically
-			var mesh = generate_mesh(i, format);
+/// @stub	Determine proper format automatically if unspecified
+			var mesh = generate_mesh(i, format, apply_transforms);
 			if (is_undefined(mesh)){
 				is_invalid = true;
 				break;
@@ -318,6 +354,37 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return model;
 	}
 	
+	/// @desc	Given a node index, returns the final transform of it, post-multiplied
+	///			against its parent all the way up to the root.
+	function get_node_transform(node_index){
+		var node_array = (json_header[$ "nodes"] ?? []);
+		if (node_index < 0 or node_index >= array_length(node_array))
+			return matrix_build_identity();
+		
+		var node = node_array[node_index];
+		var transform = node[$ "matrix"];
+			// Might have manual transforms:
+		if (is_undefined(transform)){
+			var translation = (node[$ "translation"] ?? [0, 0, 0]);
+			var rotation = (node[$ "rotation"] ?? [0, 0, 0, 1]);
+			var scale = (node[$ "scale"] ?? [1, 1, 1]);
+
+			var T = matrix_build_translation(translation[0], translation[1], translation[2]);
+			var R = matrix_build_quat(rotation[0], rotation[1], rotation[2], rotation[3]);
+			var S = matrix_build_scale(scale[0], scale[1], scale[2]);
+
+			transform = matrix_multiply_post(S, R, T);
+		}
+		
+		for (var i = array_length(node_array) - 1; i >= 0; --i){
+			var parent_node = node_array[i];
+			var child_array = (parent_node[$ "children"] ?? []);
+			if (array_contains(child_array, node_index))
+				return matrix_multiply(transform, get_node_transform(i));
+		}
+		
+		return transform;
+	}
 	#endregion
 	
 	#region INIT

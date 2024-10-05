@@ -36,6 +36,11 @@
   "IncludedFiles":[
     {"$GMIncludedFile":"","%Name":"block.glb","CopyToMask":-1,"filePath":"datafiles","name":"block.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"car.glb","CopyToMask":-1,"filePath":"datafiles","name":"car.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"duck.glb","CopyToMask":-1,"filePath":"datafiles","name":"duck.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"engine-norot.glb","CopyToMask":-1,"filePath":"datafiles","name":"engine-norot.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"engine.bin","CopyToMask":-1,"filePath":"datafiles","name":"engine.bin","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"engine.glb","CopyToMask":-1,"filePath":"datafiles","name":"engine.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"engine.gltf","CopyToMask":-1,"filePath":"datafiles","name":"engine.gltf","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],
   "isEcma":false,
   "LibraryEmitters":[],
