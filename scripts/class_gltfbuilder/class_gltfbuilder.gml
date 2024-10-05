@@ -12,6 +12,7 @@
 
 function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	#region PROPERTIES
+	self.directory = directory;
 	#endregion
 	
 	#region METHODS

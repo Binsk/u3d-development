@@ -208,6 +208,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 		gpu_set_cullmode(cull_noculling);
 		gpu_set_tex_filter(false);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
+		gpu_set_texrepeat(true);
 		
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], 0, 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
@@ -282,9 +283,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	function render_out(){
 /// @stub	Add shader to convert to sRGB, etc.
 /// @stub	Figure out where to combine gbuffer outputs into a single result (here? before post process?)
-		// shader_set(shd_finalize);
+		shader_set(shd_finalize);
 		draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.out_opaque], 0, 0);
-		// shader_reset();
+		shader_reset();
 	}
 	super.mark("free");
 	function free(){

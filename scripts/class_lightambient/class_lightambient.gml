@@ -11,14 +11,14 @@ function LightAmbient() : Light() constructor {
 	surface_ssao = -1;
 	albedo = c_white;
 	intensity = 1.0;		// Intensity of the ambient lighting
-	casts_shadows = true; // Toggles SSAO in this case
+	casts_shadows = false; // Toggles SSAO in this case
 	
 	ssao_samples = 16;		// Number of samples to perform when rendering SSAO
 	ssao_radius = 0.5;		// Generic sample radius scalar (radius is auto-calculated based on fragment depth + zfar; this multiplies against that)
 	ssao_strength = 1.0;	// Scales SSAO strength / area together
 	ssao_blur_samples = 2;	// `(2x + 1)^2` samples to use when blurring (so 4 = 81 samples)
 	ssao_blur_stride = 1.0;	// Number of texels to stride after each sample
-	ssao_normal_bias = 1.0;	// Multiplies against normal comparison result ([0..1], larger attempts to remove noise on flat surfaces at cost of 'accuracy')
+	ssao_normal_bias = 0.0;	// Multiplies against normal comparison result ([0..1], larger attempts to remove noise on flat surfaces at cost of 'accuracy')
 							// Rule of thumb, 'cartoony / flat' style = 1.0, 'realistic / detailed textures' = 0.0
 	
 	#region SHADER UNIFORMS
