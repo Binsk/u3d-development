@@ -218,7 +218,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 		surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 		surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
 		surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
-		// draw_clear_alpha(0, 0);
+		var world_matrix = matrix_get(matrix_world); // Cache so we can reset for later stages
 		matrix_set(matrix_view, get_view_matrix());
 		matrix_set(matrix_projection, get_projection_matrix());
 		for (var i = array_length(body_array) - 1; i >= 0; --i){
@@ -227,8 +227,10 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 			if (is_undefined(body.model_instance))
 				continue;
 			
+			matrix_set(matrix_world, body.get_model_matrix());
 			body.model_instance.render(RENDER_STAGE.build_gbuffer, self);
 		}
+		matrix_set(matrix_world, world_matrix);
 		surface_reset_target();
 	}
 	

@@ -265,7 +265,7 @@ function GLTFLoader() : U3DObject() constructor {
 			return undefined;
 		
 		var buffer_index = buffer_view.buffer;
-		var buffer_offset = (is_undefined(buffer_view.byteOffset) ? 0 : buffer_view.byteOffset);
+		var buffer_offset = (is_undefined(buffer_view[$ "byteOffset"]) ? 0 : buffer_view.byteOffset);
 		var buffer_length = buffer_view.byteLength;
 		var buffer = binary_buffer_array[buffer_index];
 		var nbuffer = buffer_create(buffer_length, buffer_fixed, 1);

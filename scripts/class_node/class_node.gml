@@ -11,7 +11,7 @@
 /// @param	{vec}	 position		a position represented by a vector
 /// @param	{quat}	rotation		a rotation represented by a quaternion
 /// @param	{scale}   scale		   a scale represented by a vector
-function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constructor {
+function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() constructor {
 	#region PROPERTIES
 	static AXIS_FORWARD = vec(1, 0, 0); // Global axes for convenient access
 	static AXIS_UP = vec(0, 1, 0);
@@ -19,7 +19,7 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 	
 	self.position = position;
 	self.rotation = rotation;
-	self.scale = scale;
+	self.scale = (scale ?? vec(1, 1, 1));
 	
 	matrix_model = undefined;		// 4x4 transform matrix
 	matrix_inv_model = undefined;	// 4x4 inverse transform matrix
@@ -142,14 +142,21 @@ function Node(position=vec(), rotation=quat(), scale=vec()) : U3DObject() constr
 	function get_model_matrix(){
 		if (not is_undefined(matrix_model))
 			return matrix_model;
-/// @stub	build model matrix
+			
+		matrix_model = matrix_multiply_post(
+			matrix_build_scale(scale.x, scale.y, scale.z),						// S
+			matrix_build_quat(rotation.x, rotation.y, rotation.z, rotation.w),	// R
+			matrix_build_translation(position.x, position.y, position.z)		// T
+		);
+		return matrix_model;
 	}
 	
 	function get_inv_model_matrix(){
 		if (not is_undefined(matrix_inv_model))
 			return matrix_inv_model;
 		
-/// @stub	build inv model matrix
+		matrix_inv_model = matrix_get_inverse(get_model_matrix());
+		return matrix_inv_model;
 	}
 	#endregion
 	

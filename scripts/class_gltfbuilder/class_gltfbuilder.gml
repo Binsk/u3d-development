@@ -76,12 +76,15 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 			
 			var ext = string_delete(data.mimeType, 1, 6);
-			buffer_save_ext(buffer, "__import." + ext, 0, buffer_get_size(buffer));
+			buffer_save(buffer, "__import." + ext);
 			sprite = sprite_add("__import." + ext, 0, false, false, 0, 0);
 			
 			if (sprite < 0){
-				Exception.throw_conditional("failed to add from buffer!");
-				sprite = spr_missing_texture;
+				buffer_delete(buffer);
+				file_delete("__import." + ext);
+				
+				Exception.throw_conditional("failed to add sprite from buffer!");
+				continue;
 			}
 			
 			sprite_array[i] = sprite;
