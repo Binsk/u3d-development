@@ -6,11 +6,14 @@ uniform int[3] u_iSamplerToggles;
 uniform vec4 u_vAlbedo;
 uniform vec3 u_vPBR;
 
+uniform float u_fZScalar; // (zFar - zNear)
+
 varying vec2 v_vTexcoordAlbedo;
 varying vec2 v_vTexcoordNormal;
 varying vec2 v_vTexcoordPBR;
 varying vec4 v_vColor;
 varying vec3 v_vNormal;
+varying vec4 v_vPosition;
 
 vec3 to_rgb(vec3 vColor){
 	bvec3 bCutoff = lessThan(vColor, vec3(0.04045));
@@ -31,14 +34,16 @@ void main()
         gl_FragData[0] = v_vColor * u_vAlbedo;
     
     if (u_iSamplerToggles[1] > 0) // Normals
-/// @stub   Need to convert to world space + combine w/ other normal
-        gl_FragData[1].rg = texture2D(u_sNormal, v_vTexcoordNormal).rg;
+/// @stub   Need to convert to view space + combine w/ other normal
+        gl_FragData[1] = vec4(texture2D(u_sNormal, v_vTexcoordNormal).rgb, 1.0);
     else
-        gl_FragData[1].rg = v_vNormal.rg;
+        gl_FragData[1] = vec4(v_vNormal * 0.5 + 0.5, 1.0);
     
     if (u_iSamplerToggles[2] > 0) // PBR
         gl_FragData[2] = vec4(texture2D(u_sPBR, v_vTexcoordPBR).rgb * u_vPBR, 1.0);
     else
         gl_FragData[2] = vec4(u_vPBR, 1.0);
-        
+       
+	/// @note	Can't seem to get the regular method to write out correctly? This is working for now.
+	gl_FragData[3].r = gl_FragCoord.z / gl_FragCoord.w / u_fZScalar; // Convert from [-1..1] to [0..1]
 }

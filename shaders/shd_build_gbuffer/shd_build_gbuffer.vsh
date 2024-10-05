@@ -12,12 +12,18 @@ varying vec2 v_vTexcoordNormal;
 varying vec2 v_vTexcoordPBR;
 varying vec4 v_vColor;
 varying vec3 v_vNormal;
+varying vec4 v_vPosition;
 
 void main()
 {
     vec4 vPosition = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);
-    gl_Position = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
-    v_vNormal = (gm_Matrices[MATRIX_WORLD] * vec4(vPosition.rgb, 0.0)).rgb;
+    v_vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
+    gl_Position = v_vPosition;
+    v_vNormal = normalize((gm_Matrices[MATRIX_WORLD_VIEW] * vec4(in_Normal.rgb, 0.0)).rgb);
+/// @stub   These two axes are somehow backwards? Flipping them results in the expected
+///         color directions.
+    v_vNormal.x = -v_vNormal.x;
+    v_vNormal.z = -v_vNormal.z;
     
     v_vColor = in_Colour;
     v_vTexcoordAlbedo = mix(u_vAlbedoUV.xy, u_vAlbedoUV.zw, in_TextureCoord0);

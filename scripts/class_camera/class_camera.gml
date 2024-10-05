@@ -10,7 +10,7 @@ enum CAMERA_GBUFFER {
 	albedo_translucent,
 	depth_opaque,			// Depth map; taken from albedo
 	depth_translucent,	
-	normal,					// Normal map (rg8unorm); z-axis re-constructed in-shader
+	normal,					// Normal map (rgba8unorm)
 	pbr,					// PBR properties (rgba8unorm); roughness, metallic, specularity (alpha unused)
 	
 	out_opaque,				// Out surface (rgba8unorm/rgba16float) of lighting pass
@@ -25,7 +25,7 @@ enum CAMERA_TONEMAP {
 
 /// @desc	Creates a new 3D camera that can be moved around the world and added
 ///			to the rendering pipeline.
-function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
+function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	#region PROPERTIES
 	anchor = new CameraAnchor(self);
 	tonemap = CAMERA_TONEMAP.none;
@@ -131,19 +131,29 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 			surface_depth_disable(false);
 			surfaces[$ CAMERA_GBUFFER.albedo_opaque] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
 			textures[$ CAMERA_GBUFFER.albedo_opaque] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
-			textures[$ CAMERA_GBUFFER.depth_opaque] = surface_get_texture_depth(surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+			// textures[$ CAMERA_GBUFFER.depth_opaque] = surface_get_texture_depth(surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
 		}
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.albedo_translucent])){
 			surface_depth_disable(false);
 			surfaces[$ CAMERA_GBUFFER.albedo_translucent] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
 			textures[$ CAMERA_GBUFFER.albedo_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
-			textures[$ CAMERA_GBUFFER.depth_translucent] = surface_get_texture_depth(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
+			// textures[$ CAMERA_GBUFFER.depth_translucent] = surface_get_texture_depth(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
 		}
 		
 		surface_depth_disable(true);
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.depth_opaque])){
+			surfaces[$ CAMERA_GBUFFER.depth_opaque] = surface_create(buffer_width, buffer_height, surface_r32float);
+			textures[$ CAMERA_GBUFFER.depth_opaque] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.depth_opaque]);
+		}
+		
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.depth_translucent])){
+			surfaces[$ CAMERA_GBUFFER.depth_translucent] = surface_create(buffer_width, buffer_height, surface_r32float);
+			textures[$ CAMERA_GBUFFER.depth_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.depth_translucent]);
+		}
+		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.normal])){
-			surfaces[$ CAMERA_GBUFFER.normal] = surface_create(buffer_width, buffer_height, surface_rg8unorm);
+			surfaces[$ CAMERA_GBUFFER.normal] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
 			textures[$ CAMERA_GBUFFER.normal] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.normal]);
 		}
 		
@@ -170,6 +180,12 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.albedo_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.albedo_opaque]) != buffer_height)
 			surface_resize(surfaces[$ CAMERA_GBUFFER.albedo_translucent], buffer_width, buffer_height);
 		
+		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.depth_opaque]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.depth_opaque]) != buffer_height)
+			surface_resize(surfaces[$ CAMERA_GBUFFER.depth_opaque], buffer_width, buffer_height);
+			
+		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.depth_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.depth_translucent]) != buffer_height)
+			surface_resize(surfaces[$ CAMERA_GBUFFER.depth_translucent], buffer_width, buffer_height);
+		
 		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_height)
 			surface_resize(surfaces[$ CAMERA_GBUFFER.normal], buffer_width, buffer_height);
 		
@@ -193,10 +209,16 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 		gpu_set_tex_filter(false);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.depth_opaque + is_translucent], c_white);
+		
 		surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
 		surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 		surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
-		draw_clear_alpha(0, 0);
+		surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+		// draw_clear_alpha(0, 0);
 		matrix_set(matrix_view, get_view_matrix());
 		matrix_set(matrix_projection, get_projection_matrix());
 		for (var i = array_length(body_array) - 1; i >= 0; --i){
@@ -205,7 +227,7 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 			if (is_undefined(body.model_instance))
 				continue;
 			
-			body.model_instance.render(RENDER_STAGE.build_gbuffer);
+			body.model_instance.render(RENDER_STAGE.build_gbuffer, self);
 		}
 		surface_reset_target();
 	}
@@ -217,7 +239,7 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 				if (not light_array[i].casts_shadows) // Light must have shadows enabled
 					continue;
 				
-				light_array[i].render_shadows(gbuffer.textures, body_array);
+				light_array[i].render_shadows(gbuffer.textures, body_array, self);
 			}
 		}
 		
@@ -258,9 +280,9 @@ function Camera(znear=0.01, zfar=1024, fov=50) : Node() constructor{
 	function render_out(){
 /// @stub	Add shader to convert to sRGB, etc.
 /// @stub	Figure out where to combine gbuffer outputs into a single result (here? before post process?)
-		shader_set(shd_finalize);
+		// shader_set(shd_finalize);
 		draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.out_opaque], 0, 0);
-		shader_reset();
+		// shader_reset();
 	}
 	super.mark("free");
 	function free(){

@@ -33,12 +33,12 @@ function Mesh() : U3DObject() constructor {
 	
 	/// @desc	Renders out each primitive, applying the specified materials 
 	///			according to primitive IDs
-	function render(material_data={}, render_stage=RENDER_STAGE.build_gbuffer){
+	function render(material_data={}, render_stage=RENDER_STAGE.build_gbuffer, camera_id=undefined){
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
 			if (not is_undefined(material))
-				material.apply(render_stage);
+				material.apply(camera_id);
 				
 			render_primitive(i);
 		}

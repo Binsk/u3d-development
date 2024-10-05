@@ -15,3 +15,5 @@ instance_create_depth(0, 0, 0, obj_render_controller);
 obj_render_controller.add_body(body);
 obj_render_controller.add_camera(camera);
 obj_render_controller.add_light(light);
+
+distance = 10;

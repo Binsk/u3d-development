@@ -66,7 +66,8 @@ function MaterialSpatial() : Material() constructor {
 	/// @note	scalar albedo is multiplicative, however if no texture exists and no vertex
 	///			color exists, it will be used as-is for the color in LINEAR space! Vertex
 	///			colors act similarly and are ALSO in LINEAR space! Albedo textures are
-	///			assumed to be in sRGB space and will be converted to LINEAR for lighting.
+	///			assumed to be in sRGB space and will be converted to LINEAR for lighting
+	///			before everything is converted back to sRGB at the end.
 	scalar = {
 		albedo : [1, 1, 1, 1],
 		pbr : [1, 1, 1] // See PBR_COLOR_INDEX for layout
@@ -82,6 +83,7 @@ function MaterialSpatial() : Material() constructor {
 	uniform_gbuffer_pbr_uv = -1;				// u_vPBRUV				(vec4)			UV bounds on texture page for PBR
 	uniform_gbuffer_pbr_scalar = -1;			// u_vPBR				(vec3)			PBR multiplier (or direct value if no nexture)
 	uniform_gbuffer_sampler_toggles = -1;		// u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
+	uniform_gbuffer_zscalar = -1;				// u_fZScalar			(float)			distance from znear to zfar
 	#endregion
 	
 	#region LIGHTING UNIFORMS
@@ -132,46 +134,45 @@ function MaterialSpatial() : Material() constructor {
 		uniform_gbuffer_pbr_uv = shader_get_uniform(shader, "u_vPBRUV");
 		uniform_gbuffer_pbr_scalar = shader_get_uniform(shader, "u_vPBR");
 		uniform_gbuffer_sampler_toggles = shader_get_uniform(shader, "u_iSamplerToggles");
+		uniform_gbuffer_zscalar = shader_get_uniform(shader, "u_fZScalar");
 	}
 	
 	function shader_set_lighting(shader){
 /// @stub	Implement
 	};
 	
-	function apply(render_stage){
-		if (render_stage == RENDER_STAGE.build_gbuffer){
-			if (shader_current() != shader_gbuffer)
-				shader_set(shader_gbuffer);
-			
-			// Send textures
-			var sampler_toggles = [0, 0, 0];
-			if (uniform_gbuffer_sampler_albedo >= 0 and not is_undefined(texture[$ "albedo"])){
-				texture_set_stage(uniform_gbuffer_sampler_albedo, texture.albedo.texture);
-				shader_set_uniform_f(uniform_gbuffer_albedo_uv, texture.albedo.uv[0], texture.albedo.uv[1], texture.albedo.uv[2], texture.albedo.uv[3]);
-				sampler_toggles[0] = 1;
-			}
-			
-			if (uniform_gbuffer_sampler_normal >= 0 and not is_undefined(texture[$ "normal"])){
-				texture_set_stage(uniform_gbuffer_sampler_normal, texture.normal.texture);
-				shader_set_uniform_f(uniform_gbuffer_normal_uv, texture.normal.uv[0], texture.normal.uv[1], texture.normal.uv[2], texture.normal.uv[3]);
-				sampler_toggles[1] = 1;
-			}
-			
-			if (uniform_gbuffer_sampler_pbr >= 0 and not is_undefined(texture[$ "pbr"])){
-				texture_set_stage(uniform_gbuffer_sampler_pbr, texture.pbr.texture);
-				shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
-				sampler_toggles[2] = 1;
-			}
-			
-			// Set samplers; if no texture then the values are used directly otherwise they are multiplied
-			shader_set_uniform_i_array(uniform_gbuffer_sampler_toggles, sampler_toggles);
-			
-			// Send PBR scalars:
-			shader_set_uniform_f(uniform_gbuffer_albedo_scalar, scalar.albedo[0], scalar.albedo[1], scalar.albedo[2], scalar.albedo[3]);
-			shader_set_uniform_f(uniform_gbuffer_pbr_scalar, scalar.pbr[PBR_COLOR_INDEX.specular], scalar.pbr[PBR_COLOR_INDEX.roughness], scalar.pbr[PBR_COLOR_INDEX.metalness]);
-			
-			return;
+	function apply(camera_id){
+		if (shader_current() != shader_gbuffer)
+			shader_set(shader_gbuffer);
+		
+		// Send textures
+		var sampler_toggles = [0, 0, 0];
+		if (uniform_gbuffer_sampler_albedo >= 0 and not is_undefined(texture[$ "albedo"])){
+			texture_set_stage(uniform_gbuffer_sampler_albedo, texture.albedo.texture);
+			shader_set_uniform_f(uniform_gbuffer_albedo_uv, texture.albedo.uv[0], texture.albedo.uv[1], texture.albedo.uv[2], texture.albedo.uv[3]);
+			sampler_toggles[0] = 1;
 		}
+		
+		if (uniform_gbuffer_sampler_normal >= 0 and not is_undefined(texture[$ "normal"])){
+			texture_set_stage(uniform_gbuffer_sampler_normal, texture.normal.texture);
+			shader_set_uniform_f(uniform_gbuffer_normal_uv, texture.normal.uv[0], texture.normal.uv[1], texture.normal.uv[2], texture.normal.uv[3]);
+			sampler_toggles[1] = 1;
+		}
+		
+		if (uniform_gbuffer_sampler_pbr >= 0 and not is_undefined(texture[$ "pbr"])){
+			texture_set_stage(uniform_gbuffer_sampler_pbr, texture.pbr.texture);
+			shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
+			sampler_toggles[2] = 1;
+		}
+		
+		// Set samplers; if no texture then the values are used directly otherwise they are multiplied
+		shader_set_uniform_i_array(uniform_gbuffer_sampler_toggles, sampler_toggles);
+		
+		// Send PBR scalars:
+		shader_set_uniform_f(uniform_gbuffer_albedo_scalar, scalar.albedo[0], scalar.albedo[1], scalar.albedo[2], scalar.albedo[3]);
+		shader_set_uniform_f(uniform_gbuffer_pbr_scalar, scalar.pbr[PBR_COLOR_INDEX.specular], scalar.pbr[PBR_COLOR_INDEX.roughness], scalar.pbr[PBR_COLOR_INDEX.metalness]);
+		
+		shader_set_uniform_f(uniform_gbuffer_zscalar, camera_id.zfar - camera_id.znear);
 	}
 	
 	function duplicate(){

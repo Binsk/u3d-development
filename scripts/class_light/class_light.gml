@@ -8,6 +8,11 @@ function Light() : Node() constructor {
 	#endregion
 	
 	#region METHODS
+	
+	function set_casts_shadows(enabled=false){
+		casts_shadows = bool(enabled);
+	}
+	
 	/// @desc	Returns the shader index that this light type uses.
 	function get_shader(){
 		return shader_lighting;
@@ -18,7 +23,7 @@ function Light() : Node() constructor {
 	///			in the opaque pass and when casts_shadows is enabled
 	///			Even if a light type can't cast shadows it should override this
 	///			function.
-	function render_shadows(gbuffer=[], body_array=[]){
+	function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
 		throw new Exception("cannot call a virtual function!");
 	}
 	

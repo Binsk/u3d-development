@@ -17,3 +17,12 @@ function print_traced(prefix="WARNING"){
 function get_is_directx_pipeline(){
 	return (os_type == os_windows or os_type == os_xboxone or os_type == os_xboxseriesxs);
 }
+
+function surface_clear(surface, color, alpha=1.0){
+	if (not surface_exists(surface))
+		return;
+	
+	surface_set_target(surface);
+	draw_clear_alpha(color, alpha);
+	surface_reset_target();
+}
