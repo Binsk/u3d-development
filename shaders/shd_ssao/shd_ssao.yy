@@ -3,8 +3,8 @@
   "%Name":"shd_ssao",
   "name":"shd_ssao",
   "parent":{
-    "name":"Post Processing",
-    "path":"folders/Upset 3D/Shaders/Screen Space/Lighting/Post Processing.yy",
+    "name":"Lighting",
+    "path":"folders/Upset 3D/Shaders/Screen Space/Lighting.yy",
   },
   "resourceType":"GMShader",
   "resourceVersion":"2.0",

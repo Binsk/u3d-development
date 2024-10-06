@@ -10,7 +10,7 @@ for (var i = 0; i < array_length(material_array); ++i)
 	box.set_material(material_array[i], i);
 
 light = new LightAmbient();
-light.set_casts_shadows(true);
+light.set_casts_shadows(true); // Enable SSAO
 // light.set_ssao_properties(16, 1, 5, 1.0, 2, 1);
 camera = new Camera();
 body = new Body();

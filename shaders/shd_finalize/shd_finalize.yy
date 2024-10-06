@@ -3,8 +3,8 @@
   "%Name":"shd_finalize",
   "name":"shd_finalize",
   "parent":{
-    "name":"Post Processing",
-    "path":"folders/Upset 3D/Shaders/Screen Space/Lighting/Post Processing.yy",
+    "name":"Screen Space",
+    "path":"folders/Upset 3D/Shaders/Screen Space.yy",
   },
   "resourceType":"GMShader",
   "resourceVersion":"2.0",

@@ -276,15 +276,23 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	}
 	
 	function render_post_processing(){
-/// @stub	Implement
+		
+/// @stub	Implement; all the following is just for testing anti-aliasing
+		gpu_set_blendmode_ext(bm_one, bm_zero);
+		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.out_translucent]);
+		draw_clear_alpha(0, 0);
+		shader_set(shd_fxaa);
+		shader_set_uniform_f(shader_get_uniform(shd_fxaa, "u_vTexsize"), buffer_width, buffer_height);
+		draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.out_opaque], 0, 0);
+		shader_reset();
+		surface_reset_target();
 	};
 	
 	/// @desc	Renders to the screen and converts back into sRGB
 	function render_out(){
-/// @stub	Add shader to convert to sRGB, etc.
 /// @stub	Figure out where to combine gbuffer outputs into a single result (here? before post process?)
 		shader_set(shd_finalize);
-		draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.out_opaque], 0, 0);
+		draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.out_translucent], 0, 0); /// @stub Transluscent because we are temporarily using it for FXAA
 		shader_reset();
 	}
 	super.mark("free");

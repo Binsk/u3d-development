@@ -64,7 +64,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			}
 			
-			// Data buffer, must write to disk to re-load as PNG
+			// Data buffer, must write to disk to re-load as PNG/JPG
 			if (string_lower(data.mimeType) != "image/png" and string_lower(data.mimeType) != "image/jpeg"){
 				Exception.throw_conditional(string_ext("unsupported mime type [{0}].", [data.mimeType]));
 				continue;
@@ -76,22 +76,22 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			}
 			
-			var ext = string_delete(data.mimeType, 1, 6);
-			buffer_save(buffer, "__import." + ext);
-			sprite = sprite_add("__import." + ext, 0, false, false, 0, 0);
+			// Save the image data to disk:
+			buffer_save(buffer, "__import");
+			sprite = sprite_add("__import", 0, false, false, 0, 0); // Load w/ GameMaker's function
 			
-			if (sprite < 0){
+			if (sprite < 0){ // If a problem, clean up and skip
 				buffer_delete(buffer);
-				file_delete("__import." + ext);
+				file_delete("__import");
 				
 				Exception.throw_conditional("failed to add sprite from buffer!");
 				continue;
 			}
 			
-			sprite_array[i] = sprite;
+			sprite_array[i] = sprite; // Add new sprite to our list for our material generation
 	
 			buffer_delete(buffer);
-			file_delete("__import." + ext);
+			file_delete("__import");
 		}
 		
 		// Next generate the material data:
