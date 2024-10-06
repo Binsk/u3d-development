@@ -1,6 +1,6 @@
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal]);
 
-var gltf = new GLTFBuilder("helmet.glb");
+var gltf = new GLTFBuilder("block.glb");
 // var gltf = new GLTFBuilder("ohelmet.gltf");
 box = gltf.generate_model(vformat);
 
@@ -14,7 +14,7 @@ light.set_casts_shadows(true); // Enable SSAO
 // light.set_ssao_properties(16, 1, 5, 1.0, 2, 1);
 camera = new Camera();
 body = new Body();
-body.set_scale(vec(4, 4, 4));
+// body.set_scale(vec(4, 4, 4));
 body.set_model(box);
 instance_create_depth(0, 0, 0, obj_render_controller);
 obj_render_controller.add_body(body);

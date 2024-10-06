@@ -62,15 +62,12 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 			return matrix_build_identity();
 		
 		var aspect = buffer_width / buffer_height;
-			// Auto FOV is subjective and arbitrary; this calculates a value I personally
-			// found pleasant for simple 3rd person games.
-		// if (is_undefined(fov))
-		// 	fov = max(lerp(110, 72, aspect), 10) + 10;
-			
 		var yfov = -2 * arctan(dtan(fov/2) * aspect);
 		
-		if (get_is_directx_pipeline())
+		if (get_is_directx_pipeline()){
 			aspect = -aspect;
+			yfov = -yfov;
+		}
 		
 		var h = 1 / tan(yfov * 0.5);
 		var w = h / aspect;
@@ -81,7 +78,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 			0, h, 0, 0,
 			0, 0, a, 1,
 			0, 0, b, 0
-			];
+		];
 		return matrix;
 	}
 	

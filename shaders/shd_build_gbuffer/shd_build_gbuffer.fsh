@@ -1,7 +1,7 @@
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sNormal;
 uniform sampler2D u_sPBR;
-uniform int[3] u_iSamplerToggles;
+uniform ivec3 u_iSamplerToggles;
 
 uniform vec4 u_vAlbedo;
 uniform vec3 u_vPBR;

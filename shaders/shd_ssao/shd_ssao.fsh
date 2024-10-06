@@ -17,9 +17,9 @@ float rand(vec2 vValue){
 void main() {
 	// Random sample vector to allow for noise
 	vec3 vRandom = normalize(vec3(
-		rand(gl_FragCoord.xy * 2.0),
-		rand(gl_FragCoord.xy * 3.0),
-		rand(gl_FragCoord.xy * 4.0)
+		rand(v_vTexcoord.xy * 2.0),
+		rand(v_vTexcoord.xy * 3.0),
+		rand(v_vTexcoord.xy * 4.0)
 	)); 
 	float fDepth = texture2D(u_sDepth, v_vTexcoord.xy).r;
 	vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord.xy).rgb * 2.0 - 1.0);
@@ -44,7 +44,7 @@ void main() {
 		// won't have occlusion
 		vec3 vSampleNormal = normalize(texture2D(u_sNormal, clamp(vHemiRay.xy, 0.0, 1.0)).xyz * 2.0 - 1.0);
 		vSampleNormal.y = -vSampleNormal.y;
-		float fDot = 1.0 - max(0, dot(vSampleNormal, vNormal)) * u_fNormalBias;
+		float fDot = 1.0 - max(0.0, dot(vSampleNormal, vNormal)) * u_fNormalBias;
 		 
 		fOcclusion += step(u_fFalloff, fDifference) * (1.0 - smoothstep(u_fFalloff, u_fArea, fDifference)) * fDot;
 	}
