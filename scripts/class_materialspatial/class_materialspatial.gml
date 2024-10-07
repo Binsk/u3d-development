@@ -101,7 +101,7 @@ function MaterialSpatial() : Material() constructor {
 			self.texture[$ label] = undefined;
 			return;
 		}
-
+		
 		self.texture[$ label] = {
 			texture : texture,
 			uv : texture_get_uvs(texture)

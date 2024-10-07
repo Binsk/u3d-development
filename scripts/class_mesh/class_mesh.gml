@@ -39,6 +39,8 @@ function Mesh() : U3DObject() constructor {
 			var material = material_data[$ material_index];
 			if (not is_undefined(material))
 				material.apply(camera_id);
+			else // Missing texture:
+				U3D.RENDERING.MATERIAL.missing_texture.apply(camera_id);
 				
 			render_primitive(i);
 		}

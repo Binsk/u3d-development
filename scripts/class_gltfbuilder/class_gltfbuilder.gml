@@ -355,6 +355,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = 0; i < count; ++i)
 			model.add_mesh(mesh_array[i]);
 		
+		// Add materials:
+		var material_array = generate_material_array();
+		for (var i = 0; i < array_length(material_array); ++i)
+			model.set_material(material_array[i], i);
+		
 		return model;
 	}
 	

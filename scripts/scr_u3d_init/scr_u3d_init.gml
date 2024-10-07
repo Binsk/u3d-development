@@ -7,12 +7,14 @@ var foo = new Exception();
 delete foo;
 #endregion
 
-U3D = {
+global.__u3d_global_data = {
 	RENDERING : {
 		MATERIAL : {
 			missing_texture : new MaterialSpatial()
 		}
 	}
 }
+
+#macro U3D global.__u3d_global_data
 
 U3D.RENDERING.MATERIAL.missing_texture.set_texture("albedo", sprite_get_texture(spr_missing_texture, 0));

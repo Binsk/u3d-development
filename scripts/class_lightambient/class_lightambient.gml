@@ -77,7 +77,6 @@ function LightAmbient() : Light() constructor {
 		if (ssao_strength <= 0)
 			return;
 			
-/// @stub	Implement SSAO here
 		if (uniform_ssao_sampler_depth < 0)
 			uniform_ssao_sampler_depth = shader_get_sampler_index(shader_ssao, "u_sDepth");
 		
