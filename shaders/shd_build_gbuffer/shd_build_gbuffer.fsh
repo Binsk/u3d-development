@@ -33,11 +33,17 @@ void main()
     else
         gl_FragData[0] = v_vColor * u_vAlbedo;
     
+    vec3 vNormal;
     if (u_iSamplerToggles[1] > 0) // Normals
 /// @stub   Need to convert to view space + combine w/ other normal
-        gl_FragData[1] = vec4(texture2D(u_sNormal, v_vTexcoordNormal).rgb, 1.0);
+        vNormal = texture2D(u_sNormal, v_vTexcoordNormal).rgb;
     else
-        gl_FragData[1] = vec4(v_vNormal * 0.5 + 0.5, 1.0);
+    	vNormal = v_vNormal * 0.5 + 0.5;
+    	
+    if (!gl_FrontFacing)
+		vNormal = -vNormal;
+		
+    gl_FragData[1] = vec4(vNormal.xyz, 1.0);
     
     if (u_iSamplerToggles[2] > 0) // PBR
 /// @stub	Allow storing specular in R channel; however some exports are filling it with garbage so we need a special toggle somewhere

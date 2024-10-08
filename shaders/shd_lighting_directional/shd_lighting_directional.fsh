@@ -90,9 +90,6 @@ void main()
     float fRoughness = vPBR.g;
     float fMetallic = vPBR.b;
     
-    if (!gl_FrontFacing) // Double-sided normal mapping
-        vNormal = -vNormal;
-   
    // Specular calculations:
     vec3 vHalf = normalize(vView + u_vLightNormal);
     /// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04

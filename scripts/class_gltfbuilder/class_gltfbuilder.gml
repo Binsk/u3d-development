@@ -109,7 +109,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var color_sprite = undefined;
 			var pbr_base = [1, 1, 1];
 			var pbr_sprite = undefined;
-			var cull_mode = cull_counterclockwise;
+			var cull_mode = (material_data[$ "doubleSided"] ?? false) ? cull_noculling : cull_counterclockwise;
 			
 			if (not is_undefined(pbr_data)){
 				color_base = pbr_data[$ "baseColorFactor"] ?? color_base;
@@ -131,9 +131,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				if (not is_undefined(pbr_data[$ "metallicFactor"]))
 					pbr_base[PBR_COLOR_INDEX.metalness] = pbr_data[$ "metallicFactor"];
 			}
-			
-			if (not is_undefined(material_data[$ "doubleSided"]))
-				cull_mode = (material_data[$ "doubleSided"] ? cull_noculling : cull_counterclockwise);
 /// @stub	Implement 'normal' texture
 
 			var material = new MaterialSpatial();

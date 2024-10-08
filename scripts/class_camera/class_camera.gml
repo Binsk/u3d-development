@@ -61,8 +61,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 		if (is_undefined(buffer_width)) // Cannot determine render size
 			return matrix_build_identity();
 		
-		var aspect = buffer_width / buffer_height;
-		var yfov = -2 * arctan(dtan(fov/2) * aspect);
+		var aspect = -buffer_width / buffer_height;
+		var yfov = 2 * arctan(dtan(fov/2) * aspect);
 		
 		if (get_is_directx_pipeline()){
 			aspect = -aspect;
