@@ -33,7 +33,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	buffer_width = undefined;
 	buffer_height = undefined;
 	self.znear = znear;
-	self.zfar = zfar;
+	self.zfar = zfar;	// y-FOV
 	self.fov = fov;
 	
 	gbuffer = {

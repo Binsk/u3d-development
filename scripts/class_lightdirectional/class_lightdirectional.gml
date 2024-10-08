@@ -50,8 +50,12 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
+		// texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sEnvironment"), sprite_get_texture(spr_default_environment_cube, 0));
+		// texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sDepth"), gbuffer[$ is_translucent ? CAMERA_GBUFFER.depth_opaque : CAMERA_GBUFFER.depth_opaque]);
 		
 		shader_set_uniform_i(uniform_translucent_pass, is_translucent);
+		// shader_set_uniform_matrix_array(shader_get_uniform(shader_lighting, "u_mInvView"), matrix_get_inverse(other.get_view_matrix()));
+		// shader_set_uniform_matrix_array(shader_get_uniform(shader_lighting, "u_mInvProj"), matrix_get_inverse(other.get_projection_matrix()));
 	}
 	
 	function apply(){

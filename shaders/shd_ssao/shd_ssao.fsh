@@ -7,6 +7,7 @@ uniform float u_fRadius;	// Sample radius in texels
 uniform float u_fStrength;	// Strength of the SSAO effect
 uniform float u_fArea;		// Area threshold for falloff vs occlusion
 uniform float u_fNormalBias;	// Larger will discard occlusion between fragments w/ similar normals
+uniform mat3 u_mView;		// View matrix, required for normal sampling
 
 varying vec2 v_vTexcoord;
 
@@ -23,7 +24,9 @@ void main() {
 	)); 
 	float fDepth = texture2D(u_sDepth, v_vTexcoord.xy).r;
 	vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord.xy).rgb * 2.0 - 1.0);
-	vNormal = -vNormal;
+	vec3 vNormalView = normalize(u_mView * vNormal);
+	vNormalView.y = -vNormalView.y;
+	
 	vec3 vPosition = vec3(v_vTexcoord.xy, fDepth);
 	float fRadiusDepth = u_fRadius / fDepth;
 	float fOcclusion = 0.0;
@@ -32,7 +35,7 @@ void main() {
 			// Note: We randomize the length multiplier by [0.25..1.0] than raise to a power
 			//		 to prioritize samples closer to our position.
 		vec3 vRay = vRandom * fRadiusDepth * pow(max(0.1, abs(rand(vRandom.yy))), 1.25);
-		vec3 vHemiRay = vPosition + sign(dot(vRay, vNormal)) * vRay; // Grab the final position; mirror the ray if pointing the wrong way
+		vec3 vHemiRay = vPosition + sign(dot(vRay, vNormalView)) * vRay; // Grab the final position; mirror the ray if pointing the wrong way
 		vRandom = normalize(vRandom + vec3(rand(vHemiRay.zx), rand(vRay.xz), rand(vHemiRay.yy)));
 		
 		float fOcclusionDepth = texture2D(u_sDepth, clamp(vHemiRay.xy, 0.0, 1.0)).r;
@@ -41,7 +44,6 @@ void main() {
 		// Sample normal and compare; if they are similar normals then we likely
 		// won't have occlusion
 		vec3 vSampleNormal = normalize(texture2D(u_sNormal, clamp(vHemiRay.xy, 0.0, 1.0)).xyz * 2.0 - 1.0);
-		vSampleNormal = -vSampleNormal;
 		float fDot = 1.0 - max(0.0, dot(vSampleNormal, vNormal)) * u_fNormalBias;
 		 
 		fOcclusion += step(u_fFalloff, fDifference) * (1.0 - smoothstep(u_fFalloff, u_fArea, fDifference)) * fDot;

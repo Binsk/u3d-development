@@ -5,7 +5,6 @@ uniform sampler2D u_sPBR;
 uniform vec3 u_vLightNormal;
 uniform vec3 u_vLightColor;
 uniform int u_iTranslucentPass; // Whether or not this is a translucent pass
-
 varying vec2 v_vTexcoord;
 
 #define vView vec3(0, 0, -1)
@@ -48,28 +47,82 @@ vec3 fresnel_schlick(float fCT, vec3 vF0){
     return vF0 + (1.0 - vF0) * pow(clamp(1.0 - fCT, 0.0, 1.0), 5.0);
 }
 
-// https://stackoverflow.com/questions/59411510/convert-sampler2d-into-samplercube
-/// Takes a 3D directional vector and converts it to a UV coordinate on a cube map
-vec2 cube_map_uv(vec3 vDirection){
-    vec2 vT = vec2(0, 0);
-    vDirection = normalize(vDirection) / sqrt(2.0);
-    vDirection.x = -vDirection.x;
-    vDirection.z = -vDirection.z;
-    vec3 vQ = abs(vDirection);
-    if (vQ.x >= vQ.y && vQ.x >= vQ.z){
-        vT.x = 0.5 - vDirection.z / vDirection.x;
-        vT.y = 0.5 - vDirection.y / vDirection.x;
+vec2 cube_uv(vec3 vNormal){
+    // Calculate which 'face' we are on:
+    vec3 vAbs = abs(vNormal);
+    vec2 vUV = vec2(0);
+    int iFaceIndex = 0; // X+, X-, Y+, Y-, Z+, Z-
+    float fMa;
+    if (vAbs.z >= vAbs.x && vAbs.z >= vAbs.y){
+        iFaceIndex = vNormal.z < 0.0 ? 5 : 4;
+        fMa = 0.5 / vAbs.z;
+        vUV.x = (vNormal.z < 0.0 ? -vNormal.x : vNormal.x);
+        vUV.y = -vNormal.y;
     }
-    else if (vQ.y >= vQ.x && vQ.y >= vQ.z){
-        vT.x = 0.5 - vDirection.x / vDirection.y;
-        vT.y = 0.5 - vDirection.z / vDirection.y;
+    else if (vAbs.y >= vAbs.x){
+        iFaceIndex = vNormal.y < 0.0 ? 3 : 2;
+        fMa = 0.5 / vAbs.y;
+        vUV.x = vNormal.x;
+        vUV.y = (vNormal.y < 0.0 ? -vNormal.z : vNormal.z);
     }
     else {
-        vT.x = 0.5 - vDirection.x / vDirection.z;
-        vT.y = 0.5 - vDirection.z / vDirection.z;
+        iFaceIndex = vNormal.x < 0.0 ? 1 : 0;
+        fMa = 0.5 / vAbs.x;
+        vUV.x = (vNormal.x < 0.0 ? vNormal.z : -vNormal.z);
+        vUV.y = -vNormal.y;
     }
-    return vT;
+    vUV = vUV * fMa + 0.5;
+    
+    // Scale and map to single texture:
+    float fDX = 0.25;
+    float fDY = 1.0 / 3.0;
+    vUV = vUV * vec2(fDX, fDY);
+    if (iFaceIndex == 0)            // +X
+        vUV += vec2(fDX, fDY);
+    else if (iFaceIndex == 1)       // -X
+        vUV += vec2(fDX * 3.0, fDY);
+    else if (iFaceIndex == 2)       // +Y
+        vUV += vec2(fDX, 0.0);
+    else if (iFaceIndex == 3)       // -Y
+        vUV += vec2(fDX, fDY * 2.0);
+    else if (iFaceIndex == 4)       // +Z
+        vUV += vec2(fDX * 2.0, fDY);
+    else                            // -Z
+        vUV += vec2(0.0, fDX);
+    
+    return vUV;
 }
+
+// https://stackoverflow.com/questions/59411510/convert-sampler2d-into-samplercube
+/// Takes a 3D directional vector and converts it to a UV coordinate on a cube map
+// vec2 cube_map_uv(vec3 vDirection){
+//     vec2 vT = vec2(0, 0);
+//     vDirection = normalize(vDirection) / sqrt(2.0);
+//     vDirection.x = -vDirection.x;
+//     vDirection.z = -vDirection.z;
+//     vec3 vQ = abs(vDirection);
+//     if (vQ.x >= vQ.y && vQ.x >= vQ.z){
+//         vT.x = 0.5 - vDirection.z / vDirection.x;
+//         vT.y = 0.5 - vDirection.y / vDirection.x;
+//     }
+//     else if (vQ.y >= vQ.x && vQ.y >= vQ.z){
+//         vT.x = 0.5 - vDirection.x / vDirection.y;
+//         vT.y = 0.5 - vDirection.z / vDirection.y;
+//     }
+//     else {
+//         vT.x = 0.5 - vDirection.x / vDirection.z;
+//         vT.y = 0.5 - vDirection.z / vDirection.z;
+//     }
+//     return vT;
+// }
+
+// vec4 depth_to_view(float fDepth){
+//     float fZ = fDepth * 2.0 - 1.0;
+//     vec4 vClip = vec4(v_vTexcoord.xy * 2.0 - 1.0, fZ, 1.0);
+//     vec4 vViewPos = u_mInvProj * vClip;
+//     vViewPos /= vViewPos.w;
+//     return vViewPos;
+// }
 
 void main()
 {

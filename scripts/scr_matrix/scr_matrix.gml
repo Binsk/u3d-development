@@ -282,3 +282,13 @@ function matrix_multiply_post(){
 	
 	return result;
 }
+
+/// @desc	Converts a 4x4 GameMaker matrix into a 3x3 matrix, used to pass in
+///			to a shader.
+function matrix_to_matrix3(matrix){
+	return [
+		matrix[0], matrix[1], matrix[2],
+		matrix[4], matrix[5], matrix[6],
+		matrix[8], matrix[9], matrix[10]
+	];
+}

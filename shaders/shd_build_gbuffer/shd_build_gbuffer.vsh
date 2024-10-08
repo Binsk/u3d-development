@@ -19,7 +19,7 @@ void main()
     vec4 vPosition = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);
     v_vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     gl_Position = v_vPosition;
-    v_vNormal = normalize((gm_Matrices[MATRIX_WORLD_VIEW] * vec4(in_Normal.rgb, 0.0)).rgb);
+    v_vNormal = normalize((gm_Matrices[MATRIX_WORLD] * vec4(in_Normal.rgb, 0.0)).rgb);
     
     v_vColor = in_Colour;
     v_vTexcoordAlbedo = mix(u_vAlbedoUV.xy, u_vAlbedoUV.zw, in_TextureCoord0);

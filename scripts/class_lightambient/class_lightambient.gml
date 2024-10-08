@@ -40,6 +40,7 @@ function LightAmbient() : Light() constructor {
 	uniform_ssao_strength = -1;
 	uniform_ssao_area = -1;
 	uniform_ssao_normal_bias = -1;
+	uniform_ssao_view_matrix = -1;
 	#endregion
 	#endregion
 	
@@ -100,7 +101,10 @@ function LightAmbient() : Light() constructor {
 			uniform_ssao_area = shader_get_uniform(shader_ssao, "u_fArea");
 		
 		if (uniform_ssao_normal_bias < 0)
-			uniform_ssao_normal_bias = shader_get_uniform(shader_ssao, "u_fNormalBias")
+			uniform_ssao_normal_bias = shader_get_uniform(shader_ssao, "u_fNormalBias");
+		
+		if (uniform_ssao_view_matrix < 0)
+			uniform_ssao_view_matrix = shader_get_uniform(shader_ssao, "u_mView");
 
 		if (not surface_exists(surface_ssao))
 			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, surface_r32float);
@@ -115,6 +119,7 @@ function LightAmbient() : Light() constructor {
 		shader_set_uniform_f(uniform_ssao_strength, ssao_strength);
 		shader_set_uniform_f(uniform_ssao_area, lerp(0.1, 0.0075, ssao_strength));
 		shader_set_uniform_f(uniform_ssao_normal_bias, ssao_normal_bias);
+		shader_set_uniform_f_array(uniform_ssao_view_matrix, matrix_to_matrix3(camera_id.get_view_matrix()));
 		texture_set_stage(uniform_ssao_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque]);
 		texture_set_stage(uniform_ssao_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		
