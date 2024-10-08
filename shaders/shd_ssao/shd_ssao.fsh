@@ -23,9 +23,7 @@ void main() {
 	)); 
 	float fDepth = texture2D(u_sDepth, v_vTexcoord.xy).r;
 	vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord.xy).rgb * 2.0 - 1.0);
-/// @stub	Not sure why the vNormal needs the y-axis inverted? See the GBUFFER shader
-///			for more info, though.
-	vNormal.y = -vNormal.y;
+	vNormal = -vNormal;
 	vec3 vPosition = vec3(v_vTexcoord.xy, fDepth);
 	float fRadiusDepth = u_fRadius / fDepth;
 	float fOcclusion = 0.0;
@@ -43,7 +41,7 @@ void main() {
 		// Sample normal and compare; if they are similar normals then we likely
 		// won't have occlusion
 		vec3 vSampleNormal = normalize(texture2D(u_sNormal, clamp(vHemiRay.xy, 0.0, 1.0)).xyz * 2.0 - 1.0);
-		vSampleNormal.y = -vSampleNormal.y;
+		vSampleNormal = -vSampleNormal;
 		float fDot = 1.0 - max(0.0, dot(vSampleNormal, vNormal)) * u_fNormalBias;
 		 
 		fOcclusion += step(u_fFalloff, fDifference) * (1.0 - smoothstep(u_fFalloff, u_fArea, fDifference)) * fDot;

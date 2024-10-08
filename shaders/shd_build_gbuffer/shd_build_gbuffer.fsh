@@ -40,7 +40,8 @@ void main()
         gl_FragData[1] = vec4(v_vNormal * 0.5 + 0.5, 1.0);
     
     if (u_iSamplerToggles[2] > 0) // PBR
-        gl_FragData[2] = vec4(texture2D(u_sPBR, v_vTexcoordPBR).rgb * u_vPBR, 1.0);
+/// @stub	Allow storing specular in R channel; however some exports are filling it with garbage so we need a specual toggle
+        gl_FragData[2] = vec4(vec3(1.0, texture2D(u_sPBR, v_vTexcoordPBR).gb) * u_vPBR, 1.0);
     else
         gl_FragData[2] = vec4(u_vPBR, 1.0);
        

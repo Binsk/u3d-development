@@ -6,6 +6,9 @@ function array_duplicate_shallow(array, offset=0, count=-1){
 	if (count < 0)
 		count = array_length(array) - offset;
 	
+	if (count == 0)
+		return [];
+	
 	var narray = array_create(count);
 	var nindex = count - 1;
 	

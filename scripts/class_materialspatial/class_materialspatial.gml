@@ -164,7 +164,7 @@ function MaterialSpatial() : Material() constructor {
 			shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
 			sampler_toggles[2] = 1;
 		}
-		
+
 		// Set samplers; if no texture then the values are used directly otherwise they are multiplied
 		shader_set_uniform_i_array(uniform_gbuffer_sampler_toggles, sampler_toggles);
 		

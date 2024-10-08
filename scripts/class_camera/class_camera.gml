@@ -11,7 +11,7 @@ enum CAMERA_GBUFFER {
 	depth_opaque,			// Depth map; taken from albedo
 	depth_translucent,	
 	normal,					// Normal map (rgba8unorm)
-	pbr,					// PBR properties (rgba8unorm); roughness, metallic, specularity (alpha unused)
+	pbr,					// PBR properties (rgba8unorm); R: specular, G: roughness, B: metallic
 	
 	out_opaque,				// Out surface (rgba8unorm/rgba16float) of lighting pass
 	out_translucent
@@ -247,7 +247,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 ///			lights into the shader
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.out_opaque + is_translucent]);
 		draw_clear(c_black);
-		gpu_set_blendmode(bm_normal);
+		gpu_set_blendmode(bm_add);
 		for (var i = array_length(light_array) - 1; i >= 0; --i){
 			var light = light_array[i];
 			if (is_undefined(light.get_shader())) // Invalid light

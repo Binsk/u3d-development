@@ -20,10 +20,6 @@ void main()
     v_vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     gl_Position = v_vPosition;
     v_vNormal = normalize((gm_Matrices[MATRIX_WORLD_VIEW] * vec4(in_Normal.rgb, 0.0)).rgb);
-/// @stub   These two axes are somehow backwards? Flipping them results in the expected
-///         color directions.
-    v_vNormal.x = -v_vNormal.x;
-    v_vNormal.z = -v_vNormal.z;
     
     v_vColor = in_Colour;
     v_vTexcoordAlbedo = mix(u_vAlbedoUV.xy, u_vAlbedoUV.zw, in_TextureCoord0);

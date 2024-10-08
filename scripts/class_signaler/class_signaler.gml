@@ -154,6 +154,7 @@ function Callable(_instance, _function, argv=[]) constructor {
 		#region PROPERTIES
 		method_ref = method(_instance, _function);
 		identifier = "";
+		self.argv = argv;
 		#endregion
 		
 		#region METHODS

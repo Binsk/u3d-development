@@ -3,4 +3,5 @@
 2. Textures not on 'own texture page' not rendering right
 
 # TODO
-2. [widows] address multple 'attribute' inputs for shaders
+1. [widows] address multple 'attribute' inputs for shaders
+2. Add 'render layers' to Body() for lighting & camera reasons

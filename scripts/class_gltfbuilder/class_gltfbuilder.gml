@@ -107,28 +107,49 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			// Defaults:
 			var color_base = [1, 1, 1, 1];
 			var color_sprite = undefined;
+			var pbr_base = [1, 1, 1];
+			var pbr_sprite = undefined;
 			
 			if (not is_undefined(pbr_data)){
 				color_base = pbr_data[$ "baseColorFactor"] ?? color_base;
+				// Albedo Texture
 				if (not is_undefined(pbr_data[$ "baseColorTexture"])){
 /// @stub	Add support for pulling the texture UV index?
 					var texture_index = get_structure(pbr_data[$ "baseColorTexture"].index, "textures").source;
 					color_sprite = sprite_array[texture_index];
 				}
-/// @stub	Implement metallic, etc
+				// PBR Texture
+				if (not is_undefined(pbr_data[$ "metallicRoughnessTexture"])){
+					var texture_index = get_structure(pbr_data[$ "metallicRoughnessTexture"].index, "textures").source;
+					pbr_sprite = sprite_array[texture_index];
+				}
+				// PBR Factors (note, specular is always 1):
+				if (not is_undefined(pbr_data[$ "roughnessFactor"]))
+					pbr_base[PBR_COLOR_INDEX.roughness] = pbr_data[$ "roughnessFactor"];
+				
+				if (not is_undefined(pbr_data[$ "metallicFactor"]))
+					pbr_base[PBR_COLOR_INDEX.metalness] = pbr_data[$ "metallicFactor"];
 			}
 			
+/// @stub	Implement 'normal' texture
+
 			var material = new MaterialSpatial();
 			if (not is_undefined(color_sprite))
 				material.set_texture("albedo", sprite_get_texture(color_sprite, 0));
+			if (not is_undefined(pbr_sprite))
+				material.set_texture("pbr", sprite_get_texture(pbr_sprite, 0));
 				
 			material.scalar.albedo = color_base;
+			material.scalar.pbr = pbr_base;
 			
 			// Attach free method to free up sprites as needed:
 			material.signaler.add_signal("free", new Callable(material, function(albedo){
 				if (not is_undefined(color_sprite))
 					sprite_delete(color_sprite);
-			}, [color_sprite]))
+				
+				if (not is_undefined(pbr_sprite))
+					sprite_delete(pbr_sprite);
+			}, [color_sprite, pbr_sprite]))
 			
 			material_array[i] = material;
 		}
