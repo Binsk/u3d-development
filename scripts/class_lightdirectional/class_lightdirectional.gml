@@ -57,7 +57,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	function apply(){
 		// Convert light data into view space as that is where we calculate everything
 		var light_normal_view = matrix_transform_vertex(other.get_view_matrix(), light_normal.x, light_normal.y, light_normal.z, 0.0);
-		shader_set_uniform_f(uniform_normal, -light_normal_view[0], -light_normal_view[1], -light_normal_view[2]);
+		light_normal_view = vec_normalize(vec(-light_normal_view[0], -light_normal_view[1], -light_normal_view[2]));
+		shader_set_uniform_f(uniform_normal, light_normal_view.x, light_normal_view.y, light_normal_view.z);
 		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255)
 	}
 

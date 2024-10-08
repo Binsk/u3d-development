@@ -11,9 +11,9 @@ enum CAMERA_GBUFFER {
 	depth_opaque,			// Depth map; taken from albedo
 	depth_translucent,	
 	normal,					// Normal map (rgba8unorm)
-	pbr,					// PBR properties (rgba8unorm); R: specular, G: roughness, B: metallic
+	pbr,					// PBR properties (rgba8unorm); R: specular, G: roughness, B: metal
 	
-	out_opaque,				// Out surface (rgba8unorm/rgba16float) of lighting pass
+	out_opaque,				// Out surface (rgba16float) of lighting pass
 	out_translucent
 }
 
@@ -160,12 +160,12 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 		}
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.out_opaque])){
-			surfaces[$ CAMERA_GBUFFER.out_opaque] = surface_create(buffer_width, buffer_height, sign(tonemap) ? surface_rgba16float : surface_rgba8unorm);
+			surfaces[$ CAMERA_GBUFFER.out_opaque] = surface_create(buffer_width, buffer_height, surface_rgba16float);
 			textures[$ CAMERA_GBUFFER.out_opaque] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.out_opaque]);
 		}
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.out_translucent])){
-			surfaces[$ CAMERA_GBUFFER.out_translucent] = surface_create(buffer_width, buffer_height, sign(tonemap) ? surface_rgba16float : surface_rgba8unorm);
+			surfaces[$ CAMERA_GBUFFER.out_translucent] = surface_create(buffer_width, buffer_height, surface_rgba16float);
 			textures[$ CAMERA_GBUFFER.out_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.out_translucent]);
 		}
 		surface_depth_disable(false);

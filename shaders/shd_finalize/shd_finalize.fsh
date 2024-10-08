@@ -13,5 +13,11 @@ vec4 to_srgb(vec4 vColor){
 
 void main()
 {
-    gl_FragColor = to_srgb(texture2D(gm_BaseTexture, v_vTexcoord));
+	// gl_FragColor = to_srgb(vColor);
+	
+	vec4 vColor = texture2D(gm_BaseTexture, v_vTexcoord);
+	vColor.rgb /= vColor.rgb + vec3(1.0);
+	vColor.rgb = pow(vColor.rgb, vec3(1.0 / 2.2));
+	
+    gl_FragColor = vColor;
 }

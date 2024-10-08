@@ -9,6 +9,7 @@ uniform int u_iTranslucentPass; // Whether or not this is a translucent pass
 varying vec2 v_vTexcoord;
 
 #define vView vec3(0, 0, -1)
+#define fPI 3.1415926535897932384626433
 
 // https://learnopengl.com/PBR/Lighting
 float distribution_ggx(vec3 vNormal, vec3 vHalf, float fRoughness){
@@ -19,7 +20,7 @@ float distribution_ggx(vec3 vNormal, vec3 vHalf, float fRoughness){
     
     float fNumerator = fA2;
     float fDenominator = fNdotH2 * (fA2 - 1.0) + 1.0;
-    fDenominator = 3.14159 * fDenominator * fDenominator;
+    fDenominator = fPI * fDenominator * fDenominator;
     
     return fNumerator / fDenominator;
 }
@@ -47,6 +48,29 @@ vec3 fresnel_schlick(float fCT, vec3 vF0){
     return vF0 + (1.0 - vF0) * pow(clamp(1.0 - fCT, 0.0, 1.0), 5.0);
 }
 
+// https://stackoverflow.com/questions/59411510/convert-sampler2d-into-samplercube
+/// Takes a 3D directional vector and converts it to a UV coordinate on a cube map
+vec2 cube_map_uv(vec3 vDirection){
+    vec2 vT = vec2(0, 0);
+    vDirection = normalize(vDirection) / sqrt(2.0);
+    vDirection.x = -vDirection.x;
+    vDirection.z = -vDirection.z;
+    vec3 vQ = abs(vDirection);
+    if (vQ.x >= vQ.y && vQ.x >= vQ.z){
+        vT.x = 0.5 - vDirection.z / vDirection.x;
+        vT.y = 0.5 - vDirection.y / vDirection.x;
+    }
+    else if (vQ.y >= vQ.x && vQ.y >= vQ.z){
+        vT.x = 0.5 - vDirection.x / vDirection.y;
+        vT.y = 0.5 - vDirection.z / vDirection.y;
+    }
+    else {
+        vT.x = 0.5 - vDirection.x / vDirection.z;
+        vT.y = 0.5 - vDirection.z / vDirection.z;
+    }
+    return vT;
+}
+
 void main()
 {
     vec4 vAlbedo = texture2D(u_sAlbedo, v_vTexcoord);
@@ -59,7 +83,7 @@ void main()
             vAlbedo.a = 1.0;
     }
     
-    vec3 vNormal = texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0;
+    vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
     vec3 vPBR = texture2D(u_sPBR, v_vTexcoord).rgb; // Spec, Rough, Met
     
     float fSpecular = vPBR.r;
@@ -70,22 +94,23 @@ void main()
         vNormal = -vNormal;
    
    // Specular calculations:
-   vec3 vHalf = normalize(vView + u_vLightNormal);
-/// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04
-   vec3 vF0 = vec3(0.04);
-   vF0 = mix(vF0, vAlbedo.rgb, fMetallic);
-   vec3 vRadiance = u_vLightColor;  // Always the color, as directional doesn't have attenuation
-   float fNDF = distribution_ggx(vNormal, vHalf, fRoughness);
-   float fG = geometry_smith(vNormal, u_vLightNormal, fRoughness);
-   vec3 vF = fresnel_schlick(max(dot(vHalf, vView), 0.0), vF0);
-   
-   vec3 vKS = vF;
-   vec3 vKD = vec3(1.0) - vKS;
-   vec3 vNumerator = fNDF * fG * vF;
-   float fDenominator = 4.0 * max(dot(vNormal, vView), 0.0) * max(dot(vNormal, u_vLightNormal), 0.0) + 0.0001;
-   vec3 vSpecular = vNumerator / fDenominator;
-   float fNdotL = max(dot(vNormal, u_vLightNormal), 0.0);
-   vAlbedo.rgb = (vKD * vAlbedo.rgb / 3.14159 + vSpecular) * vRadiance * fNdotL;
-   
-   gl_FragColor = vAlbedo;
+    vec3 vHalf = normalize(vView + u_vLightNormal);
+    /// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04
+    vec3 vF0 = vec3(0.04);
+    vF0 = mix(vF0, vAlbedo.rgb, fMetallic);
+    vec3 vRadiance = u_vLightColor;  // Always the color, as directional doesn't have attenuation
+    float fNDF = distribution_ggx(vNormal, vHalf, fRoughness);
+    float fG = geometry_smith(vNormal, u_vLightNormal, fRoughness);
+    vec3 vF = fresnel_schlick(max(dot(vHalf, vView), 0.0), vF0);
+    
+/// @stub   Add support for cube-mapping (even if just environment)
+    vec3 vKD = mix(vec3(1.0) - vF, vec3(0.0), fMetallic);
+    // vec3 vKD = vec3(1.0) - vF; // <- Simplified; still adds color w/ metallic
+    vec3 vNumerator = fNDF * fG * vF;
+    float fDenominator = 4.0 * max(dot(vNormal, vView), 0.0) * max(dot(vNormal, u_vLightNormal), 0.0);
+    vec3 vSpecular = vNumerator / max(fDenominator, 0.00001);
+    float fNdotL = max(dot(vNormal, u_vLightNormal), 0.0);
+    vAlbedo.rgb = (vKD * vAlbedo.rgb / fPI + vSpecular) * vRadiance * fNdotL;
+    
+    gl_FragColor = vAlbedo;
 }

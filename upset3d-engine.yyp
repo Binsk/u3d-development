@@ -43,6 +43,7 @@
     {"$GMIncludedFile":"","%Name":"Image_4.jpg","CopyToMask":-1,"filePath":"datafiles","name":"Image_4.jpg","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"ohelmet.bin","CopyToMask":-1,"filePath":"datafiles","name":"ohelmet.bin","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"ohelmet.gltf","CopyToMask":-1,"filePath":"datafiles","name":"ohelmet.gltf","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"sphere.glb","CopyToMask":-1,"filePath":"datafiles","name":"sphere.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],
   "isEcma":false,
   "LibraryEmitters":[],

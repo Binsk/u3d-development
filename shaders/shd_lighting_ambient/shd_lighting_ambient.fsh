@@ -1,5 +1,6 @@
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sSSAO;
+uniform sampler2D u_sPBR;
 
 uniform vec3 u_vAlbedo;
 uniform int u_iSSAO;            // Whether or not we have SSAO enabled
@@ -37,5 +38,7 @@ void main()
     if (u_iSSAO > 0)
         fSSAO = sample_ssao(u_iBlurSamples);
         
+/// @stub   Add cube-mapping and whatnot for specularity simulation
+    vAlbedo.rgb = mix(vAlbedo.rgb, vec3(0), texture2D(u_sPBR, v_vTexcoord).b); // <- Temp just to help make it match the directional lighting
     gl_FragColor = vec4(vAlbedo.rgb * u_vAlbedo * u_fIntensity * fSSAO, vAlbedo.a);
 }

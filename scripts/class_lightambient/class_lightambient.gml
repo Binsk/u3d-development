@@ -23,6 +23,7 @@ function LightAmbient() : Light() constructor {
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_albedo = -1;
+	uniform_sampler_pbr = -1;
 	uniform_sampler_ssao = -1;
 	uniform_ssao = -1;
 	uniform_albedo = -1;
@@ -131,6 +132,9 @@ function LightAmbient() : Light() constructor {
 	function apply_gbuffer(gbuffer, is_translucent=false){
 		if (uniform_sampler_albedo < 0)
 			uniform_sampler_albedo = shader_get_sampler_index(shader_lighting, "u_sAlbedo");
+		
+		if (uniform_sampler_pbr < 0)
+			uniform_sampler_pbr = shader_get_sampler_index(shader_lighting, "u_sPBR");
 			
 		if (uniform_sampler_ssao < 0)
 			uniform_sampler_ssao = shader_get_sampler_index(shader_lighting, "u_sSSAO");
@@ -154,6 +158,7 @@ function LightAmbient() : Light() constructor {
 			uniform_blur_stride = shader_get_uniform(shader_lighting, "u_fBlurStride");
 		
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
+		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
 		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0){
 			texture_set_stage(uniform_sampler_ssao, surface_get_texture(surface_ssao));
 			shader_set_uniform_f(uniform_texel_size, 1.0 / surface_get_width(surface_ssao), 1.0 / surface_get_height(surface_ssao));

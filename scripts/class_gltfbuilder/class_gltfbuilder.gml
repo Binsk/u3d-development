@@ -109,6 +109,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var color_sprite = undefined;
 			var pbr_base = [1, 1, 1];
 			var pbr_sprite = undefined;
+			var cull_mode = cull_counterclockwise;
 			
 			if (not is_undefined(pbr_data)){
 				color_base = pbr_data[$ "baseColorFactor"] ?? color_base;
@@ -131,6 +132,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					pbr_base[PBR_COLOR_INDEX.metalness] = pbr_data[$ "metallicFactor"];
 			}
 			
+			if (not is_undefined(material_data[$ "doubleSided"]))
+				cull_mode = (material_data[$ "doubleSided"] ? cull_noculling : cull_counterclockwise);
 /// @stub	Implement 'normal' texture
 
 			var material = new MaterialSpatial();
@@ -138,9 +141,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				material.set_texture("albedo", sprite_get_texture(color_sprite, 0));
 			if (not is_undefined(pbr_sprite))
 				material.set_texture("pbr", sprite_get_texture(pbr_sprite, 0));
+			
 				
 			material.scalar.albedo = color_base;
 			material.scalar.pbr = pbr_base;
+			material.cull_mode = cull_mode;
 			
 			// Attach free method to free up sprites as needed:
 			material.signaler.add_signal("free", new Callable(material, function(albedo){

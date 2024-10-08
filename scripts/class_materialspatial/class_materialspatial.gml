@@ -55,6 +55,7 @@ function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
 	// Default shaders:
 	shader_gbuffer = undefined;
+	cull_mode = cull_noculling;
 	
 	// Textures
 	texture = {
@@ -173,6 +174,7 @@ function MaterialSpatial() : Material() constructor {
 		shader_set_uniform_f(uniform_gbuffer_pbr_scalar, scalar.pbr[PBR_COLOR_INDEX.specular], scalar.pbr[PBR_COLOR_INDEX.roughness], scalar.pbr[PBR_COLOR_INDEX.metalness]);
 		
 		shader_set_uniform_f(uniform_gbuffer_zscalar, camera_id.zfar - camera_id.znear);
+		gpu_set_cullmode(cull_mode);
 	}
 	
 	function duplicate(){
