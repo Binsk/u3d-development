@@ -164,6 +164,14 @@ function LightAmbient() : Light() constructor {
 		
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
+		texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sDepth"), gbuffer[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+		texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sNormal"), gbuffer[$ CAMERA_GBUFFER.normal]);
+		texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sEnvironment"), sprite_get_texture(spr_default_environment_cube, 1));
+		
+		shader_set_uniform_matrix_array(shader_get_uniform(shader_lighting, "u_mInvProj"), matrix_get_inverse(other.get_projection_matrix()));
+		shader_set_uniform_matrix_array(shader_get_uniform(shader_lighting, "u_mInvView"), matrix_get_inverse(other.get_view_matrix()));
+		shader_set_uniform_f(shader_get_uniform(shader_lighting, "u_vCamPosition"), other.position.x, other.position.y, other.position.z);
+		
 		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0){
 			texture_set_stage(uniform_sampler_ssao, surface_get_texture(surface_ssao));
 			shader_set_uniform_f(uniform_texel_size, 1.0 / surface_get_width(surface_ssao), 1.0 / surface_get_height(surface_ssao));
