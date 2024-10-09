@@ -132,6 +132,7 @@ void main()
     
     float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
     vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition); // View vector in world space
+    vView = -vView;
     vec3 vHalf = normalize(vView + u_vLightNormal);
     
         // Calculate environment reflections, if enabled:

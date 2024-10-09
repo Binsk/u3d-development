@@ -135,9 +135,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 
 			var material = new MaterialSpatial();
 			if (not is_undefined(color_sprite))
-				material.set_texture("albedo", sprite_get_texture(color_sprite, 0));
+				material.set_texture("albedo", new Texture2D(sprite_get_texture(color_sprite, 0)));
 			if (not is_undefined(pbr_sprite))
-				material.set_texture("pbr", sprite_get_texture(pbr_sprite, 0));
+				material.set_texture("pbr", new Texture2D(sprite_get_texture(pbr_sprite, 0)));
 			
 				
 			material.scalar.albedo = color_base;

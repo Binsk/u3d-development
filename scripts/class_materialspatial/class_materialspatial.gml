@@ -96,6 +96,9 @@ function MaterialSpatial() : Material() constructor {
 	/// @desc	Sets the texture for the specified label (see constructor). Texture
 	///			must be a valid texture, -1, or undefined.
 	function set_texture(label, texture){
+		if (not is_instanceof(texture, Texture2D) and not is_undefined(texture))
+			throw new Exception("invalid type, expected [Texture2D]!");
+			
 		label = string_lower(label);
 		
 		if (is_undefined(texture) or texture < 0){ // Wipe the texture if unset
@@ -105,7 +108,7 @@ function MaterialSpatial() : Material() constructor {
 		
 		self.texture[$ label] = {
 			texture : texture,
-			uv : texture_get_uvs(texture)
+			uv : texture_get_uvs(texture.get_texture())
 		};
 	}
 	
@@ -149,19 +152,19 @@ function MaterialSpatial() : Material() constructor {
 		// Send textures
 		var sampler_toggles = [0, 0, 0];
 		if (uniform_gbuffer_sampler_albedo >= 0 and not is_undefined(texture[$ "albedo"])){
-			texture_set_stage(uniform_gbuffer_sampler_albedo, texture.albedo.texture);
+			texture_set_stage(uniform_gbuffer_sampler_albedo, texture.albedo.texture.get_texture());
 			shader_set_uniform_f(uniform_gbuffer_albedo_uv, texture.albedo.uv[0], texture.albedo.uv[1], texture.albedo.uv[2], texture.albedo.uv[3]);
 			sampler_toggles[0] = 1;
 		}
 		
 		if (uniform_gbuffer_sampler_normal >= 0 and not is_undefined(texture[$ "normal"])){
-			texture_set_stage(uniform_gbuffer_sampler_normal, texture.normal.texture);
+			texture_set_stage(uniform_gbuffer_sampler_normal, texture.normal.texture.get_texture());
 			shader_set_uniform_f(uniform_gbuffer_normal_uv, texture.normal.uv[0], texture.normal.uv[1], texture.normal.uv[2], texture.normal.uv[3]);
 			sampler_toggles[1] = 1;
 		}
 		
 		if (uniform_gbuffer_sampler_pbr >= 0 and not is_undefined(texture[$ "pbr"])){
-			texture_set_stage(uniform_gbuffer_sampler_pbr, texture.pbr.texture);
+			texture_set_stage(uniform_gbuffer_sampler_pbr, texture.pbr.texture.get_texture());
 			shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
 			sampler_toggles[2] = 1;
 		}

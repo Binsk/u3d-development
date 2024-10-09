@@ -35,7 +35,13 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 /// @stub
 	}
 	
+	/// @desc	Sets an environment texture to be used for reflections. If set to anything
+	///			other than 'undefined' environmental mapping will be enabled for this light.
+	/// @param	{TextureCube}	texture=undefined		a TextureCube texture, specifying the cube-map to use
 	function set_environment_texture(texture=undefined){
+		if (not is_undefined(texture) and not is_instanceof(texture, TextureCube))
+			throw new Exception("invalid type, expected [TextureCube]!");
+			
 		texture_environment = texture;
 	}
 	
@@ -87,7 +93,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(other.get_projection_matrix()));
 		
 		if (not is_undefined(texture_environment)){
-			texture_set_stage(uniform_sampler_depth, texture_environment);
+			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			shader_set_uniform_i(uniform_environment, true);
 		}
 		else

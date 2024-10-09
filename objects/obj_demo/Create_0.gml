@@ -12,17 +12,19 @@ instance_create_depth(0, 0, 0, obj_render_controller);
 obj_render_controller.add_body(body);
 obj_render_controller.add_camera(camera);
 
+environment_map = new TextureCube(sprite_get_texture(spr_default_environment_cube, 1));
+
 light = new LightAmbient();
 light.set_casts_shadows(true); // Enable SSAO
 light.ssao_strength = 1.25;
-light.set_environment_texture(sprite_get_texture(spr_default_environment_cube, 1));
+light.set_environment_texture(environment_map);
 light.ssao_normal_bias = 0.5;
 light.intensity = 0.25;
 obj_render_controller.add_light(light);
 
 lightd = new LightDirectional(quat(), vec(5, 6, 7));
 lightd.look_at(vec());
-lightd.set_environment_texture(sprite_get_texture(spr_default_environment_cube, 1));
+lightd.set_environment_texture(environment_map);
 obj_render_controller.add_light(lightd);
 
 distance = 10;

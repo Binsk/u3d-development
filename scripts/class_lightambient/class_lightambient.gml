@@ -77,7 +77,13 @@ function LightAmbient() : Light() constructor {
 		set_casts_shadows(enabled);
 	}
 	
+	/// @desc	Sets an environment texture to be used for reflections. If set to anything
+	///			other than 'undefined' environmental mapping will be enabled for this light.
+	/// @param	{TextureCube}	texture=undefined		a TextureCube texture, specifying the cube-map to use
 	function set_environment_texture(texture=undefined){
+		if (not is_undefined(texture) and not is_instanceof(texture, TextureCube))
+			throw new Exception("invalid type, expected [TextureCube]!");
+			
 		texture_environment = texture;
 	}
 	
@@ -201,7 +207,7 @@ function LightAmbient() : Light() constructor {
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
 			texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
-			texture_set_stage(uniform_sampler_environment, texture_environment);
+			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			shader_set_uniform_i(uniform_environment, true);
 		}
 		else

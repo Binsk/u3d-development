@@ -17,4 +17,4 @@ global.__u3d_global_data = {
 
 #macro U3D global.__u3d_global_data
 
-U3D.RENDERING.MATERIAL.missing_texture.set_texture("albedo", sprite_get_texture(spr_missing_texture, 0));
+U3D.RENDERING.MATERIAL.missing_texture.set_texture("albedo", new Texture2D(sprite_get_texture(spr_missing_texture, 0)));
