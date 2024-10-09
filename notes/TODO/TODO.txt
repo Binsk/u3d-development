@@ -1,6 +1,8 @@
 # FIXME
 1. [windows] ssao is pure white
 2. Textures not on 'own texture page' not rendering right
+3. Convert remaining 'on-the-fly' uniform look-ups for ambient and directional lights
+4. Metallic reflections not accounting for roughness?
 
 # TODO
 1. [widows] address multple 'attribute' inputs for shaders

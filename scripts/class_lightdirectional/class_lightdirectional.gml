@@ -11,14 +11,21 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shader_lighting = shd_lighting_directional;
 	light_normal = vec_normalize(quat_rotate_vec(rotation, vec(1, 0, 0)));
 	light_color = c_white;
+	texture_environment = undefined;
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_albedo = -1;
 	uniform_sampler_normal = -1;
 	uniform_sampler_pbr = -1;
+	uniform_sampler_depth = -1;
+	uniform_sampler_environment = -1;
 	uniform_normal = -1;
 	uniform_color = -1;
 	uniform_translucent_pass = -1;
+	uniform_environment = -1;
+	uniform_inv_projmatrix = -1;
+	uniform_inv_viewmatrix = -1;
+	uniform_cam_position = -1;
 	#endregion
 	
 	#endregion
@@ -26,6 +33,10 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	#region METHODS
 	function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
 /// @stub
+	}
+	
+	function set_environment_texture(texture=undefined){
+		texture_environment = texture;
 	}
 	
 	function apply_gbuffer(gbuffer, is_translucent=false){
@@ -38,31 +49,55 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (uniform_sampler_pbr < 0)
 			uniform_sampler_pbr = shader_get_sampler_index(shader_lighting, "u_sPBR");
 		
+		if (uniform_sampler_depth < 0)
+			uniform_sampler_depth = shader_get_sampler_index(shader_lighting, "u_sDepth");
+		
+		if (uniform_sampler_environment < 0)
+			uniform_sampler_environment = shader_get_sampler_index(shader_lighting, "u_sEnvironment");
+		
 		if (uniform_normal < 0)
 			uniform_normal = shader_get_uniform(shader_lighting, "u_vLightNormal");
 		
 		if (uniform_color < 0)
 			uniform_color = shader_get_uniform(shader_lighting, "u_vLightColor");
 		
+		if (uniform_inv_projmatrix < 0)
+			uniform_inv_projmatrix = shader_get_uniform(shader_lighting, "u_mInvProj");
+		
+		if (uniform_inv_viewmatrix < 0)
+			uniform_inv_viewmatrix = shader_get_uniform(shader_lighting, "u_mInvView");
+		
 		if (uniform_translucent_pass < 0)
 			uniform_translucent_pass = shader_get_uniform(shader_lighting, "u_iTranslucentPass");
+		
+		if (uniform_environment < 0)
+			uniform_environment = shader_get_uniform(shader_lighting, "u_iEnvironment");
+		
+		if (uniform_cam_position < 0)
+			uniform_cam_position = shader_get_uniform(shader_lighting, "u_vCamPosition");
 		
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
-		// texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sEnvironment"), sprite_get_texture(spr_default_environment_cube, 0));
-		// texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sDepth"), gbuffer[$ is_translucent ? CAMERA_GBUFFER.depth_opaque : CAMERA_GBUFFER.depth_opaque]);
+		texture_set_stage(uniform_sampler_depth, gbuffer[$ is_translucent ? CAMERA_GBUFFER.depth_opaque : CAMERA_GBUFFER.depth_opaque]);
+		shader_set_uniform_f(uniform_cam_position, other.position.x, other.position.y, other.position.z);
 		
 		shader_set_uniform_i(uniform_translucent_pass, is_translucent);
-		// shader_set_uniform_matrix_array(shader_get_uniform(shader_lighting, "u_mInvView"), matrix_get_inverse(other.get_view_matrix()));
-		// shader_set_uniform_matrix_array(shader_get_uniform(shader_lighting, "u_mInvProj"), matrix_get_inverse(other.get_projection_matrix()));
+		shader_set_uniform_matrix_array(uniform_inv_viewmatrix, matrix_get_inverse(other.get_view_matrix()));
+		shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(other.get_projection_matrix()));
+		
+		if (not is_undefined(texture_environment)){
+			texture_set_stage(uniform_sampler_depth, texture_environment);
+			shader_set_uniform_i(uniform_environment, true);
+		}
+		else
+			shader_set_uniform_i(uniform_environment, false);
+		
 	}
 	
 	function apply(){
-		// Convert light data into view space as that is where we calculate everything
-		var light_normal_view = matrix_transform_vertex(other.get_view_matrix(), light_normal.x, light_normal.y, light_normal.z, 0.0);
-		light_normal_view = vec_normalize(vec(-light_normal_view[0], -light_normal_view[1], -light_normal_view[2]));
-		shader_set_uniform_f(uniform_normal, light_normal_view.x, light_normal_view.y, light_normal_view.z);
+/// @stub	Figure out why the light needs these two axes inverted
+		shader_set_uniform_f(uniform_normal, light_normal.x, -light_normal.y, -light_normal.z);
 		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255)
 	}
 

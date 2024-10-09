@@ -1,0 +1,8 @@
+vec3 depth_to_world(float fDepth, vec2 vUV){
+    float fZ = fDepth * 2.0 - 1.0;
+    vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
+    vec4 vViewPos = u_mInvProj * vClipPos;
+    vViewPos /= vViewPos.w;
+    vec4 vWorldPos = u_mInvView * vViewPos;
+    return vWorldPos.xyz;
+}

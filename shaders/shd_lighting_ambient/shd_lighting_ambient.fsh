@@ -104,16 +104,16 @@ void main()
         fSSAO = sample_ssao(u_iBlurSamples);
         
 /// @stub   Add cube-mapping and whatnot for specularity simulation
+/// @stub   https://learnopengl.com/PBR/IBL/Specular-IBL
 
-    float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
-    vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition);
-    vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
-    // vec2 vCube = cube_uv(normalize(reflect(vNormal, vView)));
-    vec2 vCube = cube_uv(normalize(reflect(vView, vNormal)));
-    vec3 vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
-
-    if (u_iEnvironment > 0)
-        vAlbedo.rgb = mix(vAlbedo.rgb, vCubeColor * vAlbedo.rgb, texture2D(u_sPBR, v_vTexcoord).b); // <- Temp just to help make it match the directional lighting
+    if (u_iEnvironment > 0){
+        float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
+        vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition);
+        vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
+        vec2 vCube = cube_uv(normalize(reflect(vView, vNormal)));
+        vec3 vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
+        vAlbedo.rgb = mix(vAlbedo.rgb, vCubeColor * vAlbedo.rgb, texture2D(u_sPBR, v_vTexcoord).b);
+    }
     else
         vAlbedo.rgb = mix(vAlbedo.rgb, vec3(0), texture2D(u_sPBR, v_vTexcoord).b);
         

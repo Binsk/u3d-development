@@ -12,7 +12,7 @@ function LightAmbient() : Light() constructor {
 	albedo = c_white;
 	intensity = 1.0;		// Intensity of the ambient lighting
 	casts_shadows = false; // Toggles SSAO in this case
-	environment_texture = undefined;	// If set, an environment map will be reflected; otherwise albedo color is used
+	texture_environment = undefined;	// If set, an environment map will be reflected; otherwise albedo color is used
 	
 	ssao_samples = 16;		// Number of samples to perform when rendering SSAO (more = cleaner but more expensive)
 	ssao_radius = 0.5;		// Generic sample radius scalar (radius is auto-calculated based on fragment depth + zfar; this multiplies against that)
@@ -26,6 +26,9 @@ function LightAmbient() : Light() constructor {
 	uniform_sampler_albedo = -1;
 	uniform_sampler_pbr = -1;
 	uniform_sampler_ssao = -1;
+	uniform_sampler_depth = -1;
+	uniform_sampler_normal = -1;
+	uniform_sampler_environment = -1;
 	uniform_ssao = -1;
 	uniform_albedo = -1;
 	uniform_intensity = -1;
@@ -75,7 +78,7 @@ function LightAmbient() : Light() constructor {
 	}
 	
 	function set_environment_texture(texture=undefined){
-		environment_texture = texture;
+		texture_environment = texture;
 	}
 	
 	/// @desc	Set the lighting intensity which multplies against the light's
@@ -153,6 +156,15 @@ function LightAmbient() : Light() constructor {
 		if (uniform_sampler_ssao < 0)
 			uniform_sampler_ssao = shader_get_sampler_index(shader_lighting, "u_sSSAO");
 		
+		if (uniform_sampler_depth < 0)
+			uniform_sampler_depth = shader_get_sampler_index(shader_lighting, "u_sDepth");
+		
+		if (uniform_sampler_normal < 0)
+			uniform_sampler_normal = shader_get_sampler_index(shader_lighting, "u_sNormal");
+		
+		if (uniform_sampler_environment < 0)
+			uniform_sampler_environment = shader_get_sampler_index(shader_lighting, "u_sEnvironment");
+		
 		if (uniform_ssao < 0)
 			uniform_ssao = shader_get_uniform(shader_lighting, "u_iSSAO");
 		
@@ -185,16 +197,19 @@ function LightAmbient() : Light() constructor {
 		
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
-		texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sDepth"), gbuffer[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
-		texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sNormal"), gbuffer[$ CAMERA_GBUFFER.normal]);
 		
-		if (not is_undefined(environment_texture))
-			texture_set_stage(shader_get_sampler_index(shader_lighting, "u_sEnvironment"), environment_texture);
+		if (not is_undefined(texture_environment)){
+			texture_set_stage(uniform_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+			texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
+			texture_set_stage(uniform_sampler_environment, texture_environment);
+			shader_set_uniform_i(uniform_environment, true);
+		}
+		else
+			shader_set_uniform_i(uniform_environment, false);
 		
 		shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(other.get_projection_matrix()));
 		shader_set_uniform_matrix_array(uniform_inv_viewmatrix, matrix_get_inverse(other.get_view_matrix()));
 		shader_set_uniform_f(uniform_cam_position, other.position.x, other.position.y, other.position.z);
-		shader_set_uniform_i(uniform_environment, is_undefined(environment_texture)? 0 : 1);
 		
 		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0){
 			texture_set_stage(uniform_sampler_ssao, surface_get_texture(surface_ssao));

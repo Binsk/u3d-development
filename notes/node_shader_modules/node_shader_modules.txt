@@ -1,7 +1,7 @@
 # Shader Modules
 ## About
 Shader modules are a bit of a hack to help with managing the
-necessary code duplication in GameMake shaders. In the project's
+necessary code duplication in GameMaker shaders. In the project's
 root directory is a 'process_shader_modules' script that will
 read any notes starting with `mod_` and insert them into shaders
 that reference them via an `//#include`. 

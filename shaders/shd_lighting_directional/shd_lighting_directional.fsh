@@ -1,13 +1,20 @@
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sNormal;
 uniform sampler2D u_sPBR;
+uniform sampler2D u_sDepth;
+uniform sampler2D u_sEnvironment;
 
 uniform vec3 u_vLightNormal;
 uniform vec3 u_vLightColor;
 uniform int u_iTranslucentPass; // Whether or not this is a translucent pass
+
+uniform mat4 u_mInvProj;
+uniform mat4 u_mInvView;
+uniform vec3 u_vCamPosition;
+uniform int u_iEnvironment;
+
 varying vec2 v_vTexcoord;
 
-#define vView vec3(0, 0, -1)
 #define fPI 3.1415926535897932384626433
 
 // https://learnopengl.com/PBR/Lighting
@@ -34,7 +41,7 @@ float geometry_schlick_ggx(float fNdotV, float fRoughness){
     return fNumerator / fDenominator;
 }
 
-float geometry_smith(vec3 vNormal, vec3 vLight, float fRoughness){
+float geometry_smith(vec3 vNormal, vec3 vView, vec3 vLight, float fRoughness){
     float fNdotV = max(dot(vNormal, vView), 0.0);
     float fNdotL = max(dot(vNormal, vLight), 0.0);
     float fGGX1 = geometry_schlick_ggx(fNdotV, fRoughness);
@@ -47,6 +54,7 @@ vec3 fresnel_schlick(float fCT, vec3 vF0){
     return vF0 + (1.0 - vF0) * pow(clamp(1.0 - fCT, 0.0, 1.0), 5.0);
 }
 
+// https://www.gamedev.net/forums/topic/687535-implementing-a-cube-map-lookup-function/5337475/
 vec2 cube_uv(vec3 vNormal){
     // Calculate which 'face' we are on:
     vec3 vAbs = abs(vNormal);
@@ -56,19 +64,19 @@ vec2 cube_uv(vec3 vNormal){
     if (vAbs.z >= vAbs.x && vAbs.z >= vAbs.y){
         iFaceIndex = vNormal.z < 0.0 ? 5 : 4;
         fMa = 0.5 / vAbs.z;
-        vUV.x = (vNormal.z < 0.0 ? -vNormal.x : vNormal.x);
+        vUV.x = (vNormal.z < 0.0 ? vNormal.x : -vNormal.x);
         vUV.y = -vNormal.y;
     }
     else if (vAbs.y >= vAbs.x){
         iFaceIndex = vNormal.y < 0.0 ? 3 : 2;
         fMa = 0.5 / vAbs.y;
-        vUV.x = vNormal.x;
-        vUV.y = (vNormal.y < 0.0 ? -vNormal.z : vNormal.z);
+        vUV.x = vNormal.z;
+        vUV.y = (vNormal.y < 0.0 ? -vNormal.x : vNormal.x);
     }
     else {
         iFaceIndex = vNormal.x < 0.0 ? 1 : 0;
         fMa = 0.5 / vAbs.x;
-        vUV.x = (vNormal.x < 0.0 ? vNormal.z : -vNormal.z);
+        vUV.x = (vNormal.x < 0.0 ? -vNormal.z : vNormal.z);
         vUV.y = -vNormal.y;
     }
     vUV = vUV * fMa + 0.5;
@@ -76,7 +84,8 @@ vec2 cube_uv(vec3 vNormal){
     // Scale and map to single texture:
     float fDX = 0.25;
     float fDY = 1.0 / 3.0;
-    vUV = vUV * vec2(fDX, fDY);
+    vUV = vUV * vec2(fDX, fDY); // Scale to the proper sub-size of the image
+        // Determine UV offset based on face
     if (iFaceIndex == 0)            // +X
         vUV += vec2(fDX, fDY);
     else if (iFaceIndex == 1)       // -X
@@ -88,41 +97,19 @@ vec2 cube_uv(vec3 vNormal){
     else if (iFaceIndex == 4)       // +Z
         vUV += vec2(fDX * 2.0, fDY);
     else                            // -Z
-        vUV += vec2(0.0, fDX);
+        vUV += vec2(0.0, fDY);
     
     return vUV;
 }
 
-// https://stackoverflow.com/questions/59411510/convert-sampler2d-into-samplercube
-/// Takes a 3D directional vector and converts it to a UV coordinate on a cube map
-// vec2 cube_map_uv(vec3 vDirection){
-//     vec2 vT = vec2(0, 0);
-//     vDirection = normalize(vDirection) / sqrt(2.0);
-//     vDirection.x = -vDirection.x;
-//     vDirection.z = -vDirection.z;
-//     vec3 vQ = abs(vDirection);
-//     if (vQ.x >= vQ.y && vQ.x >= vQ.z){
-//         vT.x = 0.5 - vDirection.z / vDirection.x;
-//         vT.y = 0.5 - vDirection.y / vDirection.x;
-//     }
-//     else if (vQ.y >= vQ.x && vQ.y >= vQ.z){
-//         vT.x = 0.5 - vDirection.x / vDirection.y;
-//         vT.y = 0.5 - vDirection.z / vDirection.y;
-//     }
-//     else {
-//         vT.x = 0.5 - vDirection.x / vDirection.z;
-//         vT.y = 0.5 - vDirection.z / vDirection.z;
-//     }
-//     return vT;
-// }
-
-// vec4 depth_to_view(float fDepth){
-//     float fZ = fDepth * 2.0 - 1.0;
-//     vec4 vClip = vec4(v_vTexcoord.xy * 2.0 - 1.0, fZ, 1.0);
-//     vec4 vViewPos = u_mInvProj * vClip;
-//     vViewPos /= vViewPos.w;
-//     return vViewPos;
-// }
+vec3 depth_to_world(float fDepth, vec2 vUV){
+    float fZ = fDepth * 2.0 - 1.0;
+    vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
+    vec4 vViewPos = u_mInvProj * vClipPos;
+    vViewPos /= vViewPos.w;
+    vec4 vWorldPos = u_mInvView * vViewPos;
+    return vWorldPos.xyz;
+}
 
 void main()
 {
@@ -143,19 +130,28 @@ void main()
     float fRoughness = vPBR.g;
     float fMetallic = vPBR.b;
     
-   // Specular calculations:
+    float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
+    vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition); // View vector in world space
     vec3 vHalf = normalize(vView + u_vLightNormal);
-    /// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04
+    
+        // Calculate environment reflections, if enabled:
+    vec3 vCubeColor = vec3(0);   // If no environment map; just reflect 'black'
+    if (u_iEnvironment > 0){
+        vec2 vCube = cube_uv(normalize(reflect(-vView, vNormal)));
+        vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
+/// @stub   Add in roughness sampling so roughness affects reflection 
+    }
+    
+/// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04
     vec3 vF0 = vec3(0.04);
     vF0 = mix(vF0, vAlbedo.rgb, fMetallic);
     vec3 vRadiance = u_vLightColor;  // Always the color, as directional doesn't have attenuation
     float fNDF = distribution_ggx(vNormal, vHalf, fRoughness);
-    float fG = geometry_smith(vNormal, u_vLightNormal, fRoughness);
+    float fG = geometry_smith(vNormal, vView, u_vLightNormal, fRoughness);
     vec3 vF = fresnel_schlick(max(dot(vHalf, vView), 0.0), vF0);
     
-/// @stub   Add support for cube-mapping (even if just environment)
-    vec3 vKD = mix(vec3(1.0) - vF, vec3(0.0), fMetallic);
-    // vec3 vKD = vec3(1.0) - vF; // <- Simplified; still adds color w/ metallic
+    vec3 vKD = mix(vec3(1.0) - vF, vCubeColor, fMetallic);
+    // vec3 vKD = vec3(1.0) - vF; // <- Simplified; still adds color w/ metallic (stylistic option if no environment?)
     vec3 vNumerator = fNDF * fG * vF;
     float fDenominator = 4.0 * max(dot(vNormal, vView), 0.0) * max(dot(vNormal, u_vLightNormal), 0.0);
     vec3 vSpecular = vNumerator / max(fDenominator, 0.00001);
