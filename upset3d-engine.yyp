@@ -89,7 +89,6 @@
     {"id":{"name":"class_quadtree","path":"scripts/class_quadtree/class_quadtree.yy",},},
     {"id":{"name":"class_signaler","path":"scripts/class_signaler/class_signaler.yy",},},
     {"id":{"name":"class_super","path":"scripts/class_super/class_super.yy",},},
-    {"id":{"name":"class_texture","path":"scripts/class_texture/class_texture.yy",},},
     {"id":{"name":"class_texture2d","path":"scripts/class_texture2d/class_texture2d.yy",},},
     {"id":{"name":"class_texturecube","path":"scripts/class_texturecube/class_texturecube.yy",},},
     {"id":{"name":"class_u3dobject","path":"scripts/class_u3dobject/class_u3dobject.yy",},},

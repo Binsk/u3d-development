@@ -15,6 +15,7 @@ uniform float u_fBlurStride;
 uniform mat4 u_mInvProj;
 uniform mat4 u_mInvView;
 uniform vec3 u_vCamPosition;
+uniform int u_iEnvironment;
 
 varying vec2 v_vTexcoord;
 
@@ -111,7 +112,10 @@ void main()
     vec2 vCube = cube_uv(normalize(reflect(vView, vNormal)));
     vec3 vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
 
-    // vAlbedo.rgb = mix(vAlbedo.rgb, vec3(0), texture2D(u_sPBR, v_vTexcoord).b); // <- Temp just to help make it match the directional lighting
-    vAlbedo.rgb = mix(vAlbedo.rgb, vCubeColor * vAlbedo.rgb, texture2D(u_sPBR, v_vTexcoord).b); // <- Temp just to help make it match the directional lighting
+    if (u_iEnvironment > 0)
+        vAlbedo.rgb = mix(vAlbedo.rgb, vCubeColor * vAlbedo.rgb, texture2D(u_sPBR, v_vTexcoord).b); // <- Temp just to help make it match the directional lighting
+    else
+        vAlbedo.rgb = mix(vAlbedo.rgb, vec3(0), texture2D(u_sPBR, v_vTexcoord).b);
+        
     gl_FragColor = vec4(vAlbedo.rgb * u_vAlbedo * u_fIntensity * fSSAO, vAlbedo.a);
 }

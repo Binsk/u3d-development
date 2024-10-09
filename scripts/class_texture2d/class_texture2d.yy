@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"class_texture2d",
   "parent":{
-    "name":"Rendering",
-    "path":"folders/Upset 3D/Classes/Rendering.yy",
+    "name":"Textures",
+    "path":"folders/Upset 3D/Classes/Rendering/Textures.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

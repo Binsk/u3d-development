@@ -15,6 +15,7 @@ obj_render_controller.add_camera(camera);
 light = new LightAmbient();
 light.set_casts_shadows(true); // Enable SSAO
 light.ssao_strength = 1.25;
+light.set_environment_texture(sprite_get_texture(spr_default_environment_cube, 1));
 // light.ssao_normal_bias = 0.5;
 // light.intensity = 0.25;
 obj_render_controller.add_light(light);
