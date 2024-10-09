@@ -1,0 +1,7 @@
+# Textures
+## About
+Textures are simple containers for GameMaker textures. These
+classes can help manage auto-cleanup of dynamically created
+resources, auto-fill 'missing texture' renders if the texture
+stops existing, as well as building and rendering cube-map
+textures in the scene.
