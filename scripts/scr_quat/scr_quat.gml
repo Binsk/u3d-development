@@ -47,6 +47,22 @@ function quat_is_identity(quaternion){
 	return true;
 }
 
+function quat_is_zero(quaternion){
+	if (quaternion.x != 0)
+		return false;
+	
+	if (quaternion.y != 0)
+		return false;
+		
+	if (quaternion.z != 0)
+		return false;
+	
+	if (quaternion.w != 0)
+		return false;
+	
+	return true;
+}
+
 function quat_to_array(quaternion){
 	return [
 		quaternion.x, quaternion.y, quaternion.z, quaternion.w

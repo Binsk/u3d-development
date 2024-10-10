@@ -1,14 +1,14 @@
 # FIXME
 1. [windows] ssao is pure white
 2. Textures not on 'own texture page' not rendering right
-3. Convert remaining 'on-the-fly' uniform look-ups for ambient and directional lights
-4. Metallic reflections not accounting for roughness?
 
 # TODO
 1. [widows] address multple 'attribute' inputs for shaders
 2. Add 'render layers' to Body() for lighting & camera reasons
-3. Add proper PBR simulation in ambient lighting
+3. Add proper PBR simulation in ambient lighting (somewhat done)
 4. Add proper normal-mapping; requires both adding in GLTFBuilder and
    the gbuffer shader
 5. Add emissive texture / component support; in gbuffer could use normal.w
    pbr.x and pbr.w (then we ditch the specular)
+6. Environment reflections account for roughness
+7. Add tangent auto-generation upon load

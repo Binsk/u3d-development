@@ -14,6 +14,7 @@ varying vec2 v_vTexcoordPBR;
 varying vec4 v_vColor;
 varying vec3 v_vNormal;
 varying vec4 v_vPosition;
+varying mat3 v_mRotation;
 
 vec3 to_rgb(vec3 vColor){
 	bvec3 bCutoff = lessThan(vColor, vec3(0.04045));
@@ -33,21 +34,23 @@ void main()
     else
         gl_FragData[0] = v_vColor * u_vAlbedo;
     
-    vec3 vNormal = v_vNormal;
-//     if (u_iSamplerToggles[1] > 0) // Normals
-// /// @stub   Need to convert to view space + combine w/ other normal
-//         vNormal = texture2D(u_sNormal, v_vTexcoordNormal).rgb;
-//     else
-//     	vNormal = v_vNormal * 0.5 + 0.5;
-    	
+    vec3 vNormal = vec3(0, 0, 1);
+    if (u_iSamplerToggles[1] > 0) // Textured normals
+    	vNormal = texture2D(u_sNormal, v_vTexcoordNormal).rgb * 2.0 - 1.0;
+    
     if (!gl_FrontFacing)
 		vNormal = -vNormal;
+	
+/// @stub	Think of some way to calculate normals in the vertex shader! Normally would do things
+///			in tangent space, but can't do so with a a deferred render.	
+	vNormal = normalize(v_mRotation * vNormal);
 		
     gl_FragData[1] = vec4(vNormal.xyz * 0.5 + 0.5, 1.0);
     
-    if (u_iSamplerToggles[2] > 0) // PBR
+    if (u_iSamplerToggles[2] > 0){ // PBR
 /// @stub	Allow storing specular in R channel; however some exports are filling it with garbage so we need a special toggle somewhere
         gl_FragData[2] = vec4(vec3(1.0, texture2D(u_sPBR, v_vTexcoordPBR).gb) * u_vPBR, 1.0);
+    }
     else
         gl_FragData[2] = vec4(u_vPBR, 1.0);
        

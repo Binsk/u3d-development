@@ -109,13 +109,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var color_sprite = undefined;
 			var pbr_base = [1, 1, 1];
 			var pbr_sprite = undefined;
+			var normal_sprite = undefined;
 			var cull_mode = (material_data[$ "doubleSided"] ?? false) ? cull_noculling : cull_counterclockwise;
-			
+/// @stub	Add support for pulling texture texCoord properties in case textures are shared!
 			if (not is_undefined(pbr_data)){
 				color_base = pbr_data[$ "baseColorFactor"] ?? color_base;
 				// Albedo Texture
 				if (not is_undefined(pbr_data[$ "baseColorTexture"])){
-/// @stub	Add support for pulling the texture UV index?
 					var texture_index = get_structure(pbr_data[$ "baseColorTexture"].index, "textures").source;
 					color_sprite = sprite_array[texture_index];
 				}
@@ -131,27 +131,35 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				if (not is_undefined(pbr_data[$ "metallicFactor"]))
 					pbr_base[PBR_COLOR_INDEX.metalness] = pbr_data[$ "metallicFactor"];
 			}
-/// @stub	Implement 'normal' texture
+			
+			if (not is_undefined(material_data[$ "normalTexture"])){
+				var texture_index = get_structure(material_data[$ "normalTexture"].index, "textures").source;
+				normal_sprite = sprite_array[texture_index];
+			}
 
 			var material = new MaterialSpatial();
 			if (not is_undefined(color_sprite))
 				material.set_texture("albedo", new Texture2D(sprite_get_texture(color_sprite, 0)));
 			if (not is_undefined(pbr_sprite))
 				material.set_texture("pbr", new Texture2D(sprite_get_texture(pbr_sprite, 0)));
-			
+			if (not is_undefined(normal_sprite))
+				material.set_texture("normal", new Texture2D(sprite_get_texture(normal_sprite, 0)));
 				
 			material.scalar.albedo = color_base;
 			material.scalar.pbr = pbr_base;
 			material.cull_mode = cull_mode;
 			
 			// Attach free method to free up sprites as needed:
-			material.signaler.add_signal("free", new Callable(material, function(albedo){
+			material.signaler.add_signal("free", new Callable(material, function(color_sprite, pbr_sprite, normal_sprite){
 				if (not is_undefined(color_sprite))
 					sprite_delete(color_sprite);
 				
 				if (not is_undefined(pbr_sprite))
 					sprite_delete(pbr_sprite);
-			}, [color_sprite, pbr_sprite]))
+				
+				if (not is_undefined(normal_sprite))
+					sprite_delete(normal_sprite);
+			}, [color_sprite, pbr_sprite, normal_sprite]))
 			
 			material_array[i] = material;
 		}
@@ -278,7 +286,16 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				}
 				
 				#region TANGENT DATA SPECIAL-HANDLING
-/// @stub	handle tangents being vec(0,0,0) (aka., unset) and auto-calculate them, make sure to multiply by transform matrix
+				if (format.vformat_array[i] == VERTEX_DATA.tangent){
+					/// @stub	Add auto-calculated tangents
+					if (not is_quat(data))
+						throw new Exception("auto-calculating tangents not yet implemented! Make sure your model is exported with tangents!");
+						
+/// @stub	Blender adds a w component; not sure what it's for? It is always -1 or 1. Needs addressing
+					data = vec_normalize(vec(data.x, data.y, data.z));
+					if (vec_is_zero(data))
+						data = vec(0, 0, 1);
+				}
 				#endregion
 				
 				primitive.define_add_data(format.vformat_array[i], data);
