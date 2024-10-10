@@ -56,6 +56,7 @@
     {"id":{"name":"mod_cube_uv","path":"notes/mod_cube_uv/mod_cube_uv.yy",},},
     {"id":{"name":"mod_depth_to_world","path":"notes/mod_depth_to_world/mod_depth_to_world.yy",},},
     {"id":{"name":"mod_sample_blur","path":"notes/mod_sample_blur/mod_sample_blur.yy",},},
+    {"id":{"name":"mod_texture2dmip","path":"notes/mod_texture2dmip/mod_texture2dmip.yy",},},
     {"id":{"name":"node_shader_modules","path":"notes/node_shader_modules/node_shader_modules.yy",},},
     {"id":{"name":"note_about","path":"notes/note_about/note_about.yy",},},
     {"id":{"name":"note_materials","path":"notes/note_materials/note_materials.yy",},},

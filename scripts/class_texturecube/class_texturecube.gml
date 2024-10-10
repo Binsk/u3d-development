@@ -51,9 +51,6 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 	#region METHODS
 	
 	function set_texture(texture_id){
-		if (texture_id == self.texture_id) // No need to change; prevents a rebuild
-			return;
-			
 		// Wipe any old cube-maps:
 		if (sprite_exists(sprite_index)){
 			sprite_delete(sprite_index);
@@ -104,10 +101,14 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 		var mip_surface = -1;
 		var texture_cube = -1;
 		if (is_undefined(build_data[$ "texture_id"])){
+			// Check that we have all face defines:
+			for (var i = 0; i < 6; ++i){
+				if (is_undefined(build_data[$ i]))
+					return Texture2D.get_missing_texture();
+			}
 			// Set texture_cube to the next texture
-			// throw "NOT YET IMPLEMENTED";
-			texture_id = sprite_get_texture(spr_missing_texture, 0);
-			return;
+/// @stub	Implement!
+			throw "NOT YET IMPLEMENTED";
 		}
 		else
 			// texture_cube = build_data[$ "texture_id"];
@@ -125,6 +126,7 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		gpu_set_tex_filter(true);
 		gpu_set_cullmode(cull_noculling);
+		// https://learnopengl.com/PBR/IBL/Specular-IBL
 			// We generate 6 mips as we can fit it all in one column (minus the first image)
 		for (var i = 0; i < 6; ++i){
 			var mip_size_x = mip_resolution * power(0.5, i);

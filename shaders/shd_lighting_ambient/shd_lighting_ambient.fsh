@@ -96,6 +96,19 @@ vec3 depth_to_world(float fDepth, vec2 vUV){
     return vWorldPos.xyz;
 }
 
+// Returns a fake mip sample given an absolute mip level between [0..6)
+vec4 texture2DMip(sampler2D sTexture, vec2 vUV, int iMip){
+    float fDx = 1.0 / 1.5;
+    float fDy = 1.0;
+    fDx *= pow(0.5, float(iMip));
+    fDy *= pow(0.5, float(iMip));
+    
+    float fX = (iMip == 0 ? 0.0 : 1.0 / 1.5);
+    float fY = (iMip == 0 ? 0.0 : 1.0 - fDy - fDy);
+    vec2 vUVMip = mix(vec2(fX, fY), vec2(fX + fDx, fY + fDy), vUV);
+    return texture2D(sTexture, vUVMip);
+}
+
 void main()
 {
     vec4 vAlbedo = texture2D(u_sAlbedo, v_vTexcoord);
@@ -111,7 +124,8 @@ void main()
         vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition);
         vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
         vec2 vCube = cube_uv(normalize(reflect(vView, vNormal)));
-        vec3 vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
+        // vec3 vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
+        vec3 vCubeColor = texture2DMip(u_sEnvironment, vCube, 0).rgb;
         vAlbedo.rgb = mix(vAlbedo.rgb, vCubeColor * vAlbedo.rgb, texture2D(u_sPBR, v_vTexcoord).b);
     }
     else

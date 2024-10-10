@@ -11,12 +11,20 @@ function Texture2D(texture_id=undefined, is_sRGB=false)  : U3DObject() construct
 	texture_uvs = [0, 0, 0, 0];
 	#endregion
 	
+	#region STATIC METHODS
+	/// @desc	A convenient function that returns a GameMaker texture to represent
+	///			a "missing texture". This material is defined in `scr_u3d_init`.
+	static get_missing_texture = function(){
+		return U3D.RENDERING.MATERIAL.missing_texture.texture.albedo.texture.get_texture();
+	}
+	#endregion
+	
 	#region METHODS
 	function get_texture(){
-		if (is_undefined(texture_id))
-			return U3D.RENDERING.MATERIAL.missing_texture.texture.albedo.texture.get_texture()
+		if (is_undefined(self.texture_id))
+			return Texture2D.get_missing_texture();
 			
-		return texture_id;
+		return self.texture_id;
 	}
 	
 	function set_texture(texture_id){
