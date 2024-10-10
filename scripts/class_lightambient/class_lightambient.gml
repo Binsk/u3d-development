@@ -9,8 +9,8 @@ function LightAmbient() : Light() constructor {
 	shader_lighting = shd_lighting_ambient;
 	shader_ssao = shd_ssao;
 	surface_ssao = -1;
-	albedo = c_white;
-	intensity = 1.0;		// Intensity of the ambient lighting
+	light_color = c_white;
+	light_intensity = 1.0;		// Intensity of the ambient lighting
 	casts_shadows = false; // Toggles SSAO in this case
 	texture_environment = undefined;	// If set, an environment map will be reflected; otherwise albedo color is used
 	
@@ -26,12 +26,12 @@ function LightAmbient() : Light() constructor {
 	uniform_sampler_albedo = -1;
 	uniform_sampler_pbr = -1;
 	uniform_sampler_ssao = -1;
-	uniform_sampler_depth = -1;
+	uniform_sampler_view = -1;
 	uniform_sampler_normal = -1;
 	uniform_sampler_environment = -1;
 	uniform_ssao = -1;
-	uniform_albedo = -1;
-	uniform_intensity = -1;
+	uniform_light_color = -1;
+	uniform_light_intensity = -1;
 	uniform_texel_size = -1;
 	uniform_blur_samples = -1;
 	uniform_blur_stride = -1;
@@ -75,6 +75,10 @@ function LightAmbient() : Light() constructor {
 	/// @desc	Enables / Disables ambient occlusion for this light.
 	function set_ambient_occlusion(enabled=false){
 		set_casts_shadows(enabled);
+	}
+	
+	function set_color(color=c_white){
+		light_color = color;
 	}
 	
 	/// @desc	Sets an environment texture to be used for reflections. If set to anything
@@ -162,8 +166,8 @@ function LightAmbient() : Light() constructor {
 		if (uniform_sampler_ssao < 0)
 			uniform_sampler_ssao = shader_get_sampler_index(shader_lighting, "u_sSSAO");
 		
-		if (uniform_sampler_depth < 0)
-			uniform_sampler_depth = shader_get_sampler_index(shader_lighting, "u_sDepth");
+		if (uniform_sampler_view < 0)
+			uniform_sampler_view = shader_get_sampler_index(shader_lighting, "u_sView");
 		
 		if (uniform_sampler_normal < 0)
 			uniform_sampler_normal = shader_get_sampler_index(shader_lighting, "u_sNormal");
@@ -174,11 +178,11 @@ function LightAmbient() : Light() constructor {
 		if (uniform_ssao < 0)
 			uniform_ssao = shader_get_uniform(shader_lighting, "u_iSSAO");
 		
-		if (uniform_intensity < 0)
-			uniform_intensity = shader_get_uniform(shader_lighting, "u_fIntensity");
+		if (uniform_light_intensity < 0)
+			uniform_light_intensity = shader_get_uniform(shader_lighting, "u_fIntensity");
 		
-		if (uniform_albedo < 0)
-			uniform_albedo = shader_get_uniform(shader_lighting, "u_vAlbedo");
+		if (uniform_light_color < 0)
+			uniform_light_color = shader_get_uniform(shader_lighting, "u_vLightColor");
 		
 		if (uniform_texel_size < 0)
 			uniform_texel_size = shader_get_uniform(shader_lighting, "u_vTexelSize");
@@ -203,19 +207,15 @@ function LightAmbient() : Light() constructor {
 		
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
+		texture_set_stage(uniform_sampler_view, gbuffer[$ CAMERA_GBUFFER.view]);
 		
 		if (not is_undefined(texture_environment)){
-			texture_set_stage(uniform_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
 			texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			shader_set_uniform_i(uniform_environment, true);
 		}
 		else
 			shader_set_uniform_i(uniform_environment, false);
-		
-		shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(camera_id.get_projection_matrix()));
-		shader_set_uniform_matrix_array(uniform_inv_viewmatrix, matrix_get_inverse(camera_id.get_view_matrix()));
-		shader_set_uniform_f(uniform_cam_position, camera_id.position.x, camera_id.position.y, camera_id.position.z);
 		
 		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0){
 			texture_set_stage(uniform_sampler_ssao, surface_get_texture(surface_ssao));
@@ -228,8 +228,8 @@ function LightAmbient() : Light() constructor {
 	}
 	
 	function apply(){
-		shader_set_uniform_f(uniform_albedo, color_get_red(albedo) / 255, color_get_green(albedo) / 255, color_get_blue(albedo) / 255);
-		shader_set_uniform_f(uniform_intensity, intensity);
+		shader_set_uniform_f(uniform_light_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255);
+		shader_set_uniform_f(uniform_light_intensity, light_intensity);
 	}
 	
 	super.mark("free");

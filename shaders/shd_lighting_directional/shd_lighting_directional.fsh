@@ -1,16 +1,13 @@
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sNormal;
 uniform sampler2D u_sPBR;
-uniform sampler2D u_sDepth;
 uniform sampler2D u_sEnvironment;
+uniform sampler2D u_sView;
 
 uniform vec3 u_vLightNormal;
 uniform vec3 u_vLightColor;
 uniform int u_iTranslucentPass; // Whether or not this is a translucent pass
 
-uniform mat4 u_mInvProj;
-uniform mat4 u_mInvView;
-uniform vec3 u_vCamPosition;
 uniform int u_iEnvironment;
 
 varying vec2 v_vTexcoord;
@@ -102,15 +99,6 @@ vec2 cube_uv(vec3 vNormal){
     return vUV;
 }
 
-vec3 depth_to_world(float fDepth, vec2 vUV){
-    float fZ = fDepth * 2.0 - 1.0;
-    vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
-    vec4 vViewPos = u_mInvProj * vClipPos;
-    vViewPos /= vViewPos.w;
-    vec4 vWorldPos = u_mInvView * vViewPos;
-    return vWorldPos.xyz;
-}
-
 // Returns a fake mip sample given an absolute mip level between [0..6)
 vec4 texture2DMip(sampler2D sTexture, vec2 vUV, int iMip){
     float fDx = 1.0 / 1.5;
@@ -143,8 +131,7 @@ void main()
     float fRoughness = vPBR.g;
     float fMetallic = vPBR.b;
     
-    float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
-    vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition); // View vector in world space
+    vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);
     vView = -vView;
     vec3 vHalf = normalize(vView + u_vLightNormal);
     

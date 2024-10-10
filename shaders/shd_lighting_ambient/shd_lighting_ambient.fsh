@@ -1,20 +1,17 @@
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sSSAO;
 uniform sampler2D u_sPBR;
-uniform sampler2D u_sDepth;
 uniform sampler2D u_sEnvironment;
 uniform sampler2D u_sNormal;
+uniform sampler2D u_sView;
 
-uniform vec3 u_vAlbedo;
+uniform vec3 u_vLightColor;
 uniform int u_iSSAO;            // Whether or not we have SSAO enabled
 uniform float u_fIntensity;
 uniform vec2 u_vTexelSize;
 uniform int u_iBlurSamples;
 uniform float u_fBlurStride;
 
-uniform mat4 u_mInvProj;
-uniform mat4 u_mInvView;
-uniform vec3 u_vCamPosition;
 uniform int u_iEnvironment;
 
 varying vec2 v_vTexcoord;
@@ -87,15 +84,6 @@ float sample_ssao(int iRadius){
     return fValue / fWeight;
 }
 
-vec3 depth_to_world(float fDepth, vec2 vUV){
-    float fZ = fDepth * 2.0 - 1.0;
-    vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
-    vec4 vViewPos = u_mInvProj * vClipPos;
-    vViewPos /= vViewPos.w;
-    vec4 vWorldPos = u_mInvView * vViewPos;
-    return vWorldPos.xyz;
-}
-
 // Returns a fake mip sample given an absolute mip level between [0..6)
 vec4 texture2DMip(sampler2D sTexture, vec2 vUV, int iMip){
     float fDx = 1.0 / 1.5;
@@ -120,8 +108,7 @@ void main()
 /// @stub   https://learnopengl.com/PBR/IBL/Specular-IBL
 
     if (u_iEnvironment > 0){
-        float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
-        vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition);
+        vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);
         vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
         vec2 vCube = cube_uv(normalize(reflect(vView, vNormal)));
         // vec3 vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
@@ -131,5 +118,5 @@ void main()
     else
         vAlbedo.rgb = mix(vAlbedo.rgb, vec3(0), texture2D(u_sPBR, v_vTexcoord).b);
         
-    gl_FragColor = vec4(vAlbedo.rgb * u_vAlbedo * u_fIntensity * fSSAO, vAlbedo.a);
+    gl_FragColor = vec4(vAlbedo.rgb * u_vLightColor * u_fIntensity * fSSAO, vAlbedo.a);
 }

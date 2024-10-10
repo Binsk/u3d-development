@@ -20,7 +20,7 @@ light.set_casts_shadows(true); // Enable SSAO
 light.ssao_strength = 1.25;
 light.set_environment_texture(environment_map);
 light.ssao_normal_bias = 0.5;
-light.intensity = 0.25;
+light.light_intensity = 0.25;
 obj_render_controller.add_light(light);
 
 lightd = new LightDirectional(quat(), vec(5, 6, 7));

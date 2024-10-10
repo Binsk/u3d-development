@@ -17,10 +17,11 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	uniform_sampler_albedo = -1;
 	uniform_sampler_normal = -1;
 	uniform_sampler_pbr = -1;
-	uniform_sampler_depth = -1;
+	uniform_sampler_view = -1;
 	uniform_sampler_environment = -1;
 	uniform_normal = -1;
 	uniform_color = -1;
+	uniform_albedo = -1;
 	uniform_translucent_pass = -1;
 	uniform_environment = -1;
 	uniform_inv_projmatrix = -1;
@@ -33,6 +34,10 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	#region METHODS
 	function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
 /// @stub
+	}
+	
+	function set_color(color=c_white){
+		light_color = color;
 	}
 	
 	/// @desc	Sets an environment texture to be used for reflections. If set to anything
@@ -55,8 +60,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (uniform_sampler_pbr < 0)
 			uniform_sampler_pbr = shader_get_sampler_index(shader_lighting, "u_sPBR");
 		
-		if (uniform_sampler_depth < 0)
-			uniform_sampler_depth = shader_get_sampler_index(shader_lighting, "u_sDepth");
+		if (uniform_sampler_view < 0)
+			uniform_sampler_view = shader_get_sampler_index(shader_lighting, "u_sView");
 		
 		if (uniform_sampler_environment < 0)
 			uniform_sampler_environment = shader_get_sampler_index(shader_lighting, "u_sEnvironment");
@@ -85,12 +90,9 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
-		texture_set_stage(uniform_sampler_depth, gbuffer[$ is_translucent ? CAMERA_GBUFFER.depth_opaque : CAMERA_GBUFFER.depth_opaque]);
-		shader_set_uniform_f(uniform_cam_position, camera_id.position.x, camera_id.position.y, camera_id.position.z);
+		texture_set_stage(uniform_sampler_view, gbuffer[$ CAMERA_GBUFFER.view]);
 		
 		shader_set_uniform_i(uniform_translucent_pass, is_translucent);
-		shader_set_uniform_matrix_array(uniform_inv_viewmatrix, matrix_get_inverse(camera_id.get_view_matrix()));
-		shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(camera_id.get_projection_matrix()));
 		
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());

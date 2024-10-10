@@ -11,6 +11,7 @@ enum CAMERA_GBUFFER {
 	depth_opaque,			// Depth map; taken from albedo
 	depth_translucent,	
 	normal,					// Normal map (rgba8unorm)
+	view,					// View vector map (rgba8unorm) in world-space
 	pbr,					// PBR properties (rgba8unorm); R: specular, G: roughness, B: metal
 	
 	out_opaque,				// Out surface (rgba16float) of lighting pass
@@ -154,6 +155,11 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 			textures[$ CAMERA_GBUFFER.normal] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.normal]);
 		}
 		
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.view])){
+			surfaces[$ CAMERA_GBUFFER.view] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
+			textures[$ CAMERA_GBUFFER.view] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.view]);
+		}
+		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.pbr])){
 			surfaces[$ CAMERA_GBUFFER.pbr] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
 			textures[$ CAMERA_GBUFFER.pbr] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.pbr]);
@@ -186,6 +192,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_height)
 			surface_resize(surfaces[$ CAMERA_GBUFFER.normal], buffer_width, buffer_height);
 		
+		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.view]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.view]) != buffer_height)
+			surface_resize(surfaces[$ CAMERA_GBUFFER.view], buffer_width, buffer_height);
+		
 		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.pbr]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.pbr]) != buffer_height)
 			surface_resize(surfaces[$ CAMERA_GBUFFER.pbr], buffer_width, buffer_height);
 			
@@ -207,6 +216,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		gpu_set_texrepeat(true);
 		
+		// Render models w/ materials to primary buffer channels:
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], 0, 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
@@ -229,6 +239,24 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 			body.model_instance.render(RENDER_STAGE.build_gbuffer, self);
 		}
 		matrix_set(matrix_world, world_matrix);
+		surface_reset_target();
+		
+		// Render view vector buffer for use with lighting
+		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.view]);
+		draw_clear(0);
+		shader_set(shd_view_buffer);
+		texture_set_stage(shader_get_sampler_index(shd_view_buffer, "u_sDepth"), gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvProj"), matrix_get_inverse(get_projection_matrix()));
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvView"), matrix_get_inverse(get_view_matrix()));
+		shader_set_uniform_f(shader_get_uniform(shd_view_buffer, "u_vCamPosition"), position.x, position.y, position.z);
+		
+		draw_primitive_begin_texture(pr_trianglestrip, -1);
+		draw_vertex_texture(0, 0, 0, 0);
+		draw_vertex_texture(buffer_width, 0, 1, 0);
+		draw_vertex_texture(0, buffer_height, 0, 1);
+		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
+		draw_primitive_end();
+		shader_reset();
 		surface_reset_target();
 	}
 	
