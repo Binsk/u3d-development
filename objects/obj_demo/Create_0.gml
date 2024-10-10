@@ -35,3 +35,10 @@ for (var i = 0; i < array_length(keys); ++i)
 	array_push(material_array, box.material_data[$ keys[i]]);
 
 camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)));
+
+Camera.DISPLAY_WIDTH = 1920;
+Camera.DISPLAY_HEIGHT = 1080;
+display_set_gui_size(1920, 1080);
+obj_render_controller.render_mode = RENDER_MODE.draw_gui;
+
+game_set_speed(999, gamespeed_fps)

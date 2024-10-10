@@ -8,10 +8,17 @@ enum RENDER_STAGE {
 	post_processing
 }
 
+enum RENDER_MODE {
+	draw,		// Auto-renders out cameras to the draw event
+	draw_gui,	// Auto-renders out cameras to the draw_gui event
+	none		// Doesn't auto-render out cameras
+}
+
 #region PROPERTIES
 body_map = {};		// Map of all bodies in the scene
 camera_map = {};	// Map of all cameras in the scene
 light_map = {};		// Map of all lights in the scene
+render_mode = RENDER_MODE.draw;
 #endregion
 
 #region METHODS
@@ -125,6 +132,14 @@ function build_render_body_array(camera_id){
 		array[i] = body_map[$ keys[i]];
 	
 	return array;
+}
+
+function render_cameras(){
+	var camera_keys = struct_get_names(camera_map);
+	for (var i = array_length(camera_keys) - 1; i >= 0; --i){
+		var camera = camera_map[$ camera_keys[i]];
+		camera.render_out();
+	}
 }
 #endregion
 

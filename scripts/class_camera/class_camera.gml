@@ -28,11 +28,15 @@ enum CAMERA_TONEMAP {
 ///			to the rendering pipeline.
 function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	#region PROPERTIES
+	static DISPLAY_WIDTH = undefined; // Full display size to measure anchor points
+	static DISPLAY_HEIGHT = undefined;
+	
 	anchor = new CameraAnchor(self);
 	tonemap = CAMERA_TONEMAP.none;
 	exposure = 1.0;		// (only applies when tonemap != none), the exposure level for the camera
 	buffer_width = undefined;
 	buffer_height = undefined;
+	custom_render_size = undefined;	// Overrides global DISPLAY_* size if set. ANCHOR WILL BE IGNORED!
 	self.znear = znear;
 	self.zfar = zfar;	// y-FOV
 	self.fov = fov;
@@ -44,6 +48,20 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	#endregion
 	
 	#region METHODS
+	
+	/// @desc	If set, overrides the CamerAnchor and DISPLAY_WIDTH/HEIGHT values.
+	///			Useful if rendering specifically for in-game surfaces and the like.
+	function set_custom_render_size(width=undefined, height=undefined){
+		if (is_undefined(width) or is_undefined(height)){
+			custom_render_size = undefined;
+			return;
+		}
+		custom_render_size = {
+			x : max(1.0, width),
+			y : max(1.0, height)
+		}
+	}
+	
 	/// @desc	Returns the camera anchor attached to this camera.
 	function get_anchor(){
 		return anchor;
@@ -112,15 +130,23 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	}
 	
 	function generate_gbuffer(){
-		if (not surface_exists(application_surface))
-			return;
+		if (is_undefined(Camera.DISPLAY_WIDTH))
+			Camera.DISPLAY_WIDTH = window_get_width();
+		if (is_undefined(Camera.DISPLAY_HEIGHT))
+			Camera.DISPLAY_HEIGHT = window_get_height();
 			
 		/// @note	the depth texture doesn't have its own surface as it is
 		///			taken from the depth buffer of the albedo surface
-		var screen_width = surface_get_width(application_surface);
-		var screen_height = surface_get_height(application_surface);
-		buffer_width = anchor.get_dx(screen_width);
-		buffer_height = anchor.get_dy(screen_height);
+		if (is_undefined(custom_render_size)){
+			var screen_width = Camera.DISPLAY_WIDTH;
+			var screen_height = Camera.DISPLAY_HEIGHT;
+			buffer_width = anchor.get_dx(screen_width);
+			buffer_height = anchor.get_dy(screen_height);
+		}
+		else{
+			buffer_width = custom_render_size.x;
+			buffer_height = custom_render_size.y;
+		}
 		var surfaces = gbuffer.surfaces;
 		var textures = gbuffer.textures;
 		
