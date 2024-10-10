@@ -32,8 +32,9 @@ function Light() : Node() constructor {
 	///			CAMERA_GBUFFER. The only textures that should NOT be accessed
 	///			are the out_opaque and out_translucent textures.
 	/// @param	{array}		gbuffer					array of gbuffer textures to sample from
+	/// @param	{Camera}	camera_id				id of the currently rendering camera
 	/// @param	{bool}		is_translucent=false	whether or not this is the translucent pass or not
-	function apply_gbuffer(gbuffer, is_translucent=false){
+	function apply_gbuffer(gbuffer, camera_id, is_translucent=false){
 		throw new Exception("cannot call virtual function!");
 	}
 	

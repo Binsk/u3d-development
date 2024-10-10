@@ -1,3 +1,12 @@
+// Build any cube-map textures
+	/// @note This WAS handled automatically upon render, but we started having
+	///		  shader conflicts so this method was added.
+var cube_keys = struct_get_names(TextureCube.BUILD_MAP);
+for (var i = array_length(cube_keys) - 1; i >= 0; --i){
+	var cube_map = TextureCube.BUILD_MAP[$ cube_keys[i]];
+	cube_map.build();
+}
+
 var gpu_state = gpu_get_state();
 
 // Regenerate camera GBuffers as needed

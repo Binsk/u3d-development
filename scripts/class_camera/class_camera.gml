@@ -255,7 +255,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 
 			if (shader_current() != light.get_shader()){
 				shader_set(light.get_shader());
-				light.apply_gbuffer(gbuffer.textures);
+				light.apply_gbuffer(gbuffer.textures, self);
 			}
 			
 			light.apply();

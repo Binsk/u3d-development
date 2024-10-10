@@ -5,6 +5,9 @@
 #region DEFINE NECESSARY STATICS
 var foo = new Exception();
 delete foo;
+
+foo = new TextureCube();
+delete foo;
 #endregion
 
 global.__u3d_global_data = {

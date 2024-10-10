@@ -1,3 +1,4 @@
+initialize_count = room_speed * 0.1; // Done to get around a GameMaker bug w/ loading textures
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal]);
 
 // var gltf = new GLTFBuilder("block.glb");
@@ -12,7 +13,7 @@ instance_create_depth(0, 0, 0, obj_render_controller);
 obj_render_controller.add_body(body);
 obj_render_controller.add_camera(camera);
 
-environment_map = new TextureCube(sprite_get_texture(spr_default_environment_cube, 1));
+environment_map = new TextureCube();
 
 light = new LightAmbient();
 light.set_casts_shadows(true); // Enable SSAO

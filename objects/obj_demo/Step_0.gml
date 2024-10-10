@@ -1,3 +1,7 @@
+initialize_count--;
+if (initialize_count > 0)
+	return;
+	
 if (keyboard_check(vk_space))
 	return;
 	

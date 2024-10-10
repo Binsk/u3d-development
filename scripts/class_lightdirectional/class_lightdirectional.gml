@@ -45,7 +45,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		texture_environment = texture;
 	}
 	
-	function apply_gbuffer(gbuffer, is_translucent=false){
+	function apply_gbuffer(gbuffer, camera_id, is_translucent=false){
 		if (uniform_sampler_albedo < 0)
 			uniform_sampler_albedo = shader_get_sampler_index(shader_lighting, "u_sAlbedo");
 		
@@ -86,11 +86,11 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_depth, gbuffer[$ is_translucent ? CAMERA_GBUFFER.depth_opaque : CAMERA_GBUFFER.depth_opaque]);
-		shader_set_uniform_f(uniform_cam_position, other.position.x, other.position.y, other.position.z);
+		shader_set_uniform_f(uniform_cam_position, camera_id.position.x, camera_id.position.y, camera_id.position.z);
 		
 		shader_set_uniform_i(uniform_translucent_pass, is_translucent);
-		shader_set_uniform_matrix_array(uniform_inv_viewmatrix, matrix_get_inverse(other.get_view_matrix()));
-		shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(other.get_projection_matrix()));
+		shader_set_uniform_matrix_array(uniform_inv_viewmatrix, matrix_get_inverse(camera_id.get_view_matrix()));
+		shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(camera_id.get_projection_matrix()));
 		
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());

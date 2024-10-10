@@ -2,18 +2,27 @@
 /// A special texture container that can be used with Materials to specify 
 /// textures in more detail.
 
-function Texture2D(texture_id, is_sRGB=false)  : U3DObject() constructor {
+function Texture2D(texture_id=undefined, is_sRGB=false)  : U3DObject() constructor {
 	#region PROPERTIES
-	self.texture = texture_id;
+	self.texture_id = texture_id;
 	self.is_sRGB = is_sRGB;
-	texel_width = texture_get_texel_width(texture);
-	texel_height = texture_get_texel_height(texture);
-	texture_uvs = texture_get_uvs(texture);
+	texel_width = 0;
+	texel_height = 0;
+	texture_uvs = [0, 0, 0, 0];
 	#endregion
 	
 	#region METHODS
 	function get_texture(){
-		return texture;
+		if (is_undefined(texture_id))
+			return U3D.RENDERING.MATERIAL.missing_texture.texture.albedo.texture.get_texture()
+			
+		return texture_id;
+	}
+	
+	function set_texture(texture_id){
+		self.texture_id = texture_id;
+		if (not is_undefined(texture_id))
+			cache_properties();
 	}
 	
 	/// @desc	Returns if the texture is in the sRGB color space.
@@ -24,10 +33,10 @@ function Texture2D(texture_id, is_sRGB=false)  : U3DObject() constructor {
 	/// @desc	Returns if the texture is on its own texture page. This is usually
 	///			desired for 3D models.
 	function get_is_separate_page(){
-		if (texture_get_width(texture) < 1.0)
+		if (texture_get_width(texture_id) < 1.0)
 			return false;
 		
-		if (texture_get_height(texture) < 1.0)
+		if (texture_get_height(texture_id) < 1.0)
 			return false;
 		
 		return true
@@ -42,7 +51,7 @@ function Texture2D(texture_id, is_sRGB=false)  : U3DObject() constructor {
 	/// @desc	Given a u-coordinate for a 3D mesh, assuming [0..1], returns the
 	///			relative u coordinate for this texture.
 	function get_u(u){
-		var uvs = texture_get_uvs(texture);
+		var uvs = texture_get_uvs(texture_id);
 		return lerp(texture_uvs[0], texture_uvs[2], u);
 	}
 	
@@ -61,5 +70,16 @@ function Texture2D(texture_id, is_sRGB=false)  : U3DObject() constructor {
 	function get_txh(){
 		return texel_height;
 	}
+	
+	function cache_properties(){
+		texel_width = texture_get_texel_width(texture_id);
+		texel_height = texture_get_texel_height(texture_id);
+		texture_uvs = texture_get_uvs(texture_id);
+	}
+	#endregion
+	
+	#region INIT
+	if (not is_undefined(texture_id))
+		cache_properties();
 	#endregion
 }

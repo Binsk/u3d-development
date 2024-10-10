@@ -12,15 +12,15 @@
   "edgeFiltering":false,
   "For3D":true,
   "frames":[
-    {"$GMSpriteFrame":"","%Name":"e50525d4-5add-4a70-87b2-915d1d3e4d25","name":"e50525d4-5add-4a70-87b2-915d1d3e4d25","resourceType":"GMSpriteFrame","resourceVersion":"2.0",},
-    {"$GMSpriteFrame":"","%Name":"ea7fd17c-297e-42b7-aaf9-6ca74f76dae5","name":"ea7fd17c-297e-42b7-aaf9-6ca74f76dae5","resourceType":"GMSpriteFrame","resourceVersion":"2.0",},
+    {"$GMSpriteFrame":"","%Name":"47ce3216-a0d5-4fd8-bbaf-c6610caa3c06","name":"47ce3216-a0d5-4fd8-bbaf-c6610caa3c06","resourceType":"GMSpriteFrame","resourceVersion":"2.0",},
+    {"$GMSpriteFrame":"","%Name":"f6fc1cf7-ea1f-4d5e-95b8-f7acededa66f","name":"f6fc1cf7-ea1f-4d5e-95b8-f7acededa66f","resourceType":"GMSpriteFrame","resourceVersion":"2.0",},
   ],
   "gridX":0,
   "gridY":0,
   "height":768,
   "HTile":false,
   "layers":[
-    {"$GMImageLayer":"","%Name":"d33d223b-1395-468a-bd41-b4d9db5571d0","blendMode":0,"displayName":"default","isLocked":false,"name":"d33d223b-1395-468a-bd41-b4d9db5571d0","opacity":100.0,"resourceType":"GMImageLayer","resourceVersion":"2.0","visible":true,},
+    {"$GMImageLayer":"","%Name":"551e2b3b-8739-4419-b8c8-4cf3312016f0","blendMode":0,"displayName":"default","isLocked":false,"name":"551e2b3b-8739-4419-b8c8-4cf3312016f0","opacity":100.0,"resourceType":"GMImageLayer","resourceVersion":"2.0","visible":true,},
   ],
   "name":"spr_default_environment_cube",
   "nineSlice":null,
@@ -70,11 +70,11 @@
     "tracks":[
       {"$GMSpriteFramesTrack":"","builtinName":0,"events":[],"inheritsTrackColour":true,"interpolation":1,"isCreationTrack":false,"keyframes":{"$KeyframeStore<SpriteFrameKeyframe>":"","Keyframes":[
             {"$Keyframe<SpriteFrameKeyframe>":"","Channels":{
-                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"e50525d4-5add-4a70-87b2-915d1d3e4d25","path":"sprites/spr_default_environment_cube/spr_default_environment_cube.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
-              },"Disabled":false,"id":"fd8bcfb4-a8e3-4073-a217-2c3364996cd1","IsCreationKey":false,"Key":0.0,"Length":1.0,"resourceType":"Keyframe<SpriteFrameKeyframe>","resourceVersion":"2.0","Stretch":false,},
+                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"47ce3216-a0d5-4fd8-bbaf-c6610caa3c06","path":"sprites/spr_default_environment_cube/spr_default_environment_cube.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
+              },"Disabled":false,"id":"dcb104bf-1da4-4046-aa57-fb1d077c34c4","IsCreationKey":false,"Key":0.0,"Length":1.0,"resourceType":"Keyframe<SpriteFrameKeyframe>","resourceVersion":"2.0","Stretch":false,},
             {"$Keyframe<SpriteFrameKeyframe>":"","Channels":{
-                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"ea7fd17c-297e-42b7-aaf9-6ca74f76dae5","path":"sprites/spr_default_environment_cube/spr_default_environment_cube.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
-              },"Disabled":false,"id":"dd91724c-91af-4add-8e58-7751ac0dac77","IsCreationKey":false,"Key":1.0,"Length":1.0,"resourceType":"Keyframe<SpriteFrameKeyframe>","resourceVersion":"2.0","Stretch":false,},
+                "0":{"$SpriteFrameKeyframe":"","Id":{"name":"f6fc1cf7-ea1f-4d5e-95b8-f7acededa66f","path":"sprites/spr_default_environment_cube/spr_default_environment_cube.yy",},"resourceType":"SpriteFrameKeyframe","resourceVersion":"2.0",},
+              },"Disabled":false,"id":"8d7c8424-adbd-48a4-beda-d16eedb571ed","IsCreationKey":false,"Key":1.0,"Length":1.0,"resourceType":"Keyframe<SpriteFrameKeyframe>","resourceVersion":"2.0","Stretch":false,},
           ],"resourceType":"KeyframeStore<SpriteFrameKeyframe>","resourceVersion":"2.0",},"modifiers":[],"name":"frames","resourceType":"GMSpriteFramesTrack","resourceVersion":"2.0","spriteId":null,"trackColour":0,"tracks":[],"traits":0,},
     ],
     "visibleRange":null,
@@ -85,8 +85,8 @@
   "swatchColours":null,
   "swfPrecision":0.5,
   "textureGroupId":{
-    "name":"Default",
-    "path":"texturegroups/Default",
+    "name":"U3DDefaults",
+    "path":"texturegroups/U3DDefaults",
   },
   "type":0,
   "VTile":false,
