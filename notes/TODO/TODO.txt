@@ -1,6 +1,8 @@
 # FIXME
 1. [windows] ssao is pure white
 2. Textures not on 'own texture page' not rendering right
+3. SSAO seems REALLY weak?
+4. Normals (w/o normal-mapping) are broken, as they new REQUIRE tangents!
 
 # TODO
 1. [widows] address multple 'attribute' inputs for shaders
@@ -12,3 +14,5 @@
    pbr.x and pbr.w (then we ditch the specular)
 6. Environment reflections account for roughness
 7. Add tangent auto-generation upon load
+8. See if we can move the separate 'view vector' pass into the gbuffer and
+   store the buffer across texture channels

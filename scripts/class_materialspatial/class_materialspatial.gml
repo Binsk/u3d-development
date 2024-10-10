@@ -61,7 +61,8 @@ function MaterialSpatial() : Material() constructor {
 	texture = {
 		albedo : undefined,
 		normal : undefined,
-		pbr : undefined
+		pbr : undefined,
+		emissive : undefined
 	};
 	
 	/// @note	scalar albedo is multiplicative, however if no texture exists and no vertex
@@ -71,7 +72,8 @@ function MaterialSpatial() : Material() constructor {
 	///			before everything is converted back to sRGB at the end.
 	scalar = {
 		albedo : [1, 1, 1, 1],
-		pbr : [1, 1, 1] // See PBR_COLOR_INDEX for layout
+		pbr : [1, 1, 1], // See PBR_COLOR_INDEX for layout
+		emissive : [1, 1, 1]	// ONLY applies if there is an emission texture
 	}
 	
 	#region GBUFFER UNIFORMS
@@ -83,6 +85,9 @@ function MaterialSpatial() : Material() constructor {
 	uniform_gbuffer_sampler_pbr = -1;			// u_sPBR				(sampler2D)		PBR material in [R: specular, G: roughness, B: metallic] layout
 	uniform_gbuffer_pbr_uv = -1;				// u_vPBRUV				(vec4)			UV bounds on texture page for PBR
 	uniform_gbuffer_pbr_scalar = -1;			// u_vPBR				(vec3)			PBR multiplier (or direct value if no nexture)
+	uniform_gbuffer_sampler_emissive = -1;		// u_sEmissive			(sampler2D)		3color material for emission
+	uniform_gbuffer_emissive_uv = -1;			// u_vEmissiveUV		(vec4)			UV bounds on texture page for Emissive
+	uniform_gbuffer_emissive_scalar = -1;		// u_vEmissive			(vec3)			Emission multiplier (when texture exists)
 	uniform_gbuffer_sampler_toggles = -1;		// u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
 	uniform_gbuffer_zscalar = -1;				// u_fZScalar			(float)			distance from znear to zfar
 	#endregion
@@ -137,6 +142,9 @@ function MaterialSpatial() : Material() constructor {
 		uniform_gbuffer_sampler_pbr = shader_get_sampler_index(shader, "u_sPBR");
 		uniform_gbuffer_pbr_uv = shader_get_uniform(shader, "u_vPBRUV");
 		uniform_gbuffer_pbr_scalar = shader_get_uniform(shader, "u_vPBR");
+		uniform_gbuffer_sampler_emissive = shader_get_sampler_index(shader, "u_sEmissive");
+		uniform_gbuffer_emissive_uv = shader_get_uniform(shader, "u_vEmissiveUV");
+		uniform_gbuffer_emissive_scalar = shader_get_uniform(shader, "u_vEmissive");
 		uniform_gbuffer_sampler_toggles = shader_get_uniform(shader, "u_iSamplerToggles");
 		uniform_gbuffer_zscalar = shader_get_uniform(shader, "u_fZScalar");
 	}
@@ -150,7 +158,7 @@ function MaterialSpatial() : Material() constructor {
 			shader_set(shader_gbuffer);
 		
 		// Send textures
-		var sampler_toggles = [0, 0, 0];
+		var sampler_toggles = [0, 0, 0, 0];
 		if (uniform_gbuffer_sampler_albedo >= 0 and not is_undefined(texture[$ "albedo"])){
 			texture_set_stage(uniform_gbuffer_sampler_albedo, texture.albedo.texture.get_texture());
 			shader_set_uniform_f(uniform_gbuffer_albedo_uv, texture.albedo.uv[0], texture.albedo.uv[1], texture.albedo.uv[2], texture.albedo.uv[3]);
@@ -168,13 +176,20 @@ function MaterialSpatial() : Material() constructor {
 			shader_set_uniform_f(uniform_gbuffer_pbr_uv, texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]);
 			sampler_toggles[2] = 1;
 		}
+		
+		if (uniform_gbuffer_sampler_emissive >= 0 and not is_undefined(texture[$ "emissive"])){
+			texture_set_stage(uniform_gbuffer_sampler_emissive, texture.emissive.texture.get_texture());
+			shader_set_uniform_f(uniform_gbuffer_emissive_uv, texture.emissive.uv[0], texture.emissive.uv[1], texture.emissive.uv[2], texture.emissive.uv[3]);
+			sampler_toggles[3] = 1;
+		}
 
 		// Set samplers; if no texture then the values are used directly otherwise they are multiplied
 		shader_set_uniform_i_array(uniform_gbuffer_sampler_toggles, sampler_toggles);
 		
-		// Send PBR scalars:
+		// Send texture scalars:
 		shader_set_uniform_f(uniform_gbuffer_albedo_scalar, scalar.albedo[0], scalar.albedo[1], scalar.albedo[2], scalar.albedo[3]);
 		shader_set_uniform_f(uniform_gbuffer_pbr_scalar, scalar.pbr[PBR_COLOR_INDEX.specular], scalar.pbr[PBR_COLOR_INDEX.roughness], scalar.pbr[PBR_COLOR_INDEX.metalness]);
+		shader_set_uniform_f(uniform_gbuffer_emissive_scalar, scalar.emissive[0], scalar.emissive[1], scalar.emissive[2]);
 		
 		shader_set_uniform_f(uniform_gbuffer_zscalar, camera_id.zfar - camera_id.znear);
 		gpu_set_cullmode(cull_mode);

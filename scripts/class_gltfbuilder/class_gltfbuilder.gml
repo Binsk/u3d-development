@@ -110,8 +110,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var pbr_base = [1, 1, 1];
 			var pbr_sprite = undefined;
 			var normal_sprite = undefined;
+			var emissive_sprite = undefined;
+			var emissive_base = [1, 1, 1];
 			var cull_mode = (material_data[$ "doubleSided"] ?? false) ? cull_noculling : cull_counterclockwise;
+			
 /// @stub	Add support for pulling texture texCoord properties in case textures are shared!
+///			Should be added to the Texture2D class
 			if (not is_undefined(pbr_data)){
 				color_base = pbr_data[$ "baseColorFactor"] ?? color_base;
 				// Albedo Texture
@@ -136,6 +140,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				var texture_index = get_structure(material_data[$ "normalTexture"].index, "textures").source;
 				normal_sprite = sprite_array[texture_index];
 			}
+			
+			if (not is_undefined(material_data[$ "emissiveTexture"])){
+				var texture_index = get_structure(material_data[$ "emissiveTexture"].index, "textures").source;
+				emissive_sprite = sprite_array[texture_index];
+				emissive_base = (material_data[$ "emissiveFactor"] ?? [1, 1, 1]);
+			}
 
 			var material = new MaterialSpatial();
 			if (not is_undefined(color_sprite))
@@ -144,13 +154,16 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				material.set_texture("pbr", new Texture2D(sprite_get_texture(pbr_sprite, 0)));
 			if (not is_undefined(normal_sprite))
 				material.set_texture("normal", new Texture2D(sprite_get_texture(normal_sprite, 0)));
+			if (not is_undefined(emissive_sprite))
+				material.set_texture("emissive", new Texture2D(sprite_get_texture(emissive_sprite, 0)));
 				
 			material.scalar.albedo = color_base;
 			material.scalar.pbr = pbr_base;
+			material.scalar.emissive = emissive_base;
 			material.cull_mode = cull_mode;
 			
 			// Attach free method to free up sprites as needed:
-			material.signaler.add_signal("free", new Callable(material, function(color_sprite, pbr_sprite, normal_sprite){
+			material.signaler.add_signal("free", new Callable(material, function(color_sprite, pbr_sprite, normal_sprite, emissive_sprite){
 				if (not is_undefined(color_sprite))
 					sprite_delete(color_sprite);
 				
@@ -159,7 +172,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				
 				if (not is_undefined(normal_sprite))
 					sprite_delete(normal_sprite);
-			}, [color_sprite, pbr_sprite, normal_sprite]))
+				
+				if (not is_undefined(emissive_sprite))
+					sprite_delete(emissive_sprite);
+			}, [color_sprite, pbr_sprite, normal_sprite, emissive_sprite]))
 			
 			material_array[i] = material;
 		}

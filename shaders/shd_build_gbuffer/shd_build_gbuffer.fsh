@@ -1,16 +1,19 @@
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sNormal;
 uniform sampler2D u_sPBR;
-uniform ivec3 u_iSamplerToggles;
+uniform sampler2D u_sEmissive;
+uniform ivec4 u_iSamplerToggles;
 
 uniform vec4 u_vAlbedo;
 uniform vec3 u_vPBR;
+uniform vec3 u_vEmissive;
 
 uniform float u_fZScalar; // (zFar - zNear)
 
 varying vec2 v_vTexcoordAlbedo;
 varying vec2 v_vTexcoordNormal;
 varying vec2 v_vTexcoordPBR;
+varying vec2 v_vTexcoordEmissive;
 varying vec4 v_vColor;
 varying vec3 v_vNormal;
 varying vec4 v_vPosition;
@@ -53,7 +56,10 @@ void main()
     }
     else
         gl_FragData[2] = vec4(u_vPBR, 1.0);
-       
-	/// @note	Can't seem to get the regular method to write out correctly? This is working for now.
-	gl_FragData[3].r = gl_FragCoord.z / gl_FragCoord.w / u_fZScalar; // Convert from [-1..1] to [0..1]
+
+	// Emissive texture:
+	if (u_iSamplerToggles[3] > 0)
+		gl_FragData[3] = vec4(to_rgb(texture2D(u_sEmissive, v_vTexcoordEmissive).rgb) * u_vEmissive, 1.0);
+	else
+		gl_FragData[3] = vec4(0, 0, 0, 1);
 }

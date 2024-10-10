@@ -17,6 +17,7 @@ function LightAmbient() : Light() constructor {
 	ssao_samples = 16;		// Number of samples to perform when rendering SSAO (more = cleaner but more expensive)
 	ssao_radius = 0.5;		// Generic sample radius scalar (radius is auto-calculated based on fragment depth + zfar; this multiplies against that)
 	ssao_strength = 1.0;	// Scales SSAO strength / area together
+	ssao_multiplier = 1.0;	// Scales the SSAO 'scene', including distance, radius, and so forth (can increase intensity significantly)
 	ssao_blur_samples = 2;	// `(2x + 1)^2` samples to use when blurring (so 4 = 81 samples)
 	ssao_blur_stride = 1.0;	// Number of texels to stride after each sample
 	ssao_normal_bias = 0.0;	// Multiplies against normal comparison result ([0..1], larger attempts to remove noise on flat surfaces at cost of accuracy)
@@ -136,10 +137,10 @@ function LightAmbient() : Light() constructor {
 		surface_set_target(surface_ssao);
 		
 		shader_set_uniform_i(uniform_ssao_samples, ssao_samples);
-		shader_set_uniform_f(uniform_ssao_falloff, 0.000001 / ((camera_id.zfar - camera_id.znear) / 1024.0));
-		shader_set_uniform_f(uniform_ssao_radius, 0.0008 / ((camera_id.zfar - camera_id.znear) / 1024.0) * ssao_radius);
+		shader_set_uniform_f(uniform_ssao_falloff, 0.000001 / ((camera_id.zfar - camera_id.znear) / (1024.0 * ssao_multiplier)));
+		shader_set_uniform_f(uniform_ssao_radius, 0.0008 / ((camera_id.zfar - camera_id.znear) / (1024.0 * ssao_multiplier)) * ssao_radius);
 		shader_set_uniform_f(uniform_ssao_strength, ssao_strength);
-		shader_set_uniform_f(uniform_ssao_area, lerp(0.1, 0.0075, ssao_strength));
+		shader_set_uniform_f(uniform_ssao_area, lerp(0.001, 0.0075, ssao_strength));
 		shader_set_uniform_f(uniform_ssao_normal_bias, ssao_normal_bias);
 		shader_set_uniform_f_array(uniform_ssao_view_matrix, matrix_to_matrix3(camera_id.get_view_matrix()));
 		texture_set_stage(uniform_ssao_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque]);
