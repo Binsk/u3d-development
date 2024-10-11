@@ -38,15 +38,15 @@ void main()
         gl_FragData[0] = v_vColor * u_vAlbedo;
     
     vec3 vNormal = vec3(0, 0, 1);
-    if (u_iSamplerToggles[1] > 0) // Textured normals
+    if (u_iSamplerToggles[1] > 0){ // Textured normals
     	vNormal = texture2D(u_sNormal, v_vTexcoordNormal).rgb * 2.0 - 1.0;
+    	vNormal = normalize(v_mRotation * vNormal); // Multiply by TBN, unfortunately has to be in the fragment shader
+    }
+    else
+    	vNormal = v_mRotation[2];
     
     if (!gl_FrontFacing)
 		vNormal = -vNormal;
-	
-/// @stub	Think of some way to calculate normals in the vertex shader! Normally would do things
-///			in tangent space, but can't do so with a a deferred render.	
-	vNormal = normalize(v_mRotation * vNormal);
 		
     gl_FragData[1] = vec4(vNormal.xyz * 0.5 + 0.5, 1.0);
     
