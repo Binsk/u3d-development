@@ -292,3 +292,13 @@ function matrix_to_matrix3(matrix){
 		matrix[8], matrix[9], matrix[10]
 	];
 }
+
+function matrix_is_identity(matrix){
+	var identity = matrix_build_identity();
+	for (var i = array_length(identity) - 1; i >= 0; --i){
+		if (matrix[i] != identity[i])
+			return false;
+	}
+	
+	return true;
+}

@@ -2,9 +2,9 @@ initialize_count = room_speed * 0.1; // Done to get around a GameMaker bug w/ lo
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
 // vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal]);
 
-// var gltf = new GLTFBuilder("block.glb");
+var gltf = new GLTFBuilder("helmet-notan.glb");
 // var gltf = new GLTFBuilder("material-test.glb");
-var gltf = new GLTFBuilder("helmet.glb");
+// var gltf = new GLTFBuilder("helmet.glb");
 box = gltf.generate_model(vformat);
 
 camera = new Camera();
@@ -23,6 +23,8 @@ light.set_environment_texture(environment_map);
 light.light_intensity = 0.25;
 light.ssao_strength = 4.0;
 light.ssao_radius = 2.0;
+// light.ssao_strength = 1.0;
+// light.ssao_radius = 1.0;
 obj_render_controller.add_light(light);
 
 lightd = new LightDirectional(quat(), vec(5, 6, 7));

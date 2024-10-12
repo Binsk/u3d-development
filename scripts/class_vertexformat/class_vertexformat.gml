@@ -80,6 +80,15 @@ function VertexFormat(vformat_array=[]) : U3DObject() constructor {
 		return vformat;
 	}
 	
+	/// @desc	Returns if this format has the specified kind of vertex data.
+	function get_has_data(value){
+		for (var i = array_length(vformat_array) - 1; i >= 0; --i){
+			if (vformat_array[i] == value)
+				return true;
+		}
+		return false;
+	}
+	
 	function toString(){
 		return string(get_format());
 	}
@@ -104,6 +113,19 @@ function VertexFormat(vformat_array=[]) : U3DObject() constructor {
 	if (array_length(vformat_array) <= 0) // Provided vertex format data is empty
 		throw new Exception("Invalid vertex format size [0]");
 	
+	// Re-order format as the glTF loader requires certian elements fully defined
+	// before others (such as UV / Position to auto-calculate tangents)
+	var priority = ds_priority_create();
+	for (var i = array_length(vformat_array) - 1; i >= 0; --i)
+		ds_priority_add(priority, vformat_array[i], vformat_array[i]);
+	
+	vformat_array = [];
+	while (not ds_priority_empty(priority))
+		array_push(vformat_array, ds_priority_delete_min(priority));
+	
+	ds_priority_destroy(priority);
+	
+	// Create actual vertex format:
 	vertex_format_begin();
 	for (var i = 0; i < array_length(vformat_array); ++i){
 		switch (vformat_array[i]){

@@ -1,9 +1,6 @@
 /// ABOUT
 /// An ambient light is the simplest of lights and will simply apply its 
 /// lighting to everything in the scene equally.
-
-/// @stub	Look into https://computergraphics.stackexchange.com/questions/3955/physically-based-shading-ambient-indirect-lighting
-///			for improved ambient lighting effects.
 function LightAmbient() : Light() constructor {
 	#region PROPERTIES
 	shader_lighting = shd_lighting_ambient;
@@ -14,13 +11,13 @@ function LightAmbient() : Light() constructor {
 	casts_shadows = false; // Toggles SSAO in this case
 	texture_environment = undefined;	// If set, an environment map will be reflected; otherwise albedo color is used
 	
-	ssao_samples = 16;		// Number of samples to perform when rendering SSAO (more = cleaner but more expensive)
-	ssao_radius = 1.0;		// Generic sample radius scalar (radius is auto-calculated based on fragment depth + zfar; this multiplies against that)
-	ssao_strength = 1.0;	// Scales SSAO strength / area together
+	ssao_samples = 8;		// Number of samples per pixel (more = less noise, more expensive)
+	ssao_radius = 1.0;		// Unitless sample radius around pixel (multiplies against auto-scaled radius)
+	ssao_strength = 1.0;	// SSAO contribution (more = darker)
 	ssao_bias = 0.01;		// Depth delta cut-off to prevent self-sampling
-	ssao_scale = 1.0;		// Scales SSAO depth comparisons
-	ssao_blur_samples = 2;	// `(2x + 1)^2` samples to use when blurring (so 4 = 81 samples)
-	ssao_blur_stride = 1.0;	// Number of texels to stride after each sample
+	ssao_scale = 1.0;		// Scales SSAO depth comparisons (more = larger effect for smaller depth changes)
+	ssao_blur_samples = 2;	// `(2x + 1)^2` samples to use when blurring (so 4 = 81 samples) (more = more blurry, more expensive)
+	ssao_blur_stride = 1.0;	// Number of texels to stride after each blur sample (more = more blurry but lower quality blur)
 	ssao_sample_array = [];	// Pre-computed sample directions to prevent sin/cos in the frag shader
 	
 	#region SHADER UNIFORMS
@@ -67,7 +64,7 @@ function LightAmbient() : Light() constructor {
 	/// @param	{int}	blur_passes=2	blur pass multiplier for SSAO application where the value will be (2x + 1)^2 (more = blurrier)
 	/// @param	{real}	blur_stride=1.0	number of texels to stride per blur pass (more = blurrier but lower quality blur)
 	function set_ssao_properties(samples=16, strength=1.0, radius=1.0, bias=0.01, scale=1.0, blur_passes=2, blur_stride=1.0){
-		ssao_samples = floor(clamp(samples, 1, 64));
+		ssao_samples = floor(clamp(samples, 1, 64)); // Shader is limited to max of 64
 		ssao_strength = max(0.0, strength)
 		ssao_radius = max(0.0, radius);
 		ssao_bias = max(0.0, bias);
@@ -79,13 +76,14 @@ function LightAmbient() : Light() constructor {
 		ssao_sample_array = array_create(ssao_samples * 2.0, 0);
 		var dx = (pi * 2.0) / ssao_samples;
 		for (var i = 0; i < ssao_samples; ++i){
-			var length = choose(0.25, 0.5, 0.75, 1.0);
+			var length = choose(0.25, 0.5, 0.75, 1.0); // Length also scales in shader, this helps fill the hemisphere, though
 			ssao_sample_array[i * 2] = cos(i * dx) * length;
 			ssao_sample_array[i * 2 + 1] = sin(i * dx) * length;
 		}
 	}
 	
-	/// @desc	Enables / Disables ambient occlusion for this light.
+	/// @desc	Enables / Disables ambient occlusion for this light. Same as enabling shadows 
+	///			since AO is an ambient light's 'shadow'. Simply here for naming convenience.
 	function set_ambient_occlusion(enabled=false){
 		set_casts_shadows(enabled);
 	}
@@ -259,6 +257,6 @@ function LightAmbient() : Light() constructor {
 	#endregion
 	
 	#region INIT
-	set_ssao_properties();
+	set_ssao_properties(ssao_samples, ssao_strength, ssao_radius, ssao_bias, ssao_scale, ssao_blur_samples, ssao_blur_stride);
 	#endregion
 }

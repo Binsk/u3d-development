@@ -33,6 +33,23 @@ function Primitive(vformat) : U3DObject() constructor {
 			definition_data[$ vformat.vformat_array[i]] = array_create(size, undefined);
 	}
 	
+	/// @desc	Returns an already defined piece of data from the primitive's definition.
+	///			This is only valid while the definition is occurring. Returns undefined if
+	///			there is a problem.
+	function define_get_data(type=VERTEX_DATA.position, index=0){
+		if (is_undefined(self[$ "definition_data"])) // Not defining
+			return undefined;
+			
+		if (not vformat.get_has_data(type))	// Doesn't have the property
+			return undefined;
+			
+			// Index out-of-bounds:
+		if (index < 0 or index >= array_length(definition_data[$ type] ?? []))
+			return undefined;
+			
+		return definition_data[$ type][index];
+	}
+	
 	/// @desc	Short-hand for define_set_data(-1, ...).
 	function define_add_data(type=VERTEX_DATA.position, data=[]){
 		define_set_data(-1, type, data);
