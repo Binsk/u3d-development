@@ -21,6 +21,7 @@ void main()
 {
     vec4 vPosition = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);
     v_vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
+    
     gl_Position = v_vPosition;
     vec3 vNormal = normalize(mat3(gm_Matrices[MATRIX_WORLD]) * in_Normal);
     vec3 vTangent = normalize(mat3(gm_Matrices[MATRIX_WORLD]) * in_TextureCoord1);

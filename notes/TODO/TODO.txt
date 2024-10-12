@@ -9,3 +9,6 @@
 6. Environment reflections account for roughness (not a simple matter)
 7. Add tangent auto-generation upon load
 8. Greatly speed up the GLTFLoader!
+-	System currently renders camera mirrored w/ OpenGL to fix some issues;
+	this is bad if we want in-game camera rendering so find a way to fix the
+	projection matrix.

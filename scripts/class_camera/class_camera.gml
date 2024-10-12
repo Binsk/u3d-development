@@ -27,7 +27,7 @@ enum CAMERA_TONEMAP {
 
 /// @desc	Creates a new 3D camera that can be moved around the world and added
 ///			to the rendering pipeline.
-function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
+function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	#region PROPERTIES
 	static DISPLAY_WIDTH = undefined; // Full display size to measure anchor points
 	static DISPLAY_HEIGHT = undefined;
@@ -80,14 +80,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	function get_projection_matrix(){
 		if (is_undefined(buffer_width)) // Cannot determine render size
 			return matrix_build_identity();
-		
-		var aspect = -buffer_width / buffer_height;
-		var yfov = 2 * arctan(dtan(fov/2) * aspect);
-		
-		if (get_is_directx_pipeline()){
-			aspect = -aspect;
-			yfov = -yfov;
-		}
+
+		var aspect = buffer_width / buffer_height;
+		var yfov = 2.0 * arctan(dtan(fov/2) * aspect);
 		
 		var h = 1 / tan(yfov * 0.5);
 		var w = h / aspect;
@@ -95,10 +90,11 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 		var b = (-znear * zfar) / (zfar - znear);
 		var matrix = [
 			w, 0, 0, 0,
-			0, h, 0, 0,
+			0, get_is_directx_pipeline() ? h : -h, 0, 0,
 			0, 0, a, 1,
 			0, 0, b, 0
 		];
+		
 		return matrix;
 	}
 	
@@ -352,7 +348,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=50) : Node() constructor{
 	function render_out(){
 /// @stub	Figure out where to combine gbuffer outputs into a single result (here? before post process?)
 		shader_set(shd_finalize);
-		draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.out_translucent], 0, 0); /// @stub Transluscent because we are temporarily using it for FXAA
+		draw_surface_ext(gbuffer.surfaces[$ CAMERA_GBUFFER.out_translucent], buffer_width, 0, -1, 1, 0, c_white, 1.0); /// @stub Transluscent because we are temporarily using it for FXAA
 		shader_reset();
 	}
 	super.mark("free");
