@@ -1,54 +1,53 @@
 uniform sampler2D u_sDepth;
 uniform sampler2D u_sNormal;
+uniform sampler2D u_sNoise;
 
-uniform int u_iSamples;		// Number of random samples to use when checking nearby fragments
-uniform float u_fFalloff;	// Threshold for distance falloff
-uniform float u_fRadius;	// Sample radius in texels
-uniform float u_fStrength;	// Strength of the SSAO effect
-uniform float u_fArea;		// Area threshold for falloff vs occlusion
-uniform float u_fNormalBias;	// Larger will discard occlusion between fragments w/ similar normals
+uniform mat4 u_mInvProj;
 uniform mat3 u_mView;		// View matrix, required for normal sampling
+uniform vec2 u_vTexelSize;
+uniform vec2 u_vaSampleDirections[64]; // Maximum of 64 samples
+uniform int u_iSamples;
+uniform float u_fSampleRadius;
+uniform float u_fScale;
+uniform float u_fBias;
+uniform float u_fIntensity;
 
 varying vec2 v_vTexcoord;
 
-float rand(vec2 vValue){
-    return abs(fract(sin(dot(vValue, vec2(12.9898, 78.233))) * 43758.5453)) * 2.0 - 1.0;
+vec3 depth_to_view(float fDepth, vec2 vUV){
+    float fZ = fDepth * 2.0 - 1.0;
+    vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
+    vec4 vViewPos = u_mInvProj * vClipPos;
+    vViewPos /= vViewPos.w;
+    return vViewPos.xyz;
+}
+
+float calculate_ao(vec2 vUV, vec2 vOffset, vec3 vPosition, vec3 vNormal){
+	vec3 vNPosition = depth_to_view(texture2D(u_sDepth, vUV + vOffset).r, vUV + vOffset);
+	vec3 vDifference = vNPosition - vPosition;
+	vec3 vDirection = normalize(vDifference);
+	float fDistance = length(vDifference) * u_fScale;
+	return max(0.0, dot(vNormal, vDirection) - u_fBias) * (1.0 / (1.0 + fDistance)) * u_fIntensity;
 }
 
 void main() {
-	// Random sample vector to allow for noise
-	vec3 vRandom = normalize(vec3(
-		rand(v_vTexcoord.xy * 2.0),
-		rand(v_vTexcoord.xy * 3.0),
-		rand(v_vTexcoord.xy * 4.0)
-	)); 
-	float fDepth = texture2D(u_sDepth, v_vTexcoord.xy).r;
-	vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord.xy).rgb * 2.0 - 1.0);
-	vec3 vNormalView = normalize(u_mView * vNormal);
-	vNormalView.y = -vNormalView.y;
-	
-	vec3 vPosition = vec3(v_vTexcoord.xy, fDepth);
-	float fRadiusDepth = u_fRadius / fDepth;
-	float fOcclusion = 0.0;
+	vec3 vPosition = depth_to_view(texture2D(u_sDepth, v_vTexcoord).r , v_vTexcoord);
+	vec3 vNormal = normalize(u_mView * (texture2D(u_sNormal, v_vTexcoord).rgb * 2.0 - 1.0));
+	vec2 vRand = normalize(texture2D(u_sNoise, fract(v_vTexcoord / u_vTexelSize / 64.0)).rg * 2.0 - 1.0);
+	float fAO = 0.0;
+	float fSampleRadius = u_fSampleRadius / vPosition.z;
 	
 	for (int i = 0; i < u_iSamples; ++i){
-			// Note: We randomize the length multiplier by [0.25..1.0] than raise to a power
-			//		 to prioritize samples closer to our position.
-		vec3 vRay = vRandom * fRadiusDepth * pow(max(0.1, abs(rand(vRandom.yy))), 1.25);
-		vec3 vHemiRay = vPosition + sign(dot(vRay, vNormalView)) * vRay; // Grab the final position; mirror the ray if pointing the wrong way
-		vRandom = normalize(vRandom + vec3(rand(vHemiRay.zx), rand(vRay.xz), rand(vHemiRay.yy)));
+		vec2 vC = u_vaSampleDirections[i];
 		
-		float fOcclusionDepth = texture2D(u_sDepth, clamp(vHemiRay.xy, 0.0, 1.0)).r;
-		float fDifference = fDepth - fOcclusionDepth;
-		
-		// Sample normal and compare; if they are similar normals then we likely
-		// won't have occlusion
-		vec3 vSampleNormal = normalize(texture2D(u_sNormal, clamp(vHemiRay.xy, 0.0, 1.0)).xyz * 2.0 - 1.0);
-		float fDot = 1.0 - max(0.0, dot(vSampleNormal, vNormal)) * u_fNormalBias;
-		 
-		fOcclusion += step(u_fFalloff, fDifference) * (1.0 - smoothstep(u_fFalloff, u_fArea, fDifference)) * fDot;
+		vec2 vCoord1 = reflect(vC, vRand) * fSampleRadius;
+		vec2 vCoord2 = vec2(vCoord1.x * 0.707 - vCoord1.y * 0.707, vCoord1.x * 0.707 + vCoord1.y * 0.707);
+		fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.25, vPosition, vNormal);
+		fAO += calculate_ao(v_vTexcoord, vCoord2 * 0.5, vPosition, vNormal);
+		fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.75, vPosition, vNormal);
+		fAO += calculate_ao(v_vTexcoord, vCoord2, vPosition, vNormal);
 	}
-	
-	float fFinal = 1.0 - u_fStrength * fOcclusion * (1.0 / float(u_iSamples));
-	gl_FragColor.r = fFinal;
+		
+	fAO = clamp(fAO / float(u_iSamples * 4), 0.0, 1.0);
+	gl_FragColor.r = 1.0 - fAO;
 }

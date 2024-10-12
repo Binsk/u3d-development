@@ -111,7 +111,6 @@ void main()
         vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);
         vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
         vec2 vCube = cube_uv(normalize(reflect(vView, vNormal)));
-        // vec3 vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
         vec3 vCubeColor = texture2DMip(u_sEnvironment, vCube, 0).rgb;
         vAlbedo.rgb = mix(vAlbedo.rgb, vCubeColor * vAlbedo.rgb, texture2D(u_sPBR, v_vTexcoord).b);
     }

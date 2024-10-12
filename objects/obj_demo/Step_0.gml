@@ -15,14 +15,14 @@ else {
 	for (var i = 0; i < array_length(material_array); ++i){
 		var material = material_array[i];
 		if (keyboard_check(vk_up))
-			material.scalar.pbr[1] = clamp(material.scalar.pbr[1] + 0.05, 0, 1);
+			material.scalar.pbr[1] = clamp(material.scalar.pbr[1] + 0.1 * frame_delta_relative, 0, 1);
 		if (keyboard_check(vk_down))
-			material.scalar.pbr[1] = clamp(material.scalar.pbr[1] - 0.05, 0, 1);
+			material.scalar.pbr[1] = clamp(material.scalar.pbr[1] - 0.1 * frame_delta_relative, 0, 1);
 		
 		if (keyboard_check(vk_right))
-			material.scalar.pbr[2] = clamp(material.scalar.pbr[2] + 0.05, 0, 1);
+			material.scalar.pbr[2] = clamp(material.scalar.pbr[2] + 0.1 * frame_delta_relative, 0, 1);
 		if (keyboard_check(vk_left))
-			material.scalar.pbr[2] = clamp(material.scalar.pbr[2] - 0.05, 0, 1);
+			material.scalar.pbr[2] = clamp(material.scalar.pbr[2] - 0.1 * frame_delta_relative, 0, 1);
 	}
 }
 

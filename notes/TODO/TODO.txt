@@ -2,7 +2,6 @@
 1. [windows] ssao is pure white
 2. Textures not on 'own texture page' not rendering right
 3. SSAO seems REALLY weak?
-4. Normals (w/o normal-mapping) are broken, as they new REQUIRE tangents!
 
 # TODO
 1. [widows] address multple 'attribute' inputs for shaders
