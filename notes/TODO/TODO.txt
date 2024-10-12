@@ -1,14 +1,15 @@
 # FIXME
-1. [windows] reflections rotate incorrectly
-2. Textures not on 'own texture page' not rendering right
+-	[windows] reflections rotate incorrectly
+-	Textures not on 'own texture page' not rendering right
+-	If a sprite is used in multiple glTF places the first one destroyed will
+	free the sprite. We need better data management.
 
 # TODO
-1. [widows] address multple 'attribute' inputs for shaders
-2. Add 'render layers' to Body() for lighting & camera reasons
-3. Add proper PBR simulation in ambient lighting (somewhat done)
-6. Environment reflections account for roughness (not a simple matter)
-7. Add tangent auto-generation upon load
-8. Greatly speed up the GLTFLoader!
+-	[widows] address multple 'attribute' inputs for shaders
+-	Add 'render layers' to Body() for lighting & camera reasons
+-	Add proper PBR simulation in ambient lighting (somewhat done)
+-	Environment reflections account for roughness (not a simple matter)
+-	Greatly speed up the GLTFLoader!
 -	System currently renders camera mirrored w/ OpenGL to fix some issues;
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.

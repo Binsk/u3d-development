@@ -28,10 +28,10 @@ function Model() : U3DObject() constructor {
 			
 		material_data[$ material_index] = material;
 	}
-	
-	function render(render_stage=RENDER_STAGE.build_gbuffer, camera_id=undefined){
+
+	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque){
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
-			mesh_array[i].render(material_data, render_stage, camera_id);
+			mesh_array[i].render(material_data, camera_id, render_stage);
 	}
 	#endregion
 }

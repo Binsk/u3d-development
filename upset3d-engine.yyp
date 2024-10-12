@@ -42,6 +42,7 @@
     {"$GMIncludedFile":"","%Name":"helmet.glb","CopyToMask":-1,"filePath":"datafiles","name":"helmet.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"material-test.glb","CopyToMask":-1,"filePath":"datafiles","name":"material-test.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"sphere.glb","CopyToMask":-1,"filePath":"datafiles","name":"sphere.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"translucent.glb","CopyToMask":-1,"filePath":"datafiles","name":"translucent.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],
   "isEcma":false,
   "LibraryEmitters":[],

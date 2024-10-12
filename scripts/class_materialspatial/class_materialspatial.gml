@@ -56,6 +56,8 @@ function MaterialSpatial() : Material() constructor {
 	// Default shaders:
 	shader_gbuffer = undefined;
 	cull_mode = cull_noculling;
+	render_stage = CAMERA_RENDER_STAGE.opaque;
+	alpha_cutoff = 0.5;
 	
 	// Textures
 	texture = {
@@ -89,7 +91,8 @@ function MaterialSpatial() : Material() constructor {
 	uniform_gbuffer_emissive_uv = -1;			// u_vEmissiveUV		(vec4)			UV bounds on texture page for Emissive
 	uniform_gbuffer_emissive_scalar = -1;		// u_vEmissive			(vec3)			Emission multiplier (when texture exists)
 	uniform_gbuffer_sampler_toggles = -1;		// u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
-	uniform_gbuffer_zscalar = -1;				// u_fZScalar			(float)			distance from znear to zfar
+	uniform_gbuffer_alpha_cutoff = -1;			// u_fAlphaCutoff		(float)			opaque render sets alpha=0 if < cutoff and 1 if >=
+	uniform_gbuffer_translucent = -1;			// u_iTranslucent		(int)			whether or not it is a translucent pass
 	#endregion
 	
 	#region LIGHTING UNIFORMS
@@ -146,14 +149,15 @@ function MaterialSpatial() : Material() constructor {
 		uniform_gbuffer_emissive_uv = shader_get_uniform(shader, "u_vEmissiveUV");
 		uniform_gbuffer_emissive_scalar = shader_get_uniform(shader, "u_vEmissive");
 		uniform_gbuffer_sampler_toggles = shader_get_uniform(shader, "u_iSamplerToggles");
-		uniform_gbuffer_zscalar = shader_get_uniform(shader, "u_fZScalar");
+		uniform_gbuffer_alpha_cutoff = shader_get_uniform(shader, "u_fAlphaCutoff");
+		uniform_gbuffer_translucent = shader_get_uniform(shader, "u_iTranslucent");
 	}
 	
 	function shader_set_lighting(shader){
 /// @stub	Implement
 	};
 	
-	function apply(camera_id){
+	function apply(camera_id, is_translucent=false){
 		if (shader_current() != shader_gbuffer)
 			shader_set(shader_gbuffer);
 		
@@ -191,7 +195,9 @@ function MaterialSpatial() : Material() constructor {
 		shader_set_uniform_f(uniform_gbuffer_pbr_scalar, scalar.pbr[PBR_COLOR_INDEX.specular], scalar.pbr[PBR_COLOR_INDEX.roughness], scalar.pbr[PBR_COLOR_INDEX.metalness]);
 		shader_set_uniform_f(uniform_gbuffer_emissive_scalar, scalar.emissive[0], scalar.emissive[1], scalar.emissive[2]);
 		
-		shader_set_uniform_f(uniform_gbuffer_zscalar, camera_id.zfar - camera_id.znear);
+		shader_set_uniform_f(uniform_gbuffer_alpha_cutoff, alpha_cutoff);
+		shader_set_uniform_i(uniform_gbuffer_translucent, is_translucent);
+		
 		gpu_set_cullmode(cull_mode);
 	}
 	

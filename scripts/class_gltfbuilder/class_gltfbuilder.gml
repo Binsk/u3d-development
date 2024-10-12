@@ -113,6 +113,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var emissive_sprite = undefined;
 			var emissive_base = [1, 1, 1];
 			var cull_mode = (material_data[$ "doubleSided"] ?? false) ? cull_noculling : cull_counterclockwise;
+			var alpha_cutoff = (material_data[$ "alphaCutoff"] ?? 0.5);
+			var is_translucent = false;
 			
 /// @stub	Add support for pulling texture texCoord properties in case textures are shared!
 ///			Should be added to the Texture2D class
@@ -146,6 +148,19 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				emissive_sprite = sprite_array[texture_index];
 				emissive_base = (material_data[$ "emissiveFactor"] ?? [1, 1, 1]);
 			}
+			
+			switch (material_data[$ "alphaMode"] ?? "OPAQUE"){
+				case "OPAQUE":	// Effectively the same as "MASK" but doesn't allow transparency
+					alpha_cutoff = 1.0;
+				case "MASK":	// Alpha is either 0 or 1, this being determined by the alpha cutoff
+					is_translucent = false;
+					break;
+				case "BLEND":	// Allows translucency
+					is_translucent = true;
+					break;
+				default:
+					Exception.throw_conditional($"invalid alphaMode [{material_data[$ "alphaMode"]}]");
+			}
 
 			var material = new MaterialSpatial();
 			if (not is_undefined(color_sprite))
@@ -156,11 +171,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				material.set_texture("normal", new Texture2D(sprite_get_texture(normal_sprite, 0)));
 			if (not is_undefined(emissive_sprite))
 				material.set_texture("emissive", new Texture2D(sprite_get_texture(emissive_sprite, 0)));
-				
+			
 			material.scalar.albedo = color_base;
 			material.scalar.pbr = pbr_base;
 			material.scalar.emissive = emissive_base;
 			material.cull_mode = cull_mode;
+			material.alpha_cutoff = alpha_cutoff;
+			material.render_stage = (is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque);
 			
 			// Attach free method to free up sprites as needed:
 			material.signaler.add_signal("free", new Callable(material, function(color_sprite, pbr_sprite, normal_sprite, emissive_sprite){

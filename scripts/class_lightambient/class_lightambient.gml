@@ -218,7 +218,7 @@ function LightAmbient() : Light() constructor {
 		if (uniform_cam_position < 0)
 			uniform_cam_position = shader_get_uniform(shader_lighting, "u_vCamPosition");
 		
-		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
+		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_view, gbuffer[$ CAMERA_GBUFFER.view]);
 		

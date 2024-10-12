@@ -35,6 +35,14 @@ function CameraAnchor(camera) constructor {
 		margin.y2 = y2;
 	}
 	
+	function get_x(canvas_width){
+		return canvas_width * anchor.x1 + margin.x1;
+	}
+
+	function get_y(canvas_height){
+		return canvas_height * anchor.y1 + margin.y1;
+	}
+	
 	function get_dx(canvas_width){
 		return (canvas_width * anchor.x2 + margin.x2) - (canvas_width * anchor.x1 + margin.x1);
 	}

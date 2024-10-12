@@ -6,7 +6,6 @@ uniform sampler2D u_sView;
 
 uniform vec3 u_vLightNormal;
 uniform vec3 u_vLightColor;
-uniform int u_iTranslucentPass; // Whether or not this is a translucent pass
 
 uniform int u_iEnvironment;
 
@@ -115,15 +114,6 @@ vec4 texture2DMip(sampler2D sTexture, vec2 vUV, int iMip){
 void main()
 {
     vec4 vAlbedo = texture2D(u_sAlbedo, v_vTexcoord);
-    if (u_iTranslucentPass <= 0){
-/// @stub   Use a dynamic alpha cutoff (it is specified in glTF spec; 0.5 is the default)
-        if (vAlbedo.a < 0.5)
-/// @stub   Use a better option than 'discard'
-            discard;
-        else
-            vAlbedo.a = 1.0;
-    }
-    
     vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
     vec3 vPBR = texture2D(u_sPBR, v_vTexcoord).rgb; // Spec, Rough, Met
     

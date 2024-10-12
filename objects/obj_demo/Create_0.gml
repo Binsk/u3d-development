@@ -1,10 +1,7 @@
 initialize_count = room_speed * 0.1; // Done to get around a GameMaker bug w/ loading textures
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
-// vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal]);
 
-var gltf = new GLTFBuilder("helmet-notan.glb");
-// var gltf = new GLTFBuilder("material-test.glb");
-// var gltf = new GLTFBuilder("helmet.glb");
+var gltf = new GLTFBuilder("helmet.glb");
 box = gltf.generate_model(vformat);
 
 camera = new Camera();
@@ -39,6 +36,7 @@ for (var i = 0; i < array_length(keys); ++i)
 	array_push(material_array, box.material_data[$ keys[i]]);
 
 camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)));
+// camera.set_render_stages(CAMERA_RENDER_STAGE.translucent);
 
 Camera.DISPLAY_WIDTH = 1920;
 Camera.DISPLAY_HEIGHT = 1080;

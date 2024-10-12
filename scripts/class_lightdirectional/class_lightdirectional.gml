@@ -22,7 +22,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	uniform_normal = -1;
 	uniform_color = -1;
 	uniform_albedo = -1;
-	uniform_translucent_pass = -1;
 	uniform_environment = -1;
 	uniform_inv_projmatrix = -1;
 	uniform_inv_viewmatrix = -1;
@@ -78,21 +77,16 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (uniform_inv_viewmatrix < 0)
 			uniform_inv_viewmatrix = shader_get_uniform(shader_lighting, "u_mInvView");
 		
-		if (uniform_translucent_pass < 0)
-			uniform_translucent_pass = shader_get_uniform(shader_lighting, "u_iTranslucentPass");
-		
 		if (uniform_environment < 0)
 			uniform_environment = shader_get_uniform(shader_lighting, "u_iEnvironment");
 		
 		if (uniform_cam_position < 0)
 			uniform_cam_position = shader_get_uniform(shader_lighting, "u_vCamPosition");
 		
-		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_opaque : CAMERA_GBUFFER.albedo_opaque]);
+		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_view, gbuffer[$ CAMERA_GBUFFER.view]);
-		
-		shader_set_uniform_i(uniform_translucent_pass, is_translucent);
 		
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
