@@ -37,8 +37,10 @@
   "IncludedFiles":[
     {"$GMIncludedFile":"","%Name":"block.glb","CopyToMask":-1,"filePath":"datafiles","name":"block.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"boom-box.glb","CopyToMask":-1,"filePath":"datafiles","name":"boom-box.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"chess.glb","CopyToMask":-1,"filePath":"datafiles","name":"chess.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"helmet-notan.glb","CopyToMask":-1,"filePath":"datafiles","name":"helmet-notan.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"helmet.glb","CopyToMask":-1,"filePath":"datafiles","name":"helmet.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"material-test.glb","CopyToMask":-1,"filePath":"datafiles","name":"material-test.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"sphere.glb","CopyToMask":-1,"filePath":"datafiles","name":"sphere.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],
   "isEcma":false,

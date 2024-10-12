@@ -15,11 +15,11 @@ function Primitive(vformat) : U3DObject() constructor {
 	self.vformat = vformat;
 	self.vbuffer = undefined;
 	#endregion
-	
+
 	#region METHODS
 	/// @desc	Begins defining the vertex buffer for this primitive. Note that ALL primitives
 	///			should be defined in the pr_trianglelist format.
-	function define_begin(){
+	function define_begin(size=0){
 		if (not is_undefined(self[$ "definition_data"]))
 			throw new Exception("cannot start new [Primitive] definition; definition already in progress!");
 		
@@ -28,6 +28,9 @@ function Primitive(vformat) : U3DObject() constructor {
 			vertex_delete_buffer(vbuffer);
 			vbuffer = undefined;
 		}
+		
+		for (var i = array_length(vformat.vformat_array) - 1; i >= 0; --i)
+			definition_data[$ vformat.vformat_array[i]] = array_create(size, undefined);
 	}
 	
 	/// @desc	Short-hand for define_set_data(-1, ...).
@@ -44,8 +47,12 @@ function Primitive(vformat) : U3DObject() constructor {
 			throw new Exception("cannot add vertex data; no buffer defined.");
 			
 		var array = (definition_data[$ type] ?? []);
-		if (index < 0)
-			index = array_length(array);
+		if (index < 0){
+			index = definition_data[$ $"{type}_index"] ?? 0;
+			definition_data[$ $"{type}_index"] = index + 1;
+		}
+		else
+			definition_data[$ $"{type}_index"] = max(definition_data[$ $"{type}_index"] ?? 0, index);
 			
 		switch (type){
 			// Define as vec, array[vec] >= 1, or array[real] >= 3
@@ -121,13 +128,13 @@ function Primitive(vformat) : U3DObject() constructor {
 			if (not is_array(array))
 				throw new Exception("cannot build vertex buffer, type undefined.");
 			
-			if (array_length(array) != vertex_count and vertex_count >= 0)
+			if (definition_data[$ $"{vformat.vformat_array[i]}_index"] != vertex_count and vertex_count >= 0)
 				throw new Exception(string_ext("type count miss-match in vertex buffer [{0} != {1}]", [vertex_count, array_length(array)]));
 				
-			vertex_count = array_length(array);
+			vertex_count = definition_data[$ $"{vformat.vformat_array[i]}_index"];
 			
 			// Loop through values, make sure there aren't any undefined slots
-			for (var j = array_length(array) - 1; j >= 0; --j){
+			for (var j = definition_data[$ $"{vformat.vformat_array[i]}_index"] - 1; j >= 0; --j){
 				if (is_undefined(array[j]))
 					throw new Exception("type contains undefined vertex values.");
 			}

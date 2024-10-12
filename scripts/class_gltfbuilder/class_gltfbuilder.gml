@@ -230,7 +230,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
-		var vertex_index_array = read_accessor(accessor_index); // Array if integers pointing to vertex data indices
+		var vertex_index_array = read_accessor(accessor_index); // Array of integers pointing to vertex data indices
 		if (is_undefined(vertex_index_array)){ // If anything goes wrong, throw a generic error
 			Exception.throw_conditional(string_ext("failed to read accessor [{0}]!", [accessor_index]));
 			return undefined;
@@ -243,6 +243,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var missing_data = [];	// Record which data is missing so we can spit a warning
 		var primitive_map = {};
 		var component_type_map = {};
+		var map_size = 0;
 		for (var i = array_length(format.vformat_array) - 1; i >= 0; --i){
 			var array;
 			var format_label = VertexFormat.get_vertex_data_gltf_label(format.vformat_array[i]);
@@ -258,6 +259,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 			
 			primitive_map[$ format_label] = array;
+			map_size = max(map_size, array_length(array));
 		}
 		#endregion
 		
@@ -267,7 +269,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		// Build the primitive itself:
 		var is_custom_transform = not is_undefined(transform);
 		var primitive = new Primitive(format);
-		primitive.define_begin();
+		primitive.define_begin(map_size);
 		for (var i = array_length(format.vformat_array) - 1; i >= 0; --i){
 			var format_label = VertexFormat.get_vertex_data_gltf_label(format.vformat_array[i]);
 			var array = primitive_map[$ format_label];
