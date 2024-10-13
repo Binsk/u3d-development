@@ -6,7 +6,7 @@ if (initialize_count > -15)
 	
 // draw_text_color(12, 12, string_ext("FPS: {4}\n{0} x {1}\nM-Factor: {2}\nR-Factor: {3}", [Camera.DISPLAY_WIDTH, Camera.DISPLAY_HEIGHT, material_array[0].scalar.pbr[2], material_array[0].scalar.pbr[1], fps]), c_white, c_white, c_white, c_white, 1.0);
 draw_text_color(12, 12, $"FPS: {fps}\nResolution: {Camera.DISPLAY_WIDTH}x{Camera.DISPLAY_HEIGHT}" + 
-						$"\nM-Factor: {material_array[0].scalar.pbr[2]} [Shift + Le/Ri]\nR-Factor: {material_array[0].scalar.pbr[1]} [Shift + Up/Do]" +
+						$"\nM-Factor: {box.get_material(0).scalar.pbr[2]} [Shift + Le/Ri]\nR-Factor: {box.get_material(0).scalar.pbr[1]} [Shift + Up/Do]" +
 						$"\nSSAO x8: {light.casts_shadows} [1]",
 						c_white, c_white, c_white, c_white, 1.0);
 if (keyboard_check(ord("2"))){

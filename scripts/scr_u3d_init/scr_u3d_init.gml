@@ -11,6 +11,9 @@ foo = new TextureCube();
 delete foo;
 #endregion
 
+// This structure holds a number of defaults and fallback values. The system 
+// relies on this structure but it can also be accessed / modified manually if
+// needed.
 global.__u3d_global_data = {
 	RENDERING : {
 		MATERIAL : {
@@ -30,3 +33,4 @@ global.__u3d_global_data = {
 
 // Define 'missing material' texture:
 U3D.RENDERING.MATERIAL.missing.set_texture("albedo", new Texture2D(sprite_get_texture(spr_missing_texture, 0)));
+U3D.RENDERING.MATERIAL.missing.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;

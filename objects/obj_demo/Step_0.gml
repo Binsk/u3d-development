@@ -13,7 +13,7 @@ if (not keyboard_check(vk_shift)){
 }
 else {
 	for (var i = 0; i < array_length(material_array); ++i){
-		var material = material_array[i];
+		var material = box.get_material(i);
 		if (keyboard_check(vk_up))
 			material.scalar.pbr[1] = clamp(material.scalar.pbr[1] + 0.1 * frame_delta_relative, 0, 1);
 		if (keyboard_check(vk_down))

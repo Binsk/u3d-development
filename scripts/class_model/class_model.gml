@@ -28,6 +28,13 @@ function Model() : U3DObject() constructor {
 			
 		material_data[$ material_index] = material;
 	}
+	
+	/// @desc	Given a material index for the model, returns the material
+	///			stored in that slot. If the material doesn't exist then the
+	///			'missing' material is returned.
+	function get_material(index){
+		return material_data[$ index] ?? U3D.RENDERING.MATERIAL.missing;
+	}
 
 	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque){
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i)

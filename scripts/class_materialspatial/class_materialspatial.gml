@@ -97,8 +97,47 @@ function MaterialSpatial() : Material() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Sets the albedo factor for the material. This value gets multiplied
+	///			against a model's vertex and albedo texture values.
+	/// @note	If the material renders in the 'opaque' render stage then the alpha
+	///			will be compared to the alpha_cutoff and set to 0 or 1 when rendering.
+	function set_albedo_factor(color, alpha){
+		scalar.albedo = [
+			color_get_red(color) / 255,
+			color_get_green(color) / 255,
+			color_get_blue(color) / 255,
+			alpha
+		];
+	}
+	
+	/// @desc	Sets the metalness factor for the material. If no texture is specified
+	///			then this is the material metalness. If a texture is defined then 
+	///			it will be multiplied by this value.
+	/// @param	{real}	metalness		metalness between [0..1]
+	function set_metalness_factor(value){
+		scalar.pbr[PBR_COLOR_INDEX.metalness] = clamp(value, 0, 1);
+	}
+	
+	/// @desc	Sets the roughness factor for the material. If no texture is specified
+	///			then this is the material roughness. If a texture is defined then 
+	///			it will be multiplied by this value.
+	/// @param	{real}	roughness		roughness between [0..1]
+	function set_roughness_factor(value){
+		scalar.pbr[PBR_COLOR_INDEX.roughness] = clamp(value, 0, 1);
+	}
+	
+	/// @desc	Sets the emissive factor for the material. Emission is only activated
+	///			if there is a valid emissive texture which will be multiplied by this value.
+	function set_emissive_factor(color){
+		scalar.emissive = [
+			color_get_red(color) / 255,
+			color_get_green(color) / 255,
+			color_get_blue(color) / 255
+		]
+	}
+	
 	/// @desc	Sets the texture for the specified label (see constructor). Texture
-	///			must be a valid texture, -1, or undefined.
+	///			must be a valid Texture2D or undefined.
 	function set_texture(label, texture){
 		if (not is_instanceof(texture, Texture2D) and not is_undefined(texture))
 			throw new Exception("invalid type, expected [Texture2D]!");
@@ -116,9 +155,24 @@ function MaterialSpatial() : Material() constructor {
 		};
 	}
 	
-	/// @desc	Return an array of shaders in their respective execution orders (see header notes)
-	function get_shader(){
-		return shader_gbuffer;
+	/// @desc	Sets the Texture2D to use for the albedo texture, or undefined.
+	function set_albedo_texture(texture){
+		set_texture("albedo", texture);
+	}
+	
+	/// @desc	Sets the Texture2D to use for the normal texture, or undefined.
+	function set_normal_texture(texture){
+		set_texture("normal", texture);
+	}
+	
+	/// @desc	Sets the Texture2D to use for the pbr texture, or undefined.
+	function set_pbr_texture(texture){
+		set_texture("pbr", texture);
+	}
+	
+	/// @desc	Sets the Texture2D to use for the emissive texture, or undefined.
+	function set_emissive_texture(texture){
+		set_texture("emissive", texture);
 	}
 	
 	/// @desc	Sets the shader to be used when generating the GBuffer.
@@ -145,6 +199,36 @@ function MaterialSpatial() : Material() constructor {
 		uniform_gbuffer_sampler_toggles = shader_get_uniform(shader, "u_iSamplerToggles");
 		uniform_gbuffer_alpha_cutoff = shader_get_uniform(shader, "u_fAlphaCutoff");
 		uniform_gbuffer_translucent = shader_get_uniform(shader, "u_iTranslucent");
+	}
+	
+	/// @desc	Returns the color component of the albedo factor.
+	function get_albedo_color_factor(){
+		return make_color_rgb(scalar.albedo[0] * 255, scalar.albedo[1] * 255, scalar.albedo[2] * 255);
+	}
+	
+	/// @desc	Returns the alpha component of the albedo factor.
+	function get_albedo_alpha_factor(){
+		return scalar.albedo[3];
+	}
+	
+	/// @desc	Returns the currently set metalness factor for this material.
+	function get_metalness_factor(){
+		return scalar.pbr[PBR_COLOR_INDEX.metalness];
+	}
+	
+	/// @desc	Returns the currently set roughness factor for this material.
+	function get_roughness_factor(){
+		return scalar.pbr[PBR_COLOR_INDEX.roughness];
+	}
+	
+	/// @desc	Returns the currently set 
+	function get_emissive_factor(){
+		return make_color_rgb(scalar.emissive[0] * 255, scalar.emissive[1] * 255, scalar.emissive[2] * 255);
+	}
+	
+		/// @desc	Return an array of shaders in their respective execution orders (see header notes)
+	function get_shader(){
+		return shader_gbuffer;
 	}
 	
 	function apply(camera_id, is_translucent=false){
