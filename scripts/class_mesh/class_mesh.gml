@@ -37,10 +37,10 @@ function Mesh() : U3DObject() constructor {
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
-			if (not is_undefined(material))
-				material.apply(camera_id, render_stage==CAMERA_RENDER_STAGE.translucent);
-			else // Missing texture:
-				U3D.RENDERING.MATERIAL.missing_texture.apply(camera_id, render_stage==CAMERA_RENDER_STAGE.translucent);
+			if (is_undefined(material))
+				material = U3D.RENDERING.MATERIAL.missing;
+				
+			material.apply(camera_id, render_stage==CAMERA_RENDER_STAGE.translucent);
 			
 			if (material.render_stage & render_stage <= 0) // Don't render, wrong stage
 				return;

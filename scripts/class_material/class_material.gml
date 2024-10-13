@@ -9,6 +9,11 @@ function Material() : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Simply returns if this material is the 'missing texture' material
+	function get_is_missing_material(){
+		return get_index() == U3D.RENDERING.MATERIAL.missing.get_index();
+	}
+	
 	/// @desc	Should apply the necessary shaders, uniforms, and so-forth for
 	///			the material. It will be automatically executed by the rendering
 	///			system.
@@ -19,7 +24,7 @@ function Material() : U3DObject() constructor {
 	}
 	
 	/// @desc	Should return the appropriate shader to apply for this material.
-	function get_shaders(){
+	function get_shader(){
 		throw new Exception("cannot call virtual function!");
 	}
 	

@@ -100,7 +100,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var pbr_data = material_data[$ "pbrMetallicRoughness"]; // May not be set!
 			// First, a quick check to see if we failed to load the sprite and fill w/ 'no texture'
 			if (not is_undefined(pbr_data) and not is_undefined(pbr_data[$ "baseColorTexture"]) and is_undefined(sprite_array[pbr_data[$ "baseColorTexture"]])){
-				material_array[i] = U3D.RENDERING.MATERIAL.missing_texture.duplicate();
+				material_array[i] = U3D.RENDERING.MATERIAL.missing.duplicate();
 				continue;
 			}
 			
@@ -151,7 +151,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 			switch (material_data[$ "alphaMode"] ?? "OPAQUE"){
 				case "OPAQUE":	// Effectively the same as "MASK" but doesn't allow transparency
-					alpha_cutoff = 1.0;
+					alpha_cutoff = 0.0;
 				case "MASK":	// Alpha is either 0 or 1, this being determined by the alpha cutoff
 					is_translucent = false;
 					break;
@@ -451,9 +451,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			element MUST be cleaned up manually! If possible, export your models
 	///			with transforms applied as manually applying them upon load can greatly
 	///			slow down the model import!
-	/// @param	{VertexFormat}	vformat		VertexFormat to generate with, will attempt to fill missing data
-	/// @param	{bool}			apply=true	Whether or not node transforms should be applied to the primitives
-	function generate_model(format, apply_transforms=true){
+	/// @param	{VertexFormat}	vformat			VertexFormat to generate with, will attempt to fill missing data
+	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
+	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives
+	function generate_model(format, generate_materials=true, apply_transforms=true){
 /// @stub	Remove the 'format' argument, it is just for testing
 		var count = get_mesh_count();
 		if (count <= 0)
@@ -485,6 +486,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var model = new Model();
 		for (var i = 0; i < count; ++i)
 			model.add_mesh(mesh_array[i]);
+		
+		if (not generate_materials)
+			return model;
 		
 		// Add materials:
 		var material_array = generate_material_array();

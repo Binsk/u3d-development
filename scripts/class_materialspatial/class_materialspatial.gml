@@ -53,7 +53,6 @@ enum PBR_COLOR_INDEX {
 
 function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
-	// Default shaders:
 	shader_gbuffer = undefined;
 	cull_mode = cull_noculling;
 	render_stage = CAMERA_RENDER_STAGE.opaque;
@@ -95,9 +94,6 @@ function MaterialSpatial() : Material() constructor {
 	uniform_gbuffer_translucent = -1;			// u_iTranslucent		(int)			whether or not it is a translucent pass
 	#endregion
 	
-	#region LIGHTING UNIFORMS
-	#endregion
-	
 	#endregion
 	
 	#region METHODS
@@ -121,14 +117,12 @@ function MaterialSpatial() : Material() constructor {
 	}
 	
 	/// @desc	Return an array of shaders in their respective execution orders (see header notes)
-	function get_shaders(){
-		return [
-			shader_gbuffer		// Stage 1
-		];
+	function get_shader(){
+		return shader_gbuffer;
 	}
 	
-	/// @desc	Sets the shader to be used when generating the GBuffer
-	function shader_set_gbuffer(shader){
+	/// @desc	Sets the shader to be used when generating the GBuffer.
+	function set_shader(shader){
 		if (not shader_is_compiled(shader)){
 			Exception.throw_conditional(string_ext("shader [{0}] is not compiled!", [shader_get_name(shader)]));
 			return;
@@ -152,10 +146,6 @@ function MaterialSpatial() : Material() constructor {
 		uniform_gbuffer_alpha_cutoff = shader_get_uniform(shader, "u_fAlphaCutoff");
 		uniform_gbuffer_translucent = shader_get_uniform(shader, "u_iTranslucent");
 	}
-	
-	function shader_set_lighting(shader){
-/// @stub	Implement
-	};
 	
 	function apply(camera_id, is_translucent=false){
 		if (shader_current() != shader_gbuffer)
@@ -214,6 +204,6 @@ function MaterialSpatial() : Material() constructor {
 	#endregion
 	
 	#region INIT
-	shader_set_gbuffer(shd_build_gbuffer);
+	set_shader(shd_build_gbuffer);
 	#endregion
 }
