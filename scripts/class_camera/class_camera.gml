@@ -45,17 +45,17 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	
 	anchor = new CameraAnchor(self);
 	tonemap = CAMERA_TONEMAP.none;
-	exposure = 1.0;		// (only applies when tonemap != none), the exposure level for the camera
 	buffer_width = undefined;
 	buffer_height = undefined;
 	custom_render_size = undefined;	// Overrides global DISPLAY_* size if set. ANCHOR WILL BE IGNORED!
 	self.znear = znear;
-	self.zfar = zfar;	// y-FOV
-	self.fov = fov;
+	self.zfar = zfar;
+	self.fov = fov;	// y-FOV
 	gbuffer = {
 		surfaces : {},
 		textures : {}
 	};
+	
 	render_stages = CAMERA_RENDER_STAGE.both;	// Which render stages will be rendered
 	
 	#region SHADER UNIFORMS
@@ -300,6 +300,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		matrix_set(matrix_projection, get_projection_matrix());
 		for (var i = array_length(body_array) - 1; i >= 0; --i){
 			var body = body_array[i];
+			if (body.get_render_layers() & get_render_layers() == 0) // This camera doesn't render this body
+				continue;
+				
 			// Make sure model is renderable for this camera
 			if (is_undefined(body.model_instance))
 				continue;
@@ -339,6 +342,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		// Render light shadows:
 		if (not is_translucent){ // We only do so for opaque instances
 			for (var i = array_length(light_array) - 1; i >= 0; --i){
+				if (light_array[i].get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
+					continue;
+				
 				if (not light_array[i].casts_shadows) // Light must have shadows enabled
 					continue;
 				
@@ -353,6 +359,10 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		gpu_set_blendmode(bm_add);
 		for (var i = array_length(light_array) - 1; i >= 0; --i){
 			var light = light_array[i];
+			
+			if (light.get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
+				continue;
+			
 			if (is_undefined(light.get_shader())) // Invalid light
 				continue;
 

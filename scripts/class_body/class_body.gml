@@ -5,9 +5,6 @@
 function Body() : Node() constructor {
 	#region PROPERTIES
 	model_instance = undefined;			// Renderable 3D model
-	collision_instance = undefined;		// Collision shape
-	collision_bits = 0;					// Collision layer bits we occupy
-	collision_scan_bits = 0;			// Collision layer bits we scan for collisions
 	#endregion
 	
 	#region METHODS

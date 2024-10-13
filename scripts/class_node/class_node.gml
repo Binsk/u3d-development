@@ -23,6 +23,8 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	
 	matrix_model = undefined;		// 4x4 transform matrix
 	matrix_inv_model = undefined;	// 4x4 inverse transform matrix
+	
+	render_layer_bits = int64(-1);	// Which layers we render on (by default, all layers)
 	#endregion
 	
 	#region METHODS
@@ -69,6 +71,22 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		matrix_model = undefined;
 		matrix_inv_model = undefined;
 		signaler.signal("set_scale", [value_start, self.scale]);
+	}
+	
+	/// @desc	Sets which render layers this instance on. This is a bitwised value
+	///			where each bit represents a layer index.
+	function set_render_layers(bits){
+		render_layer_bits = bits;
+	}
+	
+	/// @desc	Adds this instance to the specified render layer(s)
+	function add_render_layers(bits){
+		render_layer_bits |= bits;
+	}
+	
+	/// @desc	Removes this instance from the specified layer(s)
+	function remove_render_layers(bits){
+		render_layer_bits &= ~bits;
 	}
 	
 	/// @desc	Rotates the node to face the specified point from its current position.
@@ -157,6 +175,11 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		
 		matrix_inv_model = matrix_get_inverse(get_model_matrix());
 		return matrix_inv_model;
+	}
+
+	/// @desc	Returns the bitwised value of all layers we render on.
+	function get_render_layers(){
+		return render_layer_bits;
 	}
 	#endregion
 	
