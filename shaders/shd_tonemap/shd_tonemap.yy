@@ -1,7 +1,7 @@
 {
   "$GMShader":"",
-  "%Name":"shd_finalize",
-  "name":"shd_finalize",
+  "%Name":"shd_tonemap",
+  "name":"shd_tonemap",
   "parent":{
     "name":"Screen Space",
     "path":"folders/Upset 3D/Shaders/Screen Space.yy",

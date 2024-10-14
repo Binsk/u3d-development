@@ -7,6 +7,7 @@
 ///			depth buffer.
 ///			Any buffer that DOESN'T have an explicit *_opaque/*_translucent will be
 ///			re-used across stages.
+///			Some buffers are not allocated if they are not used.
 enum CAMERA_GBUFFER {
 	albedo_opaque,			// Albedo color (rgba8unorm)
 	albedo_translucent,
@@ -18,8 +19,11 @@ enum CAMERA_GBUFFER {
 	emissive,				// Emmisive map (rgba8unorm)
 	pbr,					// PBR properties (rgba8unorm); R: specular, G: roughness, B: metal
 	
-	out_opaque,				// Out surface (rgba16float) of lighting pass
-	out_translucent
+	light_opaque,			// Out surface (rgba16float) of lighting passes
+	light_translucent,
+	
+	final,					// Final combined surface (rgba16float)
+	post_process,			// Post-processing middle-man surface (rgba16float)
 }
 
 /// @desc	Used by materials to specify which render stage they should appear in.
@@ -33,7 +37,8 @@ enum CAMERA_RENDER_STAGE {
 /// @desc	defines the tonemapping to use for the camera; 'none' is a straight
 ///			render while every other option will enable HDR and 4x the vRAM usage
 enum CAMERA_TONEMAP {
-	none,
+	none,	// Does nothing, lights may blow-out. Only use if a custom PPFX is used to handle gamma correction
+	simple,	// Does a simple gamma correction w/o any special exposure calculations
 }
 
 /// @desc	Creates a new 3D camera that can be moved around the world and added
@@ -44,7 +49,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	static DISPLAY_HEIGHT = undefined;
 	
 	anchor = new CameraAnchor(self);
-	tonemap = CAMERA_TONEMAP.none;
+	tonemap = CAMERA_TONEMAP.simple;
 	buffer_width = undefined;
 	buffer_height = undefined;
 	custom_render_size = undefined;	// Overrides global DISPLAY_* size if set. ANCHOR WILL BE IGNORED!
@@ -55,6 +60,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		surfaces : {},
 		textures : {}
 	};
+/// @stub	Add post-processing structure & addition / removal / render to camera
+	post_process_effects = {};	// priority -> effect pairs for post processing effects
 	
 	render_stages = CAMERA_RENDER_STAGE.both;	// Which render stages will be rendered
 	
@@ -64,6 +71,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	uniform_sampler_dopaque = -1;
 	uniform_sampler_dtranslucent = -1;
 	uniform_render_stages = -1;
+	
+	uniform_sampler_texture = -1;
+	uniform_tonemap = -1;
 	#endregion
 	
 	#endregion
@@ -81,6 +91,21 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			x : max(1.0, width),
 			y : max(1.0, height)
 		}
+	}
+	
+	/// @desc	Returns the amount of vRAM used by the gbuffer, in bytes, for this camera.
+	function get_vram_usage(){
+		var bytes = 0;
+		bytes += (buffer_width * buffer_height) * (
+			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque albedo + depth
+			(render_stages & CAMERA_RENDER_STAGE.translucent ? 8 : 0) +	// translucent albedo + depth
+			16 +  // Normal, view, emissive, pbr 
+			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque output (16f)
+			(render_stages & CAMERA_RENDER_STAGE.translucent ? 8 : 0) +	// translucent output (16f)
+			16 // Final, post process
+		);
+		
+		return bytes;
 	}
 	
 	/// @desc	Set which render stages should be rendered. E.g., if you know there
@@ -140,18 +165,23 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	function set_tonemap(tonemap){
 		if (tonemap == self.tonemap)
 			return;
-		
-		// If switching to/from HDR we need to create new surface types
-		if (sign(tonemap) != sign(tonemap)){
-			if (surface_exists(surfaces[$ CAMERA_GBUFFER.out_opaque]))
-				surface_free(surfaces[$ CAMERA_GBUFFER.out_opaque]);
-			
-			if (surface_exists(surfaces[$ CAMERA_GBUFFER.out_translucent]))
-				surface_free(surfaces[$ CAMERA_GBUFFER.out_translucent]);
-		}
-		
+
 		self.tonemap = tonemap;
 	}
+	
+	/// @dsec	Adds a new post processing effect with the specified render priority.
+	///			Does NOT check for duplicates.
+	function add_post_process_effect(effect, priority){
+		if (not is_instanceof(effect, PostProcessFX))
+			throw new Exception("invalid type, expected [PostProcessFX]!");
+			
+		priority = floor(real(priority));
+		var array = (post_process_effects[$ priority] ?? []);
+		array_push(array, effect);
+		post_process_effects[$ priority] = array;
+	}
+	
+/// @stub	Add removing a post-processing effect
 	
 	function generate_gbuffer(){
 		if (is_undefined(Camera.DISPLAY_WIDTH))
@@ -218,23 +248,37 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			textures[$ CAMERA_GBUFFER.emissive] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.emissive]);
 		}
 		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.out_opaque])){
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.light_opaque])){
 			if (render_stages & CAMERA_RENDER_STAGE.opaque){
-				surfaces[$ CAMERA_GBUFFER.out_opaque] = surface_create(buffer_width, buffer_height, surface_rgba16float);
-				textures[$ CAMERA_GBUFFER.out_opaque] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.out_opaque]);
+				surfaces[$ CAMERA_GBUFFER.light_opaque] = surface_create(buffer_width, buffer_height, surface_rgba16float);
+				textures[$ CAMERA_GBUFFER.light_opaque] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.light_opaque]);
 			}
 		}
 		else if (render_stages & CAMERA_RENDER_STAGE.opaque <= 0)
-			surface_free(surfaces[$ CAMERA_GBUFFER.out_opaque])
+			surface_free(surfaces[$ CAMERA_GBUFFER.light_opaque])
 		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.out_translucent])){
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.light_translucent])){
 			if (render_stages & CAMERA_RENDER_STAGE.translucent){
-				surfaces[$ CAMERA_GBUFFER.out_translucent] = surface_create(buffer_width, buffer_height, surface_rgba16float);
-				textures[$ CAMERA_GBUFFER.out_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.out_translucent]);
+				surfaces[$ CAMERA_GBUFFER.light_translucent] = surface_create(buffer_width, buffer_height, surface_rgba16float);
+				textures[$ CAMERA_GBUFFER.light_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.light_translucent]);
 			}
 		}
 		else if (render_stages & CAMERA_RENDER_STAGE.translucent <= 0)
-			surface_free(surfaces[$ CAMERA_GBUFFER.out_translucent])
+			surface_free(surfaces[$ CAMERA_GBUFFER.light_translucent])
+		
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.final])){
+			surfaces[$ CAMERA_GBUFFER.final] = surface_create(buffer_width, buffer_height, surface_rgba16float);
+			textures[$ CAMERA_GBUFFER.final] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.final])
+		}
+		
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.post_process])){
+			if (struct_names_count(post_process_effects) > 0){
+				surfaces[$ CAMERA_GBUFFER.post_process] = surface_create(buffer_width, buffer_height, surface_rgba16float);
+				textures[$ CAMERA_GBUFFER.post_process] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.post_process]);
+			}
+		}
+		else if (struct_names_count(post_process_effects) <= 0)
+			surface_free(surfaces[$ CAMERA_GBUFFER.post_process])
 		
 		surface_depth_disable(false);
 		
@@ -243,16 +287,16 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.albedo_opaque]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.albedo_opaque]) != buffer_height)
 				surface_resize(surfaces[$ CAMERA_GBUFFER.albedo_opaque], buffer_width, buffer_height);
 			
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.out_opaque]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.out_opaque]) != buffer_height)
-				surface_resize(surfaces[$ CAMERA_GBUFFER.out_opaque], buffer_width, buffer_height);
+			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.light_opaque]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.light_opaque]) != buffer_height)
+				surface_resize(surfaces[$ CAMERA_GBUFFER.light_opaque], buffer_width, buffer_height);
 		}
 		
 		if (render_stages & CAMERA_RENDER_STAGE.translucent){
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.albedo_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.out_translucent]) != buffer_height)
+			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.albedo_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.light_translucent]) != buffer_height)
 				surface_resize(surfaces[$ CAMERA_GBUFFER.albedo_translucent], buffer_width, buffer_height);
 			
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.out_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.out_translucent]) != buffer_height)
-				surface_resize(surfaces[$ CAMERA_GBUFFER.out_translucent], buffer_width, buffer_height);
+			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.light_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.light_translucent]) != buffer_height)
+				surface_resize(surfaces[$ CAMERA_GBUFFER.light_translucent], buffer_width, buffer_height);
 		}
 		
 		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_height)
@@ -266,6 +310,14 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		
 		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.emissive]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.emissive]) != buffer_height)
 			surface_resize(surfaces[$ CAMERA_GBUFFER.emissive], buffer_width, buffer_height);
+			
+		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.final]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.final]) != buffer_height)
+			surface_resize(surfaces[$ CAMERA_GBUFFER.final], buffer_width, buffer_height);
+		
+		if (surface_exists(surfaces[$ CAMERA_GBUFFER.post_process])){
+			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.post_process]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.post_process]) != buffer_height)
+				surface_resize(surfaces[$ CAMERA_GBUFFER.post_process], buffer_width, buffer_height);
+		}
 	}
 	
 	/// @desc	Given an array of renderable bodies, the camera will render them
@@ -354,7 +406,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		
 /// @todo	Batch light types together (a shader for each) and pass in multiple
 ///			lights into the shader
-		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.out_opaque + is_translucent]);
+		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 		draw_clear_alpha(c_black, 0.0);
 		gpu_set_blendmode(bm_add);
 		for (var i = array_length(light_array) - 1; i >= 0; --i){
@@ -402,46 +454,90 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	}
 	
 	function render_post_processing(){
-		
-/// @stub	Implement; all the following is just for testing anti-aliasing
-		// gpu_set_blendmode_ext(bm_one, bm_zero);
-		// surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.out_translucent]);
-		// draw_clear_alpha(0, 0);
-		// shader_set(shd_fxaa);
-		// shader_set_uniform_f(shader_get_uniform(shd_fxaa, "u_vTexsize"), buffer_width, buffer_height);
-		// draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.out_opaque], 0, 0);
-		// shader_reset();
-		// surface_reset_target();
-	};
-	
-	/// @desc	Renders to the screen and converts back into sRGB
-	function render_out(){
 		if (render_stages <= 0)
 			return;
 		
+		// Since we are performing final post-process, go ahead and merge layers together:
 		if (uniform_sampler_opaque < 0)
-			uniform_sampler_opaque = shader_get_sampler_index(shd_finalize, "u_sFinalOpaque");
+			uniform_sampler_opaque = shader_get_sampler_index(shd_combine_stages, "u_sFinalOpaque");
 		if (uniform_sampler_translucent < 0)
-			uniform_sampler_translucent = shader_get_sampler_index(shd_finalize, "u_sFinalTranslucent");
+			uniform_sampler_translucent = shader_get_sampler_index(shd_combine_stages, "u_sFinalTranslucent");
 		if (uniform_sampler_dopaque < 0)
-			uniform_sampler_dopaque = shader_get_sampler_index(shd_finalize, "u_sDepthOpaque");
+			uniform_sampler_dopaque = shader_get_sampler_index(shd_combine_stages, "u_sDepthOpaque");
 		if (uniform_sampler_dtranslucent < 0)
-			uniform_sampler_dtranslucent = shader_get_sampler_index(shd_finalize, "u_sDepthTranslucent");
+			uniform_sampler_dtranslucent = shader_get_sampler_index(shd_combine_stages, "u_sDepthTranslucent");
 		if (uniform_render_stages < 0)
-			uniform_render_stages = shader_get_uniform(shd_finalize, "u_iRenderStages");
+			uniform_render_stages = shader_get_uniform(shd_combine_stages, "u_iRenderStages");
 
-		var	tex_o = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.out_opaque] : sprite_get_texture(spr_default_white, 0))
+		var	tex_o = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.light_opaque] : sprite_get_texture(spr_default_white, 0))
 		var	tex_do = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque] : sprite_get_texture(spr_default_white, 0))
-		var	tex_t = (render_stages & CAMERA_RENDER_STAGE.translucent ? gbuffer.textures[$ CAMERA_GBUFFER.out_translucent] : sprite_get_texture(spr_default_white, 0))
+		var	tex_t = (render_stages & CAMERA_RENDER_STAGE.translucent ? gbuffer.textures[$ CAMERA_GBUFFER.light_translucent] : sprite_get_texture(spr_default_white, 0))
 		var	tex_dt = (render_stages & CAMERA_RENDER_STAGE.translucent ? gbuffer.textures[$ CAMERA_GBUFFER.depth_translucent] : sprite_get_texture(spr_default_white, 0))
 
-		shader_set(shd_finalize);
+		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
+		gpu_set_blendmode_ext(bm_one, bm_zero);
+		draw_clear_alpha(0, 0);
+		shader_set(shd_combine_stages);
 		texture_set_stage(uniform_sampler_opaque, tex_o);
 		texture_set_stage(uniform_sampler_translucent, tex_t);
 		texture_set_stage(uniform_sampler_dopaque, tex_do);
 		texture_set_stage(uniform_sampler_dtranslucent, tex_dt);
 		shader_set_uniform_i(uniform_render_stages, render_stages);
 		
+		draw_primitive_begin_texture(pr_trianglestrip, -1);
+		draw_vertex_texture(0, 0, 0, 0);
+		draw_vertex_texture(buffer_width, 0, 1, 0);
+		draw_vertex_texture(0, buffer_height, 0, 1);
+		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
+		draw_primitive_end();
+		
+		gpu_set_blendmode(bm_normal);
+		shader_reset();
+		surface_reset_target();
+		
+		if (struct_names_count(post_process_effects) <= 0)
+			return;
+		
+		var priority = ds_priority_create();
+		var keys = struct_get_names(post_process_effects);
+		for (var i = array_length(keys) - 1; i >= 0; --i){
+			var values = post_process_effects[$ keys[i]];
+			for (var j = 0; j < array_length(values); ++j)
+				ds_priority_add(priority, values[j], keys[i]);
+		}
+		
+		gpu_set_blendmode_ext(bm_one, bm_zero);
+		while (not ds_priority_empty(priority)){
+			var data = ds_priority_delete_max(priority);
+			data.render(gbuffer.surfaces[$ CAMERA_GBUFFER.post_process], gbuffer.textures, buffer_width, buffer_height);
+
+			// Swap surfaces / textures since the modified data will have been
+			// applied to post_process
+			var fs = gbuffer.surfaces[$ CAMERA_GBUFFER.final];
+			var ft = gbuffer.textures[$ CAMERA_GBUFFER.final];
+			gbuffer.surfaces[$ CAMERA_GBUFFER.final] = gbuffer.surfaces[$ CAMERA_GBUFFER.post_process];
+			gbuffer.textures[$ CAMERA_GBUFFER.final] = gbuffer.textures[$ CAMERA_GBUFFER.post_process];
+			gbuffer.surfaces[$ CAMERA_GBUFFER.post_process] = fs;
+			gbuffer.textures[$ CAMERA_GBUFFER.post_process] = ft;
+		}
+		gpu_set_blendmode(bm_normal);
+		ds_priority_destroy(priority);
+	};
+	
+	/// @desc	Renders to the screen w/ tonemapping
+	function render_out(){
+		if (render_stages <= 0)
+			return;
+		
+		if (uniform_sampler_texture < 0)
+			uniform_sampler_texture = shader_get_sampler_index(shd_tonemap, "u_sTexture");
+		
+		if (uniform_tonemap < 0)
+			uniform_tonemap = shader_get_uniform(shd_tonemap, "u_iTonemap");
+		
+		shader_set(shd_tonemap);
+		texture_set_stage(uniform_sampler_texture, gbuffer.textures[$ CAMERA_GBUFFER.final]);
+		shader_set_uniform_i(uniform_tonemap, tonemap);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(anchor.get_x(buffer_width), anchor.get_y(buffer_height), 1, 0);
 		draw_vertex_texture(anchor.get_x(buffer_width) + anchor.get_dx(buffer_width), anchor.get_y(buffer_height), 0, 0);

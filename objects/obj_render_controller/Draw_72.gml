@@ -28,14 +28,18 @@ for (var i = array_length(camera_keys) - 1; i >= 0; --i){
 	for (var j = array_length(light_keys) - 1; j >= 0; --j)
 		light_array[j] = light_map[$ light_keys[j]];
 	
-	// Opaque pass:
-	camera.generate_gbuffer();	// Re-generate if not yet generated
-	camera.render_gbuffer(body_array, false);
-	camera.render_lighting(light_array, body_array, false);
 	
+	/// @note	Translucent is done first so the left-over shared buffers (such
+	///			as normals) contain the opaque pass for post-processing. This is
+	///			done because opaque is significantly more common.
 	// Translucent pass:
+	camera.generate_gbuffer();	// Re-generate if not yet generated
 	camera.render_gbuffer(body_array, true);
 	camera.render_lighting(light_array, body_array, true);
+	
+	// Opaque pass:
+	camera.render_gbuffer(body_array, false);
+	camera.render_lighting(light_array, body_array, false);
 	
 	camera.render_post_processing();
 }

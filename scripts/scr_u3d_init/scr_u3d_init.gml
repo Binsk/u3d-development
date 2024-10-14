@@ -18,6 +18,10 @@ global.__u3d_global_data = {
 	RENDERING : {
 		MATERIAL : {
 			missing : new MaterialSpatial()	// Default material for when a material is missing
+		},
+		PPFX : { // Pre-made PostProcessingFX effects that can be attached to render cameras
+			fxaa : new PostProcessFX(shd_fxaa),				// FXAA anti-aliasing
+			grayscale : new PostProcessFX(shd_grayscale)	// Turns the output into grayscale
 		}
 	},
 	MEMORY : {}	// Used to hold data caches and garbage-collect dynamically generated resources

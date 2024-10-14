@@ -30,7 +30,7 @@ function Light() : Node() constructor {
 	/// @desc	Apply the gbuffer samplers that will be required for the light.
 	///			The gbuffer will be an array of textures referenceable via
 	///			CAMERA_GBUFFER. The only textures that should NOT be accessed
-	///			are the out_opaque and out_translucent textures.
+	///			are the light_opaque and light_translucent textures.
 	/// @param	{array}		gbuffer					array of gbuffer textures to sample from
 	/// @param	{Camera}	camera_id				id of the currently rendering camera
 	/// @param	{bool}		is_translucent=false	whether or not this is the translucent pass or not

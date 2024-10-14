@@ -71,9 +71,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					
 				texture = new Texture2D(sprite_get_texture(sprite, 0));
 				texture.hash = texture_hash;	// Mark that this is a dynamic resource
-				texture.signaler.add_signal("cleanup", function(sprite){ // Destroy resource when appropriate
-					sprite_delete(sprite);
-				}, [sprite]);
+				texture.signaler.add_signal("cleanup", sprite_delete, [sprite]);
 				
 				texture.increment_reference();
 				array_push(texture_array, texture);
@@ -109,9 +107,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 			texture = new Texture2D(sprite_get_texture(sprite, 0));
 			texture.hash = texture_hash;	// Mark that this is a dynamic resource
-			texture.signaler.add_signal("cleanup", new Callable(texture, function(sprite){ // Destroy resource when appropriate
-				sprite_delete(sprite);
-			}, [sprite]));
+			texture.signaler.add_signal("cleanup", new Callable(texture, sprite_delete, [sprite]));
 			
 			texture.increment_reference();
 			array_push(texture_array, texture);

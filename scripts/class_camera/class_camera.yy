@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"class_camera",
   "parent":{
-    "name":"Rendering",
-    "path":"folders/Upset 3D/Classes/Rendering.yy",
+    "name":"Cameras",
+    "path":"folders/Upset 3D/Classes/Rendering/Cameras.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
