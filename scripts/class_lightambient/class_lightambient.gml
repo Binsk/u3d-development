@@ -245,7 +245,7 @@ function LightAmbient() : Light() constructor {
 		shader_set_uniform_f(uniform_light_intensity, light_intensity);
 	}
 	
-	super.mark("free");
+	super.register("free");
 	function free(){
 		super.execute("free");
 		

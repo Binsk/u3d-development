@@ -340,7 +340,7 @@ function GLTFLoader() : U3DObject() constructor {
 		return array;
 	}
 	
-	super.mark("free");
+	super.register("free");
 	function free(ignore_super=false){
 		for (var i = array_length(binary_buffer_array) - 1; i >= 0; --i)
 			buffer_delete(binary_buffer_array[i]);

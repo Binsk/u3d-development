@@ -10,11 +10,11 @@ function Super(class) constructor {
 	#endregion
 	
 	#region METHODS
-	/// @desc	Marks a function name to be recorded into the super. This should be
+	/// @desc	Registers a function name to be recorded into the super. This should be
 	///			done just before overriding a parent function so as to store the parent's version.
-	function mark(name=""){
+	function register(name=""){
 		if (is_undefined(class[$ name])){
-			Exception.throw_conditional(string_ext("failed to mark [{0}] as super; method doesn't exist!", [name]));
+			Exception.throw_conditional(string_ext("failed to register [{0}] as super; method doesn't exist!", [name]));
 			return;
 		}
 		

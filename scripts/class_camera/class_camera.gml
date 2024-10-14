@@ -450,7 +450,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		draw_primitive_end();
 		shader_reset();
 	}
-	super.mark("free");
+	super.register("free");
 	function free(){
 		super.execute("free");
 		

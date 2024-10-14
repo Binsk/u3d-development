@@ -102,7 +102,7 @@ function VertexFormat(vformat_array=[]) : U3DObject() constructor {
 		return md5_string_utf8(string(vformat_array));
 	}
 	
-	super.mark("free");
+	super.register("free");
 	function free(){
 		vertex_format_delete(vformat);
 		super.execute("free");

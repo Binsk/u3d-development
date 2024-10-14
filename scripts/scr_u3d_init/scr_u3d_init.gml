@@ -19,7 +19,8 @@ global.__u3d_global_data = {
 		MATERIAL : {
 			missing : new MaterialSpatial()	// Default material for when a material is missing
 		}
-	}
+	},
+	MEMORY : {}	// Used to hold data caches and garbage-collect dynamically generated resources
 }
 
 #macro U3D global.__u3d_global_data

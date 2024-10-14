@@ -166,7 +166,7 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 		struct_remove(TextureCube.BUILD_MAP, get_index());
 	}
 	
-	super.mark("free");
+	super.register("free");
 	function free(){
 		if (sprite_exists(self.sprite_index)){
 			sprite_delete(self.sprite_index);

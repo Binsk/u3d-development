@@ -13,6 +13,7 @@
 function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	#region PROPERTIES
 	self.directory = directory;
+	self.name = name;
 	#endregion
 	
 	#region METHODS
@@ -37,17 +38,25 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	}
 	
 	/// @desc	Generates an array of spatial materials. Note that the materials
-	///			will have dynamically-generated sprites attached to them that will
-	///			be automatically freed upon material free, thus invalidating the
-	///			attached texture!
+	///			will have dynamically-generated textures attached! Textures are re-used
+	///			across generations to save memory, however materials are newly generated
+	///			each time.
 	function generate_material_array(){
 		var material_data_array = json_header[$ "materials"];
 		var material_array = array_create(array_length(material_data_array), undefined);
 		var sprite_data_array = json_header[$ "images"];
-		var sprite_array = array_create(array_length(sprite_data_array), undefined); // Contains generated sprites
+		var texture_array = [];
 		
 		// First add new sprites to the system:
 		for (var i = 0; i < array_length(sprite_data_array); ++i){
+			var texture_hash = md5_string_utf8($"{self.directory}{self.name}_sprite_texture_{i}");
+			var texture = U3DObject.get_reference_data(texture_hash);
+			if (not is_undefined(texture)){ // Value already loaded
+				texture.increment_reference();
+				array_push(texture_array, texture);
+				continue;
+			}
+			
 			var data = sprite_data_array[i];
 			var sprite;
 			if (not is_undefined(data[$ "uri"])){ // External file, load normally
@@ -60,7 +69,14 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				if (sprite < 0)
 					throw new Exception(string_ext("failed to add sprite [{0}]!", [directory + data.uri]));
 					
-				sprite_array[i] = sprite;
+				texture = new Texture2D(sprite_get_texture(sprite, 0));
+				texture.hash = texture_hash;	// Mark that this is a dynamic resource
+				texture.signaler.add_signal("cleanup", function(sprite){ // Destroy resource when appropriate
+					sprite_delete(sprite);
+				}, [sprite]);
+				
+				texture.increment_reference();
+				array_push(texture_array, texture);
 				continue;
 			}
 			
@@ -87,11 +103,18 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				Exception.throw_conditional("failed to add sprite from buffer!");
 				continue;
 			}
-			
-			sprite_array[i] = sprite; // Add new sprite to our list for our material generation
 	
 			buffer_delete(buffer);
 			file_delete("__import");
+			
+			texture = new Texture2D(sprite_get_texture(sprite, 0));
+			texture.hash = texture_hash;	// Mark that this is a dynamic resource
+			texture.signaler.add_signal("cleanup", new Callable(texture, function(sprite){ // Destroy resource when appropriate
+				sprite_delete(sprite);
+			}, [sprite]));
+			
+			texture.increment_reference();
+			array_push(texture_array, texture);
 		}
 		
 		// Next generate the material data:
@@ -99,18 +122,18 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var material_data = material_data_array[i];
 			var pbr_data = material_data[$ "pbrMetallicRoughness"]; // May not be set!
 			// First, a quick check to see if we failed to load the sprite and fill w/ 'no texture'
-			if (not is_undefined(pbr_data) and not is_undefined(pbr_data[$ "baseColorTexture"]) and is_undefined(sprite_array[pbr_data[$ "baseColorTexture"]])){
+			if (not is_undefined(pbr_data) and not is_undefined(pbr_data[$ "baseColorTexture"]) and is_undefined(texture_array[pbr_data[$ "baseColorTexture"]])){
 				material_array[i] = U3D.RENDERING.MATERIAL.missing.duplicate();
 				continue;
 			}
 			
 			// Defaults:
 			var color_base = [1, 1, 1, 1];
-			var color_sprite = undefined;
+			var color_texture = undefined;
 			var pbr_base = [1, 1, 1];
-			var pbr_sprite = undefined;
-			var normal_sprite = undefined;
-			var emissive_sprite = undefined;
+			var pbr_texture = undefined;
+			var normal_texture = undefined;
+			var emissive_texture = undefined;
 			var emissive_base = [1, 1, 1];
 			var cull_mode = (material_data[$ "doubleSided"] ?? false) ? cull_noculling : cull_counterclockwise;
 			var alpha_cutoff = (material_data[$ "alphaCutoff"] ?? 0.5);
@@ -123,12 +146,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				// Albedo Texture
 				if (not is_undefined(pbr_data[$ "baseColorTexture"])){
 					var texture_index = get_structure(pbr_data[$ "baseColorTexture"].index, "textures").source;
-					color_sprite = sprite_array[texture_index];
+					color_texture = texture_array[texture_index];
 				}
 				// PBR Texture
 				if (not is_undefined(pbr_data[$ "metallicRoughnessTexture"])){
 					var texture_index = get_structure(pbr_data[$ "metallicRoughnessTexture"].index, "textures").source;
-					pbr_sprite = sprite_array[texture_index];
+					pbr_texture = texture_array[texture_index];
 				}
 				// PBR Factors (note, specular is always 1):
 				if (not is_undefined(pbr_data[$ "roughnessFactor"]))
@@ -140,12 +163,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 			if (not is_undefined(material_data[$ "normalTexture"])){
 				var texture_index = get_structure(material_data[$ "normalTexture"].index, "textures").source;
-				normal_sprite = sprite_array[texture_index];
+				normal_texture = texture_array[texture_index];
 			}
 			
 			if (not is_undefined(material_data[$ "emissiveTexture"])){
 				var texture_index = get_structure(material_data[$ "emissiveTexture"].index, "textures").source;
-				emissive_sprite = sprite_array[texture_index];
+				emissive_texture = texture_array[texture_index];
 				emissive_base = (material_data[$ "emissiveFactor"] ?? [1, 1, 1]);
 			}
 			
@@ -161,16 +184,17 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				default:
 					Exception.throw_conditional($"invalid alphaMode [{material_data[$ "alphaMode"]}]");
 			}
-
+			
 			var material = new MaterialSpatial();
-			if (not is_undefined(color_sprite))
-				material.set_texture("albedo", new Texture2D(sprite_get_texture(color_sprite, 0)));
-			if (not is_undefined(pbr_sprite))
-				material.set_texture("pbr", new Texture2D(sprite_get_texture(pbr_sprite, 0)));
-			if (not is_undefined(normal_sprite))
-				material.set_texture("normal", new Texture2D(sprite_get_texture(normal_sprite, 0)));
-			if (not is_undefined(emissive_sprite))
-				material.set_texture("emissive", new Texture2D(sprite_get_texture(emissive_sprite, 0)));
+			
+			if (not is_undefined(color_texture))
+				material.set_texture("albedo", color_texture);
+			if (not is_undefined(pbr_texture))
+				material.set_texture("pbr", pbr_texture);
+			if (not is_undefined(normal_texture))
+				material.set_texture("normal", normal_texture);
+			if (not is_undefined(emissive_texture))
+				material.set_texture("emissive", emissive_texture);
 			
 			material.scalar.albedo = color_base;
 			material.scalar.pbr = pbr_base;
@@ -179,24 +203,14 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			material.alpha_cutoff = alpha_cutoff;
 			material.render_stage = (is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque);
 			
-			// Attach free method to free up sprites as needed:
-			material.signaler.add_signal("free", new Callable(material, function(color_sprite, pbr_sprite, normal_sprite, emissive_sprite){
-				if (not is_undefined(color_sprite))
-					sprite_delete(color_sprite);
-				
-				if (not is_undefined(pbr_sprite))
-					sprite_delete(pbr_sprite);
-				
-				if (not is_undefined(normal_sprite))
-					sprite_delete(normal_sprite);
-				
-				if (not is_undefined(emissive_sprite))
-					sprite_delete(emissive_sprite);
-			}, [color_sprite, pbr_sprite, normal_sprite, emissive_sprite]))
-			
+			/// @note	The material will auto-dereference the texture
 			material_array[i] = material;
 		}
 		
+			// In case some textures weren't used, this will free them up:
+		for (var j = array_length(texture_array) - 1; j >= 0; --j)
+			texture_array[j].decrement_reference();
+			
 		return material_array;
 	}
 	
@@ -489,12 +503,15 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		if (not generate_materials)
 			return model;
-		
+			
 		// Add materials:
 		var material_array = generate_material_array();
-		for (var i = 0; i < array_length(material_array); ++i)
+		for (var i = 0; i < array_length(material_array); ++i){
+			/// @note	We mark the material as dynamic so it will auto-free w/ the model and release the textures as needed.
+			material_array[i].hash = md5_string_utf8($"{self.directory}{self.name}_model_material_{i}{model.get_index()}");
+			material_array[i].increment_reference();
 			model.set_material(material_array[i], i);
-		
+		}
 		return model;
 	}
 	

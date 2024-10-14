@@ -211,7 +211,7 @@ function Primitive(vformat) : U3DObject() constructor {
 		return (vertex_freeze(vbuffer) >= 0);
 	}
 	
-	super.mark("free");
+	super.register("free");
 	function free(){
 		if (not is_undefined(vbuffer)){
 			vertex_delete_buffer(vbuffer);

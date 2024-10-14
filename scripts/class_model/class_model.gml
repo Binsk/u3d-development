@@ -40,5 +40,18 @@ function Model() : U3DObject() constructor {
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
 			mesh_array[i].render(material_data, camera_id, render_stage);
 	}
+	
+	super.register("free");
+	function free(){
+		super.execute("free");
+		
+/// @stub	Implement auto-cleanup of dynamic meshes
+		// Clean up any dynamic materials 
+		var material_keys = struct_get_names(material_data);
+		for (var i = array_length(material_keys) - 1; i >= 0; --i)
+			material_data[$ material_keys[i]].decrement_reference();
+		
+		material_data = {};
+	}
 	#endregion
 }
