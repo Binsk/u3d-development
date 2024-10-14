@@ -231,6 +231,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
+		var primitive_hash = $"{self.directory}{self.name}_primitive_{mesh_index}{primitive_index}{format.get_hash()}{transform}";
+		var primitive = U3DObject.get_reference_data(primitive_hash);
+		if (not is_undefined(primitive)){
+			primitive.increment_reference(); // Done only so it exists until the end of this function if freed elsewhere
+			return primitive;
+		}
+		
 		// Fetch our primitive header so we know what data we have:
 		var primitive_header = json_header.meshes[mesh_index].primitives[primitive_index];
 			// Check topology, we only support one type of many:
@@ -295,7 +302,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// Build the primitive itself:
 		var is_custom_transform = not is_undefined(transform);
-		var primitive = new Primitive(format);
+		primitive = new Primitive(format);
+		primitive.hash = primitive_hash;
 		primitive.define_begin(map_size);
 		var has_tangent_data = (format.get_has_data(VERTEX_DATA.position) and format.get_has_data(VERTEX_DATA.tangent) and format.get_has_data(VERTEX_DATA.texture)); // Used when auto-calculating tangents
 		
@@ -409,6 +417,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (count <= 0)
 			return undefined;
 			
+		var mesh_hash = $"{self.directory}{self.name}_mesh_{mesh_index}{format.get_hash()}{apply_transforms}";
+		var mesh = U3DObject.get_reference_data(mesh_hash);
+		if (not is_undefined(mesh))
+			return mesh;
+			
 		var transform = undefined;
 		// Calculate transform matrix for this mesh (if one exists and apply transforms is enabled)
 		if (apply_transforms){
@@ -449,7 +462,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 
 		// Add each primitive to the mesh and attach the material index
-		var mesh = new Mesh();
+		mesh = new Mesh();
+		mesh.hash = mesh_hash;
+		
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
 		
@@ -457,10 +472,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	}
 	
 	/// @desc	This will generate a Model that contains all the Mesh and Primitives
-	///			defined in the file, along with their respective materials. Each
-	///			element MUST be cleaned up manually! If possible, export your models
-	///			with transforms applied as manually applying them upon load can greatly
-	///			slow down the model import!
+	///			defined in the file, along with their respective materials. 
+	/// @note	Materials and primitives generated will be auto-reused across models and cleaned up
+	///			once all generated Model() instances are freed. 
+	///	@note	If possible, make sure your models are exported with all transforms applied!
+	///			Manually applying them upon load is slow.
 	/// @param	{VertexFormat}	vformat			VertexFormat to generate with, will attempt to fill missing data
 	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
 	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives

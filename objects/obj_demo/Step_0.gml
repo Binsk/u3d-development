@@ -32,13 +32,3 @@ if (keyboard_check_pressed(ord("1")))
 camera.set_position(vec(distance * cos(current_time / 2000), distance * 0.5, distance * -sin(current_time / 2000)));
 // body.set_rotation(veca_to_quat(veca(0, 1, 0, current_time / 2000)));
 camera.look_at_up(vec());
-
-if (keyboard_check_pressed(ord("0"))){
-	var gltf = new GLTFBuilder("helmet.glb");
-	var model = gltf.generate_model(vformat);
-	var model_body = new Body();
-	model_body.set_scale(vec(4, 4, 4));
-	model_body.set_model(model);
-	model_body.set_position(vec(0, 2, 6));
-	obj_render_controller.add_body(model_body);
-}

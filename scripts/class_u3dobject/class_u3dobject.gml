@@ -12,8 +12,8 @@
 /// once done to let the system free it up when appropriate.
 
 /// SIGNALS
-///		"free" ()		-	Thrown when 'free' is called.
-///		"cleanup" ()	-	Thrown when 'cleanup' is called.
+///		"free" ()		-	Thrown when 'free' is called, by the user or the system
+///		"cleanup" ()	-	Thrown when 'cleanup' is called, only by the system's garbage-collection
 function U3DObject() constructor {
 	#region PROPERTIES
 	static INDEX_COUNTER = int64(0);	// Generic data index for quick comparisons
@@ -21,7 +21,7 @@ function U3DObject() constructor {
 	index = INDEX_COUNTER++;			// Unique identifier, should never be modified directly
 	super = new Super(self);			// Used to fake function inheritance
 	signaler = new Signaler();			// Used to tell other structs when things occur
-	hash = undefined;			// Used for garbage clean-up with automatically generated resources
+	hash = undefined;					// Used for garbage clean-up with automatically generated resources
 	#endregion
 	
 	#region STATIC METHODS
@@ -120,6 +120,7 @@ function U3DObject() constructor {
 	}
 	
 	/// @desc	Decrements the reference count and cleans up the data if appropriate.
+	///			Do NOT CALL THIS unless you know exactly what you are doing!
 	function decrement_reference(){
 		if (is_undefined(hash))
 			return;

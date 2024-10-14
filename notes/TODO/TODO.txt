@@ -11,5 +11,3 @@
 -	System currently renders camera mirrored w/ OpenGL to fix some issues;
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.
--	Add in auto-cleanup / referencing of meshes and primitives from glTF loading,
-	just like we do with materials / textures.

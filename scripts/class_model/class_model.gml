@@ -16,6 +16,7 @@ function Model() : U3DObject() constructor {
 			return;
 		}
 		
+		mesh.increment_reference();
 		array_push(mesh_array, mesh);
 	}
 	
@@ -45,13 +46,16 @@ function Model() : U3DObject() constructor {
 	function free(){
 		super.execute("free");
 		
-/// @stub	Implement auto-cleanup of dynamic meshes
 		// Clean up any dynamic materials 
 		var material_keys = struct_get_names(material_data);
 		for (var i = array_length(material_keys) - 1; i >= 0; --i)
 			material_data[$ material_keys[i]].decrement_reference();
 		
 		material_data = {};
+		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
+			mesh_array[i].decrement_reference();
+
+		mesh_array = [];
 	}
 	#endregion
 }
