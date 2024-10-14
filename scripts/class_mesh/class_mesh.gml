@@ -50,6 +50,15 @@ function Mesh() : U3DObject() constructor {
 		}
 	}
 	
+	/// @desc		Will execute a buffer freeze on all attached primitives, loading them into
+	///				vRAM. Much faster to render but constantly takes up vRAM.
+	/// @warning	For dynamically generated resources, this will apply a freeze in ALL
+	///				meshes using the resources!
+	function freeze(){
+		for (var i = array_length(primitive_array) - 1; i >= 0; --i)
+			primitive_array[i].primitive.define_freeze();
+	}
+	
 	super.register("free");
 	function free(){
 		super.execute("free");

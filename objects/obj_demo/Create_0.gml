@@ -1,8 +1,9 @@
 initialize_count = room_speed * 0.1; // Done to get around a GameMaker bug w/ loading textures
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
 
-var gltf = new GLTFBuilder("helmet.glb");
+var gltf = new GLTFBuilder("block.glb");
 box = gltf.generate_model(vformat);
+box.freeze();
 
 camera = new Camera();
 body = new Body();
