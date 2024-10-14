@@ -1,12 +1,12 @@
 initialize_count = room_speed * 0.1; // Done to get around a GameMaker bug w/ loading textures
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
 
-var gltf = new GLTFBuilder("block.glb");
+var gltf = new GLTFBuilder("helmet.glb");
 box = gltf.generate_model(vformat);
 
 camera = new Camera();
 body = new Body();
-// body.set_scale(vec(4, 4, 4));
+body.set_scale(vec(4, 4, 4));
 body.set_model(box);
 
 instance_create_depth(0, 0, 0, obj_render_controller);
@@ -43,6 +43,7 @@ camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)
 
 Camera.DISPLAY_WIDTH = 1920;
 Camera.DISPLAY_HEIGHT = 1080;
+
 display_set_gui_size(Camera.DISPLAY_WIDTH, Camera.DISPLAY_HEIGHT);
 obj_render_controller.render_mode = RENDER_MODE.draw_gui;
 

@@ -31,6 +31,9 @@ function U3DObject() constructor {
 		if (is_undefined(hash))
 			throw new Exception("cannot cleanup static resource!");
 		
+		if (is_undefined(U3D.MEMORY[$ hash])) // Invalid hash
+			return;
+		
 		if (U3D.MEMORY[$ hash].count != 0)
 			throw new Exception($"cannot cleanup reference, [{U3D.MEMORY[$ hash].count}] occurrences still exist!");
 		
@@ -51,7 +54,11 @@ function U3DObject() constructor {
 		if (is_undefined(hash))
 			return undefined;
 			
-		return U3D.MEMORY[$ hash];
+		var data = U3D.MEMORY[$ hash];
+		if (is_undefined(data))
+			return undefined;
+			
+		return data.data;
 	}
 	
 	/// @desc	Returns if the specified value is a valid U3DObject. This checks for
