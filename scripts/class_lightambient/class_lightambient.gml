@@ -52,6 +52,7 @@ function LightAmbient() : Light() constructor {
 	uniform_ssao_intensity = -1;
 	
 	#endregion
+	#endregion
 	
 	#region METHODS
 	/// @desc	Sets the render properties of the SSAO pass. Note that shadows

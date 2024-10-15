@@ -33,6 +33,11 @@ float calculate_ao(vec2 vUV, vec2 vOffset, vec3 vPosition, vec3 vNormal){
 void main() {
 	vec3 vPosition = depth_to_view(texture2D(u_sDepth, v_vTexcoord).r , v_vTexcoord);
 	vec3 vNormal = normalize(u_mView * (texture2D(u_sNormal, v_vTexcoord).rgb * 2.0 - 1.0));
+	
+	#ifdef _YY_HLSL11_
+	vNormal.y = -vNormal.y;
+	#endif
+	
 	vec2 vRand = normalize(texture2D(u_sNoise, fract(v_vTexcoord / u_vTexelSize / 64.0)).rg * 2.0 - 1.0);
 	float fAO = 0.0;
 	float fSampleRadius = u_fSampleRadius / vPosition.z;

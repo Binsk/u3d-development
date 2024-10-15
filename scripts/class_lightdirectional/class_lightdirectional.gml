@@ -157,7 +157,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	
 	function apply(){
 /// @stub	Figure out why the light needs these two axes inverted
-		shader_set_uniform_f(uniform_normal, light_normal.x, -light_normal.y, -light_normal.z);
+		shader_set_uniform_f(uniform_normal, -light_normal.x, -light_normal.y, -light_normal.z);
 		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255);
 		
 		if (casts_shadows and surface_exists(shadowbit_surface))

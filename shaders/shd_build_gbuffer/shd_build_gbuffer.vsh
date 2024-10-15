@@ -27,12 +27,6 @@ void main()
     vec3 vTangent = normalize(mat3(gm_Matrices[MATRIX_WORLD]) * in_TextureCoord1);
     vec3 vBiTangent = normalize(cross(vNormal, vTangent));
     
-    #ifdef _YY_HLSL11_
-        vTangent = -vTangent;
-        vNormal = -vNormal;
-        vBiTangent = -vBiTangent;
-	#endif
-    
     v_mRotation = mat3(vTangent, vBiTangent, vNormal);
     v_vColor = in_Colour;
     v_vTexcoordAlbedo = mix(u_vAlbedoUV.xy, u_vAlbedoUV.zw, in_TextureCoord0);
