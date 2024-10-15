@@ -15,8 +15,14 @@ uniform float u_fIntensity;
 varying vec2 v_vTexcoord;
 
 vec3 depth_to_view(float fDepth, vec2 vUV){
+	#ifdef _YY_HLSL11_
+    float fZ = fDepth;
+    vec4 vClipPos = vec4(vUV.x * 2.0 - 1.0, (1.0 - vUV.y) * 2.0 - 1.0, fZ, 1.0);
+    #else
     float fZ = fDepth * 2.0 - 1.0;
     vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
+    #endif
+    
     vec4 vViewPos = u_mInvProj * vClipPos;
     vViewPos /= vViewPos.w;
     return vViewPos.xyz;
@@ -33,10 +39,6 @@ float calculate_ao(vec2 vUV, vec2 vOffset, vec3 vPosition, vec3 vNormal){
 void main() {
 	vec3 vPosition = depth_to_view(texture2D(u_sDepth, v_vTexcoord).r , v_vTexcoord);
 	vec3 vNormal = normalize(u_mView * (texture2D(u_sNormal, v_vTexcoord).rgb * 2.0 - 1.0));
-	
-	#ifdef _YY_HLSL11_
-	vNormal.y = -vNormal.y;
-	#endif
 	
 	vec2 vRand = normalize(texture2D(u_sNoise, fract(v_vTexcoord / u_vTexelSize / 64.0)).rg * 2.0 - 1.0);
 	float fAO = 0.0;

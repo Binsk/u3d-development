@@ -134,6 +134,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		var up = get_up_vector();
 		var to = vec_add_vec(position, forward);
 		self.matrix_view = matrix_build_lookat(position.x, position.y, position.z, to.x, to.y, to.z, up.x, up.y, up.z);
+		
 		return self.matrix_view;
 	}
 	

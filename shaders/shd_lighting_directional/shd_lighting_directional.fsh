@@ -119,8 +119,14 @@ vec4 texture2DMip(sampler2D sTexture, vec2 vUV, int iMip){
 }
 
 vec3 depth_to_world(float fDepth, vec2 vUV){
+	#ifdef _YY_HLSL11_
+    float fZ = fDepth;
+    vec4 vClipPos = vec4(vUV.x * 2.0 - 1.0, (1.0 - vUV.y) * 2.0 - 1.0, fZ, 1.0);
+    #else
     float fZ = fDepth * 2.0 - 1.0;
     vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
+    #endif
+    
     vec4 vViewPos = u_mInvProj * vClipPos;
     vViewPos /= vViewPos.w;
     return (u_mInvView * vViewPos).xyz;
