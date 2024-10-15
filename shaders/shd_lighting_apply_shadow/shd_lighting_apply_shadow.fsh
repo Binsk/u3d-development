@@ -16,7 +16,7 @@ float calculate_shadow(){
         }
     }
     
-    return fShadow / pow(2 * iRadius + 1, 2);
+    return fShadow / pow(2.0 * float(iRadius) + 1.0, 2.0);
 }
 
 void main()
