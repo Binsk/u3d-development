@@ -10,7 +10,6 @@ uniform vec3 u_vLightNormal;
 uniform vec3 u_vLightColor;
 uniform int u_iEnvironment;
 
-uniform vec2 u_vTexelSize;
 uniform int u_iShadows;
 uniform float u_fShadowBias;
 uniform mat4 u_mShadow; // World-to-projection space in the shadow map
@@ -129,33 +128,19 @@ vec3 depth_to_world(float fDepth, vec2 vUV){
 
 /// Returns the amount that is in shadow (0 or 1)
 float calculate_shadow(){
-    float fShadow;
-    for (int i = -2; i <= 2; ++i){
-        for (int j = -2; j <= 2; ++j){
-            // Calculate fragment position in world space:
-            vec2 vUV = v_vTexcoord + (vec2(i, j) * u_vTexelSize);
-            vec3 vPosition = depth_to_world(texture2D(u_sDepth, vUV).r , vUV);
-            // Convert it into the light's projection space:
-            vec3 vLPosition = (u_mShadow * vec4(vPosition.xyz, 1.0)).xyz * 0.5 + 0.5; // Note, no need to div by w due to ortho projection
-            
-            // Sample against light's depth buffer and return if there is a shadow
-            if (texture2D(u_sShadow, vLPosition.xy).r < vLPosition.z - u_fShadowBias)
-                fShadow += 1.0;
-        }
-    }
+    vec3 vPosition = depth_to_world(texture2D(u_sDepth, v_vTexcoord).r , v_vTexcoord);
+    // Convert it into the light's projection space:
+    vec3 vLPosition = (u_mShadow * vec4(vPosition.xyz, 1.0)).xyz * 0.5 + 0.5; // Note, no need to div by w due to ortho projection
     
-    return fShadow / 25.0;
+    // Sample against light's depth buffer and return if there is a shadow
+    if (texture2D(u_sShadow, vLPosition.xy).r < vLPosition.z - u_fShadowBias)
+        return 1.0;
+    
+    return 0.0;
 }
 
 void main()
 {
-    float fShadow = 0.0;
-    if (u_iShadows > 0){
-        fShadow = calculate_shadow();
-        if (fShadow >= 1.0)
-            discard;
-    }
-    
     vec4 vAlbedo = texture2D(u_sAlbedo, v_vTexcoord);
     vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
     vec3 vPBR = texture2D(u_sPBR, v_vTexcoord).rgb; // Spec, Rough, Met
@@ -190,7 +175,12 @@ void main()
     float fDenominator = 4.0 * max(dot(vNormal, vView), 0.0) * max(dot(vNormal, u_vLightNormal), 0.0);
     vec3 vSpecular = vNumerator / max(fDenominator, 0.00001);
     float fNdotL = max(dot(vNormal, u_vLightNormal), 0.0);
-    vAlbedo.rgb = (vKD * vAlbedo.rgb / fPI + vSpecular) * vRadiance * fNdotL * (1.0 - fShadow);
+    vAlbedo.rgb = (vKD * vAlbedo.rgb / fPI + vSpecular) * vRadiance * fNdotL;
     
-    gl_FragColor = vAlbedo;
+    gl_FragData[0] = vAlbedo;
+ 
+    if (u_iShadows > 0){
+        float fShadow = calculate_shadow();
+        gl_FragData[1].r = fShadow;
+    }
 }

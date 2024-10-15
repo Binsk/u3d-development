@@ -406,9 +406,10 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		
 /// @todo	Batch light types together (a shader for each) and pass in multiple
 ///			lights into the shader
-		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
-		draw_clear_alpha(c_black, 0.0);
-		gpu_set_blendmode(bm_add);
+		// surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
+		// draw_clear_alpha(c_black, 0.0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent], c_black, 0.0);
+		// gpu_set_blendmode(bm_add);
 		for (var i = array_length(light_array) - 1; i >= 0; --i){
 			var light = light_array[i];
 			
@@ -422,7 +423,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 				shader_set(light.get_shader());
 				light.apply_gbuffer(gbuffer.textures, self, is_translucent);
 			}
-			
+			gpu_set_blendmode_ext(bm_one, bm_zero);
+			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
+			surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
 			light.apply();
 			draw_primitive_begin_texture(pr_trianglestrip, -1);
 			draw_vertex_texture(0, 0, 0, 0);
@@ -430,6 +433,15 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			draw_vertex_texture(0, buffer_height, 0, 1);
 			draw_vertex_texture(buffer_width, buffer_height, 1, 1);
 			draw_primitive_end();
+			surface_reset_target();
+			
+			gpu_set_blendmode(bm_add);
+			if (is_translucent or not light.apply_shadows(gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent])){
+				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
+				draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
+				surface_reset_target();
+			}
+			gpu_set_blendmode(bm_normal);
 		}
 		
 		shader_reset();
@@ -439,6 +451,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		if (uniform_emissive < 0)
 			uniform_emissive = shader_get_sampler_index(shd_lighting_emissive, "u_sEmissive");
 			
+		gpu_set_blendmode(bm_add);
+		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 		shader_set(shd_lighting_emissive);
 		texture_set_stage(uniform_emissive, gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);

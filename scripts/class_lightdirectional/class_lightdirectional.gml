@@ -19,6 +19,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shadow_resolution = 4096;	// Texture resolution for the lighting render (larger = sharper shadows but more expensive)
 	shadow_world_units = 64;	// Number of world-units width/height-wise the shadow map should cover (larger = more of the world has shadows but blurrier)
 	shadow_surface = -1;		// Only used to extract the depth buffer
+	shadowbit_surface = -1;		// Used in the deferred pass for shadow sampling
 	shadow_depth_texture = -1;
 	shadow_znear = 0.01;		// How close to the light things will render
 	shadow_zfar = 1024;			// How far away from the light things will render
@@ -117,9 +118,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (uniform_color < 0)
 			uniform_color = shader_get_uniform(shader_lighting, "u_vLightColor");
 		
-		if (uniform_texel_size < 0)
-			uniform_texel_size = shader_get_uniform(shader_lighting, "u_vTexelSize");
-		
 		if (uniform_inv_projmatrix < 0)
 			uniform_inv_projmatrix = shader_get_uniform(shader_lighting, "u_mInvProj");
 		
@@ -155,22 +153,34 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		}
 		else
 			shader_set_uniform_i(uniform_environment, false);
-		
 	}
 	
 	function apply(){
 /// @stub	Figure out why the light needs these two axes inverted
 		shader_set_uniform_f(uniform_normal, light_normal.x, -light_normal.y, -light_normal.z);
-		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255)
+		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255);
+		
+		if (casts_shadows and surface_exists(shadowbit_surface))
+			surface_set_target_ext(1, shadowbit_surface);
 	}
 	
-		function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
+	function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
 		surface_depth_disable(false);
 		if (not surface_exists(shadow_surface))
 			shadow_surface = surface_create(shadow_resolution, shadow_resolution, surface_r8unorm);
 		
 		if (surface_get_width(shadow_surface) != shadow_resolution)
 			surface_resize(shadow_surface, shadow_resolution, shadow_resolution);
+		
+		var sw = 1.0 / texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]);
+		var sh = 1.0 / texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]);
+		if (not surface_exists(shadowbit_surface))
+			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
+		
+		if (surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
+			surface_resize(shadowbit_surface, sw, sh);
+		
+		surface_clear(shadowbit_surface, c_white, 1.0);
 			
 		if (uniform_shadow_sampler_albedo < 0)
 			uniform_shadow_sampler_albedo = shader_get_sampler_index(shd_light_depth, "u_sAlbedo");
@@ -211,7 +221,29 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_reset_target();
 	}
 	
-
+	function apply_shadows(surface_in, surface_out){
+		if (not casts_shadows){
+			if (surface_exists(shadowbit_surface)){
+				surface_free(shadowbit_surface);
+				shadowbit_surface = -1;
+			}
+			return false;
+		}
+		
+		if (uniform_texel_size < 0)
+			uniform_texel_size = shader_get_uniform(shd_lighting_apply_shadow, "u_vTexelSize");
+		
+		surface_set_target(surface_out);
+		shader_set(shd_lighting_apply_shadow);
+		texture_set_stage(shader_get_sampler_index(shd_lighting_apply_shadow, "u_sShadow"), surface_get_texture(shadowbit_surface));
+		shader_set_uniform_f(uniform_texel_size, 1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in));
+		draw_surface(surface_in, 0, 0);
+		shader_reset();
+		surface_reset_target();
+		
+		return true;
+	}
+	
 	// Self-executing signal to update light direction so as to prevent re-calculating every frame
 	// if the light is static.
 	function _signal_rotation_updated(from_quat, to_quat){
@@ -225,6 +257,11 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			surface_free(shadow_surface);
 		
 		shadow_surface = -1;
+		
+		if (surface_exists(shadowbit_surface))
+			surface_free(shadowbit_surface);
+		
+		shadowbit_surface = -1;
 	}
 
 	#endregion

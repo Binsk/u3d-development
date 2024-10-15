@@ -43,6 +43,13 @@ function Light() : Node() constructor {
 		throw new Exception("cannot call virtual function!");
 	}
 	
+	/// @desc	An optional pass that occurs after lighting is rendered in the case
+	///			shadows must be handled in a deferred fashion. The function should return
+	///			if something was rendered to the 'surface_out'.
+	function apply_shadows(surface_in, surface_out){
+		return false;
+	}
+	
 	#endregion
 	
 	#region INIT
