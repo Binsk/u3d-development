@@ -50,6 +50,18 @@ function Mesh() : U3DObject() constructor {
 		}
 	}
 	
+	function render_shadows(material_data={}){
+		for (var i = get_primitive_count() - 1; i >= 0; --i){
+			var material_index = primitive_array[i].material_index;
+			var material = material_data[$ material_index];
+			if (is_undefined(material))
+				material = U3D.RENDERING.MATERIAL.missing;
+				
+			material.apply_shadow();
+			render_primitive(i);
+		}
+	}
+	
 	/// @desc		Will execute a buffer freeze on all attached primitives, loading them into
 	///				vRAM. Much faster to render but constantly takes up vRAM.
 	/// @warning	For dynamically generated resources, this will apply a freeze in ALL

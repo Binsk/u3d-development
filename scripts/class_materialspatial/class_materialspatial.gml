@@ -55,6 +55,7 @@ function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
 	shader_gbuffer = undefined;
 	cull_mode = cull_noculling;
+	shadow_cull_mode = cull_noculling;
 	render_stage = CAMERA_RENDER_STAGE.opaque;
 	alpha_cutoff = 0.5;
 	
@@ -280,6 +281,18 @@ function MaterialSpatial() : Material() constructor {
 		shader_set_uniform_i(uniform_gbuffer_translucent, is_translucent);
 		
 		gpu_set_cullmode(cull_mode);
+	}
+	
+	function apply_shadow(){
+		var shader = shader_current();
+		if (shader < 0)
+			return;
+	
+		var albedo_texture = (is_undefined(texture[$ "albedo"]) ? sprite_get_texture(spr_default_white, 0) : texture.albedo.texture.get_texture());
+		texture_set_stage(shader_get_sampler_index(shader, "u_sAlbedo"), albedo_texture);
+		shader_set_uniform_f(shader_get_uniform(shader, "u_sAlphaCutoff"), alpha_cutoff);
+		
+		gpu_set_cullmode(shadow_cull_mode);
 	}
 	
 	function duplicate(){

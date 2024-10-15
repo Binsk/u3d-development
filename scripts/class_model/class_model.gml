@@ -42,6 +42,11 @@ function Model() : U3DObject() constructor {
 			mesh_array[i].render(material_data, camera_id, render_stage);
 	}
 	
+	function render_shadows(){
+		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
+			mesh_array[i].render_shadows(material_data);
+	}
+	
 	/// @desc		Will execute a buffer freeze on all attached meshes, loading them into
 	///				vRAM. Much faster to render but constantly takes up vRAM.
 	/// @warning	For dynamically generated resources, this will apply a freeze in ALL

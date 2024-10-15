@@ -23,6 +23,13 @@ function Material() : U3DObject() constructor {
 		throw new Exception("cannot call virtual function!");
 	}
 	
+	/// @desc	Should apply the necessary shaders, uniforms, and so-forth for
+	///			the material when performing the shadow-calculation pass. This is generally
+	///			just the albedo texture and alpha cutoff.
+	function apply_shadow(){
+		throw new Exception("cannot call virtual function!");
+	}
+	
 	/// @desc	Should return the appropriate shader to apply for this material.
 	function get_shader(){
 		throw new Exception("cannot call virtual function!");

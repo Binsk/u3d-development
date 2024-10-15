@@ -11,3 +11,8 @@
 -	System currently renders camera mirrored w/ OpenGL to fix some issues;
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.
+-	Optimize fetching inverse / regular matrices from the camera; lots of areas
+	use them so they could be cached.
+-	GREATLY optimize shadow mapping! Each sample (25 per pixel) requires 3 matrix mults!
+	Maybe store a position buffer?
+-	Improve shadow mapping quality; it is pretty bad looking out-of-the-box
