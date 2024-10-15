@@ -141,8 +141,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			shader_set_uniform_f(uniform_shadow_bias, shadow_bias);
 			shader_set_uniform_f(uniform_texel_size, texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]), texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]));
 			shader_set_uniform_matrix_array(uniform_shadow_matrix, shadow_viewprojection_matrix);
-			shader_set_uniform_matrix_array(uniform_inv_projmatrix, matrix_get_inverse(camera_id.get_projection_matrix()));
-			shader_set_uniform_matrix_array(uniform_inv_viewmatrix, matrix_get_inverse(camera_id.get_view_matrix()));
+			shader_set_uniform_matrix_array(uniform_inv_projmatrix, camera_id.get_inverse_projection_matrix());
+			shader_set_uniform_matrix_array(uniform_inv_viewmatrix, camera_id.get_inverse_view_matrix());
 		}
 		else
 			shader_set_uniform_i(uniform_shadows, false);

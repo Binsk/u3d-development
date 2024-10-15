@@ -65,6 +65,11 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	
 	render_stages = CAMERA_RENDER_STAGE.both;	// Which render stages will be rendered
 	
+	self.matrix_inv_view = undefined;
+	self.matrix_inv_projection = undefined;
+	self.matrix_view = undefined;
+	self.matrix_projection = undefined;
+	
 	#region SHADER UNIFORMS
 	uniform_sampler_opaque = -1;
 	uniform_sampler_translucent = -1;
@@ -122,14 +127,29 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	
 	/// @desc	Build the view matrix required for this camera.
 	function get_view_matrix(){
+		if (not is_undefined(self.matrix_view))
+			return self.matrix_view;
+		
 		var forward = get_forward_vector();
 		var up = get_up_vector();
 		var to = vec_add_vec(position, forward);
-		return matrix_build_lookat(position.x, position.y, position.z, to.x, to.y, to.z, up.x, up.y, up.z);
+		self.matrix_view = matrix_build_lookat(position.x, position.y, position.z, to.x, to.y, to.z, up.x, up.y, up.z);
+		return self.matrix_view;
+	}
+	
+	function get_inverse_view_matrix(){
+		if (not is_undefined(matrix_inv_view))
+			return matrix_inv_view;
+		
+		matrix_inv_view = matrix_get_inverse(get_view_matrix());;
+		return matrix_inv_view;
 	}
 	
 	/// @desc	Build the projection matrix required for this camera.
 	function get_projection_matrix(){
+		if (not is_undefined(self.matrix_projection))
+			return self.matrix_projection;
+		
 		if (is_undefined(buffer_width)) // Cannot determine render size
 			return matrix_build_identity();
 
@@ -147,18 +167,33 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			0, 0, b, 0
 		];
 		
+		self.matrix_projection = matrix;
 		return matrix;
 	}
 	
+	function get_inverse_projection_matrix(){
+		if (not is_undefined(matrix_inv_projection))
+			return matrix_inv_projection;
+		
+		matrix_inv_projection = matrix_get_inverse(get_projection_matrix());;
+		return matrix_inv_projection;
+	}
+	
 	function set_znear(znear){
+		self.matrix_projection = undefined;
+		matrix_inv_projection = undefined;
 		self.znear = znear;
 	}
 	
 	function set_zfar(zfar){
+		self.matrix_projection = undefined;
+		matrix_inv_projection = undefined;
 		self.zfar = zfar;
 	}
 	
 	function set_fow(fow){
+		self.matrix_projection = undefined;
+		matrix_inv_projection = undefined;
 		self.fow = fow;
 	}
 	
@@ -370,8 +405,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		draw_clear(0);
 		shader_set(shd_view_buffer);
 		texture_set_stage(shader_get_sampler_index(shd_view_buffer, "u_sDepth"), gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
-		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvProj"), matrix_get_inverse(get_projection_matrix()));
-		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvView"), matrix_get_inverse(get_view_matrix()));
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvProj"), get_inverse_projection_matrix());
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvView"), get_inverse_view_matrix());
 		shader_set_uniform_f(shader_get_uniform(shd_view_buffer, "u_vCamPosition"), position.x, position.y, position.z);
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
@@ -578,5 +613,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	#endregion
 	
 	#region INIT
+	var reset_matrix = new Callable(self, function(){self.matrix_view = undefined; self.matrix_inv_view = undefined;});
+	signaler.add_signal("set_rotation", reset_matrix);
+	signaler.add_signal("set_position", reset_matrix);
 	#endregion
 }
