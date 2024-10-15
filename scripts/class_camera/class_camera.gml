@@ -442,8 +442,6 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		
 /// @todo	Batch light types together (a shader for each) and pass in multiple
 ///			lights into the shader
-		// surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
-		// draw_clear_alpha(c_black, 0.0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent], c_black, 0.0);
 		// gpu_set_blendmode(bm_add);
 		for (var i = array_length(light_array) - 1; i >= 0; --i){
@@ -469,6 +467,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			draw_vertex_texture(0, buffer_height, 0, 1);
 			draw_vertex_texture(buffer_width, buffer_height, 1, 1);
 			draw_primitive_end();
+			shader_reset();
 			surface_reset_target();
 			
 			gpu_set_blendmode(bm_add);
@@ -479,8 +478,6 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			}
 			gpu_set_blendmode(bm_normal);
 		}
-		
-		shader_reset();
 		
 		// Special render for emissive textures:
 		static uniform_emissive = -1;

@@ -1,5 +1,4 @@
 # FIXME
--	[windows] reflections rotate incorrectly
 -	[windows] shadow map not sampling (or) rendering correctly
 -	Textures not on 'own texture page' not rendering right
 

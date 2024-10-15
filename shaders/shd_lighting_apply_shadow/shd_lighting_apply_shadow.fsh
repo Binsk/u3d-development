@@ -6,7 +6,13 @@ varying vec2 v_vTexcoord;
 /// @todo   Add following sample method for much better edges
 // https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-17-efficient-soft-edged-shadows-using
 float calculate_shadow(){
-    const int iRadius = 3;
+	// HLSL uses a really old shader version and it fails to compile due to loop complexity
+	// w/ the sampling if > 2.
+	#ifdef _YY_HLSL11_
+    const int iRadius = 2;
+	#else
+	const int iRadius = 3;
+	#endif
     
     float fShadow = 0.0;
     for (int i = -iRadius; i <= iRadius; ++i){

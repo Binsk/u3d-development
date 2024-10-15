@@ -17,16 +17,16 @@ obj_render_controller.add_camera(camera);
 environment_map = new TextureCube();
 
 light = new LightAmbient();
-light.set_casts_shadows(true); // Enable SSAO
-light.set_environment_texture(environment_map);
-light.light_intensity = 0.25;
+// light.set_casts_shadows(true); // Enable SSAO
+// light.set_environment_texture(environment_map);
+// light.light_intensity = 0.25;
 light.ssao_strength = 4.0;
 light.ssao_radius = 2.0;
-obj_render_controller.add_light(light);
+// obj_render_controller.add_light(light);
 
 lightd = new LightDirectional(quat(), vec(-50 * 0.25, 60 * 0.25, -70 * 0.25));
 lightd.look_at(vec());
-lightd.set_environment_texture(environment_map);
+// lightd.set_environment_texture(environment_map);
 lightd.set_casts_shadows(true);
 obj_render_controller.add_light(lightd);
 
