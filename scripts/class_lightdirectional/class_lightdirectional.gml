@@ -172,14 +172,14 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (surface_get_width(shadow_surface) != shadow_resolution)
 			surface_resize(shadow_surface, shadow_resolution, shadow_resolution);
 		
-		var sw = 1.0 / texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]);
-		var sh = 1.0 / texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]);
+		var sw = floor(1.0 / texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]));
+		var sh = floor(1.0 / texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]));
+		if (surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
+			surface_free(shadowbit_surface);
+			
 		if (not surface_exists(shadowbit_surface))
 			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
-		
-		if (surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
-			surface_resize(shadowbit_surface, sw, sh);
-		
+
 		surface_clear(shadowbit_surface, c_white, 1.0);
 			
 		if (uniform_shadow_sampler_albedo < 0)
