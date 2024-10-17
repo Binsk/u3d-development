@@ -34,9 +34,8 @@ enum TEXTURECUBE_FACE {
 ///			is assumed to be in the correct format! Textures can also be manually built
 ///			through the TextureCube class to guarantee proper layout.
 /// @param	{texture}	texture_id=undefined		pre-formatted cube-map texture to use
-///	@param	{bool}		is_sRGB=false				whether or not the image is in sRGB spaceint}
 /// @param	{int}		resolution=1024				resolution to use as maximum when generating mips
-function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Texture2D(texture_id, is_sRGB) constructor {
+function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_id) constructor {
 	#region PROPERTIES
 	static BUILD_MAP = {};	// Used by the renderer to build all the textures before rendering
 	
@@ -45,7 +44,7 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 	};	// Used when auto-building a cube-map
 	self.texture_id = undefined; // Finalized texture (including mips)
 	self.sprite_index = undefined;	// Used to contain dynamic cube-map sprite
-	mip_resolution = resolution;
+	self.resolution = resolution;
 	#endregion
 	
 	#region METHODS
@@ -86,6 +85,30 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 		TextureCube.BUILD_MAP[$ get_index()] = self;
 	}
 	
+	function render_faces_to_cubemap(surface_id){
+		var dx = surface_get_width(surface_id) / 4;
+		var dy = surface_get_height(surface_id) / 3;
+		surface_set_target(surface_id);
+		draw_clear_alpha(0, 0);
+		gpu_set_blendmode_ext(bm_one, bm_zero);
+		var offsets = [
+			[dx, dy], [dx * 3, dy],
+			[0, dy], [dx * 2, dy],
+			[dx, 0], [dx, dy * 2]
+		];
+		for (var i = 0; i < 6; ++i){
+			var offset = offsets[i];
+			draw_primitive_begin_texture(pr_trianglestrip, build_data[$ i]);
+			draw_vertex_texture_color(offset[0], offset[1], 0, 0, c_white, 1.0);
+			draw_vertex_texture_color(offset[0] + dx, offset[1], 1, 0, c_white, 1.0);
+			draw_vertex_texture_color(offset[0], offset[1] + dy, 0, 1, c_white, 1.0);
+			draw_vertex_texture_color(offset[0] + dx, offset[1] + dy, 1, 1, c_white, 1.0);
+			draw_primitive_end();
+		}
+		gpu_set_blendmode(bm_normal);
+		surface_reset_target();
+	}
+	
 	/// @desc	builds the necessary textures for this cube-map. This is executed automatically
 	///			upon use, but it can also be called manually to prevent render hiccups at level
 	///			start. Must be executed in a draw event due to the usage of surfaces.
@@ -98,7 +121,7 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 		
 		// If no pre-defined texture, we must build it:
 		var texture_surface = -1;
-		var mip_surface = -1;
+		var final_surface = -1;
 		var texture_cube = -1;
 		if (is_undefined(build_data[$ "texture_id"])){
 			// Check that we have all face defines:
@@ -107,42 +130,31 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 					return Texture2D.get_missing_texture();
 			}
 			// Set texture_cube to the next texture
-/// @stub	Implement!
-			throw "NOT YET IMPLEMENTED";
+			texture_surface = surface_create(resolution, resolution);
+			render_faces_to_cubemap(texture_surface);
+			texture_cube = surface_get_texture(texture_surface);
 		}
 		else
-			// texture_cube = build_data[$ "texture_id"];
-			texture_cube = sprite_get_texture(spr_default_environment_cube, 1);
+			texture_cube = build_data[$ "texture_id"];
 			
 		// Now, with our texture, we must build the MIP levels:
-		mip_surface = surface_create(mip_resolution * 1.5, mip_resolution * 0.75);
+		final_surface = surface_create(resolution, resolution);
 		var shader = shader_current();
 		if (shader >= 0)
 			shader_reset();
 			
 		var gpu_state = gpu_get_state();
-		surface_set_target(mip_surface);
+		surface_set_target(final_surface);
 		draw_clear(c_black);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		gpu_set_tex_filter(true);
 		gpu_set_cullmode(cull_noculling);
-		// https://learnopengl.com/PBR/IBL/Specular-IBL
-			// We generate 6 mips as we can fit it all in one column (minus the first image)
-		for (var i = 0; i < 6; ++i){
-			var mip_size_x = mip_resolution * power(0.5, i);
-			var mip_size_y = mip_resolution * 0.75 * power(0.5, i);
-			var mip_x = (i == 0 ? 0 : mip_resolution);
-			var mip_y = (i == 0 ? 0 : mip_resolution * 0.75 - mip_size_y - mip_size_y);
-			
-			draw_primitive_begin_texture(pr_trianglestrip, texture_cube);
-			draw_vertex_texture_color(mip_x, mip_y, 0, 0, c_white, 1.0);
-			draw_vertex_texture_color(mip_x + mip_size_x, mip_y, 1, 0, c_white, 1.0);
-			draw_vertex_texture_color(mip_x, mip_y + mip_size_y, 0, 1, c_white, 1.0);
-			draw_vertex_texture_color(mip_x + mip_size_x, mip_y + mip_size_y, 1, 1, c_white, 1.0);
-			draw_primitive_end();
-		}
-		
-		gpu_set_texfilter(false);
+		draw_primitive_begin_texture(pr_trianglestrip, texture_cube);
+		draw_vertex_texture_color(0, 0, 0, 0, c_white, 1.0);
+		draw_vertex_texture_color(resolution, 0, 1, 0, c_white, 1.0);
+		draw_vertex_texture_color(0, resolution, 0, 1, c_white, 1.0);
+		draw_vertex_texture_color(resolution, resolution, 1, 1, c_white, 1.0);
+		draw_primitive_end();
 		gpu_set_blendmode(bm_normal);
 		surface_reset_target();
 		
@@ -151,15 +163,15 @@ function TextureCube(texture_id=undefined, is_sRGB=false, resolution=1024) : Tex
 			
 		gpu_set_state(gpu_state);
 		
-		self.sprite_index = sprite_create_from_surface(mip_surface, 0, 0, surface_get_width(mip_surface), surface_get_height(mip_surface), false, false, 0, 0);
+		self.sprite_index = sprite_create_from_surface(final_surface, 0, 0, surface_get_width(final_surface), surface_get_height(final_surface), false, false, 0, 0);
 		self.texture_id = sprite_get_texture(self.sprite_index, 0);
 		
 		// Clean up build-data
 		if (surface_exists(texture_surface))
 			surface_free(texture_surface);
 		
-		if (surface_exists(mip_surface))
-			surface_free(mip_surface);
+		if (surface_exists(final_surface))
+			surface_free(final_surface);
 		
 		build_data = {};
 		cache_properties(); // Re-cache UVs and the like for quick look-ups

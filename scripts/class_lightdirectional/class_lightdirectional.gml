@@ -45,6 +45,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	uniform_inv_viewmatrix = -1;
 	uniform_cam_position = -1;
 	uniform_texel_size = -1;
+	uniform_mip_count = -1;
 	
 	uniform_shadow_sampler_albedo = -1;
 	uniform_shadow_alpha_cutoff = -1;
@@ -130,6 +131,9 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (uniform_cam_position < 0)
 			uniform_cam_position = shader_get_uniform(shader_lighting, "u_vCamPosition");
 		
+		if (uniform_mip_count < 0)
+			uniform_mip_count = shader_get_uniform(shader_lighting, "u_iMipCount");
+		
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
@@ -150,6 +154,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			shader_set_uniform_i(uniform_environment, true);
+			shader_set_uniform_i(uniform_mip_count, not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count);
 		}
 		else
 			shader_set_uniform_i(uniform_environment, false);

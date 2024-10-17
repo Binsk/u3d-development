@@ -11,8 +11,8 @@ uniform float u_fIntensity;
 uniform vec2 u_vTexelSize;
 uniform int u_iBlurSamples;
 uniform float u_fBlurStride;
-
 uniform int u_iEnvironment;
+uniform int u_iMipCount;
 
 varying vec2 v_vTexcoord;
 
@@ -84,17 +84,37 @@ float sample_ssao(int iRadius){
     return fValue / fWeight;
 }
 
-// Returns a fake mip sample given an absolute mip level between [0..6)
-vec4 texture2DMip(sampler2D sTexture, vec2 vUV, int iMip){
+// Returns a fake mip sample given an absolute mip level between [0..u_iMipCount]
+vec4 texture2DMip(sampler2D sTexture, vec2 vUV, float fMip){
+    int iMip1 = int(floor(fMip));
+    int iMip2 = min(iMip1 + 1, u_iMipCount);
+    float fD = fract(fMip);
+    if (iMip1 == iMip2)
+        fD = 0.0;
+    else if (int(fMip) == iMip2)
+        fD = 1.0;
+        
+    vec4 vColor = vec4(0);
+    
     float fDx = 1.0 / 1.5;
     float fDy = 1.0;
-    fDx *= pow(0.5, float(iMip));
-    fDy *= pow(0.5, float(iMip));
+    fDx *= pow(0.5, float(iMip1));
+    fDy *= pow(0.5, float(iMip1));
     
-    float fX = (iMip == 0 ? 0.0 : 1.0 / 1.5);
-    float fY = (iMip == 0 ? 0.0 : 1.0 - fDy - fDy);
+    float fX = (iMip1 == 0 ? 0.0 : 1.0 / 1.5);
+    float fY = (iMip1 == 0 ? 0.0 : 1.0 - fDy - fDy);
     vec2 vUVMip = mix(vec2(fX, fY), vec2(fX + fDx, fY + fDy), vUV);
-    return texture2D(sTexture, vUVMip);
+    vColor = texture2D(sTexture, vUVMip);
+    
+    fDx = 1.0 / 1.5;
+    fDy = 1.0;
+    fDx *= pow(0.5, float(iMip2));
+    fDy *= pow(0.5, float(iMip2));
+    
+    fX = (iMip2 == 0 ? 0.0 : 1.0 / 1.5);
+    fY = (iMip2 == 0 ? 0.0 : 1.0 - fDy - fDy);
+    vUVMip = mix(vec2(fX, fY), vec2(fX + fDx, fY + fDy), vUV);
+    return mix(vColor, texture2D(sTexture, vUVMip), fD);
 }
 
 void main()
@@ -111,7 +131,12 @@ void main()
         vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);
         vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
         vec2 vCube = cube_uv(normalize(reflect(vView, vNormal)));
-        vec3 vCubeColor = texture2DMip(u_sEnvironment, vCube, 0).rgb;
+        vec3 vCubeColor;
+        if (u_iMipCount == 0)
+            vCubeColor = texture2D(u_sEnvironment, vCube).rgb;
+        else
+            vCubeColor = texture2DMip(u_sEnvironment, vCube, texture2D(u_sPBR, v_vTexcoord).g * float(u_iMipCount)).rgb;
+        
         vAlbedo.rgb = mix(vAlbedo.rgb, vCubeColor * vAlbedo.rgb, texture2D(u_sPBR, v_vTexcoord).b);
     }
     else

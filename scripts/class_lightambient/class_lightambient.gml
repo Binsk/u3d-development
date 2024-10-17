@@ -37,6 +37,7 @@ function LightAmbient() : Light() constructor {
 	uniform_inv_projmatrix = -1;
 	uniform_environment = -1;
 	uniform_cam_position = -1;
+	uniform_mip_count = -1;
 
 	uniform_ssao_sampler_depth = -1;
 	uniform_ssao_sampler_normal = -1;
@@ -219,6 +220,9 @@ function LightAmbient() : Light() constructor {
 		if (uniform_cam_position < 0)
 			uniform_cam_position = shader_get_uniform(shader_lighting, "u_vCamPosition");
 		
+		if (uniform_mip_count < 0)
+			uniform_mip_count = shader_get_uniform(shader_lighting, "u_iMipCount");
+		
 		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_view, gbuffer[$ CAMERA_GBUFFER.view]);
@@ -227,6 +231,7 @@ function LightAmbient() : Light() constructor {
 			texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			shader_set_uniform_i(uniform_environment, true);
+			shader_set_uniform_i(uniform_mip_count, not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count);
 		}
 		else
 			shader_set_uniform_i(uniform_environment, false);

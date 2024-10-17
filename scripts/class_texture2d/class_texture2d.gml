@@ -2,10 +2,9 @@
 /// A special texture container that can be used with Materials to specify 
 /// textures in more detail.
 
-function Texture2D(texture_id=undefined, is_sRGB=false)  : U3DObject() constructor {
+function Texture2D(texture_id=undefined)  : U3DObject() constructor {
 	#region PROPERTIES
 	self.texture_id = texture_id;
-	self.is_sRGB = is_sRGB;
 	texel_width = 0;
 	texel_height = 0;
 	texture_uvs = [0, 0, 0, 0];

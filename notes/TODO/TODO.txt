@@ -1,15 +1,12 @@
 # FIXME
 -	[windows] shadow map not sampling (or) rendering correctly
 -	Textures not on 'own texture page' not rendering right
+-	Cube-mapping seams, especially noticeable w/ the mips
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
--	Add 'render layers' to Body() for lighting & camera reasons
 -	Add proper PBR simulation in ambient lighting (somewhat done)
--	Environment reflections account for roughness (not a simple matter)
 -	Greatly speed up the GLTFLoader!
 -	System currently renders camera mirrored w/ OpenGL to fix some issues;
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.
--	Optimize fetching inverse / regular matrices from the camera; lots of areas
-	use them so they could be cached.

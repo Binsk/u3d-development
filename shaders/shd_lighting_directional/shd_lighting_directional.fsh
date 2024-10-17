@@ -16,6 +16,8 @@ uniform mat4 u_mShadow; // World-to-projection space in the shadow map
 uniform mat4 u_mInvProj;
 uniform mat4 u_mInvView;
 
+uniform int u_iMipCount;
+
 varying vec2 v_vTexcoord;
 
 #define fPI 3.1415926535897932384626433
@@ -105,17 +107,37 @@ vec2 cube_uv(vec3 vNormal){
     return vUV;
 }
 
-// Returns a fake mip sample given an absolute mip level between [0..6)
-vec4 texture2DMip(sampler2D sTexture, vec2 vUV, int iMip){
+// Returns a fake mip sample given an absolute mip level between [0..u_iMipCount]
+vec4 texture2DMip(sampler2D sTexture, vec2 vUV, float fMip){
+    int iMip1 = int(floor(fMip));
+    int iMip2 = min(iMip1 + 1, u_iMipCount);
+    float fD = fract(fMip);
+    if (iMip1 == iMip2)
+        fD = 0.0;
+    else if (int(fMip) == iMip2)
+        fD = 1.0;
+        
+    vec4 vColor = vec4(0);
+    
     float fDx = 1.0 / 1.5;
     float fDy = 1.0;
-    fDx *= pow(0.5, float(iMip));
-    fDy *= pow(0.5, float(iMip));
+    fDx *= pow(0.5, float(iMip1));
+    fDy *= pow(0.5, float(iMip1));
     
-    float fX = (iMip == 0 ? 0.0 : 1.0 / 1.5);
-    float fY = (iMip == 0 ? 0.0 : 1.0 - fDy - fDy);
+    float fX = (iMip1 == 0 ? 0.0 : 1.0 / 1.5);
+    float fY = (iMip1 == 0 ? 0.0 : 1.0 - fDy - fDy);
     vec2 vUVMip = mix(vec2(fX, fY), vec2(fX + fDx, fY + fDy), vUV);
-    return texture2D(sTexture, vUVMip);
+    vColor = texture2D(sTexture, vUVMip);
+    
+    fDx = 1.0 / 1.5;
+    fDy = 1.0;
+    fDx *= pow(0.5, float(iMip2));
+    fDy *= pow(0.5, float(iMip2));
+    
+    fX = (iMip2 == 0 ? 0.0 : 1.0 / 1.5);
+    fY = (iMip2 == 0 ? 0.0 : 1.0 - fDy - fDy);
+    vUVMip = mix(vec2(fX, fY), vec2(fX + fDx, fY + fDy), vUV);
+    return mix(vColor, texture2D(sTexture, vUVMip), fD);
 }
 
 vec3 depth_to_world(float fDepth, vec2 vUV){
@@ -163,8 +185,7 @@ void main()
     vec3 vCubeColor = vec3(0);   // If no environment map; just reflect 'black'
     if (u_iEnvironment > 0){
         vec2 vCube = cube_uv(normalize(reflect(-vView, vNormal)));
-        vCubeColor = texture2DMip(u_sEnvironment, vCube, 0).rgb;
-/// @stub   Add in roughness sampling so roughness affects reflection 
+        vCubeColor = texture2DMip(u_sEnvironment, vCube, vPBR.g).rgb;
     }
     
 /// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04

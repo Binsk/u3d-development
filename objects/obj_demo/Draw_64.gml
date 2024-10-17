@@ -11,10 +11,12 @@ draw_text_color(12, 12, $"FPS: {fps}\nResolution: {Camera.DISPLAY_WIDTH}x{Camera
 						$"\n\nGBuffer vRAM: {string(camera.get_vram_usage() / 1024 / 1024)}MB",
 						c_white, c_white, c_white, c_white, 1.0);
 if (keyboard_check(ord("2"))){
+	var w = 768 * 1.5 * 0.5;
+	var h = 768 * 0.75 * 0.5;
 	draw_primitive_begin_texture(pr_trianglestrip, environment_map.get_texture());
 	draw_vertex_texture_color(0, 0, 0, 0, c_white, 1.0);
-	draw_vertex_texture_color(768 * 1.5 * 0.5, 0, 1, 0, c_white, 1.0);
-	draw_vertex_texture_color(0, 768 * 0.75 * 0.5, 0, 1, c_white, 1.0);
-	draw_vertex_texture_color(768 * 1.5 * 0.5, 768 * 0.75 * 0.5, 1, 1, c_white, 1.0);
+	draw_vertex_texture_color(w, 0, 1, 0, c_white, 1.0);
+	draw_vertex_texture_color(0, h, 0, 1, c_white, 1.0);
+	draw_vertex_texture_color(w, h, 1, 1, c_white, 1.0);
 	draw_primitive_end();
 }
