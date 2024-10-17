@@ -189,4 +189,9 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		super.execute("free");
 	}
 	#endregion
+	
+	#region INIT
+	if (not is_undefined(texture_id))
+		set_texture(texture_id);
+	#endregion
 }

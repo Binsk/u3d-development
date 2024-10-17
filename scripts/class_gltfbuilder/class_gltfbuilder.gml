@@ -238,6 +238,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return primitive;
 		}
 		
+		var min_vec = get_data(["model_data", "minimum"], vec(infinity, infinity, infinity));		// Used to record generic vertex data
+		var max_vec = get_data(["model_data", "maximum"], vec(-infinity, -infinity, -infinity));
 		// Fetch our primitive header so we know what data we have:
 		var primitive_header = json_header.meshes[mesh_index].primitives[primitive_index];
 			// Check topology, we only support one type of many:
@@ -334,9 +336,18 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				}
 				#endregion
 				#region POSITION / NORMAL DATA SPECIAL-HANDLING
-				else if (format.vformat_array[i] == VERTEX_DATA.position and is_custom_transform){
-					var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 1.0);
-					data = vec(result[0], result[1], result[2]);
+				else if (format.vformat_array[i] == VERTEX_DATA.position){
+					if (is_custom_transform){
+						var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 1.0);
+						data = vec(result[0], result[1], result[2]);
+					}
+					
+					min_vec.x = min(min_vec.x, data.x);
+					min_vec.y = min(min_vec.y, data.y);
+					min_vec.z = min(min_vec.z, data.z);
+					max_vec.x = max(max_vec.x, data.x);
+					max_vec.y = max(max_vec.y, data.y);
+					max_vec.z = max(max_vec.z, data.z);
 				}
 				else if (format.vformat_array[i] == VERTEX_DATA.normal and is_custom_transform){
 					var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 0.0);
@@ -407,6 +418,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 		}
 		primitive.define_end();
+		
+		set_data(["model_data", "minimum"], min_vec);
+		set_data(["model_data", "maximum"], max_vec);
+		
 		return primitive;
 	}
 	
@@ -481,6 +496,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
 	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives
 	function generate_model(format, generate_materials=true, apply_transforms=true){
+		set_data(["model_data", "minimum"], undefined);
+		set_data(["model_data", "maximum"], undefined);
 /// @stub	Remove the 'format' argument, it is just for testing
 		var count = get_mesh_count();
 		if (count <= 0)
@@ -512,6 +529,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var model = new Model();
 		for (var i = 0; i < count; ++i)
 			model.add_mesh(mesh_array[i]);
+			
+		model.set_data(["aabb_min"], get_data(["model_data", "minimum"]));
+		model.set_data(["aabb_max"], get_data(["model_data", "maximum"]));
 		
 		if (not generate_materials)
 			return model;

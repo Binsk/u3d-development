@@ -22,6 +22,7 @@ function U3DObject() constructor {
 	super = new Super(self);			// Used to fake function inheritance
 	signaler = new Signaler();			// Used to tell other structs when things occur
 	hash = undefined;					// Used for garbage clean-up with automatically generated resources
+	data = {};							// Generic data container to hold any kind of special custom data
 	#endregion
 	
 	#region STATIC METHODS
@@ -78,18 +79,51 @@ function U3DObject() constructor {
 	#endregion
 	
 	#region METHODS 
+	/// @desc	Sets a value into the custom data under the set chain of keys.
+	/// @param	{array}		keys	array of string keys to set the value 
+	/// @param				value	the value to set under the keys
+	function set_data(keys, value){
+		if (not is_array(keys))
+			keys = [string(keys)];
+		
+		var struct = data;
+		var al = array_length(keys); 
+		for (var i = 0; i < al; ++i){
+			var sdata = struct[$ keys[i]];
+			if (is_undefined(sdata)){
+				sdata = {};
+				struct[$ keys[i]] = sdata;
+			}
+			
+			if (i == al - 1)
+				struct[$ keys[i]] = value;
+			else
+				struct = sdata;
+		}
+	}
+	
+	/// @desc	Fetches the value contained within the string of keys, or the default
+	///			value if unset.
+	function get_data(keys, default_value=undefined){
+		if (not is_array(keys))
+			keys = [string(keys)];
+		
+		var struct = data;
+		var al = array_length(keys);
+		for (var i = 0; i < al; ++i){
+			var sdata = struct[$ keys[i]];
+			if (is_undefined(sdata))
+				return default_value;
+			
+			struct = sdata;
+		}
+		
+		return struct;
+	}
+	
 	/// @desc	Return the unique index for the instance.
 	function get_index(){
 		return index;
-	}
-	
-	/// @desc	Returns if the provided data is the exact same data as this calling
-	///			instance.
-	function is_equal(data){
-		if (not is_struct(data))
-			return false;
-		
-		return (data[$ "index"] ?? -1) == get_index();
 	}
 	
 	/// @desc	Returns the number of references to this instance. ONLY applies to 
@@ -99,6 +133,15 @@ function U3DObject() constructor {
 			return 0;
 		
 		return U3D.MEMORY[$ hash].count;
+	}
+	
+	/// @desc	Returns if the provided data is the exact same data as this calling
+	///			instance.
+	function is_equal(data){
+		if (not is_struct(data))
+			return false;
+		
+		return (data[$ "index"] ?? -1) == get_index();
 	}
 	
 	/// @desc	Increment the reference count if dynamically loaded. Do NOT CALL THIS
