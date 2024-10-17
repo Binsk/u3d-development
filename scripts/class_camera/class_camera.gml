@@ -207,7 +207,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	
 	/// @dsec	Adds a new post processing effect with the specified render priority.
 	///			Does NOT check for duplicates.
-	function add_post_process_effect(effect, priority){
+	function add_post_process_effect(effect, priority=0){
 		if (not is_instanceof(effect, PostProcessFX))
 			throw new Exception("invalid type, expected [PostProcessFX]!");
 			

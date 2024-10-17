@@ -2,6 +2,7 @@
 -	[windows] shadow map not sampling (or) rendering correctly
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
+-	Shadows are causing outlines around objects (?)
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

@@ -10,7 +10,8 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		var max_vec = model.get_data("aabb_max");
 		var max_comp = vec_max_component(vec_sub_vec(max_vec, min_vec));
 		body = new Body();
-		body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp));
+		body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp)); // Scale to fit in camera
+		body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 		body.set_model(model);
 		obj_render_controller.add_body(body);
 	}

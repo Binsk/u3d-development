@@ -7,6 +7,8 @@ global.mouse = {
 vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
 
 camera = new Camera();
+camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
+U3D.RENDERING.PPFX.fxaa.set_enabled(false);
 distance = 12;
 
 instance_create_depth(0, 0, 0, obj_render_controller);
@@ -22,7 +24,6 @@ obj_render_controller.add_light(light_ambient);
 
 light_directional = new LightDirectional(quat(), vec(-50 * 0.25, 60 * 0.25, -70 * 0.25));
 light_directional.look_at(vec());
-//obj_render_controller.add_light(light_directional);
 
 camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)));
 Camera.DISPLAY_WIDTH = 1920;
@@ -117,3 +118,32 @@ subinst.signaler.add_signal("checked", function(is_checked){
 	}
 });
 array_push(inst.child_elements, subinst);
+
+ay -= 36;
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.text ="Opaque Pass";
+inst.is_checked = true;
+inst.signaler.add_signal("checked", function(is_checked){
+	if (is_checked)
+		obj_demo.camera.render_stages |= CAMERA_RENDER_STAGE.opaque;
+	else
+		obj_demo.camera.render_stages &= ~CAMERA_RENDER_STAGE.opaque;
+});
+
+inst = instance_create_depth(ax + 256, ay, 0, obj_checkbox);
+inst.text ="Translucent Pass";
+inst.is_checked = true;
+inst.signaler.add_signal("checked", function(is_checked){
+	if (is_checked)
+		obj_demo.camera.render_stages |= CAMERA_RENDER_STAGE.translucent;
+	else
+		obj_demo.camera.render_stages &= ~CAMERA_RENDER_STAGE.translucent;
+});
+
+ay -= 36
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.text = "FXAA";
+inst.is_checked = false;
+inst.signaler.add_signal("checked", function(is_checked){
+	U3D.RENDERING.PPFX.fxaa.set_enabled(is_checked);
+});

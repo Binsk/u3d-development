@@ -9,6 +9,8 @@ delete foo;
 
 foo = new TextureCube();
 delete foo;
+
+texturegroup_load("U3DDefaults", true);
 #endregion
 
 // This structure holds a number of defaults and fallback values. The system 

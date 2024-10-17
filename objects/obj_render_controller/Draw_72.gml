@@ -33,15 +33,33 @@ for (var i = array_length(camera_keys) - 1; i >= 0; --i){
 	///			as normals) contain the opaque pass for post-processing. This is
 	///			done because opaque is significantly more common.
 	// Translucent pass:
+	var frametime = {
+		gbuffer : 0,
+		lighting : 0,
+		ppfx : 0
+	};
+	
+	var time = current_time;
 	camera.generate_gbuffer();	// Re-generate if not yet generated
 	camera.render_gbuffer(body_array, true);
+	frametime.gbuffer += current_time - frametime;
+	time = current_time;
 	camera.render_lighting(light_array, body_array, true);
+	frametime.lighting += current_time - time;
 	
 	// Opaque pass:
+	time = current_time;
 	camera.render_gbuffer(body_array, false);
+	frametime.gbuffer += current_time - time;
+	time = current_time;
 	camera.render_lighting(light_array, body_array, false);
+	frametime.lighting += current_time - time;
 	
+	// Finalize:
+	time = current_time;
 	camera.render_post_processing();
+	frametime.ppfx += current_time - time;
+	camera.set_data(["frametime"], frametime);
 }
 
 if (shader_current() >= 0)
