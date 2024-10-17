@@ -556,6 +556,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		while (not ds_priority_empty(priority)){
 			var data = ds_priority_delete_max(priority);
+			if (not data.is_enabled)
+				continue;
+				
 			data.render(gbuffer.surfaces[$ CAMERA_GBUFFER.post_process], gbuffer.textures, buffer_width, buffer_height);
 
 			// Swap surfaces / textures since the modified data will have been
@@ -582,14 +585,21 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		if (uniform_tonemap < 0)
 			uniform_tonemap = shader_get_uniform(shd_tonemap, "u_iTonemap");
 		
+		var rw = DISPLAY_WIDTH;
+		var rh = DISPLAY_HEIGHT;
+		if (not is_undefined(custom_render_size)){
+			rw = custom_render_size.x;
+			rh = custom_render_size.y;
+		}
+		
 		shader_set(shd_tonemap);
 		texture_set_stage(uniform_sampler_texture, gbuffer.textures[$ CAMERA_GBUFFER.final]);
 		shader_set_uniform_i(uniform_tonemap, tonemap);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(anchor.get_x(buffer_width), anchor.get_y(buffer_height), 1, 0);
-		draw_vertex_texture(anchor.get_x(buffer_width) + anchor.get_dx(buffer_width), anchor.get_y(buffer_height), 0, 0);
-		draw_vertex_texture(anchor.get_x(buffer_width), anchor.get_y(buffer_height) + anchor.get_dx(buffer_height), 1, 1);
-		draw_vertex_texture(anchor.get_x(buffer_width) + anchor.get_dx(buffer_width), anchor.get_y(buffer_height) + anchor.get_dy(buffer_height), 0, 1);
+		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh), 1, 0);
+		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh), 0, 0);
+		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh) + anchor.get_dx(rh), 1, 1);
+		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh) + anchor.get_dy(rh), 0, 1);
 		draw_primitive_end();
 		shader_reset();
 	}

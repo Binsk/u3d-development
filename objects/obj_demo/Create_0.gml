@@ -8,7 +8,9 @@ vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA
 
 camera = new Camera();
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
+camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);
+U3D.RENDERING.PPFX.grayscale.set_enabled(false);
 distance = 12;
 
 instance_create_depth(0, 0, 0, obj_render_controller);
@@ -146,4 +148,11 @@ inst.text = "FXAA";
 inst.is_checked = false;
 inst.signaler.add_signal("checked", function(is_checked){
 	U3D.RENDERING.PPFX.fxaa.set_enabled(is_checked);
+});
+
+inst = instance_create_depth(ax + 256, ay, 0, obj_checkbox);
+inst.text = "Grayscale";
+inst.is_checked = false;
+inst.signaler.add_signal("checked", function(is_checked){
+	U3D.RENDERING.PPFX.grayscale.set_enabled(is_checked);
 });
