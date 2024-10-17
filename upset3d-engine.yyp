@@ -63,6 +63,8 @@
     {"id":{"name":"note_system","path":"notes/note_system/note_system.yy",},},
     {"id":{"name":"note_textures","path":"notes/note_textures/note_textures.yy",},},
     {"id":{"name":"TODO","path":"notes/TODO/TODO.yy",},},
+    {"id":{"name":"obj_button","path":"objects/obj_button/obj_button.yy",},},
+    {"id":{"name":"obj_checkbox","path":"objects/obj_checkbox/obj_checkbox.yy",},},
     {"id":{"name":"obj_collision_controller","path":"objects/obj_collision_controller/obj_collision_controller.yy",},},
     {"id":{"name":"obj_demo","path":"objects/obj_demo/obj_demo.yy",},},
     {"id":{"name":"obj_render_controller","path":"objects/obj_render_controller/obj_render_controller.yy",},},
