@@ -8,8 +8,9 @@
 -	[widows] address multple 'attribute' inputs for shaders
 -	Add proper PBR simulation in ambient lighting (somewhat done)
 -	Greatly speed up the GLTFLoader!
--	System currently renders camera mirrored w/ OpenGL to fix some issues;
+-	System currently renders camera mirrored: to fix some issues;
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.
 -	Camera pipeline toggles (e.g., skip shadows, skip emission, lighting pass, 
 	etc) so that in-game cameras can have modified renders.
+-	Add bloom PPFX via light threshold + gaussian blur

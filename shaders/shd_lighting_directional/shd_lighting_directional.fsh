@@ -110,7 +110,7 @@ vec2 cube_uv(vec3 vNormal){
 // Returns a fake mip sample given an absolute mip level between [0..u_iMipCount]
 vec4 texture2DMip(sampler2D sTexture, vec2 vUV, float fMip){
     int iMip1 = int(floor(fMip));
-    int iMip2 = min(iMip1 + 1, u_iMipCount);
+    int iMip2 = int(min(float(iMip1 + 1), float(u_iMipCount))); // float <-> int due to DirectX issues
     float fD = fract(fMip);
     if (iMip1 == iMip2)
         fD = 0.0;
