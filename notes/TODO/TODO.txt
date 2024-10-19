@@ -1,8 +1,9 @@
 # FIXME
--	[windows] shadow map not sampling (or) rendering correctly
+-	[windows] shadow map not writing to MRT for some reason. Seems to sample
+	just fine in the deferred shadow pass, though.
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
--	Shadows are causing outlines around objects (?)
+-	Shadows are causing halos around objects (?)
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -12,5 +13,6 @@
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.
 -	Camera pipeline toggles (e.g., skip shadows, skip emission, lighting pass, 
-	etc) so that in-game cameras can have modified renders.
+	etc) so that in-game cameras can have modified renders apart from the actual
+	resources being rendered.
 -	Add bloom PPFX via light threshold + gaussian blur

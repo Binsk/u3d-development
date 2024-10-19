@@ -36,7 +36,9 @@ function PostProcessFX(shader) : U3DObject() constructor {
 			uniform_texel_size = shader_get_uniform(shader, "u_vTexelSize");
 		
 		surface_set_target(surface_out);
-		shader_set(shader);
+		if (shader_current() != shader)
+			shader_set(shader);
+			
 		if (uniform_sampler_input >= 0)
 			texture_set_stage(uniform_sampler_input, gbuffer[$ CAMERA_GBUFFER.final]);
 		

@@ -45,7 +45,7 @@ function Exception(message=undefined, index=0) constructor {
 		// Not silent, throw as normal
 		throw exception;
 	}
-	
+	#endregion
 	#region METHODS
 	function _update_message(debug_pop=0){
 		stacktrace = debug_get_callstack();
@@ -55,7 +55,10 @@ function Exception(message=undefined, index=0) constructor {
 			
 		var script_data = string_split(stacktrace[0], ":");
 		script = script_data[0];
-		line = script_data[1];
+		if (array_length(script_data) > 1)
+			line = script_data[1];
+		else
+			line = "[?]";
 		
 		longMessage = string_ext("[Upset 3D Trace]\nin {0}, (line {1})\n{2}\nTrace:\n  {3}", [script, line, self.message, array_glue("\n  ", stacktrace, 0, -2)]);
 	}

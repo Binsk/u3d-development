@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"shd_colorize",
+  "name":"shd_colorize",
+  "parent":{
+    "name":"Testing",
+    "path":"folders/Testing.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

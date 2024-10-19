@@ -185,7 +185,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (not surface_exists(shadowbit_surface))
 			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
 
-		surface_clear(shadowbit_surface, c_white, 1.0);
+		surface_clear(shadowbit_surface, c_black);
 			
 		if (uniform_shadow_sampler_albedo < 0)
 			uniform_shadow_sampler_albedo = shader_get_sampler_index(shd_light_depth, "u_sAlbedo");

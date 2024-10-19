@@ -53,6 +53,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	buffer_width = undefined;
 	buffer_height = undefined;
 	custom_render_size = undefined;	// Overrides global DISPLAY_* size if set. ANCHOR WILL BE IGNORED!
+	anchor_blend_mode = bm_normal;	// How render_out() blends the final result onto the output
+	
 	self.znear = znear;
 	self.zfar = zfar;
 	self.fov = fov;	// y-FOV
@@ -98,6 +100,50 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		}
 	}
 	
+	/// @desc	Sets how the camera is blended in the auto-render handled by the
+	///			render controller.
+	function set_anchor_blend_mode(mode=bm_normal){
+		anchor_blend_mode = mode;
+	}
+	
+	/// @desc	Set which render stages should be rendered. E.g., if you know there
+	///			will be no translucent materials then you can save vRAM and CPU 
+	///			performance by disabling the the translucent stage.
+	function set_render_stages(stages=CAMERA_RENDER_STAGE.both){
+		render_stages = clamp(floor(stages), 0, 3);
+	}
+	
+	function set_znear(znear){
+		self.matrix_projection = undefined;
+		matrix_inv_projection = undefined;
+		self.znear = znear;
+	}
+	
+	function set_zfar(zfar){
+		self.matrix_projection = undefined;
+		matrix_inv_projection = undefined;
+		self.zfar = zfar;
+	}
+	
+	function set_fow(fow){
+		self.matrix_projection = undefined;
+		matrix_inv_projection = undefined;
+		self.fow = fow;
+	}
+	
+	function set_tonemap(tonemap){
+		if (tonemap == self.tonemap)
+			return;
+
+		self.tonemap = tonemap;
+	}
+	
+		
+	/// @desc	Returns the camera anchor attached to this camera.
+	function get_anchor(){
+		return anchor;
+	}
+	
 	/// @desc	Returns the amount of vRAM used by the gbuffer, in bytes, for this camera.
 	function get_vram_usage(){
 		var bytes = 0;
@@ -111,18 +157,6 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		);
 		
 		return bytes;
-	}
-	
-	/// @desc	Set which render stages should be rendered. E.g., if you know there
-	///			will be no translucent materials then you can save vRAM and CPU 
-	///			performance by disabling the the translucent stage.
-	function set_render_stages(stages=CAMERA_RENDER_STAGE.both){
-		render_stages = clamp(floor(stages), 0, 3);
-	}
-	
-	/// @desc	Returns the camera anchor attached to this camera.
-	function get_anchor(){
-		return anchor;
 	}
 	
 	/// @desc	Build the view matrix required for this camera.
@@ -178,31 +212,6 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		
 		matrix_inv_projection = matrix_get_inverse(get_projection_matrix());;
 		return matrix_inv_projection;
-	}
-	
-	function set_znear(znear){
-		self.matrix_projection = undefined;
-		matrix_inv_projection = undefined;
-		self.znear = znear;
-	}
-	
-	function set_zfar(zfar){
-		self.matrix_projection = undefined;
-		matrix_inv_projection = undefined;
-		self.zfar = zfar;
-	}
-	
-	function set_fow(fow){
-		self.matrix_projection = undefined;
-		matrix_inv_projection = undefined;
-		self.fow = fow;
-	}
-	
-	function set_tonemap(tonemap){
-		if (tonemap == self.tonemap)
-			return;
-
-		self.tonemap = tonemap;
 	}
 	
 	/// @dsec	Adds a new post processing effect with the specified render priority.
@@ -453,13 +462,12 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			if (is_undefined(light.get_shader())) // Invalid light
 				continue;
 
-			if (shader_current() != light.get_shader()){
-				shader_set(light.get_shader());
-				light.apply_gbuffer(gbuffer.textures, self, is_translucent);
-			}
+			shader_set(light.get_shader());
 			gpu_set_blendmode_ext(bm_one, bm_zero);
 			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 			surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
+/// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
+			light.apply_gbuffer(gbuffer.textures, self, is_translucent);
 			light.apply();
 			draw_primitive_begin_texture(pr_trianglestrip, -1);
 			draw_vertex_texture(0, 0, 0, 0);
@@ -592,6 +600,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			rh = custom_render_size.y;
 		}
 		
+		gpu_set_blendmode(anchor_blend_mode);
 		shader_set(shd_tonemap);
 		texture_set_stage(uniform_sampler_texture, gbuffer.textures[$ CAMERA_GBUFFER.final]);
 		shader_set_uniform_i(uniform_tonemap, tonemap);
@@ -602,6 +611,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh) + anchor.get_dy(rh), 0, 1);
 		draw_primitive_end();
 		shader_reset();
+		gpu_set_blendmode(bm_normal);
 	}
 	super.register("free");
 	function free(){
