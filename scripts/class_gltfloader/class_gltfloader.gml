@@ -232,7 +232,7 @@ function GLTFLoader() : U3DObject() constructor {
 			if (not file_exists(load_directory + image.uri))
 				throw new Exception(string_ext("file not found [{0}]", [load_directory + image.uri]));
 			
-			sprite = sprite_add(load_directory + image.uri, 0, false, false, 0, 0);
+			sprite = sprite_add(load_directory + image.uri, 1, false, false, 0, 0);
 		}
 		// Included buffer data:
 		else{
@@ -247,7 +247,7 @@ function GLTFLoader() : U3DObject() constructor {
 			// that isn't worth writing. Re-save to disk as image file and load that in through
 			// GameMaker's functions.
 			buffer_save_ext(buffer, "__import", 0, buffer_get_size(buffer));
-			sprite = sprite = sprite_add("__import", 0, false, false, 0, 0);
+			sprite = sprite_add("__import", 1, false, false, 0, 0);
 			
 			file_delete("__import");
 			buffer_delete(buffer);

@@ -39,6 +39,7 @@
     {"$GMIncludedFile":"","%Name":"blocks.glb","CopyToMask":-1,"filePath":"datafiles","name":"blocks.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"boom-box.glb","CopyToMask":-1,"filePath":"datafiles","name":"boom-box.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"chess.glb","CopyToMask":-1,"filePath":"datafiles","name":"chess.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"demo-floor.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-floor.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"helmet.glb","CopyToMask":-1,"filePath":"datafiles","name":"helmet.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"tower.glb","CopyToMask":-1,"filePath":"datafiles","name":"tower.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],

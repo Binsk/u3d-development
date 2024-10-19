@@ -80,6 +80,8 @@ Camera.DISPLAY_HEIGHT = 1080;
 display_set_gui_size(Camera.DISPLAY_WIDTH, Camera.DISPLAY_HEIGHT);
 obj_render_controller.render_mode = RENDER_MODE.draw_gui;
 
+body = undefined;
+
 game_set_speed(999, gamespeed_fps);
 
 // Generate GUI:
@@ -87,7 +89,7 @@ game_set_speed(999, gamespeed_fps);
 var file = file_find_first("*.glb", fa_none);
 var inst;
 var ax = 1920 - 12 - 256;
-while (file != ""){
+while (file != "" and instance_number(obj_button) < 18){
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button) * 44, 0, obj_button);
 	inst.text = file;
 	file = file_find_next();
@@ -95,7 +97,7 @@ while (file != ""){
 file_find_close();
 
 file = file_find_first("*.gltf", fa_none);
-while (file != ""){
+while (file != "" and instance_number(obj_button) < 18){
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button) * 44, 0, obj_button);
 	inst.text = file;
 	file = file_find_next();
@@ -105,6 +107,25 @@ inst = instance_create_depth(ax, 1080 - 12 - 44, 0, obj_button);
 inst.is_model_button = false;
 inst.text = "Exit";
 inst.signaler.add_signal("pressed", new Callable(id, game_end));
+
+inst = instance_create_depth(ax, 1080 - 12 - 44 - 32, 0, obj_checkbox);
+inst.text = "Render Floor";
+inst.signaler.add_signal("checked", function(is_checked){
+	if (is_checked){
+		if (is_undefined(body)){
+			var gltf = new GLTFBuilder("demo-floor.glb");
+			var model = gltf.generate_model(vformat);
+			body = new Body();
+			body.set_model(model);
+			obj_render_controller.add_body(body);
+			gltf.free();
+			delete gltf;
+		}
+		obj_render_controller.add_body(obj_demo.body);
+	}
+	else
+		obj_render_controller.remove_body(obj_demo.body);
+});
 // Directional Light:
 var subinst;
 ax = 12;
@@ -228,3 +249,5 @@ inst.signaler.add_signal("checked", function(is_checked){
 		obj_demo.camera.set_tonemap(CAMERA_TONEMAP.simple);
 	}
 });
+
+sprite_array = [];

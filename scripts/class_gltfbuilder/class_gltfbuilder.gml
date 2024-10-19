@@ -65,13 +65,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					continue;
 				}
 				
-				sprite = sprite_add(directory + data.uri, 0, false, false, 0, 0);
+				sprite = sprite_add(directory + data.uri, 1, false, false, 0, 0);
 				if (sprite < 0)
 					throw new Exception(string_ext("failed to add sprite [{0}]!", [directory + data.uri]));
 					
 				texture = new Texture2D(sprite_get_texture(sprite, 0));
 				texture.hash = texture_hash;	// Mark that this is a dynamic resource
-				texture.signaler.add_signal("cleanup", sprite_delete, [sprite]);
+				texture.signaler.add_signal("cleanup", new Callable(texture, sprite_delete), [sprite]);
 				
 				texture.increment_reference();
 				array_push(texture_array, texture);
@@ -89,10 +89,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				Exception.throw_conditional(string_ext("failed to read buffer view [{0}].", [data.bufferView]));
 				continue;
 			}
-			
+
 			// Save the image data to disk:
 			buffer_save(buffer, "__import");
-			sprite = sprite_add("__import", 0, false, false, 0, 0); // Load w/ GameMaker's function
+			sprite = sprite_add("__import", 1, false, false, 0, 0); // Load w/ GameMaker's function
 			
 			if (sprite < 0){ // If a problem, clean up and skip
 				buffer_delete(buffer);
