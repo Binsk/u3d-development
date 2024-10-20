@@ -26,7 +26,13 @@ vec3 depth_to_world(float fDepth, vec2 vUV){
 float calculate_shadow(){
     vec3 vPosition = depth_to_world(texture2D(u_sDepth, v_vTexcoord).r , v_vTexcoord);
     // Convert it into the light's projection space:
-    vec3 vLPosition = (u_mShadow * vec4(vPosition.xyz, 1.0)).xyz * 0.5 + 0.5; // Note, no need to div by w due to ortho projection
+    vec3 vLPosition = (u_mShadow * vec4(vPosition.xyz, 1.0)).xyz; // Note, no need to div by w due to ortho projection
+	vLPosition.xy = vLPosition.xy * 0.5 + 0.5;
+	#ifdef _YY_HLSL11_
+	vLPosition.y = 1.0 - vLPosition.y;
+	#else
+	vLPosition.z = vLPosition.z * 0.5 + 0.5;
+	#endif
     
     // Sample against light's depth buffer and return if there is a shadow
     if (texture2D(u_sShadow, vLPosition.xy).r < vLPosition.z - u_fShadowBias)
