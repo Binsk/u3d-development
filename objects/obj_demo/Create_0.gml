@@ -108,6 +108,7 @@ inst.is_model_button = false;
 inst.text = "Exit";
 inst.signaler.add_signal("pressed", new Callable(id, game_end));
 
+body_y = 0; // Used to update floor height
 inst = instance_create_depth(ax, 1080 - 12 - 44 - 32, 0, obj_checkbox);
 inst.text = "Render Floor";
 inst.signaler.add_signal("checked", function(is_checked){
@@ -122,6 +123,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 			delete gltf;
 		}
 		obj_render_controller.add_body(obj_demo.body);
+		obj_demo.body.set_position(vec(0, obj_demo.body_y, 0));
 	}
 	else
 		obj_render_controller.remove_body(obj_demo.body);

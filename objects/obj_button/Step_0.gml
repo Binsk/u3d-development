@@ -7,8 +7,8 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			gltf = new GLTFBuilder(text);
 			model = gltf.generate_model(obj_demo.vformat);
 			model.freeze();
-			var min_vec = model.get_data("aabb_min");
-			var max_vec = model.get_data("aabb_max");
+			var min_vec = model.get_data("aabb_min", vec());
+			var max_vec = model.get_data("aabb_max", vec());
 			var max_comp = vec_max_component(vec_sub_vec(max_vec, min_vec));
 			body = new Body();
 			body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp)); // Scale to fit in camera
@@ -20,11 +20,25 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			obj_render_controller.remove_body(body);
 			body.free();
 			delete body;
-			model.free();
-			delete model;
 			gltf.free();
 			delete gltf;
 		}
+	
+		var minimum_y = 0; // Used to align floor height
+		var body_index = -1;
+		if (not is_undefined(obj_demo.body))
+			body_index = obj_demo.body.get_index();
+		var body_array = obj_render_controller.build_render_body_array(-1);
+		for (var i = 0 ; i < array_length(body_array); ++i){
+			var sbody = body_array[i];
+			if (sbody.get_index() == body_index)
+				continue;
+				
+			minimum_y = min(minimum_y, sbody.position.y + sbody.model_instance.get_data("aabb_min", vec()).y * sbody.scale.y);
+		}
+		obj_demo.body_y = minimum_y;
+		if (not is_undefined(obj_demo.body))
+			obj_demo.body.set_position(vec(0, minimum_y, 0));
 	}
 	signaler.signal("pressed");
 }

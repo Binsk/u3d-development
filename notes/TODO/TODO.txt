@@ -4,8 +4,7 @@
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
 -	Shadows are causing halos around objects (?)
--	Normal texture for floor is loading in broken? Check sprite, checked exported
-	image, tried GLB and GLTF, it all looks fine until import.
+-	Loading/unloading floor mesh while rendering elsewhere causes a crash
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

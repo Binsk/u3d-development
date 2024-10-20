@@ -233,10 +233,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		var primitive_hash = $"{self.directory}{self.name}_primitive_{mesh_index}{primitive_index}{format.get_hash()}{transform}";
 		var primitive = U3DObject.get_reference_data(primitive_hash);
-		if (not is_undefined(primitive)){
-			primitive.increment_reference(); // Done only so it exists until the end of this function if freed elsewhere
+		if (not is_undefined(primitive))
 			return primitive;
-		}
 		
 		var min_vec = get_data(["model_data", "minimum"], vec(infinity, infinity, infinity));		// Used to record generic vertex data
 		var max_vec = get_data(["model_data", "maximum"], vec(-infinity, -infinity, -infinity));
