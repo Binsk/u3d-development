@@ -1,7 +1,7 @@
 {
   "$GMShader":"",
-  "%Name":"shd_ssao",
-  "name":"shd_ssao",
+  "%Name":"shd_lighting_sample_shadow",
+  "name":"shd_lighting_sample_shadow",
   "parent":{
     "name":"Shadows",
     "path":"folders/Upset 3D/Shaders/Screen Space/Lighting/Shadows.yy",

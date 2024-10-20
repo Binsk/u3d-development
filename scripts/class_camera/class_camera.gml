@@ -478,8 +478,12 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			shader_reset();
 			surface_reset_target();
 			
-			gpu_set_blendmode(bm_add);
-			if (is_translucent or not light.apply_shadows(gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent])){
+			var applied_shadows = false;
+			if (not is_translucent)
+				applied_shadows = light.apply_shadows(gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent], self);
+			
+			if (not applied_shadows){
+				gpu_set_blendmode(bm_add);
 				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 				draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 				surface_reset_target();

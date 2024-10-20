@@ -3,19 +3,10 @@ uniform sampler2D u_sNormal;
 uniform sampler2D u_sPBR;
 uniform sampler2D u_sEnvironment;
 uniform sampler2D u_sView;
-uniform sampler2D u_sDepth; // Only used w/ shadows
-uniform sampler2D u_sShadow;
 
 uniform vec3 u_vLightNormal;
 uniform vec3 u_vLightColor;
 uniform int u_iEnvironment;
-
-uniform int u_iShadows;
-uniform float u_fShadowBias;
-uniform mat4 u_mShadow; // World-to-projection space in the shadow map
-uniform mat4 u_mInvProj;
-uniform mat4 u_mInvView;
-
 uniform int u_iMipCount;
 
 varying vec2 v_vTexcoord;
@@ -140,32 +131,7 @@ vec4 texture2DMip(sampler2D sTexture, vec2 vUV, float fMip){
     return mix(vColor, texture2D(sTexture, vUVMip), fD);
 }
 
-vec3 depth_to_world(float fDepth, vec2 vUV){
-	#ifdef _YY_HLSL11_
-    float fZ = fDepth;
-    vec4 vClipPos = vec4(vUV.x * 2.0 - 1.0, (1.0 - vUV.y) * 2.0 - 1.0, fZ, 1.0);
-    #else
-    float fZ = fDepth * 2.0 - 1.0;
-    vec4 vClipPos = vec4(vUV.xy * 2.0 - 1.0, fZ, 1.0);
-    #endif
-    
-    vec4 vViewPos = u_mInvProj * vClipPos;
-    vViewPos /= vViewPos.w;
-    return (u_mInvView * vViewPos).xyz;
-}
 
-/// Returns the amount that is in shadow (0 or 1)
-float calculate_shadow(){
-    vec3 vPosition = depth_to_world(texture2D(u_sDepth, v_vTexcoord).r , v_vTexcoord);
-    // Convert it into the light's projection space:
-    vec3 vLPosition = (u_mShadow * vec4(vPosition.xyz, 1.0)).xyz * 0.5 + 0.5; // Note, no need to div by w due to ortho projection
-    
-    // Sample against light's depth buffer and return if there is a shadow
-    if (texture2D(u_sShadow, vLPosition.xy).r < vLPosition.z - u_fShadowBias)
-        return 1.0;
-    
-    return 0.0;
-}
 
 void main()
 {
@@ -204,10 +170,5 @@ void main()
     float fNdotL = max(dot(vNormal, u_vLightNormal), 0.0);
     vAlbedo.rgb = (vKD * vAlbedo.rgb / fPI + vSpecular) * vRadiance * fNdotL;
     
-    gl_FragData[0] = vAlbedo;
- 
-    if (u_iShadows > 0){
-        float fShadow = calculate_shadow();
-        gl_FragData[1].r = fShadow;
-    }
+    gl_FragColor = vAlbedo;
 }

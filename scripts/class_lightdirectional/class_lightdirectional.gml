@@ -138,18 +138,18 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_view, gbuffer[$ CAMERA_GBUFFER.view]);
-		if (not is_translucent and casts_shadows){
-			texture_set_stage(uniform_sampler_shadow, shadow_depth_texture);
-			texture_set_stage(uniform_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque]);
-			shader_set_uniform_i(uniform_shadows, true);
-			shader_set_uniform_f(uniform_shadow_bias, shadow_bias);
-			shader_set_uniform_f(uniform_texel_size, texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]), texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]));
-			shader_set_uniform_matrix_array(uniform_shadow_matrix, shadow_viewprojection_matrix);
-			shader_set_uniform_matrix_array(uniform_inv_projmatrix, camera_id.get_inverse_projection_matrix());
-			shader_set_uniform_matrix_array(uniform_inv_viewmatrix, camera_id.get_inverse_view_matrix());
-		}
-		else
-			shader_set_uniform_i(uniform_shadows, false);
+		// if (not is_translucent and casts_shadows){
+			// texture_set_stage(uniform_sampler_shadow, shadow_depth_texture);
+			// texture_set_stage(uniform_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque]);
+			// shader_set_uniform_i(uniform_shadows, true);
+			// shader_set_uniform_f(uniform_shadow_bias, shadow_bias);
+			// shader_set_uniform_f(uniform_texel_size, texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]), texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]));
+			// shader_set_uniform_matrix_array(uniform_shadow_matrix, shadow_viewprojection_matrix);
+			// shader_set_uniform_matrix_array(uniform_inv_projmatrix, camera_id.get_inverse_projection_matrix());
+			// shader_set_uniform_matrix_array(uniform_inv_viewmatrix, camera_id.get_inverse_view_matrix());
+		// }
+		// else
+			// shader_set_uniform_i(uniform_shadows, false);
 		
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
@@ -165,8 +165,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		shader_set_uniform_f(uniform_normal, -light_normal.x, -light_normal.y, -light_normal.z);
 		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255);
 		
-		if (casts_shadows and surface_exists(shadowbit_surface))
-			surface_set_target_ext(1, shadowbit_surface);
+		// if (casts_shadows and surface_exists(shadowbit_surface))
+		// 	surface_set_target_ext(1, shadowbit_surface);
 	}
 	
 	function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
@@ -176,16 +176,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		
 		if (surface_get_width(shadow_surface) != shadow_resolution)
 			surface_resize(shadow_surface, shadow_resolution, shadow_resolution);
-		
-		var sw = floor(1.0 / texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]));
-		var sh = floor(1.0 / texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.albedo_opaque]));
-		if (surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
-			surface_free(shadowbit_surface);
-			
-		if (not surface_exists(shadowbit_surface))
-			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
-
-		surface_clear(shadowbit_surface, c_black);
 			
 		if (uniform_shadow_sampler_albedo < 0)
 			uniform_shadow_sampler_albedo = shader_get_sampler_index(shd_light_depth, "u_sAlbedo");
@@ -226,7 +216,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_reset_target();
 	}
 	
-	function apply_shadows(surface_in, surface_out){
+	function apply_shadows(surface_in, surface_out, camera_id=undefined){
 		if (not casts_shadows){
 			if (surface_exists(shadowbit_surface)){
 				surface_free(shadowbit_surface);
@@ -235,9 +225,43 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			return false;
 		}
 		
+		var sw = surface_get_width(camera_id.gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+		var sh = surface_get_height(camera_id.gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+		
+		if (not surface_exists(shadowbit_surface))
+			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
+		else if (surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
+			surface_free(shadowbit_surface);
+
+		surface_clear(shadowbit_surface, c_black);
+		
+		/// Render to shadow buffer
+		/// @note	This was done as an MRT in the lighting pass, but the Windows platform
+		///			was failing to write out for some reason so we switched to a separate pass.
+		surface_set_target(shadowbit_surface);
+		shader_set(shd_lighting_sample_shadow);
+		texture_set_stage(shader_get_sampler_index(shd_lighting_sample_shadow, "u_sShadow"), shadow_depth_texture);
+		texture_set_stage(shader_get_sampler_index(shd_lighting_sample_shadow, "u_sDepth"), camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+		shader_set_uniform_f(shader_get_uniform(shd_lighting_sample_shadow, "u_fShadowBias"), shadow_bias);
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_lighting_sample_shadow, "u_mShadow"), shadow_viewprojection_matrix);
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_lighting_sample_shadow, "u_mInvProj"), camera_id.get_inverse_projection_matrix());
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_lighting_sample_shadow, "u_mInvView"), camera_id.get_inverse_view_matrix());
+		
+		draw_primitive_begin_texture(pr_trianglestrip, -1);
+		draw_vertex_texture(0, 0, 0, 0);
+		draw_vertex_texture(sw, 0, 1, 0);
+		draw_vertex_texture(0, sh, 0, 1);
+		draw_vertex_texture(sw, sh, 1, 1);
+		draw_primitive_end();
+		
+		shader_reset();
+		surface_reset_target();
+		
+		// Process shadow buffer and apply to lighting:
 		if (uniform_texel_size < 0)
 			uniform_texel_size = shader_get_uniform(shd_lighting_apply_shadow, "u_vTexelSize");
 		
+		gpu_set_blendmode(bm_add);
 		surface_set_target(surface_out);
 		shader_set(shd_lighting_apply_shadow);
 		texture_set_stage(shader_get_sampler_index(shd_lighting_apply_shadow, "u_sShadow"), surface_get_texture(shadowbit_surface));

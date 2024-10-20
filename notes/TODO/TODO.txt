@@ -19,3 +19,5 @@
 -	Add bloom PPFX via light threshold + gaussian blur
 -	Lots of file load stuff is async, so consider switching the GLTFBuilder to
 	that.
+-	Change all the lighting function calls to simply take the camera_id and manually
+	pull the GBUFFER
