@@ -110,7 +110,7 @@ function LightAmbient() : Light() constructor {
 		self.intensity = max(0, intensity);
 	}
 	
-	function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
+	function render_shadows(camera_id=undefined, body_array=[]){
 		if (ssao_strength <= 0)
 			return;
 			
@@ -146,13 +146,13 @@ function LightAmbient() : Light() constructor {
 		shader_set(shader_ssao);
 		surface_set_target(surface_ssao);
 		
-		texture_set_stage(uniform_ssao_sampler_depth, gbuffer[$ CAMERA_GBUFFER.depth_opaque]);
-		texture_set_stage(uniform_ssao_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
+		texture_set_stage(uniform_ssao_sampler_depth, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+		texture_set_stage(uniform_ssao_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_ssao_sampler_noise, sprite_get_texture(spr_ssao_noise, 0));
 		
 		shader_set_uniform_matrix_array(uniform_ssao_invproj, camera_id.get_inverse_projection_matrix());
 		shader_set_uniform_f_array(uniform_ssao_view, matrix_to_matrix3(camera_id.get_view_matrix()));
-		shader_set_uniform_f(uniform_ssao_texelsize, texture_get_texel_width(gbuffer[$ CAMERA_GBUFFER.normal]), texture_get_texel_height(gbuffer[$ CAMERA_GBUFFER.normal]));
+		shader_set_uniform_f(uniform_ssao_texelsize, texture_get_texel_width(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]), texture_get_texel_height(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]));
 		shader_set_uniform_i(uniform_ssao_samples, ssao_samples);
 		shader_set_uniform_f_array(uniform_ssao_sample_array, ssao_sample_array);
 		shader_set_uniform_f(uniform_ssao_radius, ssao_radius);
@@ -171,7 +171,7 @@ function LightAmbient() : Light() constructor {
 		shader_reset();
 	}
 	
-	function apply_gbuffer(gbuffer, camera_id, is_translucent=false){
+	function apply_gbuffer(camera_id, is_translucent=false){
 		if (uniform_sampler_albedo < 0)
 			uniform_sampler_albedo = shader_get_sampler_index(shader_lighting, "u_sAlbedo");
 		
@@ -223,12 +223,12 @@ function LightAmbient() : Light() constructor {
 		if (uniform_mip_count < 0)
 			uniform_mip_count = shader_get_uniform(shader_lighting, "u_iMipCount");
 		
-		texture_set_stage(uniform_sampler_albedo, gbuffer[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
-		texture_set_stage(uniform_sampler_pbr, gbuffer[$ CAMERA_GBUFFER.pbr]);
-		texture_set_stage(uniform_sampler_view, gbuffer[$ CAMERA_GBUFFER.view]);
+		texture_set_stage(uniform_sampler_albedo, camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
+		texture_set_stage(uniform_sampler_pbr, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
+		texture_set_stage(uniform_sampler_view, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
 		
 		if (not is_undefined(texture_environment)){
-			texture_set_stage(uniform_sampler_normal, gbuffer[$ CAMERA_GBUFFER.normal]);
+			texture_set_stage(uniform_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			shader_set_uniform_i(uniform_environment, true);
 			shader_set_uniform_i(uniform_mip_count, not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count);

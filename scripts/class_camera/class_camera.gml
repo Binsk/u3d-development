@@ -445,7 +445,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 				if (not light_array[i].casts_shadows) // Light must have shadows enabled
 					continue;
 				
-				light_array[i].render_shadows(gbuffer.textures, body_array, self);
+				light_array[i].render_shadows(self, body_array);
 			}
 		}
 		
@@ -467,7 +467,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 			surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
 /// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
-			light.apply_gbuffer(gbuffer.textures, self, is_translucent);
+			light.apply_gbuffer(self, is_translucent);
 			light.apply();
 			draw_primitive_begin_texture(pr_trianglestrip, -1);
 			draw_vertex_texture(0, 0, 0, 0);

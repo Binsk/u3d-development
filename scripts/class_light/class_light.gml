@@ -23,7 +23,7 @@ function Light() : Node() constructor {
 	///			in the opaque pass and when casts_shadows is enabled
 	///			Even if a light type can't cast shadows it should override this
 	///			function.
-	function render_shadows(gbuffer=[], body_array=[], camera_id=undefined){
+	function render_shadows(camera_id=undefined, body_array=[]){
 		throw new Exception("cannot call a virtual function!");
 	}
 	
@@ -34,7 +34,7 @@ function Light() : Node() constructor {
 	/// @param	{array}		gbuffer					array of gbuffer textures to sample from
 	/// @param	{Camera}	camera_id				id of the currently rendering camera
 	/// @param	{bool}		is_translucent=false	whether or not this is the translucent pass or not
-	function apply_gbuffer(gbuffer, camera_id, is_translucent=false){
+	function apply_gbuffer(camera_id, is_translucent=false){
 		throw new Exception("cannot call virtual function!");
 	}
 	

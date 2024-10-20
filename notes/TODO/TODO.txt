@@ -1,6 +1,4 @@
 # FIXME
--	[windows] shadow map not writing to MRT for some reason. Seems to sample
-	just fine in the deferred shadow pass, though.
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
 -	Shadows are causing halos around objects (?)
@@ -21,3 +19,5 @@
 	that.
 -	Change all the lighting function calls to simply take the camera_id and manually
 	pull the GBUFFER
+-	Change camera system to instead be an 'eye' where a camera node handles moving
+	the eye. This will improve workflow for stereoscopic rendering and the like

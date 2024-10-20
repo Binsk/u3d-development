@@ -79,7 +79,6 @@
     {"id":{"name":"class_light","path":"scripts/class_light/class_light.yy",},},
     {"id":{"name":"class_lightambient","path":"scripts/class_lightambient/class_lightambient.yy",},},
     {"id":{"name":"class_lightdirectional","path":"scripts/class_lightdirectional/class_lightdirectional.yy",},},
-    {"id":{"name":"class_lightpoint","path":"scripts/class_lightpoint/class_lightpoint.yy",},},
     {"id":{"name":"class_material","path":"scripts/class_material/class_material.yy",},},
     {"id":{"name":"class_materialspatial","path":"scripts/class_materialspatial/class_materialspatial.yy",},},
     {"id":{"name":"class_mesh","path":"scripts/class_mesh/class_mesh.yy",},},
