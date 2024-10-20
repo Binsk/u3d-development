@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"class_super",
   "parent":{
-    "name":"Data",
-    "path":"folders/Upset 3D/Classes/Data.yy",
+    "name":"System",
+    "path":"folders/Upset 3D/Classes/System.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

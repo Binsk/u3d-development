@@ -13,7 +13,7 @@
 
 /// SIGNALS
 ///		"free" ()		-	Thrown when 'free' is called, by the user or the system
-///		"cleanup" ()	-	Thrown when 'cleanup' is called, only by the system's garbage-collection
+///		"cleanup" ()	-	Thrown when an instance is being freed automatically due to reference loss
 function U3DObject() constructor {
 	#region PROPERTIES
 	static INDEX_COUNTER = int64(0);	// Generic data index for quick comparisons
@@ -22,13 +22,13 @@ function U3DObject() constructor {
 	super = new Super(self);			// Used to fake function inheritance
 	signaler = new Signaler();			// Used to tell other structs when things occur
 	hash = undefined;					// Used for garbage clean-up with automatically generated resources
-	data = {};							// Generic data container to hold any kind of special custom data
+	data = {"ref":{}};					// Generic data container to hold any kind of special custom data (some internal, some user-data)
 	#endregion
 	
 	#region STATIC METHODS
 	/// @desc	Cleans up the data for the specified hash. Note that the hash MUST be valid,
 	///			and all references removed!
-	static cleanup_reference = function(hash){
+	static clean_ref = function(hash){
 		if (is_undefined(hash))
 			throw new Exception("cannot cleanup static resource!");
 		
@@ -44,14 +44,14 @@ function U3DObject() constructor {
 		if (not U3DObject.get_is_valid_object(data))
 			return;
 			
-		data.signaler.signal("cleanup");
-		data.cleanup();
-		data.hash = undefined;
+		data.signaler.signal("cleanup"); // Throw a signal for any cleanup that may be needed
+		data.hash = undefined;			 // Unset the hash to prevent re-triggering cleanup
+		data.free();					 // Free the resource; it has no more references
 	}
 	
 	/// @desc	Returns the data (aka., U3DObject instance) monitored w/ the specified
 	///			hash value.
-	static get_reference_data = function(hash){
+	static get_ref_data = function(hash){
 		if (is_undefined(hash))
 			return undefined;
 			
@@ -60,6 +60,19 @@ function U3DObject() constructor {
 			return undefined;
 			
 		return data.data;
+	}
+	
+	/// @desc	Returns the number of references to this instance. ONLY applies to 
+	///			dynamically allocated resources w/ a memory hash. 
+	static get_ref_count = function(hash){
+		if (is_undefined(hash))
+			return 0;
+		
+		var data = U3D.MEMORY[$ hash];
+		if (is_undefined(data))
+			return undefined;
+			
+		return data.count;
 	}
 	
 	/// @desc	Returns if the specified value is a valid U3DObject. This checks for
@@ -76,13 +89,25 @@ function U3DObject() constructor {
 		
 		return true;
 	}
+	
+	/// @desc	A safe way to compare if two U3DObject instances are equal. If a
+	///			value is NOT a valid U3DObject the function will return false.
+	static are_equal = function(value1, value2){
+		if (not U3DObject.get_is_valid_object(value1))
+			return false;
+		
+		if (not U3DObject.get_is_valid_object(value2))
+			return false;
+		
+		return value1.get_index() == value2.get_index();
+	}
 	#endregion
 	
 	#region METHODS 
 	/// @desc	Sets a value into the custom data under the set chain of keys.
-	/// @param	{array}		keys	array of string keys to set the value 
-	/// @param				value	the value to set under the keys
-	function set_data(keys, value){
+	/// @param	{array}		keys			array of string keys to set the value 
+	/// @param				value=undefined	the value to set under the keys (if undefined, removes the value)
+	function set_data(keys, value=undefined){
 		if (not is_array(keys))
 			keys = [string(keys)];
 		
@@ -95,8 +120,12 @@ function U3DObject() constructor {
 				struct[$ keys[i]] = sdata;
 			}
 			
-			if (i == al - 1)
-				struct[$ keys[i]] = value;
+			if (i == al - 1){
+				if (is_undefined(value))
+					struct_remove(struct, keys[i]);
+				else
+					struct[$ keys[i]] = value;
+			}
 			else
 				struct = sdata;
 		}
@@ -126,15 +155,6 @@ function U3DObject() constructor {
 		return index;
 	}
 	
-	/// @desc	Returns the number of references to this instance. ONLY applies to 
-	///			dynamically allocated resources w/ a memory hash. 
-	function get_reference_count(){
-		if (is_undefined(hash))
-			return 0;
-		
-		return U3D.MEMORY[$ hash].count;
-	}
-	
 	/// @desc	Returns if the provided data is the exact same data as this calling
 	///			instance.
 	function is_equal(data){
@@ -146,7 +166,7 @@ function U3DObject() constructor {
 	
 	/// @desc	Increment the reference count if dynamically loaded. Do NOT CALL THIS
 	///			unless you know exactly what you are doing!
-	function increment_reference(){
+	function inc_ref(){
 		if (is_undefined(hash)) // Not dynamically added; no need
 			return;
 		
@@ -164,7 +184,7 @@ function U3DObject() constructor {
 	
 	/// @desc	Decrements the reference count and cleans up the data if appropriate.
 	///			Do NOT CALL THIS unless you know exactly what you are doing!
-	function decrement_reference(){
+	function dec_ref(){
 		if (is_undefined(hash))
 			return;
 		
@@ -173,17 +193,37 @@ function U3DObject() constructor {
 			
 		U3D.MEMORY[$ hash].count -= 1;
 		if (U3D.MEMORY[$ hash].count == 0){
-			U3DObject.cleanup_reference(hash);
+			U3DObject.clean_ref(hash);
 			hash = undefined;
 		}
 	}
-	
-	/// @desc	The cleanup function is called by dynamic resources once all references
-	///			are removed. It should NEVER be called directly.
-	function cleanup(){
-		free();
-	};
 
+	/// @desc	Attempts to add a U3DObject as an owned reference so that it will be
+	///			auto decremented upon free. Discards duplicates and invalid instances.
+	function add_child_ref(value){
+		if (not U3DObject.get_is_valid_object(value))
+			return false;
+		
+		if (is_undefined(value.hash))	// Not an auto-managed instance
+			return false;
+		
+		set_data(["ref", value.hash], value);
+		value.inc_ref();
+		return true;
+	}
+
+	/// @desc	Attempts to remove a U3DObject that has been registered as a child reference.
+	function remove_child_ref(value){
+		if (not U3DObject.get_is_valid_object(value))
+			return false;
+		
+		if (is_undefined(value.hash))	// Not an auto-managed instance
+			return false;
+		
+		set_data(["ref", value.hash]); // Delete the data
+		value.dec_ref();
+		return true;
+	}
 
 	/// @desc	Frees up all data related to the object and makes the object 'unusable' from
 	///			this point forward. Can be seen as the 'destructor' for the class. This should
@@ -197,6 +237,14 @@ function U3DObject() constructor {
 		
 		delete signaler;
 		delete super;
+		
+		// Free references:
+		var	data = get_data("ref");
+		var keys = struct_get_names(data);
+		for (var i = array_length(keys) - 1; i >= 0; --i){
+			var instance = data[$ keys[i]];
+			remove_child_ref(instance);
+		}
 		
 		is_freed = true;
 	}

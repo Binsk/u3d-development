@@ -50,9 +50,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		// First add new sprites to the system:
 		for (var i = 0; i < array_length(sprite_data_array); ++i){
 			var texture_hash = md5_string_utf8($"{self.directory}{self.name}_sprite_texture_{i}");
-			var texture = U3DObject.get_reference_data(texture_hash);
+			var texture = U3DObject.get_ref_data(texture_hash);
 			if (not is_undefined(texture)){ // Value already loaded
-				texture.increment_reference();
+				add_child_ref(texture);
 				array_push(texture_array, texture);
 				continue;
 			}
@@ -73,7 +73,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				texture.hash = texture_hash;	// Mark that this is a dynamic resource
 				texture.signaler.add_signal("cleanup", new Callable(texture, sprite_delete), [sprite]);
 				
-				texture.increment_reference();
+				add_child_ref(texture);
 				array_push(texture_array, texture);
 				continue;
 			}
@@ -109,7 +109,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			texture.hash = texture_hash;	// Mark that this is a dynamic resource
 			texture.signaler.add_signal("cleanup", new Callable(texture, sprite_delete, [sprite]));
 			
-			texture.increment_reference();
+			add_child_ref(texture);
 			array_push(texture_array, texture);
 		}
 		
@@ -205,7 +205,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 			// In case some textures weren't used, this will free them up:
 		for (var j = array_length(texture_array) - 1; j >= 0; --j)
-			texture_array[j].decrement_reference();
+			remove_child_ref(texture_array[j]);
 			
 		return material_array;
 	}
@@ -232,7 +232,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 		
 		var primitive_hash = $"{self.directory}{self.name}_primitive_{mesh_index}{primitive_index}{format.get_hash()}{transform}";
-		var primitive = U3DObject.get_reference_data(primitive_hash);
+		var primitive = U3DObject.get_ref_data(primitive_hash);
 		if (not is_undefined(primitive))
 			return primitive;
 		
@@ -431,7 +431,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 			
 		var mesh_hash = $"{self.directory}{self.name}_mesh_{mesh_index}{format.get_hash()}{apply_transforms}";
-		var mesh = U3DObject.get_reference_data(mesh_hash);
+		var mesh = U3DObject.get_ref_data(mesh_hash);
 		if (not is_undefined(mesh))
 			return mesh;
 			
@@ -539,7 +539,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = 0; i < array_length(material_array); ++i){
 			/// @note	We mark the material as dynamic so it will auto-free w/ the model and release the textures as needed.
 			material_array[i].hash = md5_string_utf8($"{self.directory}{self.name}_model_material_{i}{model.get_index()}");
-			material_array[i].increment_reference();
 			model.set_material(material_array[i], i);
 		}
 		return model;

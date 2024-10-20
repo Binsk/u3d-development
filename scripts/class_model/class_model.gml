@@ -16,7 +16,7 @@ function Model() : U3DObject() constructor {
 			return;
 		}
 		
-		mesh.increment_reference();
+		add_child_ref(mesh);
 		array_push(mesh_array, mesh);
 	}
 	
@@ -59,16 +59,7 @@ function Model() : U3DObject() constructor {
 	super.register("free");
 	function free(){
 		super.execute("free");
-		
-		// Clean up any dynamic materials 
-		var material_keys = struct_get_names(material_data);
-		for (var i = array_length(material_keys) - 1; i >= 0; --i)
-			material_data[$ material_keys[i]].decrement_reference();
-		
 		material_data = {};
-		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
-			mesh_array[i].decrement_reference();
-
 		mesh_array = [];
 	}
 	#endregion

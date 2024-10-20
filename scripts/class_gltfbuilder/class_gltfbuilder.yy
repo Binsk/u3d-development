@@ -6,7 +6,7 @@
   "name":"class_gltfbuilder",
   "parent":{
     "name":"Data",
-    "path":"folders/Upset 3D/Classes/Data.yy",
+    "path":"folders/Upset 3D/Classes/System/Data.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

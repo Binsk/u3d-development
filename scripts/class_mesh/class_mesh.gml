@@ -17,10 +17,10 @@ function Mesh() : U3DObject() constructor {
 	///			a material index. Note that primitives can be added multiple times
 	///			with different materials, if necessary.
 	function add_primitive(primitive, material_index){
-		primitive.increment_reference();
 		array_push(primitive_array, {
 			primitive, material_index
 		});
+		add_child_ref(primitive);
 	}
 	
 	/// @desc	Renders a single primitive.
@@ -74,8 +74,6 @@ function Mesh() : U3DObject() constructor {
 	super.register("free");
 	function free(){
 		super.execute("free");
-		for (var i = array_length(primitive_array) - 1; i >= 0; --i)
-			primitive_array[i].primitive.decrement_reference();
 		
 		primitive_array = [];
 	}

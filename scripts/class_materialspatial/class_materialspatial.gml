@@ -147,15 +147,13 @@ function MaterialSpatial() : Material() constructor {
 		
 		if (is_undefined(texture)){ // Wipe the texture if unset
 			if (not is_undefined(self.texture[$ label]))
-				self.texture[$ label].texture.decrement_reference();
+				remove_child_ref(texture[$ label].texture);
 				
 			self.texture[$ label] = undefined;
 			return;
 		}
 		
-		texture.increment_reference();
-		if (not is_undefined(self.texture[$ label]))
-			self.texture[$ label].texture.decrement_reference();
+		add_child_ref(texture);
 		
 		self.texture[$ label] = {
 			texture : texture,
@@ -308,15 +306,6 @@ function MaterialSpatial() : Material() constructor {
 	super.register("free");
 	function free(){
 		super.execute("free");
-		
-		// Free up any textures if we own the last reference:
-		texture_keys = struct_get_names(texture);
-		for (var i = array_length(texture_keys) - 1; i >= 0; --i){
-			if (is_undefined(texture[$ texture_keys[i]]))
-				continue;
-				
-			texture[$ texture_keys[i]].texture.decrement_reference();
-		}
 		texture_keys = {};
 	}
 	#endregion
