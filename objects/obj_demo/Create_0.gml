@@ -116,12 +116,14 @@ inst.signaler.add_signal("checked", function(is_checked){
 		if (is_undefined(body)){
 			var gltf = new GLTFBuilder("demo-floor.glb");
 			var model = gltf.generate_model(vformat);
+			model.freeze();
 			body = new Body();
 			body.set_model(model);
 			obj_render_controller.add_body(body);
 			gltf.free();
 			delete gltf;
 		}
+		
 		obj_render_controller.add_body(obj_demo.body);
 		obj_demo.body.set_position(vec(0, obj_demo.body_y, 0));
 	}

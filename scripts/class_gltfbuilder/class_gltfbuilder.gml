@@ -52,7 +52,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var texture_hash = md5_string_utf8($"{self.directory}{self.name}_sprite_texture_{i}");
 			var texture = U3DObject.get_ref_data(texture_hash);
 			if (not is_undefined(texture)){ // Value already loaded
-				add_child_ref(texture);
 				array_push(texture_array, texture);
 				continue;
 			}
@@ -115,6 +114,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// Next generate the material data:
 		for (var i = 0; i < array_length(material_data_array); ++i){
+			var material_hash = md5_string_utf8($"{self.directory}{self.name}_material_{i}");
+			var material = U3DObject.get_ref_data(material_hash);
+			if (not is_undefined(material)){
+				material_array[i] = material;
+				continue
+			}
+			
 			var material_data = material_data_array[i];
 			var pbr_data = material_data[$ "pbrMetallicRoughness"]; // May not be set!
 			// First, a quick check to see if we failed to load the sprite and fill w/ 'no texture'
@@ -181,7 +187,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					Exception.throw_conditional($"invalid alphaMode [{material_data[$ "alphaMode"]}]");
 			}
 			
-			var material = new MaterialSpatial();
+			material = new MaterialSpatial();
 			
 			if (not is_undefined(color_texture))
 				material.set_texture("albedo", color_texture);
@@ -198,14 +204,15 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			material.cull_mode = cull_mode;
 			material.alpha_cutoff = alpha_cutoff;
 			material.render_stage = (is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque);
+			material.hash = material_hash;
+			add_child_ref(material);
 			
 			/// @note	The material will auto-dereference the texture
 			material_array[i] = material;
 		}
 		
-			// In case some textures weren't used, this will free them up:
-		for (var j = array_length(texture_array) - 1; j >= 0; --j)
-			remove_child_ref(texture_array[j]);
+/// @note	Textures will be kept in memory so long as this instance exists in case of 
+///			generating / removing things back-to-back.
 			
 		return material_array;
 	}
@@ -231,7 +238,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
-		var primitive_hash = $"{self.directory}{self.name}_primitive_{mesh_index}{primitive_index}{format.get_hash()}{transform}";
+		var primitive_hash = md5_string_utf8($"{self.directory}{self.name}_primitive_{mesh_index}{primitive_index}{format.get_hash()}{transform}");
 		var primitive = U3DObject.get_ref_data(primitive_hash);
 		if (not is_undefined(primitive))
 			return primitive;
@@ -305,6 +312,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		primitive = new Primitive(format);
 		primitive.hash = primitive_hash;
 		primitive.define_begin(map_size);
+		
 		var has_tangent_data = (format.get_has_data(VERTEX_DATA.position) and format.get_has_data(VERTEX_DATA.tangent) and format.get_has_data(VERTEX_DATA.texture)); // Used when auto-calculating tangents
 		
 		var loop = array_length(format.vformat_array);
@@ -417,6 +425,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 		primitive.define_end();
 		
+		add_child_ref(primitive);
 		set_data(["model_data", "minimum"], min_vec);
 		set_data(["model_data", "maximum"], max_vec);
 		
@@ -430,7 +439,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (count <= 0)
 			return undefined;
 			
-		var mesh_hash = $"{self.directory}{self.name}_mesh_{mesh_index}{format.get_hash()}{apply_transforms}";
+		var mesh_hash = md5_string_utf8($"{self.directory}{self.name}_mesh_{mesh_index}{format.get_hash()}{apply_transforms}");
 		var mesh = U3DObject.get_ref_data(mesh_hash);
 		if (not is_undefined(mesh))
 			return mesh;
@@ -494,6 +503,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
 	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives
 	function generate_model(format, generate_materials=true, apply_transforms=true){
+		var model_hash = md5_string_utf8($"{self.directory}{self.name}_model_{format.get_hash()}{generate_materials}{apply_transforms}");
+		var model = U3DObject.get_ref_data(model_hash);
+		if (not is_undefined(model))
+			return model;
+		
 		set_data(["model_data", "minimum"], undefined);
 		set_data(["model_data", "maximum"], undefined);
 /// @stub	Remove the 'format' argument, it is just for testing
@@ -524,23 +538,24 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
-		var model = new Model();
+		model = new Model();
 		for (var i = 0; i < count; ++i)
 			model.add_mesh(mesh_array[i]);
 			
 		model.set_data(["aabb_min"], get_data(["model_data", "minimum"]));
 		model.set_data(["aabb_max"], get_data(["model_data", "maximum"]));
+		model.hash = model_hash;
+		add_child_ref(model);
 		
 		if (not generate_materials)
 			return model;
 			
 		// Add materials:
 		var material_array = generate_material_array();
-		for (var i = 0; i < array_length(material_array); ++i){
+		for (var i = 0; i < array_length(material_array); ++i)
 			/// @note	We mark the material as dynamic so it will auto-free w/ the model and release the textures as needed.
-			material_array[i].hash = md5_string_utf8($"{self.directory}{self.name}_model_material_{i}{model.get_index()}");
 			model.set_material(material_array[i], i);
-		}
+		
 		return model;
 	}
 	

@@ -14,9 +14,14 @@ function Primitive(vformat) : U3DObject() constructor {
 	#region PROPERTIES
 	self.vformat = vformat;
 	self.vbuffer = undefined;
+	is_frozen = false;
 	#endregion
 
 	#region METHODS
+	function get_is_frozen(){
+		return is_frozen;
+	}
+	
 	/// @desc	Begins defining the vertex buffer for this primitive. Note that ALL primitives
 	///			should be defined in the pr_trianglelist format.
 	function define_begin(size=0){
@@ -31,6 +36,8 @@ function Primitive(vformat) : U3DObject() constructor {
 		
 		for (var i = array_length(vformat.vformat_array) - 1; i >= 0; --i)
 			definition_data[$ vformat.vformat_array[i]] = array_create(size, undefined);
+		
+		is_frozen = false;
 	}
 	
 	/// @desc	Returns an already defined piece of data from the primitive's definition.
@@ -205,20 +212,27 @@ function Primitive(vformat) : U3DObject() constructor {
 	///			vRAM from now onwards but will also be SIGNIFICANTLY faster to render.
 	///			Returns if successful.
 	function define_freeze(){
+		if (not is_undefined(self[$ "definition_data"]))
+			throw new Exception("cannot freeze buffer; data not fully defined!");
+			
 		if (is_undefined(vbuffer))
 			return false;
 		
+		if (is_frozen)
+			return true;
+		
+		is_frozen = true;
 		return (vertex_freeze(vbuffer) >= 0);
 	}
 
 	super.register("free");
 	function free(){
+		super.execute("free");
+		
 		if (not is_undefined(vbuffer)){
 			vertex_delete_buffer(vbuffer);
 			vbuffer = undefined;
 		}
-		
-		super.execute("free");
 	}
 	#endregion
 	

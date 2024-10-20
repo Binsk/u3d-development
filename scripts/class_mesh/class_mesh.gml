@@ -20,6 +20,7 @@ function Mesh() : U3DObject() constructor {
 		array_push(primitive_array, {
 			primitive, material_index
 		});
+		
 		add_child_ref(primitive);
 	}
 	
