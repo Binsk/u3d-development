@@ -142,7 +142,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		// 	surface_set_target_ext(1, shadowbit_surface);
 	}
 	
-	function render_shadows(camera_id=undefined, body_array=[]){
+	function render_shadows(eye_id=undefined, body_array=[]){
 		surface_depth_disable(false);
 		if (not surface_exists(shadow_surface))
 			shadow_surface = surface_create(shadow_resolution, shadow_resolution, surface_r8unorm);
@@ -189,7 +189,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_reset_target();
 	}
 	
-	function apply_shadows(surface_in, surface_out, camera_id=undefined){
+	function apply_shadows(eye_id, surface_in, surface_out){
 		if (not casts_shadows){
 			if (surface_exists(shadowbit_surface)){
 				surface_free(shadowbit_surface);
@@ -198,8 +198,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			return false;
 		}
 		
-		var sw = surface_get_width(camera_id.gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
-		var sh = surface_get_height(camera_id.gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+		var sw = surface_get_width(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+		var sh = surface_get_height(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
 		
 		if (not surface_exists(shadowbit_surface))
 			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
@@ -232,11 +232,11 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_set_target(shadowbit_surface);
 		shader_set(shd_lighting_sample_shadow);
 		texture_set_stage(uniform_shadow_sampler_shadow, shadow_depth_texture);
-		texture_set_stage(uniform_shadow_sampler_depth, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+		texture_set_stage(uniform_shadow_sampler_depth, eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
 		shader_set_uniform_f(uniform_shadow_bias, shadow_bias);
 		shader_set_uniform_matrix_array(uniform_shadow_matrix_shadow, shadow_viewprojection_matrix);
-		shader_set_uniform_matrix_array(uniform_shadow_matrix_invprojection, camera_id.get_inverse_projection_matrix());
-		shader_set_uniform_matrix_array(uniform_shadow_matrix_invview, camera_id.get_inverse_view_matrix());
+		shader_set_uniform_matrix_array(uniform_shadow_matrix_invprojection, eye_id.get_inverse_projection_matrix());
+		shader_set_uniform_matrix_array(uniform_shadow_matrix_invview, eye_id.get_inverse_view_matrix());
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);

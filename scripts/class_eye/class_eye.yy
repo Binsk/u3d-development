@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"class_cameraanchor",
+  "%Name":"class_eye",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"class_cameraanchor",
+  "name":"class_eye",
   "parent":{
     "name":"Cameras",
     "path":"folders/Upset 3D/Classes/Rendering/Cameras.yy",

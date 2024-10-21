@@ -1,7 +1,6 @@
 /// @about
-/// A camera anchor specifies where on the screen the specified camera instance
-/// should be rendered.
-function CameraAnchor(camera) constructor {
+/// A generic 2D anchor that stores a 2D position based on anchor points + margins.
+function Anchor2D() constructor {
 	#region PROPERTIES
 	anchor = {
 		x1 : 0,
@@ -16,8 +15,6 @@ function CameraAnchor(camera) constructor {
 		x2 : 0,
 		y2 : 0
 	};
-	
-	self.camera = camera;
 	#endregion
 	
 	#region METHODS
@@ -50,10 +47,5 @@ function CameraAnchor(camera) constructor {
 	function get_dy(canvas_height){
 		return (canvas_height * anchor.y2 + margin.y2) - (canvas_height * anchor.y1 + margin.y1);
 	}
-	#endregion
-	
-	#region INIT
-	if (not is_instanceof(camera, Camera))
-		throw new Exception("invalid type, expected [Camera]!");
 	#endregion
 }

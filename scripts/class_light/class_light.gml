@@ -23,16 +23,12 @@ function Light() : Node() constructor {
 	///			in the opaque pass and when casts_shadows is enabled
 	///			Even if a light type can't cast shadows it should override this
 	///			function.
-	function render_shadows(camera_id=undefined, body_array=[]){
+	function render_shadows(eye_id=undefined, body_array=[]){
 		throw new Exception("cannot call a virtual function!");
 	}
 	
 	/// @desc	Apply the gbuffer samplers that will be required for the light.
-	///			The gbuffer will be an array of textures referenceable via
-	///			CAMERA_GBUFFER. The only textures that should NOT be accessed
-	///			are the light_opaque and light_translucent textures.
-	/// @param	{array}		gbuffer					array of gbuffer textures to sample from
-	/// @param	{Camera}	camera_id				id of the currently rendering camera
+	/// @param	{Camera}	camera_id				id of the currently rendering camera containing the GBuffer
 	/// @param	{bool}		is_translucent=false	whether or not this is the translucent pass or not
 	function apply_gbuffer(camera_id, is_translucent=false){
 		throw new Exception("cannot call virtual function!");
@@ -46,7 +42,7 @@ function Light() : Node() constructor {
 	/// @desc	An optional pass that occurs after lighting is rendered in the case
 	///			shadows must be handled in a deferred fashion. The function should return
 	///			if something was rendered to the 'surface_out'.
-	function apply_shadows(surface_in, surface_out){
+	function apply_shadows(eye_id, surface_in, surface_out){
 		return false;
 	}
 	

@@ -1,6 +1,8 @@
 /// @about
-/// A 3D camera that handles rendering for a specific view in 3D space.
-/// Can assume to look down the x+ axis w/ a y+up value
+/// A 3D camera defines the position and render details for a view into the scene.
+///	There are different kinds of cameras that can be used but the most common is
+///	the CameraView(), which will render straight to the screen. The Camera() class
+///	is a template class and should be inherited, not used directly.
 
 /// @desc	Defines the necessary buffers we will need for the graphics pipeline
 ///			for this camera. We use separate albedo/depth pairs simply for the
@@ -11,18 +13,18 @@
 enum CAMERA_GBUFFER {
 	albedo_opaque,			// Albedo color (rgba8unorm)
 	albedo_translucent,
-	depth_opaque,			// Depth map; taken from albedo
+	depth_opaque,			// Depth map; texture taken from albedo
 	depth_translucent,	
 	
 	normal,					// Normal map (rgba8unorm)
 	view,					// View vector map (rgba8unorm) in world-space
-	emissive,				// Emmisive map (rgba8unorm)
-	pbr,					// PBR properties (rgba8unorm); R: specular, G: roughness, B: metal
+	emissive,				// Emissive map (rgba8unorm)
+	pbr,					// PBR properties (rgba8unorm); G: roughness, B: metal
 	
 	light_opaque,			// Out surface (rgba16float) of lighting passes
 	light_translucent,
 	
-	final,					// Final combined surface (rgba16float)
+	final,					// Final combined surface before tonemapping (rgba16float)
 	post_process,			// Post-processing middle-man surface (rgba16float)
 }
 
@@ -41,36 +43,18 @@ enum CAMERA_TONEMAP {
 	simple,	// Does a simple gamma correction w/o any special exposure calculations
 }
 
-/// @desc	Creates a new 3D camera that can be moved around the world and added
-///			to the rendering pipeline.
-function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
+function Camera() : Node() constructor {
 	#region PROPERTIES
-	static DISPLAY_WIDTH = undefined; // Full display size to measure anchor points
-	static DISPLAY_HEIGHT = undefined;
-	
-	anchor = new CameraAnchor(self);
-	tonemap = CAMERA_TONEMAP.simple;
-	buffer_width = undefined;
+	buffer_width = undefined;	// Render resolution
 	buffer_height = undefined;
-	custom_render_size = undefined;	// Overrides global DISPLAY_* size if set. ANCHOR WILL BE IGNORED!
-	anchor_blend_mode = bm_normal;	// How render_out() blends the final result onto the output
-	
-	self.znear = znear;
-	self.zfar = zfar;
-	self.fov = fov;	// y-FOV
 	gbuffer = {
-		surfaces : {},
-		textures : {}
+		surfaces : {}, // GBuffer surfaces with IDs from CAMERA_GBUFFER
+		textures : {}  // Gbuffer textures, in some cases they do NOT have an equivalent surface!
 	};
-/// @stub	Add post-processing structure & addition / removal / render to camera
+	render_stages = CAMERA_RENDER_STAGE.both; // Which render stages to perform
+	render_tonemap = CAMERA_TONEMAP.none;
+	/// @stub	Add post-processing structure & addition / removal / render to camera
 	post_process_effects = {};	// priority -> effect pairs for post processing effects
-	
-	render_stages = CAMERA_RENDER_STAGE.both;	// Which render stages will be rendered
-	
-	self.matrix_inv_view = undefined;
-	self.matrix_inv_projection = undefined;
-	self.matrix_view = undefined;
-	self.matrix_projection = undefined;
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_opaque = -1;
@@ -78,74 +62,61 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 	uniform_sampler_dopaque = -1;
 	uniform_sampler_dtranslucent = -1;
 	uniform_render_stages = -1;
-	
-	uniform_sampler_texture = -1;
-	uniform_tonemap = -1;
 	#endregion
-	
 	#endregion
 	
 	#region METHODS
-	
-	/// @desc	If set, overrides the CamerAnchor and DISPLAY_WIDTH/HEIGHT values.
-	///			Useful if rendering specifically for in-game surfaces and the like.
-	function set_custom_render_size(width=undefined, height=undefined){
-		if (is_undefined(width) or is_undefined(height)){
-			custom_render_size = undefined;
-			return;
-		}
-		custom_render_size = {
-			x : max(1.0, width),
-			y : max(1.0, height)
-		}
+	/// @desc	Return an array of all attached Eye() instances.
+	function get_eye_array(){
+		return [];
 	}
 	
-	/// @desc	Sets how the camera is blended in the auto-render handled by the
-	///			render controller.
-	function set_anchor_blend_mode(mode=bm_normal){
-		anchor_blend_mode = mode;
-	}
-	
-	/// @desc	Set which render stages should be rendered. E.g., if you know there
-	///			will be no translucent materials then you can save vRAM and CPU 
-	///			performance by disabling the the translucent stage.
+	/// @desc	Set which render stages should be rendered. Even when no instances
+	///			exist in a render stage, that stage still takes up processing time
+	///			and vRAM. E.g., if you KNOW you will never have translucent materials
+	///			then disabling the translucent stage will free up vRAM and give you
+	///			some extra FPS.
 	function set_render_stages(stages=CAMERA_RENDER_STAGE.both){
 		render_stages = clamp(floor(stages), 0, 3);
 	}
 	
 	function set_znear(znear){
-		self.matrix_projection = undefined;
-		matrix_inv_projection = undefined;
-		self.znear = znear;
+		var eye_array = get_eye_array();
+		for (var i = array_length(eye_array) - 1; i >= 0; --i)
+			eye_array[i].set_znear(znear);
 	}
 	
 	function set_zfar(zfar){
-		self.matrix_projection = undefined;
-		matrix_inv_projection = undefined;
-		self.zfar = zfar;
+		var eye_array = get_eye_array();
+		for (var i = array_length(eye_array) - 1; i >= 0; --i)
+			eye_array[i].set_zfar(zfar);
 	}
 	
 	function set_fow(fow){
-		self.matrix_projection = undefined;
-		matrix_inv_projection = undefined;
-		self.fow = fow;
+		var eye_array = get_eye_array();
+		for (var i = array_length(eye_array) - 1; i >= 0; --i)
+			eye_array[i].set_fow(fow);
 	}
 	
+	/// @desc	Sets the render size for the camera, in pixels. This size will
+	///			be used by each eye maintained by the camera.
+	function set_render_size(width, height){
+		buffer_width = max(1, floor(real(width)));
+		buffer_height = max(1, floor(real(height)));
+	}
+	
+	/// @desc	Sets the tonemap to use when converting the final linearized 
+	///			color buffer to the rgba8 channels to display to the screen.
 	function set_tonemap(tonemap){
-		if (tonemap == self.tonemap)
-			return;
-
-		self.tonemap = tonemap;
+		self.render_tonemap = tonemap;
 	}
 	
-		
-	/// @desc	Returns the camera anchor attached to this camera.
-	function get_anchor(){
-		return anchor;
-	}
-	
-	/// @desc	Returns the amount of vRAM used by the gbuffer, in bytes, for this camera.
+	/// @desc	Returns the estimated amount of vRAM used by the gbuffer, in bytes, for this camera.
+	///			Does NOT account for body materials or light buffers.
 	function get_vram_usage(){
+		if (is_undefined(buffer_width) or is_undefined(buffer_height))
+			return 0;
+			
 		var bytes = 0;
 		bytes += (buffer_width * buffer_height) * (
 			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque albedo + depth
@@ -157,61 +128,6 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		);
 		
 		return bytes;
-	}
-	
-	/// @desc	Build the view matrix required for this camera.
-	function get_view_matrix(){
-		if (not is_undefined(self.matrix_view))
-			return self.matrix_view;
-		
-		var forward = get_forward_vector();
-		var up = get_up_vector();
-		var to = vec_add_vec(position, forward);
-		self.matrix_view = matrix_build_lookat(position.x, position.y, position.z, to.x, to.y, to.z, up.x, up.y, up.z);
-		
-		return self.matrix_view;
-	}
-	
-	function get_inverse_view_matrix(){
-		if (not is_undefined(matrix_inv_view))
-			return matrix_inv_view;
-		
-		matrix_inv_view = matrix_get_inverse(get_view_matrix());;
-		return matrix_inv_view;
-	}
-	
-	/// @desc	Build the projection matrix required for this camera.
-	function get_projection_matrix(){
-		if (not is_undefined(self.matrix_projection))
-			return self.matrix_projection;
-		
-		if (is_undefined(buffer_width)) // Cannot determine render size
-			return matrix_build_identity();
-
-		var aspect = buffer_width / buffer_height;
-		var yfov = 2.0 * arctan(dtan(fov/2) * aspect);
-		
-		var h = 1 / tan(yfov * 0.5);
-		var w = h / aspect;
-		var a = zfar / (zfar - znear);
-		var b = (-znear * zfar) / (zfar - znear);
-		var matrix = [
-			w, 0, 0, 0,
-			0, get_is_directx_pipeline() ? h : -h, 0, 0,
-			0, 0, a, 1,
-			0, 0, b, 0
-		];
-		
-		self.matrix_projection = matrix;
-		return matrix;
-	}
-	
-	function get_inverse_projection_matrix(){
-		if (not is_undefined(matrix_inv_projection))
-			return matrix_inv_projection;
-		
-		matrix_inv_projection = matrix_get_inverse(get_projection_matrix());;
-		return matrix_inv_projection;
 	}
 	
 	/// @dsec	Adds a new post processing effect with the specified render priority.
@@ -226,26 +142,15 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		post_process_effects[$ priority] = array;
 	}
 	
-/// @stub	Add removing a post-processing effect
+	/// @desc	Auto-calculates a new render size (if applicable). The render size
+	///			is applied equally for every eye in the camera.
+	function update_render_size(){};
 	
+	/// @desc	Generate/Resize all the necessary render buffers.
 	function generate_gbuffer(){
-		if (is_undefined(Camera.DISPLAY_WIDTH))
-			Camera.DISPLAY_WIDTH = window_get_width();
-		if (is_undefined(Camera.DISPLAY_HEIGHT))
-			Camera.DISPLAY_HEIGHT = window_get_height();
+		if (is_undefined(buffer_width) or is_undefined(buffer_height))
+			throw new Exception("failed to render; buffer size undefined!");
 			
-		/// @note	the depth texture doesn't have its own surface as it is
-		///			taken from the depth buffer of the albedo surface
-		if (is_undefined(custom_render_size)){
-			var screen_width = Camera.DISPLAY_WIDTH;
-			var screen_height = Camera.DISPLAY_HEIGHT;
-			buffer_width = anchor.get_dx(screen_width);
-			buffer_height = anchor.get_dy(screen_height);
-		}
-		else{
-			buffer_width = custom_render_size.x;
-			buffer_height = custom_render_size.y;
-		}
 		var surfaces = gbuffer.surfaces;
 		var textures = gbuffer.textures;
 		
@@ -365,9 +270,10 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		}
 	}
 	
-	/// @desc	Given an array of renderable bodies, the camera will render them
-	///			out to the GBuffer.
-	function render_gbuffer(body_array=[], is_translucent=false){
+	/// @desc	Given an array of renderable bodies, the camera will render all the
+	///			texture data into the GBuffer to later be passed into the lighting
+	///			stage.
+	function render_gbuffer(eye, body_array=[], is_translucent=false){
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
 		
@@ -393,8 +299,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.emissive]);
 		
 		var world_matrix = matrix_get(matrix_world); // Cache so we can reset for later stages
-		matrix_set(matrix_view, get_view_matrix());
-		matrix_set(matrix_projection, get_projection_matrix());
+		matrix_set(matrix_view, eye.get_view_matrix());
+		matrix_set(matrix_projection, eye.get_projection_matrix());
 		for (var i = array_length(body_array) - 1; i >= 0; --i){
 			var body = body_array[i];
 			if (body.get_render_layers() & get_render_layers() == 0) // This camera doesn't render this body
@@ -415,8 +321,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		draw_clear(0);
 		shader_set(shd_view_buffer);
 		texture_set_stage(shader_get_sampler_index(shd_view_buffer, "u_sDepth"), gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
-		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvProj"), get_inverse_projection_matrix());
-		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvView"), get_inverse_view_matrix());
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvProj"), eye.get_inverse_projection_matrix());
+		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvView"), eye.get_inverse_view_matrix());
 		shader_set_uniform_f(shader_get_uniform(shd_view_buffer, "u_vCamPosition"), position.x, position.y, position.z);
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
@@ -429,7 +335,9 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		surface_reset_target();
 	}
 	
-	function render_lighting(light_array=[], body_array=[], is_translucent=false){
+	/// @desc	Renders all the shadows and lights, including emissive tetures, and adds
+	///			them together on the final light surface.
+	function render_lighting(eye, light_array=[], body_array=[], is_translucent=false){
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
 		
@@ -445,7 +353,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 				if (not light_array[i].casts_shadows) // Light must have shadows enabled
 					continue;
 				
-				light_array[i].render_shadows(self, body_array);
+				light_array[i].render_shadows(eye, body_array);
 			}
 		}
 		
@@ -480,7 +388,7 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 			
 			var applied_shadows = false;
 			if (not is_translucent)
-				applied_shadows = light.apply_shadows(gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent], self);
+				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 			
 			if (not applied_shadows){
 				gpu_set_blendmode(bm_add);
@@ -512,6 +420,8 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		surface_reset_target();
 	}
 	
+	/// @desc	Renders all the PostProcessFX added to the camera in order of priority.
+	///			Executes on the current GBuffer state.
 	function render_post_processing(){
 		if (render_stages <= 0)
 			return;
@@ -586,57 +496,41 @@ function Camera(znear=0.01, zfar=1024.0, fov=45) : Node() constructor{
 		ds_priority_destroy(priority);
 	};
 	
-	/// @desc	Renders to the screen w/ tonemapping
-	function render_out(){
-		if (render_stages <= 0)
-			return;
+	/// @desc	Performs a complete render of an eye of the camera
+	/// @param	{Eye}	eye					the eye structure to render
+	/// @param	{array}	body_array=[]		the array of renderable bodies to process
+	function render_eye(eye, body_array=[], light_array=[]){
+		if (not is_instanceof(eye, Eye))
+			throw new Exception("invalid type, expected [Eye]!");
 		
-		if (uniform_sampler_texture < 0)
-			uniform_sampler_texture = shader_get_sampler_index(shd_tonemap, "u_sTexture");
+		if (not U3DObject.are_equal(eye.get_camera(), self))
+			throw new Exception("eye does not belong to rendering camera!");
 		
-		if (uniform_tonemap < 0)
-			uniform_tonemap = shader_get_uniform(shd_tonemap, "u_iTonemap");
+		// Make sure the GBuffer exists and is valid
+		generate_gbuffer();
 		
-		var rw = DISPLAY_WIDTH;
-		var rh = DISPLAY_HEIGHT;
-		if (not is_undefined(custom_render_size)){
-			rw = custom_render_size.x;
-			rh = custom_render_size.y;
-		}
+		/// @note	Translucent is done first so the left-over shared buffers (such
+		///			as normals) contain the opaque pass for post-processing. This is
+		///			done because opaque is significantly more common.
+		// Translucent pass:
+		render_gbuffer(eye, body_array, true);
+		render_lighting(eye, light_array, body_array, true);
 		
-		gpu_set_blendmode(anchor_blend_mode);
-		shader_set(shd_tonemap);
-		texture_set_stage(uniform_sampler_texture, gbuffer.textures[$ CAMERA_GBUFFER.final]);
-		shader_set_uniform_i(uniform_tonemap, tonemap);
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh), 1, 0);
-		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh), 0, 0);
-		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh) + anchor.get_dx(rh), 1, 1);
-		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh) + anchor.get_dy(rh), 0, 1);
-		draw_primitive_end();
-		shader_reset();
-		gpu_set_blendmode(bm_normal);
+		// Opaque pass:
+		render_gbuffer(eye, body_array, false);
+		render_lighting(eye, light_array, body_array, false);
+		
+		// Post-processing:
+		render_post_processing();
 	}
-	super.register("free");
-	function free(){
-		super.execute("free");
-		
-		var surfaces = gbuffer.surfaces;
-		var keys = struct_get_names(surfaces);
-		for (var i = array_length(keys) - 1; i >= 0; --i){
-			if (surface_exists(surfaces[$ keys[i]]))
-				surface_free(surfaces[$ keys[i]]);
-		}
-		gbuffer = {surfaces:{}, textures:{}};
-		
-		delete anchor;
-		anchor = undefined;
-	}
-	#endregion
 	
-	#region INIT
-	var reset_matrix = new Callable(self, function(){self.matrix_view = undefined; self.matrix_inv_view = undefined;});
-	signaler.add_signal("set_rotation", reset_matrix);
-	signaler.add_signal("set_position", reset_matrix);
+	/// @desc	Should execute a render_eye for every eye and combine results
+	///			as necessary.
+	function render(body_array, light_array){};
+	
+	/// @desc	Should push the final result to the final render destination; 
+	///			whether that be the monitor, a VR headset, or a custom textured
+	///			surface.
+	function render_out(){};
 	#endregion
 }

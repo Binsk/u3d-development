@@ -104,6 +104,18 @@ function U3DObject() constructor {
 	#endregion
 	
 	#region METHODS 
+	/// @desc	Generates a hash for this instance. This is NOT done for resource
+	///			de-duplication as the hash is tied to the unique ID of the instance;
+	///			however it can be used to auto-cleanup the instance when the parent
+	///			is freed.
+	function set_unique_hash(){
+		if (not is_undefined(hash))
+			throw new Exception("cannot assign hash to already hashed instance!");
+		
+		hash = md5_string_utf8($"u3dobject_{get_index()}");
+		return self; // Return self for function chaining
+	}
+	
 	/// @desc	Sets a value into the custom data under the set chain of keys.
 	/// @param	{array}		keys			array of string keys to set the value 
 	/// @param				value=undefined	the value to set under the keys (if undefined, removes the value)

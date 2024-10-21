@@ -110,9 +110,11 @@ function LightAmbient() : Light() constructor {
 		self.intensity = max(0, intensity);
 	}
 	
-	function render_shadows(camera_id=undefined, body_array=[]){
+	function render_shadows(eye_id=undefined, body_array=[]){
 		if (ssao_strength <= 0)
 			return;
+			
+		var camera_id = eye_id.get_camera();
 			
 		if (uniform_ssao_sampler_depth < 0)
 			uniform_ssao_sampler_depth = shader_get_sampler_index(shader_ssao, "u_sDepth");
@@ -150,8 +152,8 @@ function LightAmbient() : Light() constructor {
 		texture_set_stage(uniform_ssao_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_ssao_sampler_noise, sprite_get_texture(spr_ssao_noise, 0));
 		
-		shader_set_uniform_matrix_array(uniform_ssao_invproj, camera_id.get_inverse_projection_matrix());
-		shader_set_uniform_f_array(uniform_ssao_view, matrix_to_matrix3(camera_id.get_view_matrix()));
+		shader_set_uniform_matrix_array(uniform_ssao_invproj, eye_id.get_inverse_projection_matrix());
+		shader_set_uniform_f_array(uniform_ssao_view, matrix_to_matrix3(eye_id.get_view_matrix()));
 		shader_set_uniform_f(uniform_ssao_texelsize, texture_get_texel_width(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]), texture_get_texel_height(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]));
 		shader_set_uniform_i(uniform_ssao_samples, ssao_samples);
 		shader_set_uniform_f_array(uniform_ssao_sample_array, ssao_sample_array);

@@ -1,6 +1,6 @@
 // Build any cube-map textures
 	/// @note This WAS handled automatically upon render, but we started having
-	///		  shader conflicts so this method was added.
+	///		  shader conflicts so this separate update pass was added.
 var cube_keys = struct_get_names(TextureCube.BUILD_MAP);
 for (var i = array_length(cube_keys) - 1; i >= 0; --i){
 	var cube_map = TextureCube.BUILD_MAP[$ cube_keys[i]];
@@ -28,21 +28,8 @@ for (var i = array_length(camera_keys) - 1; i >= 0; --i){
 	for (var j = array_length(light_keys) - 1; j >= 0; --j)
 		light_array[j] = light_map[$ light_keys[j]];
 	
-	
-	/// @note	Translucent is done first so the left-over shared buffers (such
-	///			as normals) contain the opaque pass for post-processing. This is
-	///			done because opaque is significantly more common.
-	// Translucent pass:
-	camera.generate_gbuffer();	// Re-generate if not yet generated
-	camera.render_gbuffer(body_array, true);
-	camera.render_lighting(light_array, body_array, true);
-	
-	// Opaque pass:
-	camera.render_gbuffer(body_array, false);
-	camera.render_lighting(light_array, body_array, false);
-	
-	// Finalize:
-	camera.render_post_processing();
+	camera.update_render_size();
+	camera.render(body_array, light_array);
 }
 
 if (shader_current() >= 0)

@@ -40,13 +40,13 @@ ppfx_red.set_enabled(false);
 
 #endregion
 
-camera_anaglyph = new Camera();
-camera_anaglyph.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
-camera_anaglyph.add_post_process_effect(ppfx_cyan, -1);
-camera_anaglyph.set_tonemap(CAMERA_TONEMAP.none)
-camera_anaglyph.set_anchor_blend_mode(bm_add);
+// camera_anaglyph = new CameraView();
+// camera_anaglyph.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
+// camera_anaglyph.add_post_process_effect(ppfx_cyan, -1);
+// camera_anaglyph.set_tonemap(CAMERA_TONEMAP.none)
+// camera_anaglyph.set_anchor_blend_mode(bm_add);
 
-camera = new Camera();
+camera = new CameraView();
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
@@ -230,26 +230,26 @@ inst.signaler.add_signal("checked", function(is_checked){
 	U3D.RENDERING.PPFX.grayscale.set_enabled(is_checked);
 });
 
-inst = instance_create_depth(ax + 512, ay, 0, obj_checkbox);
-inst.text = "Stereoscopy";
-inst.is_checked = false;
-inst.signaler.add_signal("checked", function(is_checked){
-	if (is_checked){
-		obj_demo.ppfx_red.set_enabled(true);
-		obj_demo.ppfx_cyan.set_enabled(true);
-		obj_render_controller.add_camera(obj_demo.camera_anaglyph);
-		obj_demo.camera.set_anchor_blend_mode(bm_add);
-		U3D.RENDERING.PPFX.gamma_correction.set_enabled(true);
-		obj_demo.camera.set_tonemap(CAMERA_TONEMAP.none);
-	}
-	else {
-		obj_demo.ppfx_cyan.set_enabled(false);
-		obj_demo.ppfx_red.set_enabled(false);
-		obj_render_controller.remove_camera(obj_demo.camera_anaglyph);
-		obj_demo.camera.set_anchor_blend_mode(bm_normal);
-		U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
-		obj_demo.camera.set_tonemap(CAMERA_TONEMAP.simple);
-	}
-});
+// inst = instance_create_depth(ax + 512, ay, 0, obj_checkbox);
+// inst.text = "Stereoscopy";
+// inst.is_checked = false;
+// inst.signaler.add_signal("checked", function(is_checked){
+// 	if (is_checked){
+// 		obj_demo.ppfx_red.set_enabled(true);
+// 		obj_demo.ppfx_cyan.set_enabled(true);
+// 		obj_render_controller.add_camera(obj_demo.camera_anaglyph);
+// 		obj_demo.camera.set_anchor_blend_mode(bm_add);
+// 		U3D.RENDERING.PPFX.gamma_correction.set_enabled(true);
+// 		obj_demo.camera.set_tonemap(CAMERA_TONEMAP.none);
+// 	}
+// 	else {
+// 		obj_demo.ppfx_cyan.set_enabled(false);
+// 		obj_demo.ppfx_red.set_enabled(false);
+// 		obj_render_controller.remove_camera(obj_demo.camera_anaglyph);
+// 		obj_demo.camera.set_anchor_blend_mode(bm_normal);
+// 		U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
+// 		obj_demo.camera.set_tonemap(CAMERA_TONEMAP.simple);
+// 	}
+// });
 
 sprite_array = [];
