@@ -34,7 +34,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	Given a primitive, generates a VertexFormat that will correctly
 	///			contain all the data specified by the model file.
 	function get_primitive_format(mesh_index, primitive_index){
-/// @stub implement
+/// @stub	Implement; currently just defaulting to "everything"		
+		return VertexFormat.get_format_instance([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
 	}
 	
 	/// @desc	Generates an array of spatial materials. Note that the materials
@@ -499,10 +500,17 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			once all generated Model() instances are freed. 
 	///	@note	If possible, make sure your models are exported with all transforms applied!
 	///			Manually applying them upon load is slow.
-	/// @param	{VertexFormat}	vformat			VertexFormat to generate with, will attempt to fill missing data
 	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
 	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives
-	function generate_model(format, generate_materials=true, apply_transforms=true){
+	/// @param	{VertexFormat}	vformat=auto	VertexFormat to generate with, will attempt to fill missing data
+	function generate_model(generate_materials=true, apply_transforms=true, format=undefined){
+/// @stub	Implement support for custom formats (requires dynamic shader attributes on Windows)
+		if (not is_undefined(format))
+			throw new Exception("custom formats not yet supported!");
+		else
+/// @stub	Add proper format auto-calc as appropriate once implemented
+			format = get_primitive_format(-1, -1);
+		
 		var model_hash = md5_string_utf8($"{self.directory}{self.name}_model_{format.get_hash()}{generate_materials}{apply_transforms}");
 		var model = U3DObject.get_ref_data(model_hash);
 		if (not is_undefined(model))
@@ -510,7 +518,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		set_data(["model_data", "minimum"], undefined);
 		set_data(["model_data", "maximum"], undefined);
-/// @stub	Remove the 'format' argument, it is just for testing
 		var count = get_mesh_count();
 		if (count <= 0)
 			return undefined;

@@ -40,8 +40,6 @@ ppfx_red.set_enabled(false);
 
 #endregion
 
-vformat = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
-
 camera_anaglyph = new Camera();
 camera_anaglyph.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
 camera_anaglyph.add_post_process_effect(ppfx_cyan, -1);
@@ -115,7 +113,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 	if (is_checked){
 		if (is_undefined(body)){
 			var gltf = new GLTFBuilder("demo-floor.glb");
-			var model = gltf.generate_model(vformat);
+			var model = gltf.generate_model();
 			model.freeze();
 			body = new Body();
 			body.set_model(model);

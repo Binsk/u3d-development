@@ -4,10 +4,18 @@
 /// order to prevent any conflicts.
 
 #region DEFINE NECESSARY STATICS
+// Define throw_conditional()
 var foo = new Exception();
 delete foo;
 
+// Define BUILD_MAP
 foo = new TextureCube();
+foo.free();
+delete foo;
+
+// Define get_format_instance()
+foo = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
+foo.free();
 delete foo;
 
 texturegroup_load("U3DDefaults", true);
@@ -21,7 +29,7 @@ global.__u3d_global_data = {
 		MATERIAL : {
 			missing : new MaterialSpatial()	// Default material for when a material is missing
 		},
-		PPFX : { // Pre-made PostProcessingFX effects that can be attached to render cameras
+		PPFX : { // Pre-made PostProcessingFX that can be attached to render cameras
 			fxaa : new PostProcessFX(shd_fxaa),				// FXAA anti-aliasing
 			grayscale : new PostProcessFX(shd_grayscale),	// Turns the output into grayscale
 			gamma_correction : new PostProcessFX(shd_gamma_correction)	// Does basic gamma correction; useful if we want to do it manually

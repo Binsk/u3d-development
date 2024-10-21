@@ -1,6 +1,10 @@
 /// @about
 /// To simplify GLTF model loading w/ dynamic vertex format types, this provides
-/// a way to store a raw vertex format as well as its defining order.
+/// a way to store a raw vertex format as well as its defining order. A VertexFormat
+/// should NOT be created via 'new' keyword! Create a new format via the static function
+/// VertexFormat.get_format_instance(). While it is fine creating via 'new' this will
+/// create duplicates behind-the scenes where `get_format_instance` will re-use existing
+/// formats.
 
 /// @desc	The VERTEX_DATA enum contains possible format attributes for the built-in
 /// 		  rendering system. 
@@ -104,6 +108,7 @@ function VertexFormat(vformat_array=[]) : U3DObject() constructor {
 	
 	super.register("free");
 	function free(){
+		struct_remove(FORMAT_MAP, get_hash());
 		vertex_format_delete(vformat);
 		super.execute("free");
 	}
@@ -168,7 +173,7 @@ function VertexFormat(vformat_array=[]) : U3DObject() constructor {
 	}
 	
 	if (array_length(self.vformat_array) <= 0) // Processed vertex format data is empty
-		throw new Exception("Unexpected final vertex format size [0]");
+		throw new Exception("unexpected final vertex format size [0]");
 	
 	vformat = vertex_format_end();
 	

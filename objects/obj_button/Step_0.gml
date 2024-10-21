@@ -5,7 +5,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_model_button){
 		if (is_undefined(gltf)){
 			gltf = new GLTFBuilder(text);
-			model = gltf.generate_model(obj_demo.vformat);
+			model = gltf.generate_model();
 			model.freeze();
 			var min_vec = model.get_data("aabb_min", vec());
 			var max_vec = model.get_data("aabb_max", vec());
