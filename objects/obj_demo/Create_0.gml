@@ -1,4 +1,6 @@
 window_set_fullscreen(true);
+display_set_gui_maximise();
+game_set_speed(999, gamespeed_fps);
 global.mouse = {
 	x : 0,
 	y : 0
@@ -58,6 +60,8 @@ U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
 distance = 12;
 
 instance_create_depth(0, 0, 0, obj_render_controller);
+obj_render_controller.render_mode = RENDER_MODE.draw_gui;
+
 obj_render_controller.add_camera(camera);
 
 environment_map = undefined;
@@ -73,12 +77,7 @@ light_directional.look_at(vec());
 
 camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)));
 
-display_set_gui_size(1920, 1080);
-obj_render_controller.render_mode = RENDER_MODE.draw_gui;
-
 body = undefined;
-
-game_set_speed(999, gamespeed_fps);
 
 // Generate GUI:
 	// Scane model files:
@@ -250,11 +249,25 @@ inst.signaler.add_signal("checked", function(is_checked){
 // 	}
 // });
 
-ay -= 36;
+ay -= 24;
 inst = instance_create_depth(ax, ay, 0, obj_slider);
-inst.text = "Supersampling: 1.00x";
+inst.text = "Supersampling: 1x";
 inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
-	inst.text = $"Supersampling: {lerp(inst.min_value, inst.max_value, drag_value)}x";
-	obj_demo.camera.set_supersample_multiplier(lerp(inst.min_value, inst.max_value, drag_value))
+	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
+	lerpvalue = floor(lerpvalue * 100) / 100;
+	inst.text = $"Supersampling: {lerpvalue}x";
+	obj_demo.camera.set_supersample_multiplier(lerpvalue)
 },  [undefined, inst]));
 sprite_array = [];
+
+gpu_string = "";
+var map = os_get_info();
+if (os_type == os_windows)
+	gpu_string = "GFX: " + map[? "video_adapter_description"];
+else
+	gpu_string = "GFX: " + (map[? "gl_renderer_string"] ?? "[unknown]");
+	
+if (string_pos("(", gpu_string) > 0)
+	gpu_string = string_copy(gpu_string, 1, string_pos("(", gpu_string) - 1);
+
+ds_map_destroy(map);

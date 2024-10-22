@@ -22,5 +22,11 @@ with (obj_checkbox){
 		break;
 	}
 }
+with (obj_slider){
+	if (is_hovered or is_dragging){
+		cursor = cr_handpoint;
+		break;
+	}
+}
 
 window_set_cursor(cursor);

@@ -53,8 +53,15 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 		rwidth = ceil(supersample_multiplier * rwidth);
 		rheight = ceil(supersample_multiplier * rheight);
 		
-		buffer_width = anchor.get_dx(rwidth);
-		buffer_height = anchor.get_dy(rheight);
+		var ndx = anchor.get_dx(rwidth);
+		var ndy = anchor.get_dy(rheight);
+		if ((buffer_width ?? 1 != ndx) or (buffer_height ?? 1) != ndy){
+			eye_id.matrix_projection = undefined;
+			eye_id.matrix_inv_projection = undefined;
+		}
+		
+		buffer_width = ndx;
+		buffer_height = ndy;
 	}
 	
 	function render(body_array, light_array){
