@@ -166,12 +166,16 @@ function Callable(_instance, _function, argv=[]) constructor {
 		///			stored argv values! E.g., if you created the callable with argv=[1, 2]
 		///			and executed call([2]) then the system would execute with argv=[2, 2]
 		function call(argv=[]){
-			var nargv = array_duplicate_shallow(self.argv);
-			array_resize(nargv, max(array_length(nargv), array_length(argv)));
-			
-			for (var i = min(array_length(nargv), array_length(argv)) - 1; i >= 0; --i)
-				nargv[i] = argv[i];
-			
+			var other_loop = array_length(argv);
+			var loop = max(array_length(self.argv), other_loop);
+			var nargv = array_create(loop);
+			for (var i = 0; i < loop; ++i){
+				if (i < other_loop)
+					nargv[i] = argv[i];
+				else
+					nargv[i] = self.argv[i];
+			}
+
 			method_call(method_ref, nargv);
 		}
 		

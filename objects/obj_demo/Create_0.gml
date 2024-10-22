@@ -72,10 +72,8 @@ light_directional = new LightDirectional(quat(), vec(-50 * 0.25, 60 * 0.25, -70 
 light_directional.look_at(vec());
 
 camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)));
-Camera.DISPLAY_WIDTH = 1920;
-Camera.DISPLAY_HEIGHT = 1080;
 
-display_set_gui_size(Camera.DISPLAY_WIDTH, Camera.DISPLAY_HEIGHT);
+display_set_gui_size(1920, 1080);
 obj_render_controller.render_mode = RENDER_MODE.draw_gui;
 
 body = undefined;
@@ -252,4 +250,11 @@ inst.signaler.add_signal("checked", function(is_checked){
 // 	}
 // });
 
+ay -= 36;
+inst = instance_create_depth(ax, ay, 0, obj_slider);
+inst.text = "Supersampling: 1.00x";
+inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
+	inst.text = $"Supersampling: {lerp(inst.min_value, inst.max_value, drag_value)}x";
+	obj_demo.camera.set_supersample_multiplier(lerp(inst.min_value, inst.max_value, drag_value))
+},  [undefined, inst]));
 sprite_array = [];

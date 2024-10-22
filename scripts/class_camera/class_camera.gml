@@ -154,6 +154,21 @@ function Camera() : Node() constructor {
 		var surfaces = gbuffer.surfaces;
 		var textures = gbuffer.textures;
 		
+		// Clear surfaces that had size changes; we clear instead of resize as the
+		// resize doesn't seem to keep the surface format correctly.
+		var surface_keys = struct_get_names(surfaces);
+		for (var i = array_length(surface_keys) - 1; i >= 0; --i){
+			var surface = surfaces[$ surface_keys[i]];
+			if (not surface_exists(surface))
+				continue;
+			
+			if (surface_get_width(surface) == buffer_width and surface_get_height(surface) == buffer_height)
+				continue;
+			
+			surface_free(surface);
+			struct_remove(surfaces, surface_keys[i]);
+		}
+		
 		// Check for existence:
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.albedo_opaque])){
 			if (render_stages & CAMERA_RENDER_STAGE.opaque){
@@ -231,43 +246,6 @@ function Camera() : Node() constructor {
 			surface_free(surfaces[$ CAMERA_GBUFFER.post_process])
 		
 		surface_depth_disable(false);
-		
-		// Check for resizing:
-		if (render_stages & CAMERA_RENDER_STAGE.opaque){
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.albedo_opaque]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.albedo_opaque]) != buffer_height)
-				surface_resize(surfaces[$ CAMERA_GBUFFER.albedo_opaque], buffer_width, buffer_height);
-			
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.light_opaque]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.light_opaque]) != buffer_height)
-				surface_resize(surfaces[$ CAMERA_GBUFFER.light_opaque], buffer_width, buffer_height);
-		}
-		
-		if (render_stages & CAMERA_RENDER_STAGE.translucent){
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.albedo_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.light_translucent]) != buffer_height)
-				surface_resize(surfaces[$ CAMERA_GBUFFER.albedo_translucent], buffer_width, buffer_height);
-			
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.light_translucent]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.light_translucent]) != buffer_height)
-				surface_resize(surfaces[$ CAMERA_GBUFFER.light_translucent], buffer_width, buffer_height);
-		}
-		
-		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.normal]) != buffer_height)
-			surface_resize(surfaces[$ CAMERA_GBUFFER.normal], buffer_width, buffer_height);
-		
-		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.view]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.view]) != buffer_height)
-			surface_resize(surfaces[$ CAMERA_GBUFFER.view], buffer_width, buffer_height);
-		
-		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.pbr]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.pbr]) != buffer_height)
-			surface_resize(surfaces[$ CAMERA_GBUFFER.pbr], buffer_width, buffer_height);
-		
-		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.emissive]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.emissive]) != buffer_height)
-			surface_resize(surfaces[$ CAMERA_GBUFFER.emissive], buffer_width, buffer_height);
-			
-		if (surface_get_width(surfaces[$ CAMERA_GBUFFER.final]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.final]) != buffer_height)
-			surface_resize(surfaces[$ CAMERA_GBUFFER.final], buffer_width, buffer_height);
-		
-		if (surface_exists(surfaces[$ CAMERA_GBUFFER.post_process])){
-			if (surface_get_width(surfaces[$ CAMERA_GBUFFER.post_process]) != buffer_width or surface_get_height(surfaces[$ CAMERA_GBUFFER.post_process]) != buffer_height)
-				surface_resize(surfaces[$ CAMERA_GBUFFER.post_process], buffer_width, buffer_height);
-		}
 	}
 	
 	/// @desc	Given an array of renderable bodies, the camera will render all the

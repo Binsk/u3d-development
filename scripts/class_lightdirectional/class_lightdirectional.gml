@@ -137,9 +137,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 /// @stub	Figure out why the light needs these two axes inverted
 		shader_set_uniform_f(uniform_normal, -light_normal.x, -light_normal.y, -light_normal.z);
 		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255);
-		
-		// if (casts_shadows and surface_exists(shadowbit_surface))
-		// 	surface_set_target_ext(1, shadowbit_surface);
 	}
 	
 	function render_shadows(eye_id=undefined, body_array=[]){
@@ -201,10 +198,11 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		var sw = surface_get_width(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
 		var sh = surface_get_height(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
 		
+		if (surface_exists(shadowbit_surface) and surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
+			surface_free(shadowbit_surface);
+			
 		if (not surface_exists(shadowbit_surface))
 			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
-		else if (surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
-			surface_free(shadowbit_surface);
 
 		surface_clear(shadowbit_surface, c_black);
 		

@@ -141,6 +141,9 @@ function LightAmbient() : Light() constructor {
 		if (uniform_ssao_intensity < 0)
 			uniform_ssao_intensity = shader_get_uniform(shader_ssao, "u_fIntensity");
 			
+		if (surface_exists(surface_ssao) and (surface_get_width(surface_ssao) != camera_id.buffer_width or surface_get_height(surface_ssao) != camera_id.buffer_height))
+			surface_free(surface_ssao);
+			
 		if (not surface_exists(surface_ssao))
 			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, surface_r8unorm);
 		
