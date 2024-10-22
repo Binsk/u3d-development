@@ -37,6 +37,30 @@ function Model() : U3DObject() constructor {
 	function get_material(index){
 		return material_data[$ index] ?? U3D.RENDERING.MATERIAL.missing;
 	}
+	
+	function get_primitive_count(){
+		var count = 0;
+		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
+			count += mesh_array[i].get_primitive_count();
+		
+		return count;
+	}
+	
+	function get_mesh_count(){
+		return array_length(mesh_array);
+	}
+	
+	function get_material_count(){
+		return struct_names_count(material_data);
+	}
+	
+	function get_triangle_count(){
+		var count = 0;
+		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
+			count += mesh_array[i].get_triangle_count();
+		
+		return count;
+	}
 
 	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque){
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i)

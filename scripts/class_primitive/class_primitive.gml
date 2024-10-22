@@ -22,6 +22,13 @@ function Primitive(vformat) : U3DObject() constructor {
 		return is_frozen;
 	}
 	
+	function get_triangle_count(){
+		if (is_undefined(vbuffer))
+			return 0;
+		
+		return vertex_get_number(vbuffer) / 3;
+	}
+	
 	/// @desc	Begins defining the vertex buffer for this primitive. Note that ALL primitives
 	///			should be defined in the pr_trianglelist format.
 	function define_begin(size=0){

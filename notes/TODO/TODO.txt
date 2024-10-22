@@ -1,8 +1,7 @@
 # FIXME
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
--	Shadows are causing halos around objects (?)
--	Loading/unloading floor mesh while rendering elsewhere causes a crash
+-	Shadow multi-samples are causing halos around objects (?)
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -17,7 +16,8 @@
 -	Add bloom PPFX via light threshold + gaussian blur
 -	Lots of file load stuff is async, so consider switching the GLTFBuilder to
 	that.
--	Change all the lighting function calls to simply take the camera_id and manually
-	pull the GBUFFER
--	Change camera system to instead be an 'eye' where a camera node handles moving
-	the eye. This will improve workflow for stereoscopic rendering and the like
+-	Add model/mesh/primitve "optimizing" that attempts to combine primitives
+	and meshes under a model into a new single primitive for optimized rendering.
+-	Add some kind of PrimitiveBuilder where you can define a single primitev along
+	with a number of copies and matrices and it generates a 'multi-primitive' version
+	to render lots of copies as one.

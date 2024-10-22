@@ -55,6 +55,10 @@ function remove_body(body){
 	return true;
 }
 
+function has_body(body){
+	return not is_undefined(body_map[$ body.get_index()]);
+}
+
 /// @desc	Add a light to the rendering system if it isn't already added. Returns
 ///			if successful.
 function add_light(light){

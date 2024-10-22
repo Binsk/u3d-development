@@ -7,6 +7,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			gltf = new GLTFBuilder(text);
 			model = gltf.generate_model();
 			model.freeze();
+			
 			var min_vec = model.get_data("aabb_min", vec());
 			var max_vec = model.get_data("aabb_max", vec());
 			var max_comp = vec_max_component(vec_sub_vec(max_vec, min_vec));

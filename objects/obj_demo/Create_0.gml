@@ -1,3 +1,6 @@
+// Good source of test models:
+// https://github.com/mrdoob/three.js/tree/master/examples/models/gltf
+
 window_set_fullscreen(true);
 display_set_gui_maximise();
 game_set_speed(999, gamespeed_fps);

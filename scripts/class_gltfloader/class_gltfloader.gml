@@ -283,19 +283,22 @@ function GLTFLoader() : U3DObject() constructor {
 		if (is_undefined(accessor))
 			return undefined;
 		
-		if (is_undefined(accessor[$ "bufferView"])) // We only support buffer-based accessors
-			throw new Exception("unsupported accessor type!");
-		
-		var buffer = read_buffer_view(accessor.bufferView);
-		if (is_undefined(buffer)) // Invalid buffer
-			throw new Exception("accessor accessing invalid bufferView!");
-		
-		buffer_seek(buffer, buffer_seek_start, accessor[$ "byteOffset"] ?? 0);
 		var data_type = get_buffer_ctype_from_gltf_ctype(accessor.componentType); // What kind of data components we are pulling
-		var element_count = accessor.count;	// How many elements we are reading
 		var element_size = get_component_count_from_atype(accessor.type); // How many components per element
-		var data = buffer_read_series(buffer, data_type, element_count * element_size);
-		buffer_delete(buffer);
+		var element_count = accessor.count;	// How many elements we are reading
+		var data = [];
+		
+		if (is_undefined(accessor[$ "bufferView"]))
+			throw new Exception("unsupported accessor type!");
+		else {
+			var buffer = read_buffer_view(accessor.bufferView);
+			if (is_undefined(buffer)) // Invalid buffer
+				throw new Exception("accessor accessing invalid bufferView!");
+			
+			buffer_seek(buffer, buffer_seek_start, accessor[$ "byteOffset"] ?? 0);
+			data = buffer_read_series(buffer, data_type, element_count * element_size);
+			buffer_delete(buffer);
+		}
 		
 		// Limit to min/max:
 		var maximum = accessor[$ "max"] ?? array_create(element_size, infinity);

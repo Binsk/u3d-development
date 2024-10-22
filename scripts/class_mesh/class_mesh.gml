@@ -13,6 +13,14 @@ function Mesh() : U3DObject() constructor {
 		return array_length(primitive_array);
 	}
 	
+	function get_triangle_count(){
+		var count = 0;
+		for (var i = array_length(primitive_array) - 1; i >= 0; --i)
+			count += primitive_array[i].primitive.get_triangle_count();
+		
+		return count;
+	}
+	
 	/// @desc	Adds a primitive into the system to be rendered and pairs it with
 	///			a material index. Note that primitives can be added multiple times
 	///			with different materials, if necessary.
