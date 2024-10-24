@@ -66,6 +66,9 @@ function Mesh() : U3DObject() constructor {
 			if (is_undefined(material))
 				material = U3D.RENDERING.MATERIAL.missing;
 				
+			if (material.render_stage & CAMERA_RENDER_STAGE.opaque != CAMERA_RENDER_STAGE.opaque)
+				continue;
+				
 			material.apply_shadow();
 			render_primitive(i);
 		}

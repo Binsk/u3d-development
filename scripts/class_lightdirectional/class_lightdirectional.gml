@@ -51,13 +51,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	uniform_shadow_matrix_invprojection = -1;
 	uniform_shadow_matrix_invview = -1;
 	#endregion
-	
-	
-
 	#endregion
 	
-	
-
 	#region METHODS
 
 	/// @desc	Sets several properties for the shadow rendering, if enabled.
