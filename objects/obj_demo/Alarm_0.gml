@@ -1,7 +1,7 @@
 
 // Generate GUI:
 	// Scane model files:
-var file = file_find_first("*.glb", fa_none);
+var file = file_find_first("test-models/*.glb", fa_none);
 var inst;
 var ax = display_get_gui_width() - 12 - 256;
 while (file != "" and instance_number(obj_button) < 18){
@@ -11,7 +11,7 @@ while (file != "" and instance_number(obj_button) < 18){
 }
 file_find_close();
 
-file = file_find_first("*.gltf", fa_none);
+file = file_find_first("test-models/*.gltf", fa_none);
 while (file != "" and instance_number(obj_button) < 18){
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button) * 44, 0, obj_button);
 	inst.text = file;
@@ -29,7 +29,7 @@ inst.text = "Render Floor";
 inst.signaler.add_signal("checked", function(is_checked){
 	if (is_checked){
 		if (is_undefined(body)){
-			var gltf = new GLTFBuilder("demo-floor.glb");
+			var gltf = new GLTFBuilder("demo-floor.glb", "test-models");
 			var model = gltf.generate_model();
 			model.freeze();
 			body = new Body();

@@ -4,7 +4,7 @@ is_hovered = point_in_rectangle(gmouse.x, gmouse.y, x, y, x + width, y + height)
 if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_model_button){
 		if (is_undefined(gltf)){
-			gltf = new GLTFBuilder(text);
+			gltf = new GLTFBuilder(text, "test-models");
 			model = gltf.generate_model();
 			model.freeze();
 			
