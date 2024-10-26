@@ -5,6 +5,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_model_button){
 		if (is_undefined(gltf)){
 			gltf = new GLTFBuilder(text, "test-models");
+			animation_names = gltf.get_track_names();
 			model = gltf.generate_model();
 			model.freeze();
 			

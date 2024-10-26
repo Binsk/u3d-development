@@ -147,28 +147,6 @@ inst.signaler.add_signal("checked", function(is_checked){
 	U3D.RENDERING.PPFX.grayscale.set_enabled(is_checked);
 });
 
-// inst = instance_create_depth(ax + 512, ay, 0, obj_checkbox);
-// inst.text = "Stereoscopy";
-// inst.is_checked = false;
-// inst.signaler.add_signal("checked", function(is_checked){
-// 	if (is_checked){
-// 		obj_demo.ppfx_red.set_enabled(true);
-// 		obj_demo.ppfx_cyan.set_enabled(true);
-// 		obj_render_controller.add_camera(obj_demo.camera_anaglyph);
-// 		obj_demo.camera.set_anchor_blend_mode(bm_add);
-// 		U3D.RENDERING.PPFX.gamma_correction.set_enabled(true);
-// 		obj_demo.camera.set_tonemap(CAMERA_TONEMAP.none);
-// 	}
-// 	else {
-// 		obj_demo.ppfx_cyan.set_enabled(false);
-// 		obj_demo.ppfx_red.set_enabled(false);
-// 		obj_render_controller.remove_camera(obj_demo.camera_anaglyph);
-// 		obj_demo.camera.set_anchor_blend_mode(bm_normal);
-// 		U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
-// 		obj_demo.camera.set_tonemap(CAMERA_TONEMAP.simple);
-// 	}
-// });
-
 ay -= 24;
 inst = instance_create_depth(ax, ay, 0, obj_slider);
 inst.text = "Supersampling: 1x";

@@ -10,52 +10,10 @@ global.mouse = {
 }
 #macro gmouse global.mouse
 
-#region ANAGLYPH PPFX
-function PostProcessFXColorize(shader, color) : PostProcessFX(shader) constructor {
-	#region PROPERTIES
-	uniform_color = -1;
-	self.color = color;
-	#endregion
-	
-	#region METHODS
-	super.register("render");
-	function render(surface_out, gbuffer, buffer_width, buffer_height){
-		if (not is_enabled)
-			return;
-		
-		if (shader_current() != shader)
-			shader_set(shader);
-			
-		if (uniform_color < 0)
-			uniform_color = shader_get_uniform(shader, "u_vColor");
-
-		if (uniform_color >= 0)
-			shader_set_uniform_f(uniform_color, color_get_red(color) / 255, color_get_green(color) / 255, color_get_blue(color) / 255);
-		
-		super.execute("render", [surface_out, gbuffer, buffer_width, buffer_height]);
-	}
-	#endregion
-}
-
-ppfx_cyan = new PostProcessFXColorize(shd_colorize, make_color_rgb(0, 255, 255));
-ppfx_red = new PostProcessFXColorize(shd_colorize, make_color_rgb(255, 0, 0));
-
-ppfx_cyan.set_enabled(false);
-ppfx_red.set_enabled(false);
-
-#endregion
-
-// camera_anaglyph = new CameraView();
-// camera_anaglyph.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
-// camera_anaglyph.add_post_process_effect(ppfx_cyan, -1);
-// camera_anaglyph.set_tonemap(CAMERA_TONEMAP.none)
-// camera_anaglyph.set_anchor_blend_mode(bm_add);
-
 camera = new CameraView();
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
-camera.add_post_process_effect(ppfx_red, -1);
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);
 U3D.RENDERING.PPFX.grayscale.set_enabled(false);
@@ -64,7 +22,6 @@ distance = 12;
 
 instance_create_depth(0, 0, 0, obj_render_controller);
 obj_render_controller.render_mode = RENDER_MODE.draw_gui;
-
 obj_render_controller.add_camera(camera);
 
 environment_map = undefined;

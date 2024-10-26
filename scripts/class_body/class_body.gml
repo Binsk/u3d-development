@@ -5,6 +5,7 @@
 function Body() : Node() constructor {
 	#region PROPERTIES
 	model_instance = undefined;			// Renderable 3D model
+	animation_instance = undefined;		// Animation tree to apply to the model
 	#endregion
 	
 	#region METHODS

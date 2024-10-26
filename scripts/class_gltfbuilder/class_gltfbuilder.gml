@@ -11,7 +11,6 @@
 ///			nuances. It was designed to handle general-case usage of Blender exports.
 function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	#region PROPERTIES
-	self.directory = directory;
 	self.name = name;
 	#endregion
 	
@@ -37,6 +36,22 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return VertexFormat.get_format_instance([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
 	}
 	
+	/// @desc	Returns an array of animation track names defined for this model.
+	///			Animations are NOT guaranteed to have names, so if an animation is found
+	///			but no name exists its name will be specified as 'undefined'
+	function get_track_names(){
+		// Check if there is an 'animation' section
+		if (is_undefined(json_header[$ "animations"]))
+			return [];
+			
+		var animation_array = json_header[$ "animations"];
+		var array = array_create(array_length(animation_array), undefined);
+		for (var i = array_length(array) - 1; i >= 0; --i)
+			array[i] = animation_array[i][$ "name"];
+		
+		return array;
+	}
+	
 	/// @desc	Generates an array of spatial materials. Note that the materials
 	///			will have dynamically-generated textures attached! Textures are re-used
 	///			across generations to save memory, however materials are newly generated
@@ -49,7 +64,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// First add new sprites to the system:
 		for (var i = 0; i < array_length(sprite_data_array); ++i){
-			var texture_hash = md5_string_utf8($"{self.directory}{self.name}_sprite_texture_{i}");
+			var texture_hash = md5_string_utf8($"{self.load_directory}{self.name}_sprite_texture_{i}");
 			var texture = U3DObject.get_ref_data(texture_hash);
 			if (not is_undefined(texture)){ // Value already loaded
 				array_push(texture_array, texture);
@@ -59,14 +74,14 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var data = sprite_data_array[i];
 			var sprite;
 			if (not is_undefined(data[$ "uri"])){ // External file, load normally
-				if (not file_exists(directory + data.uri)){
-					Exception.throw_conditional(string_ext("failed to find image [{0}].", [directory + data.uri]));
+				if (not file_exists(load_directory + data.uri)){
+					Exception.throw_conditional(string_ext("failed to find image [{0}].", [load_directory + data.uri]));
 					continue;
 				}
 				
-				sprite = sprite_add(directory + data.uri, 1, false, false, 0, 0);
+				sprite = sprite_add(load_directory + data.uri, 1, false, false, 0, 0);
 				if (sprite < 0)
-					throw new Exception(string_ext("failed to add sprite [{0}]!", [directory + data.uri]));
+					throw new Exception(string_ext("failed to add sprite [{0}]!", [load_directory + data.uri]));
 					
 				texture = new Texture2D(sprite_get_texture(sprite, 0));
 				texture.hash = texture_hash;	// Mark that this is a dynamic resource
@@ -114,7 +129,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// Next generate the material data:
 		for (var i = 0; i < array_length(material_data_array); ++i){
-			var material_hash = md5_string_utf8($"{self.directory}{self.name}_material_{i}");
+			var material_hash = md5_string_utf8($"{self.load_directory}{self.name}_material_{i}");
 			var material = U3DObject.get_ref_data(material_hash);
 			if (not is_undefined(material)){
 				material_array[i] = material;
@@ -238,7 +253,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
-		var primitive_hash = md5_string_utf8($"{self.directory}{self.name}_primitive_{mesh_index}{primitive_index}{format.get_hash()}{transform}");
+		var primitive_hash = md5_string_utf8($"{self.load_directory}{self.name}_primitive_{mesh_index}{primitive_index}{format.get_hash()}{transform}");
 		var primitive = U3DObject.get_ref_data(primitive_hash);
 		if (not is_undefined(primitive))
 			return primitive;
@@ -439,7 +454,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (count <= 0)
 			return undefined;
 			
-		var mesh_hash = md5_string_utf8($"{self.directory}{self.name}_mesh_{mesh_index}{format.get_hash()}{apply_transforms}");
+		var mesh_hash = md5_string_utf8($"{self.load_directory}{self.name}_mesh_{mesh_index}{format.get_hash()}{apply_transforms}");
 		var mesh = U3DObject.get_ref_data(mesh_hash);
 		if (not is_undefined(mesh))
 			return mesh;
@@ -510,7 +525,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 /// @stub	Add proper format auto-calc as appropriate once implemented
 			format = get_primitive_format(-1, -1);
 		
-		var model_hash = md5_string_utf8($"{self.directory}{self.name}_model_{format.get_hash()}{generate_materials}{apply_transforms}");
+		var model_hash = md5_string_utf8($"{self.load_directory}{self.name}_model_{format.get_hash()}{generate_materials}{apply_transforms}");
 		var model = U3DObject.get_ref_data(model_hash);
 		if (not is_undefined(model))
 			return model;
