@@ -15,6 +15,38 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Given a node index, returns the final transform of it, post-multiplied
+	///			against its parents all the way up to the root.
+	function get_node_transform(node_index){
+		var node_array = (json_header[$ "nodes"] ?? []);
+		if (node_index < 0 or node_index >= array_length(node_array))
+			return matrix_build_identity();
+		
+		var node = node_array[node_index];
+		var transform = node[$ "matrix"];
+			// Might have manual transforms:
+		if (is_undefined(transform)){
+			var translation = (node[$ "translation"] ?? [0, 0, 0]);
+			var rotation = (node[$ "rotation"] ?? [0, 0, 0, 1]);
+			var scale = (node[$ "scale"] ?? [1, 1, 1]);
+
+			var T = matrix_build_translation(translation[0], translation[1], translation[2]);
+			var R = matrix_build_quat(rotation[0], rotation[1], rotation[2], rotation[3]);
+			var S = matrix_build_scale(scale[0], scale[1], scale[2]);
+
+			transform = matrix_multiply_post(S, R, T);
+		}
+		
+		for (var i = array_length(node_array) - 1; i >= 0; --i){
+			var parent_node = node_array[i];
+			var child_array = (parent_node[$ "children"] ?? []);
+			if (array_contains(child_array, node_index))
+				return matrix_multiply(transform, get_node_transform(i));
+		}
+		
+		return transform;
+	}
+	
 	/// @desc	Returns the total number of meshes in the loaded model.
 	function get_mesh_count(){
 		return array_length(json_header[$ "meshes"] ?? []);
@@ -50,6 +82,15 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			array[i] = animation_array[i][$ "name"];
 		
 		return array;
+	}
+	
+	/// @desc	Returns the number of skins defined for this model; used with 
+	///			animation tracks.
+	function get_skin_count(){
+		if (is_undefined(json_header[$ "skins"]))
+			return 0;
+		
+		return array_length(json_header[$ "skins"]);
 	}
 	
 	/// @desc	Generates an array of spatial materials. Note that the materials
@@ -91,7 +132,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				array_push(texture_array, texture);
 				continue;
 			}
-			
+	
 			// Data buffer, must write to disk to re-load as PNG/JPG
 			if (string_lower(data.mimeType) != "image/png" and string_lower(data.mimeType) != "image/jpeg"){
 				Exception.throw_conditional(string_ext("unsupported mime type [{0}].", [data.mimeType]));
@@ -580,36 +621,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return model;
 	}
 	
-	/// @desc	Given a node index, returns the final transform of it, post-multiplied
-	///			against its parent all the way up to the root.
-	function get_node_transform(node_index){
-		var node_array = (json_header[$ "nodes"] ?? []);
-		if (node_index < 0 or node_index >= array_length(node_array))
-			return matrix_build_identity();
+	/// @desc	Given an animation track name or animation track index and a skin,
+	///			attempts to generate an AnimationTrack.
+	/// @warning	The generated AnimationTrack MUST be manually freed when no longer
+	///				needed! 
+	function generate_track(name_or_index, skin=0){
 		
-		var node = node_array[node_index];
-		var transform = node[$ "matrix"];
-			// Might have manual transforms:
-		if (is_undefined(transform)){
-			var translation = (node[$ "translation"] ?? [0, 0, 0]);
-			var rotation = (node[$ "rotation"] ?? [0, 0, 0, 1]);
-			var scale = (node[$ "scale"] ?? [1, 1, 1]);
-
-			var T = matrix_build_translation(translation[0], translation[1], translation[2]);
-			var R = matrix_build_quat(rotation[0], rotation[1], rotation[2], rotation[3]);
-			var S = matrix_build_scale(scale[0], scale[1], scale[2]);
-
-			transform = matrix_multiply_post(S, R, T);
-		}
-		
-		for (var i = array_length(node_array) - 1; i >= 0; --i){
-			var parent_node = node_array[i];
-			var child_array = (parent_node[$ "children"] ?? []);
-			if (array_contains(child_array, node_index))
-				return matrix_multiply(transform, get_node_transform(i));
-		}
-		
-		return transform;
 	}
 	#endregion
 	

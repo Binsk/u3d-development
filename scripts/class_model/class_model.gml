@@ -27,7 +27,7 @@ function Model() : U3DObject() constructor {
 			return;
 		}
 			
-		add_child_ref(material);
+		replace_child_ref(material, material_data[$ material_index]);
 		material_data[$ material_index] = material;
 	}
 	

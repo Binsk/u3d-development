@@ -13,6 +13,7 @@
 /// SIGNALS
 ///		"free" ()		-	Thrown when 'free' is called, by the user or the system
 ///		"cleanup" ()	-	Thrown when an instance is being freed automatically due to reference loss
+
 function U3DObject() constructor {
 	#region PROPERTIES
 	static INDEX_COUNTER = int64(0);	// Generic data index for quick comparisons
@@ -240,6 +241,16 @@ function U3DObject() constructor {
 		set_data(["ref", value.hash]); // Delete the data
 		value.dec_ref();
 		return true;
+	}
+	
+	/// @desc	Replaces one reference for another; checks for duplicates and
+	///			invalid references.
+	function replace_child_ref(value_new, value_old){
+		if (U3DObject.are_equal(value_new, value_old))
+			return false;
+		
+		remove_child_ref(value_old);
+		return add_child_ref(value_new);
 	}
 
 	/// @desc	Frees up all data related to the object and makes the object 'unusable' from
