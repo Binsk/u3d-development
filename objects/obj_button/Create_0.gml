@@ -5,6 +5,6 @@ height = 32;
 gltf = undefined;
 model = undefined;
 body = undefined;
-animation_names = [];
+animation_tree = undefined;
 is_hovered = false;
 is_model_button = true;

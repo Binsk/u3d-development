@@ -5,10 +5,10 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_model_button){
 		if (is_undefined(gltf)){
 			gltf = new GLTFBuilder(text, "test-models");
-			animation_names = gltf.get_track_names();
+			animation_tree = gltf.generate_animation_tree();
 			model = gltf.generate_model();
 			model.freeze();
-			
+
 			var min_vec = model.get_data("aabb_min", vec());
 			var max_vec = model.get_data("aabb_max", vec());
 			var max_comp = vec_max_component(vec_sub_vec(max_vec, min_vec));

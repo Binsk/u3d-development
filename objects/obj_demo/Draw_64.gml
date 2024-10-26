@@ -15,11 +15,13 @@ with (obj_button){
 	triangle_count += model.get_triangle_count();
 	model_count++;
 	
-	animation_string += "  " + text + ": ";
-	if (array_length(animation_names) <= 0)
+	animation_string += $"  [{text}] [bones {is_undefined(animation_tree) ? 0 : animation_tree.get_max_bone_count()}] : ";
+	if (is_undefined(animation_tree))
 		animation_string += "N/A";
 	else
-		animation_string += string_join_ext(", ", animation_names);
+		animation_string += string_join_ext(", ", animation_tree.get_track_names());
+		
+	animation_string += "\n";
 }
 
 if (not is_undefined(body) and obj_render_controller.has_body(body)){

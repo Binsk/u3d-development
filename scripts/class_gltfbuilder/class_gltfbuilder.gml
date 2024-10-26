@@ -71,7 +71,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	Returns an array of animation track names defined for this model.
 	///			Animations are NOT guaranteed to have names, so if an animation is found
 	///			but no name exists its name will be specified as 'undefined'
-	function get_track_names(){
+	function get_animation_track_names(){
 		// Check if there is an 'animation' section
 		if (is_undefined(json_header[$ "animations"]))
 			return [];
@@ -82,6 +82,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			array[i] = animation_array[i][$ "name"];
 		
 		return array;
+	}
+	
+	function get_animation_track_count(){
+		if (is_undefined(json_header[$ "animations"]))
+			return 0;
+		
+		return array_length(json_header[$ "animations"]);
 	}
 	
 	/// @desc	Returns the number of skins defined for this model; used with 
@@ -132,7 +139,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				array_push(texture_array, texture);
 				continue;
 			}
-	
+
 			// Data buffer, must write to disk to re-load as PNG/JPG
 			if (string_lower(data.mimeType) != "image/png" and string_lower(data.mimeType) != "image/jpeg"){
 				Exception.throw_conditional(string_ext("unsupported mime type [{0}].", [data.mimeType]));
@@ -624,9 +631,142 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	Given an animation track name or animation track index and a skin,
 	///			attempts to generate an AnimationTrack.
 	/// @warning	The generated AnimationTrack MUST be manually freed when no longer
-	///				needed! 
-	function generate_track(name_or_index, skin=0){
+	///				needed! All sub-structures, such as AnimationTrack, will be freed
+	///				along with the AnimationTrack
+	function generate_animation_track(name_or_index, skin=0){
+		if (is_undefined(json_header[$ "animations"]))
+			return undefined;
 		
+		if (is_undefined(json_header[$ "skins"]))
+			return undefined;
+		
+		if (skin < 0 or skin >= array_length(json_header[$ "skins"]))
+			return undefined;
+		
+		#region FETCH ANIMATION HEADER
+		var animation_data = undefined;
+		var animation_name = "";
+		if (is_string(name_or_index)){
+			animation_name = name_or_index;
+			var animation_array = json_header[$ "animations"];
+			for (var i = array_length(animation_array) - 1; i >= 0; --i){
+				if ((animation_array[i][$ "name"] ?? "") == name_or_index){
+					animation_data = animation_array[i];
+					break;
+				}
+			}
+		}
+		else if (is_numeric(name_or_index)){
+			name_or_index = floor(name_or_index);
+			var animation_array = json_header[$ "animations"];
+			if (name_or_index < 0 or name_or_index >= array_length(animation_array))
+				throw new Exception($"invalid track index [{name_or_index}], expected range is [0, {array_length(animation_array)})");
+			
+			animation_data = animation_array[name_or_index];
+			animation_name = (animation_data[$ "name"] ?? string($"track_{name_or_index}"));
+		}
+		else
+			throw new Exception("invalid type, expected [string] or [int]!");
+		
+		if (is_undefined(animation_data))
+			throw new Exception($"invalid track, [{name_or_index}]");
+		#endregion
+		
+		// Quick array key look-ups:
+		var track_type = ["translation", "rotation", "scale"];
+		var lerp_type = ["STEP", "LINEAR", "CUBICSPLINE"]; /// @note	CUBICSPLINE is UNSUPPORTED and will throw an exception!
+		var skin_data = json_header.skins[skin];
+		var joint_array = skin_data.joints;	// Contains node IDs that represent bone transforms
+		var joint_count = array_length(joint_array);
+		var channel_array = animation_data.channels;		// 1 channel = bone morphs for a single bone
+		var channel_count = array_length(channel_array);
+		var sampler_array = animation_data.samplers;
+		var animation_track = new AnimationTrack(animation_name);
+		var channelgroup_struct = {};	// Contains a channel group for each bone
+		
+		// Loop through each bone and collect all morphs for that bone:
+		for (var i = 0; i < channel_count; ++i){
+			var channel = channel_array[i];
+			var sampler = sampler_array[channel.sampler];
+			var bone_id = -1;
+			
+			// Calculate the bone id from the channel node:
+			for (var j = array_length(joint_array) - 1; j >= 0; --j){
+				if (joint_array[j] == channel.target.node){
+					bone_id = j;
+					break;
+				}
+			}
+			if (bone_id < 0)
+				throw new Exception("invalid bone_id in model file.");
+			
+			// Grab / Define channel group:
+			var channel_group = (channelgroup_struct[$ bone_id]);
+			if (is_undefined(channel_group)){
+				channel_group = new AnimationChannelGroup(bone_id);
+				channelgroup_struct[$ bone_id] = channel_group;
+			}
+			
+			var ttype = array_get_index(track_type, channel.target.path); // Correlates to BONE_PROPERTY_TYPE
+			var ltype = array_get_index(lerp_type, sampler.interpolation); // Correlates to LERP_METHOD
+			
+			var animation_channel;
+			if (ttype == 0)
+				animation_channel = new AnimationChannelPosition(bone_id);
+			else if (ttype == 1)
+				animation_channel = new AnimationChannelRotation(bone_id);
+			else if (ttype == 2)
+				animation_channel = new AnimationChannelScale(bone_id);
+			else
+				throw new Exception($"invalid animation channel path, [{channel.target.path}]!");
+				
+			animation_channel.set_unique_hash();	// Make sure things are auto-cleaned w/ the AnimationTrack
+			channel_group.set_channel(animation_channel); // Auto-sorts into position, rotation, or scale
+			
+			var time_range = read_accessor(sampler.input);
+			var morph_range = read_accessor(sampler.output);
+			var count = json_header.accessors[sampler.input].count;
+			
+			// Read each channel morph and add it to the channel:
+			for (var j = 1; j < count; ++j)
+				animation_channel.add_morph(time_range[j - 1], time_range[j], morph_range[j - 1], ltype);
+
+			animation_channel.freeze();
+		}	
+		
+		var group_keys = struct_get_names(channelgroup_struct);
+		for (var i = array_length(group_keys) - 1; i >= 0; --i){
+			var group = channelgroup_struct[$ group_keys[i]];
+			group.set_unique_hash();
+			animation_track.add_channel_group(group);
+		}
+		
+		return animation_track;
+	}
+	
+	/// @desc	Generates an animation tree containing all recognized animation
+	///			tracks! If an animation track does not have a name, it will be assigned
+	///			the name "track_<index>" where <index> is the index number of the track.
+	///	@warning	The AnimationTree generated MUST be manually freed! All animation tracks
+	///				and morphs generated will be freed automatically along with the tree.
+	function generate_animation_tree(skin=0){
+		var track_count = get_animation_track_count();
+		if (track_count <= 0)
+			return undefined;
+			
+		var animation_tree = new AnimationTree();
+		for (var i = 0; i < track_count; ++i){
+			var track = generate_animation_track(i, skin);
+			if (is_undefined(track)){
+				Exception.throw_conditional($"failed to generate animation track [{i}]");
+				continue;
+			}
+			
+			track.set_unique_hash();
+			animation_tree.add_animation_track(track);
+		}
+		
+		return animation_tree;
 	}
 	#endregion
 	

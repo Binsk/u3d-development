@@ -208,3 +208,32 @@ function quat_rotate_vec(quaternion, vector){
 		// Remove the w component from the result and return as a vec()
 	return vec(nquaternion.x, nquaternion.y, nquaternion.z);
 }
+
+function quat_slerp(q1, q2, time){
+	q1 = quat_to_array(q1);
+	q2 = quat_to_array(q2)
+	var dot = array_dot(q1, q2);
+	if (dot < 0){ // If < 0 invert so we rotate the shortest route
+		q1[0] = -q1[0];
+		q1[1] = -q1[1];
+		q1[2] = -q1[2];
+		q1[3] = -q1[3];
+		dot = array_dot(q1, q2);
+	}
+	var angle = arccos(dot);
+	var denom = sin(angle);
+	if (denom == 0)
+		return q1;
+	
+	var s1 = sin((1 - time) * angle);
+	var s2 = sin(time * angle);
+	
+	var q = [
+		(q1[0] * s1 + q2[0] * s2) / denom,
+		(q1[1] * s1 + q2[1] * s2) / denom,
+		(q1[2] * s1 + q2[2] * s2) / denom,
+		(q1[3] * s1 + q2[3] * s2) / denom
+	]
+	
+	return q;
+}

@@ -1,0 +1,33 @@
+# About
+## Animation
+3D models can use various kinds of animation but the primary method 
+in U3D is skeletal animation. When exported, bone transforms are 
+specified through skins, tracks, and channels.
+
+A bone can be transformed in 3 different ways:
+* Positional transform
+* Rotational transform
+* Scalar transform
+
+Although, rotational transforms account for the majority of skeletal
+animation. A `channel` is a series of transforms to apply to a 
+`bone id` over the length of  an `animation track`. A channel only
+defines **one type** of transform so a single bone may have 3
+different animation channels, one for each type of transform.
+
+An `animation track` will contain a series of channels that define
+how each bone on the model should be transformed at a certain point
+in time while a `skin` effectively defines which bone transforms are
+applied to which vertices. 
+
+All of this data can be auto-loaded and generated through the 
+`GLTFBuilder` in the form of an `AnimationTree`. An `AnimationTree` is
+a U3D-specific structure that can contain all the `animation tracks` 
+for a model. This class handles queuing which tracks should be active
+as well as how tracks should merge and stack to create more complex
+and dynamic animations.
+
+The `AnimationTree` can be managed manually, however it is more
+effective to attach the tree to the `obj_animation_controller` to 
+allow the controller to handle animation updates and optimize out
+unnecessary calculations.
