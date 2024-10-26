@@ -26,10 +26,10 @@ function Super(class) constructor {
 	/// @desc	Executes the parent's version of the specified function name, if available.
 	///			This works similarly to event_inherited(), only for arbitrary function names.
 	///			This will return whatever the parent function returns, or undefined.
-	/// @param	{string}	name		  the name of the parent function to call
-	/// @param	{array}	 argv=[]		  array of arguments to pass into the parent function
-	/// @param	{int}	   offset=0		the offset in the array to start reading from
-	/// @param	{int}	   count=all	 the number of array elements to pass in
+	/// @param	{string}	name			the name of the parent function to call
+	/// @param	{array}		argv=[]			array of arguments to pass into the parent function
+	/// @param	{int}		offset=0		the offset in the array to start reading from
+	/// @param	{int}		count=all		the number of array elements to pass in
 	function execute(name, argv=[], offset=0, count=infinity){
 		var array = data[$ name];
 		if (is_undefined(array)) // Nothing to execute
@@ -58,7 +58,7 @@ function Super(class) constructor {
 		if (process_offset <= 0)
 			struct_remove(self, "process_offset");
 		
-		// Retrun the result of teh parent function
+		// Return the result of the parent function
 		return return_value;
 	}
 	#endregion

@@ -20,7 +20,7 @@ enum VERTEX_DATA {
 
 /// @desc	Creates a new vertex format and stores the vertex definition order.
 /// @param	{array[VERTEX_DATA]}	formats=[]	Array of VERTEX_DATA values specifying the data to be stored in the format
-function VertexFormat(vformat_array=[]) : U3DObject() constructor {
+function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture]) : U3DObject() constructor {
 	#region PROPERTIES
 	static FORMAT_MAP = {};	// Used to cache similar formats to help prevent duplication
 	

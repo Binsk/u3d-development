@@ -6,10 +6,9 @@
 /// to prevent memory leaks.
 ///
 /// Dynamically generated resources, such as textures and materials from glTF files,
-/// will be given a hash and auto-managed so long as the base Model is freed. If
-///	you need to use materials or auto-generated data outside of the generated scope
-/// then you can increase the reference number while using it and then decrease it
-/// once done to let the system free it up when appropriate.
+/// will be given a hash and auto-managed. If you need to use materials or auto-generated
+/// data outside of the generated scope then you can increase the reference number while 
+/// using it and then decrease it once done to let the system free it up when appropriate.
 
 /// SIGNALS
 ///		"free" ()		-	Thrown when 'free' is called, by the user or the system
@@ -70,7 +69,7 @@ function U3DObject() constructor {
 		
 		var data = U3D.MEMORY[$ hash];
 		if (is_undefined(data))
-			return undefined;
+			return 0;
 			
 		return data.count;
 	}
@@ -219,6 +218,9 @@ function U3DObject() constructor {
 		if (is_undefined(value.hash))	// Not an auto-managed instance
 			return false;
 		
+		if (not is_undefined(get_data(["ref", value.hash]))) // Already a child
+			return false;
+		
 		set_data(["ref", value.hash], value);
 		value.inc_ref();
 		return true;
@@ -230,6 +232,9 @@ function U3DObject() constructor {
 			return false;
 		
 		if (is_undefined(value.hash))	// Not an auto-managed instance
+			return false;
+		
+		if (is_undefined(get_data(["ref", value.hash]))) // Not a child
 			return false;
 		
 		set_data(["ref", value.hash]); // Delete the data

@@ -7,7 +7,7 @@
 /// buffer will be stitched together in the order specified by the vertex format.
 
 /// @desc	Create a new empty Primitive that can be defined and passed around
-///		  to numerous Mesh instances.
+///			to numerous Mesh instances.
 /// @param   {VertexFormat}	vformat	The special VertexFormat that defines what data
 /// 									   will be used in the Primitive.
 function Primitive(vformat) : U3DObject() constructor {

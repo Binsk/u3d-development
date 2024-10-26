@@ -60,12 +60,12 @@ function LightAmbient() : Light() constructor {
 	///			must be enabled to allow SSAO to render. If SSAO strength <= 0
 	///			then the SSAO pass will simply be skipped.
 	///			Property values will highly depend on game asthetics and perceived rendering scale.
-	/// @param	{int}	samples=16		how many samples per pixel when generating SSAO (more = less noise)
+	/// @param	{int}	samples=8		how many samples per pixel when generating SSAO (more = less noise)
 	/// @param	{real}	strength=1.0	how intense the SSAO effect is (higher = darker)
 	/// @param	{real}	radius=0.5		radius scalar for sampling distance from original point (higher = wider SSAO effect)
 	/// @param	{int}	blur_passes=2	blur pass multiplier for SSAO application where the value will be (2x + 1)^2 (more = blurrier)
 	/// @param	{real}	blur_stride=1.0	number of texels to stride per blur pass (more = blurrier but lower quality blur)
-	function set_ssao_properties(samples=16, strength=1.0, radius=1.0, bias=0.01, scale=1.0, blur_passes=2, blur_stride=1.0){
+	function set_ssao_properties(samples=8, strength=1.0, radius=1.0, bias=0.01, scale=1.0, blur_passes=2, blur_stride=1.0){
 		ssao_samples = floor(clamp(samples, 1, 64)); // Shader is limited to max of 64
 		ssao_strength = max(0.0, strength)
 		ssao_radius = max(0.0, radius);
@@ -104,7 +104,7 @@ function LightAmbient() : Light() constructor {
 		texture_environment = texture;
 	}
 	
-	/// @desc	Set the lighting intensity which multplies against the light's
+	/// @desc	Set the lighting intensity which multiplies against the light's
 	///			color in the shader.
 	function set_intensity(intensity=1.0){
 		self.intensity = max(0, intensity);

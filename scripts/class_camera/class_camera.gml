@@ -36,8 +36,7 @@ enum CAMERA_RENDER_STAGE {
 	both = 3			// Renders in both stages (not usually desired)
 }
 
-/// @desc	defines the tonemapping to use for the camera; 'none' is a straight
-///			render while every other option will enable HDR and 4x the vRAM usage
+/// @desc	defines the tonemapping to use for the camera.
 enum CAMERA_TONEMAP {
 	none,	// Does nothing, lights may blow-out. Only use if a custom PPFX is used to handle gamma correction
 	simple,	// Does a simple gamma correction w/o any special exposure calculations
@@ -477,6 +476,7 @@ function Camera() : Node() constructor {
 	/// @desc	Performs a complete render of an eye of the camera
 	/// @param	{Eye}	eye					the eye structure to render
 	/// @param	{array}	body_array=[]		the array of renderable bodies to process
+	/// @param	{array}	light_array=[]		the array of renderable lights to process
 	function render_eye(eye, body_array=[], light_array=[]){
 		if (not is_instanceof(eye, Eye))
 			throw new Exception("invalid type, expected [Eye]!");
@@ -489,7 +489,8 @@ function Camera() : Node() constructor {
 		
 		/// @note	Translucent is done first so the left-over shared buffers (such
 		///			as normals) contain the opaque pass for post-processing. This is
-		///			done because opaque is significantly more common.
+		///			done because opaque is significantly more common and this avoids
+		///			having to have numerous extra separate buffers.
 		// Translucent pass:
 		render_gbuffer(eye, body_array, true);
 		render_lighting(eye, light_array, body_array, true);

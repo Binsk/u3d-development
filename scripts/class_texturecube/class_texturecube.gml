@@ -12,14 +12,12 @@
 /// +X = forward
 /// +Z = right
 /// +Y = up
-///	All faces should be oriented where +U is tangential 'up' and +V is tangential 'right'
+///	All faces should be oriented where +U is tangential 'right' and -V is tangential 'UP'
 ///
 ///	That layout must be followed if TextureCube() is provided with a texture; otherwise
 /// the class will auto-generate this layout via build() if textures are set through
 /// 'set_face'
 ///
-/// TextureCube resolution defines the max mip size. The resolution of a cube face can
-///	be assumed to be `resolution * 0.25`
 
 enum TEXTURECUBE_FACE {
 	front,
@@ -34,7 +32,7 @@ enum TEXTURECUBE_FACE {
 ///			is assumed to be in the correct format! Textures can also be manually built
 ///			through the TextureCube class to guarantee proper layout.
 /// @param	{texture}	texture_id=undefined		pre-formatted cube-map texture to use
-/// @param	{int}		resolution=1024				resolution to use as maximum when generating mips
+/// @param	{int}		resolution=1024				resolution to use as maximum when generating
 function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_id) constructor {
 	#region PROPERTIES
 	static BUILD_MAP = {};	// Used by the renderer to build all the textures before rendering

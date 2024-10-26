@@ -89,7 +89,7 @@ function Signaler() constructor{
 		
 		// Grab our signal array:
 		var array = (signal_map[$ _name] ?? []);
-		array = array_concat([_method], array);
+		array = array_concat([is_instanceof(_method, Callable) ? _method : new Callable(method_get_self(_method), method_get_index(_method))], array);
 		
 		signal_map[$ _name] = array;
 	}
@@ -146,10 +146,10 @@ function Signaler() constructor{
 }
 
 /// @desc	A callable is effectively a method() that can also take arguments which will
-/// 		  be auto-passed when called.
-/// @param	{any}		instance	the instance / struct to call in the contect of
-/// @param	{function}   function	the function to call when executed
-/// @param	{array[any]} argv=[]	  the arguments to pass when executed
+///			be auto-passed when called.
+/// @param	{any}			instance	the instance / struct to call in the contect of
+/// @param	{function}		function	the function to call when executed
+/// @param	{array[any]}	argv=[]		the arguments to pass when executed
 function Callable(_instance, _function, argv=[]) constructor {
 		#region PROPERTIES
 		method_ref = method(_instance, _function);

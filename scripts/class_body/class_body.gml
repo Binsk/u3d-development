@@ -1,5 +1,5 @@
 /// @about
-/// A body represents a 3D thing in the scene. It can contain a mesh, collision
+/// A body represents a 3D thing in the scene. It can contain a model, collision
 /// shape, and handle various interactions and signals.
 
 function Body() : Node() constructor {
