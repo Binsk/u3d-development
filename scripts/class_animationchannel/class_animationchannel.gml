@@ -18,6 +18,13 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	morph_definition = ds_priority_create();
 	#endregion
 	
+	#region STATIC METHODS
+	/// @desc	Default 'undefined' morph value for this type.
+	static get_morph_default = function(){
+		return undefined;
+	}
+	#endregion
+	
 	#region METHODS
 	/// @desc	Returns the morphed value at a specific lerp value between
 	///			[0..1] of the entire animation track.
@@ -28,11 +35,14 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	
 	/// @desc	Returns the morphed value at the specific time value between
 	///			[0..MAX_TIME] of the animation track.
-	function get_trasformed_time(time){
+	function get_transformed_time(time){
 		var array = get_morphs_at_time(time);
 		
+		if (is_undefined(array))
+			return get_morph_default();
+		
 		if (array_length(array) <= 1)
-			return array[0];
+			return array[0].value;
 		
 		if (array[0].type == ANIMATION_CHANNEL_TRANSFORM.step)
 			return transform_step(time, array[0], array[1]);
@@ -69,14 +79,9 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 		}
 		
 		if (array_length(array) <= 0)
-			return [get_morph_default()];
+			return undefined
 		
 		return array;
-	}
-	
-	/// @desc	Default 'undefined' morph value for this type.
-	function get_morph_default(){
-		return undefined;
 	}
 	
 	function get_bone_index(){

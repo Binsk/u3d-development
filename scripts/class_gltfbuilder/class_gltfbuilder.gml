@@ -766,7 +766,57 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			animation_tree.add_animation_track(track);
 		}
 		
+		animation_tree.set_skeleton(generate_skeleton(skin));
 		return animation_tree;
+	}
+	
+	/// @desc	Generates a bone relational struct.
+	///			Does NOT contain bone transform data of any kind, simply bone IDs
+	///			and how they relate to each-other. Transform data is specified by
+	///			animation tracks.
+	function generate_skeleton(skin){
+		var skin_data = get_structure(skin, "skins");
+		if (is_undefined(skin_data))
+			throw new Exception($"invalid skin index [{skin}]");
+		
+		var joint_array = skin_data.joints;
+		var joint_count = array_length(joint_array);
+		var matrix_inv_array = read_accessor(skin_data.inverseBindMatrices);
+		
+		var skeleton = {};
+		// Generate bone data child relations w/o parent relations
+		for (var i = 0; i < joint_count; ++i){
+			var child_array = [];
+			var parent_id = -1;
+			
+			var node = json_header.nodes[joint_array[i]];
+			// Grab the child node indices:
+			child_array = (node[$ "children"] ?? []);
+			
+			// Convert node indices into bone indices:
+			for (var j = array_length(child_array) - 1; j >= 0; --j){
+				var node_index = child_array[j];
+				child_array[j] = array_get_index(joint_array, node_index);
+			}
+			
+			skeleton[$ i] = {
+				parent_id : -1,
+				child_id_array : child_array,
+				matrix_inv : matrix_inv_array[i]
+			}
+		}
+		
+		// Generate parent relations:
+		for (var i = 0; i < joint_count; ++i){
+			var bone = skeleton[$ i];
+			var child_array = bone.child_id_array;
+			for (var j = array_length(child_array) - 1; j >= 0; --j){
+				var child_id = child_array[j];
+				skeleton[$ child_id].parent_id = i;
+			}
+		}
+		
+		return skeleton;
 	}
 	#endregion
 	

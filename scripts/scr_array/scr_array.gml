@@ -85,3 +85,37 @@ function array_clamp(array, min_array, max_array){
 	
 	return array;
 }
+
+/// @desc	Takes a nested array an flattens it into a single 1D array. Does not check
+///			for recursive references.
+function array_flatten(array){
+	var narray = array_create(array_length_nested(array));
+	
+	var write_offset = 0;
+	var loop = array_length(array);
+	for (var i = 0; i < loop; ++i){
+		if (not is_array(array[i])){
+			narray[write_offset++] = array[i];
+			continue;
+		}
+		
+		var subarray = array_flatten(array[i]);
+		var loop2 = array_length(subarray);
+		for (var j = 0; j < loop2; ++j)
+			narray[write_offset++] = subarray[j];
+	}
+	
+	return narray;
+}
+
+/// @desc	Returns the total number of elements in a nested array. Does not check
+///			for recursive references.
+function array_length_nested(array){
+	var count = array_length(array);
+	for (var i = count - 1; i >= 0; --i){
+		if (is_array(array[i]))
+			count += array_length_nested(array[i]);
+	}
+	
+	return count;
+}

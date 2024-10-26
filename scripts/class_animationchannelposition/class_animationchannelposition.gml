@@ -1,9 +1,13 @@
 function AnimationChannelPosition(bone_id) : AnimationChannel(bone_id) constructor {
-	#region METHODS
-	function get_morph_default(){
+	
+	#region STATIC METHODS
+	/// @desc	Default 'undefined' morph value for this type.
+	static get_morph_default = function(){
 		return vec();
 	}
+	#endregion
 	
+	#region METHODS
 	super.register("add_morph");
 	function add_morph(time_start, time_end, value, type=ANIMATION_CHANNEL_TRANSFORM.linear){
 		if (not is_vec(value))

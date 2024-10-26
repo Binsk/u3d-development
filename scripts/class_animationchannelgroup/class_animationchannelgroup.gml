@@ -57,5 +57,26 @@ function AnimationChannelGroup(bone_id) : U3DObject() constructor {
 		count += not is_undefined(scale_channel);
 		return count;
 	}
+	
+	/// @desc	Returns a struct containing the appropriate translation, rotation, and scale
+	///			given a lerp value within the timeline.
+	function build_trs_properties_lerp(lerpvalue){
+		lerpvalue = clamp(lerpvalue, 0, 1);
+		return {
+			position : is_undefined(position_channel) ? AnimationChannelPosition.get_morph_default() : position_channel.get_transformed_lerp(lerpvalue),
+			rotation : is_undefined(position_channel) ? AnimationChannelRotation.get_morph_default() : rotation_channel.get_transformed_lerp(lerpvalue),
+			scale : is_undefined(position_channel) ? AnimationChannelScale.get_morph_default() : scale_channel.get_transformed_lerp(lerpvalue),
+		}
+	}
+	
+	/// @desc	Returns a struct containing the appropriate translation, rotation, and scale
+	///			given a time point within the timeline.
+	function get_trs_properties_time(time){
+		return {
+			position : is_undefined(position_channel) ? AnimationChannelPosition.get_morph_default() : position_channel.get_transformed_time(time),
+			rotation : is_undefined(rotation_channel) ? AnimationChannelRotation.get_morph_default() : rotation_channel.get_transformed_time(time),
+			scale : is_undefined(scale_channel) ? AnimationChannelScale.get_morph_default() : scale_channel.get_transformed_time(time),
+		}
+	}
 	#endregion
 }

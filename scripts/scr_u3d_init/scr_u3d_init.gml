@@ -18,6 +18,16 @@ foo = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.tex
 foo.free();
 delete foo;
 
+foo = new AnimationChannelPosition(-1);
+foo.free();
+delete foo;
+foo = new AnimationChannelRotation(-1);
+foo.free();
+delete foo;
+foo = new AnimationChannelScale(-1);
+foo.free();
+delete foo;
+
 texturegroup_load("U3DDefaults", true);
 #endregion
 
