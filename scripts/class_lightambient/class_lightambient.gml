@@ -122,25 +122,7 @@ function LightAmbient() : Light() constructor {
 			uniform_ssao_sampler_normal = shader_get_sampler_index(shader_ssao, "u_sNormal");
 		if (uniform_ssao_sampler_noise < 0)
 			uniform_ssao_sampler_noise = shader_get_sampler_index(shader_ssao, "u_sNoise");
-		if (uniform_ssao_invproj < 0)
-			uniform_ssao_invproj = shader_get_uniform(shader_ssao, "u_mInvProj");
-		if (uniform_ssao_view < 0)
-			uniform_ssao_view = shader_get_uniform(shader_ssao, "u_mView");
-		if (uniform_ssao_texelsize < 0)
-			uniform_ssao_texelsize = shader_get_uniform(shader_ssao, "u_vTexelSize");
-		if (uniform_ssao_samples < 0)
-			uniform_ssao_samples = shader_get_uniform(shader_ssao, "u_iSamples");
-		if (uniform_ssao_sample_array < 0)
-			uniform_ssao_sample_array = shader_get_uniform(shader_ssao, "u_vaSampleDirections");
-		if (uniform_ssao_radius < 0)
-			uniform_ssao_radius = shader_get_uniform(shader_ssao, "u_fSampleRadius");
-		if (uniform_ssao_scale < 0)
-			uniform_ssao_scale = shader_get_uniform(shader_ssao, "u_fScale");
-		if (uniform_ssao_bias < 0)
-			uniform_ssao_bias = shader_get_uniform(shader_ssao, "u_fBias");
-		if (uniform_ssao_intensity < 0)
-			uniform_ssao_intensity = shader_get_uniform(shader_ssao, "u_fIntensity");
-			
+	
 		if (surface_exists(surface_ssao) and (surface_get_width(surface_ssao) != camera_id.buffer_width or surface_get_height(surface_ssao) != camera_id.buffer_height))
 			surface_free(surface_ssao);
 			
@@ -155,15 +137,15 @@ function LightAmbient() : Light() constructor {
 		texture_set_stage(uniform_ssao_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_ssao_sampler_noise, sprite_get_texture(spr_ssao_noise, 0));
 		
-		shader_set_uniform_matrix_array(uniform_ssao_invproj, eye_id.get_inverse_projection_matrix());
-		shader_set_uniform_f_array(uniform_ssao_view, matrix_to_matrix3(eye_id.get_view_matrix()));
-		shader_set_uniform_f(uniform_ssao_texelsize, texture_get_texel_width(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]), texture_get_texel_height(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]));
-		shader_set_uniform_i(uniform_ssao_samples, ssao_samples);
-		shader_set_uniform_f_array(uniform_ssao_sample_array, ssao_sample_array);
-		shader_set_uniform_f(uniform_ssao_radius, ssao_radius);
-		shader_set_uniform_f(uniform_ssao_scale, ssao_scale);
-		shader_set_uniform_f(uniform_ssao_bias, ssao_bias);
-		shader_set_uniform_f(uniform_ssao_intensity, ssao_strength);
+		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye_id.get_inverse_projection_matrix()]);
+		uniform_set("u_mView", shader_set_uniform_f_array, [matrix_to_matrix3(eye_id.get_view_matrix())]);
+		uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]), texture_get_texel_height(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal])]);
+		uniform_set("u_iSamples", shader_set_uniform_i, [ssao_samples]);
+		uniform_set("u_vaSampleDirections", shader_set_uniform_f_array, [ssao_sample_array]);
+		uniform_set("u_fSampleRadius", shader_set_uniform_f, [ssao_radius]);
+		uniform_set("u_fScale", shader_set_uniform_f, [ssao_scale]);
+		uniform_set("u_fBias", shader_set_uniform_f, [ssao_bias]);
+		uniform_set("u_fIntensity", shader_set_uniform_f, [ssao_strength]);
 		
 		draw_clear(c_black);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
@@ -195,39 +177,6 @@ function LightAmbient() : Light() constructor {
 		if (uniform_sampler_environment < 0)
 			uniform_sampler_environment = shader_get_sampler_index(shader_lighting, "u_sEnvironment");
 		
-		if (uniform_ssao < 0)
-			uniform_ssao = shader_get_uniform(shader_lighting, "u_iSSAO");
-		
-		if (uniform_light_intensity < 0)
-			uniform_light_intensity = shader_get_uniform(shader_lighting, "u_fIntensity");
-		
-		if (uniform_light_color < 0)
-			uniform_light_color = shader_get_uniform(shader_lighting, "u_vLightColor");
-		
-		if (uniform_texel_size < 0)
-			uniform_texel_size = shader_get_uniform(shader_lighting, "u_vTexelSize");
-		
-		if (uniform_blur_samples < 0)
-			uniform_blur_samples = shader_get_uniform(shader_lighting, "u_iBlurSamples");
-		
-		if (uniform_blur_stride < 0)
-			uniform_blur_stride = shader_get_uniform(shader_lighting, "u_fBlurStride");
-		
-		if (uniform_inv_projmatrix < 0)
-			uniform_inv_projmatrix = shader_get_uniform(shader_lighting, "u_mInvProj");
-		
-		if (uniform_inv_viewmatrix < 0)
-			uniform_inv_viewmatrix = shader_get_uniform(shader_lighting, "u_mInvView");
-		
-		if (uniform_environment < 0)
-			uniform_environment = shader_get_uniform(shader_lighting, "u_iEnvironment");
-			
-		if (uniform_cam_position < 0)
-			uniform_cam_position = shader_get_uniform(shader_lighting, "u_vCamPosition");
-		
-		if (uniform_mip_count < 0)
-			uniform_mip_count = shader_get_uniform(shader_lighting, "u_iMipCount");
-		
 		texture_set_stage(uniform_sampler_albedo, camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_pbr, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_view, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
@@ -235,25 +184,27 @@ function LightAmbient() : Light() constructor {
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
-			shader_set_uniform_i(uniform_environment, true);
-			shader_set_uniform_i(uniform_mip_count, not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count);
+			uniform_set("u_iEnvironment", shader_set_uniform_i, true);
+			uniform_set("u_iMipCount", shader_set_uniform_i, [not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count]);
 		}
 		else
-			shader_set_uniform_i(uniform_environment, false);
+			uniform_set("u_iEnvironment", shader_set_uniform_i, false);
 		
 		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0){
 			texture_set_stage(uniform_sampler_ssao, surface_get_texture(surface_ssao));
-			shader_set_uniform_f(uniform_texel_size, 1.0 / surface_get_width(surface_ssao), 1.0 / surface_get_height(surface_ssao));
-			shader_set_uniform_i(uniform_blur_samples, ssao_blur_samples);
-			shader_set_uniform_f(uniform_blur_stride, ssao_blur_stride);
+			
+			uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_ssao), 1.0 / surface_get_height(surface_ssao)]);
+			uniform_set("u_iBlurSamples", shader_set_uniform_i, ssao_blur_samples);
+			uniform_set("u_fBlurStride", shader_set_uniform_f, ssao_blur_stride);
 		}
 		
-		shader_set_uniform_i(uniform_ssao, not is_translucent and casts_shadows);
+		// shader_set_uniform_i(uniform_ssao, not is_translucent and casts_shadows);
+		uniform_set("u_iSSAO", shader_set_uniform_i, not is_translucent and casts_shadows);
 	}
 	
 	function apply(){
-		shader_set_uniform_f(uniform_light_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255);
-		shader_set_uniform_f(uniform_light_intensity, light_intensity);
+		uniform_set("u_vLightColor", shader_set_uniform_f, [color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255]);
+		uniform_set("u_fIntensity", shader_set_uniform_f, light_intensity);
 	}
 	
 	super.register("free");

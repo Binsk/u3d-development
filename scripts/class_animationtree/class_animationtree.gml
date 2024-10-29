@@ -119,7 +119,7 @@ function AnimationTree() : U3DObject() constructor {
 		
 		ds_queue_destroy(queue);
 		
-		// Apply inverse matrices:
+	// Apply inverse matrices:
 		for (var i = array_length(keys) - 1; i >= 0; --i){
 			var matrix = matrix_data[$ keys[i]];
 			matrix = matrix_multiply(skeleton[$ keys[i]].matrix_inv, matrix);
