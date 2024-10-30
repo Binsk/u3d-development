@@ -62,14 +62,14 @@ function Model() : U3DObject() constructor {
 		return count;
 	}
 
-	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque){
+	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
-			mesh_array[i].render(material_data, camera_id, render_stage);
+			mesh_array[i].render(material_data, camera_id, render_stage, skeleton);
 	}
 	
-	function render_shadows(){
+	function render_shadows(skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i)
-			mesh_array[i].render_shadows(material_data);
+			mesh_array[i].render_shadows(material_data, skeleton);
 	}
 	
 	/// @desc		Will execute a buffer freeze on all attached meshes, loading them into

@@ -27,13 +27,17 @@ function surface_clear(surface, color, alpha=1.0){
 	surface_reset_target();
 }
 
-/// @desc	uniform_set is meant to act as a 'local' function and will access
-///			the calling class/object's variables locally. It will attempt to
-///			look up the uniform for the current shader and set only if it exists.
+/// @desc	Sets a value for the specified uniform name under the currently
+///			applied shader. Used in materials, lights, and so-forth to allow
+///			dynamically changing out shaders w/o having to worry about updating
+///			uniform IDs.
 gml_pragma("forceinline");
 function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 	static UNIFORM_CACHE = {};
 	var shader = shader_current();
+	if (shader < 0) // Skip if no shader set
+		return;
+		
 	var label = $"__uniform_{name}_{shader}";
 	var uniform = UNIFORM_CACHE[$ label];
 	

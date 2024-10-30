@@ -26,7 +26,8 @@ function Mesh() : U3DObject() constructor {
 	///			with different materials, if necessary.
 	function add_primitive(primitive, material_index){
 		array_push(primitive_array, {
-			primitive, material_index
+			primitive, material_index, 
+			has_bones : primitive.get_has_bones()
 		});
 		
 		add_child_ref(primitive);
@@ -43,23 +44,27 @@ function Mesh() : U3DObject() constructor {
 	
 	/// @desc	Renders out each primitive, applying the specified materials 
 	///			according to primitive IDs
-	function render(material_data={}, camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque){
+	function render(material_data={}, camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
 			if (is_undefined(material))
 				material = U3D.RENDERING.MATERIAL.missing;
 				
-			material.apply(camera_id, render_stage==CAMERA_RENDER_STAGE.translucent);
-			
 			if (material.render_stage & render_stage <= 0) // Don't render, wrong stage
 				return;
+				
+			material.apply(camera_id, render_stage==CAMERA_RENDER_STAGE.translucent);
+
+/// @stub	Optimize it prevent re-sending data
+			if (primitive_array[i].has_bones)
+				uniform_set("u_mBone", shader_set_uniform_matrix_array, [skeleton]);
 				
 			render_primitive(i);
 		}
 	}
 	
-	function render_shadows(material_data={}){
+	function render_shadows(material_data={}, skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
@@ -70,6 +75,11 @@ function Mesh() : U3DObject() constructor {
 				continue;
 				
 			material.apply_shadow();
+
+/// @stub	Optimize it prevent re-sending data
+			if (primitive_array[i].has_bones)
+				uniform_set("u_mBone", shader_set_uniform_matrix_array, [skeleton]);
+			
 			render_primitive(i);
 		}
 	}

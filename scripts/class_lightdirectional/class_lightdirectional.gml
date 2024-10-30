@@ -143,7 +143,12 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 				continue;
 			
 			matrix_set(matrix_world, body.get_model_matrix());
-			body.model_instance.render_shadows();
+			
+			var skeleton = U3D.RENDERING.ANIMATION.skeleton_missing;
+			if (not is_undefined(body.animation_instance))
+				skeleton = animation_instance.get_transform_array();
+			
+			body.model_instance.render_shadows(skeleton);
 		}
 		shader_reset();
 		matrix_set(matrix_view, mv);

@@ -74,6 +74,12 @@ function AnimationTree() : U3DObject() constructor {
 		return undefined;
 	}
 	
+	/// @desc	Returns a cached transform array.
+	function get_transform_array(){
+/// @stub	Implement
+		return U3D.RENDERING.ANIMATION.skeleton_missing;
+	}
+	
 	/// @desc	Given calculated TRS data for each bone, builds a 1D flattened
 	///			array of all matrices built from the data, formatted to be sent
 	///			into a shader.

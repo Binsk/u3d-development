@@ -64,8 +64,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	Given a primitive, generates a VertexFormat that will correctly
 	///			contain all the data specified by the model file.
 	function get_primitive_format(mesh_index, primitive_index){
-/// @stub	Implement; currently just defaulting to "everything"		
-		return VertexFormat.get_format_instance([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]);
+/// @stub	Implement; currently just defaulting to "everything". Will require special
+///			shader combination (ugh) or an external library for dynamic shader compilation
+///			(even more ugh).
+		return VertexFormat.get_format_instance([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent, VERTEX_DATA.bone_indices, VERTEX_DATA.bone_weights]);
 	}
 	
 	/// @desc	Returns an array of animation track names defined for this model.
@@ -424,7 +426,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				}
 				#endregion
 				#region TANGENT DATA SPECIAL-HANDLING
-				if (format.vformat_array[i] == VERTEX_DATA.tangent){
+				else if (format.vformat_array[i] == VERTEX_DATA.tangent){
 					var needs_auto_calculation = false;
 					if (not is_quat(data)) // Blender exports as a vec4 for some reason? Not sure what w is for; it is always -1 or 1
 						needs_auto_calculation = true;

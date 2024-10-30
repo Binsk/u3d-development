@@ -43,6 +43,9 @@ global.__u3d_global_data = {
 			fxaa : new PostProcessFX(shd_fxaa),				// FXAA anti-aliasing
 			grayscale : new PostProcessFX(shd_grayscale),	// Turns the output into grayscale
 			gamma_correction : new PostProcessFX(shd_gamma_correction)	// Does basic gamma correction; useful if we want to do it manually
+		},
+		ANIMATION : {
+			skeleton_missing : array_flatten(array_create(96, matrix_build_identity()))	// Default skeleton if model is missing one (max bones = 96)
 		}
 	},
 	MEMORY : {}	// Used to hold data caches and garbage-collect dynamically generated resources

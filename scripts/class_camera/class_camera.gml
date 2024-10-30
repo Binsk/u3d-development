@@ -287,7 +287,11 @@ function Camera() : Node() constructor {
 				continue;
 			
 			matrix_set(matrix_world, body.get_model_matrix());
-			body.model_instance.render(self, is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque);
+			var skeleton = U3D.RENDERING.ANIMATION.skeleton_missing;
+			if (not is_undefined(body.animation_instance))
+				skeleton = animation_instance.get_transform_array();
+				
+			body.model_instance.render(self, is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque, skeleton);
 		}
 		matrix_set(matrix_world, world_matrix);
 		surface_reset_target();

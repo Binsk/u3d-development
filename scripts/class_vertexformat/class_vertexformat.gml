@@ -65,7 +65,7 @@ function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture])
 			[0, 0],
 			vec(0, 0, 1),
 			vec(),
-			quat(),
+			quat(-1, -1, -1, -1), // < 0 will be ignored in the shader
 			quat()
 		];
 		

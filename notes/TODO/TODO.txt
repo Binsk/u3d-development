@@ -6,13 +6,14 @@
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
 -	Add proper PBR simulation in ambient lighting (somewhat done)
--	Greatly speed up the GLTFLoader!
+-	Greatly speed up the GLTFLoader (may in-part be due to the RAM leak bug)
 -	System currently renders camera mirrored: to fix some issues;
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.
 -	Camera pipeline toggles (e.g., skip shadows, skip emission, lighting pass, 
 	etc) so that in-game cameras can have modified renders apart from the actual
-	resources being rendered.
+	resources being rendered. Allows, e.g., dynamic cube-mapping that can ignore
+	certain things.
 -	Add bloom PPFX via light threshold + gaussian blur
 -	Lots of file load stuff is async, so consider switching the GLTFBuilder to
 	that.

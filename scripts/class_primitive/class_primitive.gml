@@ -29,6 +29,11 @@ function Primitive(vformat) : U3DObject() constructor {
 		return vertex_get_number(vbuffer) / 3;
 	}
 	
+	function get_has_bones(){
+		return	array_get_index(vformat.vformat_array, VERTEX_DATA.bone_indices) >= 0 or
+				array_get_index(vformat.vformat_array, VERTEX_DATA.bone_weights) >= 0
+	}
+	
 	/// @desc	Begins defining the vertex buffer for this primitive. Note that ALL primitives
 	///			should be defined in the pr_trianglelist format.
 	function define_begin(size=0){
