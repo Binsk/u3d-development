@@ -34,7 +34,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var R = matrix_build_quat(rotation[0], rotation[1], rotation[2], rotation[3]);
 			var S = matrix_build_scale(scale[0], scale[1], scale[2]);
 
-			transform = matrix_multiply_post(S, R, T);
+			transform = matrix_multiply_post(T, R, S);
 		}
 		
 		for (var i = array_length(node_array) - 1; i >= 0; --i){
@@ -699,6 +699,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					break;
 				}
 			}
+			
 			if (bone_id < 0)
 				throw new Exception("invalid bone_id in model file.");
 			
@@ -711,7 +712,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 			var ttype = array_get_index(track_type, channel.target.path); // Correlates to BONE_PROPERTY_TYPE
 			var ltype = array_get_index(lerp_type, sampler.interpolation); // Correlates to LERP_METHOD
-			
+
 			var animation_channel;
 			if (ttype == 0)
 				animation_channel = new AnimationChannelPosition(bone_id);

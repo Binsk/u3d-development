@@ -58,9 +58,17 @@ function AnimationChannelGroup(bone_id) : U3DObject() constructor {
 		return count;
 	}
 	
+	function get_channel_length(){
+		return max(
+			is_undefined(position_channel) ? 0 : position_channel.get_morph_lenghth(),
+			is_undefined(rotation_channel) ? 0 : rotation_channel.get_morph_lenghth(),
+			is_undefined(scale_channel) ? 0 : scale_channel.get_morph_lenghth()
+		);
+	}
+	
 	/// @desc	Returns a struct containing the appropriate translation, rotation, and scale
 	///			given a lerp value within the timeline.
-	function build_trs_properties_lerp(lerpvalue){
+	function get_trs_properties_lerp(lerpvalue){
 		lerpvalue = clamp(lerpvalue, 0, 1);
 		return {
 			position : is_undefined(position_channel) ? AnimationChannelPosition.get_morph_default() : position_channel.get_transformed_lerp(lerpvalue),

@@ -15,7 +15,7 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	self.bone_id = bone_id;
 	morph_array = [];
 	morph_length = 0;	// Length of the channel, in time units
-	morph_definition = ds_priority_create();
+	morph_definition = ds_queue_create(); // Was a priority; now is just a queue. Could likely remove this structure altogether now
 	#endregion
 	
 	#region STATIC METHODS
@@ -43,7 +43,7 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 		
 		if (array_length(array) <= 1)
 			return array[0].value;
-		
+	
 		if (array[0].type == ANIMATION_CHANNEL_TRANSFORM.step)
 			return transform_step(time, array[0], array[1]);
 		else if (array[0].type == ANIMATION_CHANNEL_TRANSFORM.linear)
@@ -63,19 +63,15 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	function get_morphs_at_time(time){
 		var array = [];
 		var morph_count = array_length(morph_array);
-		var lerp_count = 0;
 		for (var i = 0; i < morph_count; ++i){
 			var morph = morph_array[i];
 			if (morph.time_start <= time and (morph.time_end >= time or i == morph_count - 1)){
-				++lerp_count;
 				array_push(array, morph);
-				
-				if (lerp_count >= 2)
-					break;
-			}
-			
-			if (morph.time_end < time)
+				if (i < morph_count - 1)	
+					array_push(array, morph_array[i + 1]);
+					
 				break;
+			}
 		}
 		
 		if (array_length(array) <= 0)
@@ -88,15 +84,20 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 		return bone_id;
 	}
 	
+	/// @desc	Returns how long this morph lasts, in seconds.
+	function get_morph_lenghth(){
+		return morph_length;
+	}
+	
 	/// @desc	Adds a morph value to the definition; can only be done if the
 	///			channel is not frozen.
 	function add_morph(time_start, time_end, value, type=ANIMATION_CHANNEL_TRANSFORM.linear){
 		if (is_undefined(morph_definition))
 			throw new Exception("failed to add morph, animation channel is frozen.");
 			
-		ds_priority_add(morph_definition, {
+		ds_queue_enqueue(morph_definition, {
 			time_start, time_end, value, type
-		}, time_start);
+		});
 	}
 	
 	function transform_step(time, from, to){
@@ -115,19 +116,22 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 		if (is_undefined(morph_definition)) // Already frozen
 			return;
 		
-		morph_array = array_create(ds_priority_size(morph_definition));
-		for (var i = 0; not ds_priority_empty(morph_definition); ++i){
-			var data = ds_priority_delete_min(morph_definition);
+		morph_array = array_create(ds_queue_size(morph_definition));
+		for (var i = 0; not ds_queue_empty(morph_definition); ++i){
+			var data = ds_queue_dequeue(morph_definition);
 			morph_length = max(morph_length, data.time_end);
 			morph_array[i] = data;
 		}
+		
+		ds_queue_destroy(morph_definition);
+		morph_definition = undefined;
 	}
 	
 	super.register("free");
 	function free(){
 		super.execute("free");
 		if (not is_undefined(morph_definition))
-			ds_priority_destroy(morph_definition);
+			ds_queue_destroy(morph_definition);
 		
 		morph_definition = undefined;
 	}

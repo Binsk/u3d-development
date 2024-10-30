@@ -289,7 +289,7 @@ function Camera() : Node() constructor {
 			matrix_set(matrix_world, body.get_model_matrix());
 			var skeleton = U3D.RENDERING.ANIMATION.skeleton_missing;
 			if (not is_undefined(body.animation_instance))
-				skeleton = animation_instance.get_transform_array();
+				skeleton = body.animation_instance.get_transform_array();
 				
 			body.model_instance.render(self, is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque, skeleton);
 		}

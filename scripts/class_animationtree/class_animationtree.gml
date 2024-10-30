@@ -77,7 +77,13 @@ function AnimationTree() : U3DObject() constructor {
 	/// @desc	Returns a cached transform array.
 	function get_transform_array(){
 /// @stub	Implement
-		return U3D.RENDERING.ANIMATION.skeleton_missing;
+		// return U3D.RENDERING.ANIMATION.skeleton_missing;
+		var track = track_struct[$ "Idle"];
+		if (is_undefined(track))
+			return U3D.RENDERING.ANIMATION.skeleton_missing;
+		
+		return generate_transform_array(track.get_trs_array_time((current_time / 1000) % track.get_track_length()));
+		// return generate_transform_array(track.get_trs_array_time(0));
 	}
 	
 	/// @desc	Given calculated TRS data for each bone, builds a 1D flattened
@@ -95,7 +101,7 @@ function AnimationTree() : U3DObject() constructor {
 			var matrix_r = matrix_build_quat(data.rotation.x, data.rotation.y, data.rotation.z, data.rotation.w);
 			var matrix_s = matrix_build_scale(data.scale.x, data.scale.y, data.scale.z);
 			var matrix = matrix_multiply_post(matrix_t, matrix_r, matrix_s);
-			matrix_data[$ i] = matrix;
+			matrix_data[$ keys[i]] = matrix;
 		}
 		
 		// Loop through bones and multiply matrices by parents
@@ -125,10 +131,11 @@ function AnimationTree() : U3DObject() constructor {
 		
 		ds_queue_destroy(queue);
 		
-	// Apply inverse matrices:
+		// Apply inverse matrices:
 		for (var i = array_length(keys) - 1; i >= 0; --i){
 			var matrix = matrix_data[$ keys[i]];
-			matrix = matrix_multiply(skeleton[$ keys[i]].matrix_inv, matrix);
+			var matrix_inv = skeleton[$ keys[i]].matrix_inv;
+			matrix_data[$ keys[i]] = matrix_multiply(matrix_inv, matrix);
 		}
 		
 		// Write data into final array:

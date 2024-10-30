@@ -146,7 +146,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			
 			var skeleton = U3D.RENDERING.ANIMATION.skeleton_missing;
 			if (not is_undefined(body.animation_instance))
-				skeleton = animation_instance.get_transform_array();
+				skeleton = body.animation_instance.get_transform_array();
 			
 			body.model_instance.render_shadows(skeleton);
 		}

@@ -17,7 +17,10 @@ function AnimationChannelPosition(bone_id) : AnimationChannel(bone_id) construct
 	}
 	
 	function transform_linear(time, from, to){
-		var percent = clamp((time - to.time_start) / (from.time_end - to.time_start), 0, 1);
+		var percent = 1.0;
+		if (to.time_start < from.time_end)
+			percent = clamp((time - to.time_start) / (from.time_end - to.time_start), 0, 1);
+			
 		return vec_lerp(from.value, to.value, percent);
 	}
 	#endregion

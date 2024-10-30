@@ -17,6 +17,10 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp)); // Scale to fit in camera
 			body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 			body.set_model(model);
+			
+			if (not is_undefined(animation_tree))
+				body.set_animation(animation_tree);
+
 			obj_render_controller.add_body(body);
 		}
 		else {

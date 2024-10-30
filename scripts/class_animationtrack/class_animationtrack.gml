@@ -6,6 +6,7 @@ function AnimationTrack(name) : U3DObject() constructor {
 	#region PROPERTIES
 	self.name = name;
 	channel_data = {};	// bone_id -> animation channel group
+	channel_length = 0;	// Max length of all channels
 	#endregion
 	
 	#region METHODS
@@ -26,6 +27,11 @@ function AnimationTrack(name) : U3DObject() constructor {
 		return count;
 	}
 	
+	/// @desc	Returns the length of the track, in seconds
+	function get_track_length(){
+		return channel_length;
+	}
+	
 	function add_channel_group(group){
 		if (not is_instanceof(group, AnimationChannelGroup)){
 			Exception.throw_conditional("invalid type, expected [AnimationChannelGroup]!");
@@ -34,6 +40,7 @@ function AnimationTrack(name) : U3DObject() constructor {
 		
 		replace_child_ref(group, channel_data[$ group.get_bone_index()]);
 		channel_data[$ group.get_bone_index()] = group;
+		channel_length = max(channel_length, group.get_channel_length());
 	}
 
 	function get_trs_array_lerp(lerpvalue){

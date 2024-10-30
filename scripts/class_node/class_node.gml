@@ -162,9 +162,9 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 			return matrix_model;
 			
 		matrix_model = matrix_multiply_post(
-			matrix_build_scale(scale.x, scale.y, scale.z),						// S
+			matrix_build_translation(position.x, position.y, position.z),		// T
 			matrix_build_quat(rotation.x, rotation.y, rotation.z, rotation.w),	// R
-			matrix_build_translation(position.x, position.y, position.z)		// T
+			matrix_build_scale(scale.x, scale.y, scale.z)						// S
 		);
 		return matrix_model;
 	}

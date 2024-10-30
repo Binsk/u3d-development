@@ -274,11 +274,12 @@ function matrix_build_quat(qx, qy, qz, qw){
 }
 
 /// @desc	Takes an arbitrary number of matrices as arguments and post-multiplies
-///			them together
+///			them together. E.g., if T * R * S is passed in, the result would
+///			be (S * R) * T
 function matrix_multiply_post(){
 	var result = argument[argument_count - 1];
 	for (var i = argument_count - 2; i >= 0; --i)
-		result = matrix_multiply(argument[i], result);
+		result = matrix_multiply(result, argument[i]);
 	
 	return result;
 }

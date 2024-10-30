@@ -41,12 +41,12 @@ function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 	var label = $"__uniform_{name}_{shader}";
 	var uniform = UNIFORM_CACHE[$ label];
 	
-	if (is_undefined(uniform)){
+	if (is_undefined(uniform)){ // If we haven't checked this uniform + shader combo, look it up
 		uniform = shader_get_uniform(shader, name);
 		UNIFORM_CACHE[$ label] = uniform;
 	}
 	
-	if (uniform >= 0){
+	if (uniform >= 0){ // Uniform exists in the shader; set it
 		var array = array_concat([uniform], is_array(argv) ? argv : [argv]);
 		method_call(uniform_fnc, array);
 	}
