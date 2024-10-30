@@ -32,24 +32,10 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	uniform_sampler_pbr = -1;
 	uniform_sampler_view = -1;
 	uniform_sampler_environment = -1;
-	uniform_normal = -1;
-	uniform_color = -1;
-	uniform_albedo = -1;
-	uniform_environment = -1;
-	uniform_cam_position = -1;
-	uniform_mip_count = -1;
-	
-	uniform_texel_size = -1;
-	
+	uniform_shadow_sampler_shadow = -1;
+	uniform_shadow_sampler_depth = -1;     
 	uniform_shadow_sampler_albedo = -1;
 	uniform_shadow_alpha_cutoff = -1;
-
-	uniform_shadow_sampler_shadow = -1;
-	uniform_shadow_sampler_depth = -1;
-	uniform_shadow_bias = -1;
-	uniform_shadow_matrix_shadow = -1;
-	uniform_shadow_matrix_invprojection = -1;
-	uniform_shadow_matrix_invview = -1;
 	#endregion
 	#endregion
 	
@@ -99,21 +85,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (uniform_sampler_environment < 0)
 			uniform_sampler_environment = shader_get_sampler_index(shader_lighting, "u_sEnvironment");
 		
-		if (uniform_normal < 0)
-			uniform_normal = shader_get_uniform(shader_lighting, "u_vLightNormal");
-		
-		if (uniform_color < 0)
-			uniform_color = shader_get_uniform(shader_lighting, "u_vLightColor");
-		
-		if (uniform_environment < 0)
-			uniform_environment = shader_get_uniform(shader_lighting, "u_iEnvironment");
-		
-		if (uniform_cam_position < 0)
-			uniform_cam_position = shader_get_uniform(shader_lighting, "u_vCamPosition");
-		
-		if (uniform_mip_count < 0)
-			uniform_mip_count = shader_get_uniform(shader_lighting, "u_iMipCount");
-		
 		texture_set_stage(uniform_sampler_albedo, camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		texture_set_stage(uniform_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		texture_set_stage(uniform_sampler_pbr, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
@@ -121,17 +92,17 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		
 		if (not is_undefined(texture_environment)){
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
-			shader_set_uniform_i(uniform_environment, true);
-			shader_set_uniform_i(uniform_mip_count, not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count);
+			uniform_set("u_iEnvironment", shader_set_uniform_i, true);
+			uniform_set("u_iMipCount", shader_set_uniform_i, [not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count]);
 		}
 		else
-			shader_set_uniform_i(uniform_environment, false);
+			uniform_set("u_iEnvironment", shader_set_uniform_i, false);
 	}
 	
 	function apply(){
 /// @stub	Figure out why the light needs these two axes inverted
-		shader_set_uniform_f(uniform_normal, -light_normal.x, -light_normal.y, -light_normal.z);
-		shader_set_uniform_f(uniform_color, color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255);
+		uniform_set("u_vLightNormal", shader_set_uniform_f, [-light_normal.x, -light_normal.y, -light_normal.z]);
+		uniform_set("u_vLightColor", shader_set_uniform_f, [color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255]);
 	}
 	
 	function render_shadows(eye_id=undefined, body_array=[]){
@@ -207,18 +178,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (uniform_shadow_sampler_depth < 0)
 			uniform_shadow_sampler_depth = shader_get_sampler_index(shd_lighting_sample_shadow, "u_sDepth");
 		
-		if (uniform_shadow_bias < 0)
-			uniform_shadow_bias = shader_get_uniform(shd_lighting_sample_shadow, "u_fShadowBias");
-		
-		if (uniform_shadow_matrix_shadow < 0)
-			uniform_shadow_matrix_shadow = shader_get_uniform(shd_lighting_sample_shadow, "u_mShadow");
-		
-		if (uniform_shadow_matrix_invview < 0)
-			uniform_shadow_matrix_invview = shader_get_uniform(shd_lighting_sample_shadow, "u_mInvView");
-		
-		if (uniform_shadow_matrix_invprojection < 0)
-			uniform_shadow_matrix_invprojection = shader_get_uniform(shd_lighting_sample_shadow, "u_mInvProj");
-		
 		/// Render to shadow buffer
 		/// @note	This was done as an MRT in the lighting pass, but the Windows platform
 		///			was failing to write out for some reason so we switched to a separate pass.
@@ -226,10 +185,10 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		shader_set(shd_lighting_sample_shadow);
 		texture_set_stage(uniform_shadow_sampler_shadow, shadow_depth_texture);
 		texture_set_stage(uniform_shadow_sampler_depth, eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
-		shader_set_uniform_f(uniform_shadow_bias, shadow_bias);
-		shader_set_uniform_matrix_array(uniform_shadow_matrix_shadow, shadow_viewprojection_matrix);
-		shader_set_uniform_matrix_array(uniform_shadow_matrix_invprojection, eye_id.get_inverse_projection_matrix());
-		shader_set_uniform_matrix_array(uniform_shadow_matrix_invview, eye_id.get_inverse_view_matrix());
+		uniform_set("u_fShadowBias", shader_set_uniform_f, shadow_bias);
+		uniform_set("u_mShadow", shader_set_uniform_matrix_array, [shadow_viewprojection_matrix]);
+		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye_id.get_inverse_projection_matrix()]);
+		uniform_set("u_mInvView", shader_set_uniform_matrix_array, [eye_id.get_inverse_view_matrix()]);
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);
@@ -242,14 +201,11 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_reset_target();
 		
 		// Process shadow buffer and apply to lighting:
-		if (uniform_texel_size < 0)
-			uniform_texel_size = shader_get_uniform(shd_lighting_apply_shadow, "u_vTexelSize");
-		
 		gpu_set_blendmode(bm_add);
 		surface_set_target(surface_out);
 		shader_set(shd_lighting_apply_shadow);
 		texture_set_stage(shader_get_sampler_index(shd_lighting_apply_shadow, "u_sShadow"), surface_get_texture(shadowbit_surface));
-		shader_set_uniform_f(uniform_texel_size, 1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in));
+		uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in)]);
 		draw_surface(surface_in, 0, 0);
 		shader_reset();
 		surface_reset_target();

@@ -15,7 +15,6 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_texture = -1;
-	uniform_tonemap = -1;
 	#endregion
 	
 	#endregion
@@ -75,16 +74,13 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 		if (uniform_sampler_texture < 0)
 			uniform_sampler_texture = shader_get_sampler_index(shd_tonemap, "u_sTexture");
 		
-		if (uniform_tonemap < 0)
-			uniform_tonemap = shader_get_uniform(shd_tonemap, "u_iTonemap");
-		
 		var rw = render_width;
 		var rh = render_height;
 		
 		gpu_set_blendmode(bm_normal);
 		shader_set(shd_tonemap);
 		texture_set_stage(uniform_sampler_texture, gbuffer.textures[$ CAMERA_GBUFFER.final]);
-		shader_set_uniform_i(uniform_tonemap, render_tonemap);
+		uniform_set("u_iTonemap", shader_set_uniform_i, render_tonemap);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh), 1, 0);
 		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh), 0, 0);

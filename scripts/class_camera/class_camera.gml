@@ -60,7 +60,6 @@ function Camera() : Node() constructor {
 	uniform_sampler_translucent = -1;
 	uniform_sampler_dopaque = -1;
 	uniform_sampler_dtranslucent = -1;
-	uniform_render_stages = -1;
 	#endregion
 	#endregion
 	
@@ -298,9 +297,9 @@ function Camera() : Node() constructor {
 		draw_clear(0);
 		shader_set(shd_view_buffer);
 		texture_set_stage(shader_get_sampler_index(shd_view_buffer, "u_sDepth"), gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
-		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvProj"), eye.get_inverse_projection_matrix());
-		shader_set_uniform_matrix_array(shader_get_uniform(shd_view_buffer, "u_mInvView"), eye.get_inverse_view_matrix());
-		shader_set_uniform_f(shader_get_uniform(shd_view_buffer, "u_vCamPosition"), position.x, position.y, position.z);
+		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye.get_inverse_projection_matrix()]);
+		uniform_set("u_mInvView", shader_set_uniform_matrix_array, [eye.get_inverse_view_matrix()]);
+		uniform_set("u_vCamPosition", shader_set_uniform_f, [position.x, position.y, position.z]);
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);
@@ -412,8 +411,6 @@ function Camera() : Node() constructor {
 			uniform_sampler_dopaque = shader_get_sampler_index(shd_combine_stages, "u_sDepthOpaque");
 		if (uniform_sampler_dtranslucent < 0)
 			uniform_sampler_dtranslucent = shader_get_sampler_index(shd_combine_stages, "u_sDepthTranslucent");
-		if (uniform_render_stages < 0)
-			uniform_render_stages = shader_get_uniform(shd_combine_stages, "u_iRenderStages");
 
 		var	tex_o = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.light_opaque] : sprite_get_texture(spr_default_white, 0))
 		var	tex_do = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque] : sprite_get_texture(spr_default_white, 0))
@@ -428,7 +425,7 @@ function Camera() : Node() constructor {
 		texture_set_stage(uniform_sampler_translucent, tex_t);
 		texture_set_stage(uniform_sampler_dopaque, tex_do);
 		texture_set_stage(uniform_sampler_dtranslucent, tex_dt);
-		shader_set_uniform_i(uniform_render_stages, render_stages);
+		uniform_set("u_iRenderStages", shader_set_uniform_i, render_stages);
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);

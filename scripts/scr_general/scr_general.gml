@@ -32,13 +32,14 @@ function surface_clear(surface, color, alpha=1.0){
 ///			look up the uniform for the current shader and set only if it exists.
 gml_pragma("forceinline");
 function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
+	static UNIFORM_CACHE = {};
 	var shader = shader_current();
 	var label = $"__uniform_{name}_{shader}";
-	var uniform = self[$ label];
+	var uniform = UNIFORM_CACHE[$ label];
 	
 	if (is_undefined(uniform)){
 		uniform = shader_get_uniform(shader, name);
-		self[$ label] = uniform;
+		UNIFORM_CACHE[$ label] = uniform;
 	}
 	
 	if (uniform >= 0){
