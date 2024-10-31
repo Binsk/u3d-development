@@ -8,6 +8,7 @@ global.mouse = {
 	x : 0,
 	y : 0
 }
+cursor = cr_arrow;
 #macro gmouse global.mouse
 
 camera = new CameraView();

@@ -10,13 +10,25 @@
 /// directly from this class requires a full re-calculation of all animation
 /// tracks that are active.
 
-function AnimationTree() : U3DObject() constructor {
+/// @param	{real}	update_freq=0.033		how frequently the animation should be re-calculated (in seconds); defaults to 30fps
+function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	#region PROPERTIES
 	track_struct = {};	// Contains name -> AnimationTrack pairs
 	skeleton = {};		// Bone relation look-up map
+	self.update_freq = update_freq;
+	update_last = current_time * 0.001 - update_freq;
+	transform_data = U3D.RENDERING.ANIMATION.skeleton_missing;	// Last cached transform data
+	
+/// @stub	Track to use until we add the layer system
+	test_track = "";
 	#endregion
 	
 	#region METHODS
+	/// @desc	How many seconds must pass before the bone matrices are re-calculated.
+	function set_update_freq(seconds=0.033){
+		update_freq = max(0, real(seconds));
+	}
+	
 	/// @desc	Sets the bone-relation map, a specially formatted struct where
 	///			key = bone id and value = {parent_id, child_id_array}
 	function set_skeleton(skeleton){
@@ -76,14 +88,22 @@ function AnimationTree() : U3DObject() constructor {
 	
 	/// @desc	Returns a cached transform array.
 	function get_transform_array(){
-/// @stub	Implement
-		// return U3D.RENDERING.ANIMATION.skeleton_missing;
-		var track = track_struct[$ "Idle"];
+		/// @stub	Implement
+		var track = track_struct[$ test_track];
 		if (is_undefined(track))
 			return U3D.RENDERING.ANIMATION.skeleton_missing;
 		
-		return generate_transform_array(track.get_trs_array_time((current_time / 1000) % track.get_track_length()));
-		// return generate_transform_array(track.get_trs_array_time(0));
+		var ct = current_time * 0.001;
+
+		if (ct - update_last < update_freq)
+			return transform_data;
+		
+		update_last = ct;
+		
+		var tl = track.get_track_length();;
+		var time = (tl == 0 ? 0 : ct % tl);
+		transform_data = generate_transform_array(track.get_trs_array_time(time));
+		return transform_data
 	}
 	
 	/// @desc	Given calculated TRS data for each bone, builds a 1D flattened

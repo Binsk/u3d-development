@@ -731,8 +731,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var count = json_header.accessors[sampler.input].count;
 			
 			// Read each channel morph and add it to the channel:
-			for (var j = 1; j < count; ++j)
-				animation_channel.add_morph(time_range[j - 1], time_range[j], morph_range[j - 1], ltype);
+			for (var j = 0; j < count; ++j)
+				animation_channel.add_morph(time_range[j], morph_range[j], ltype);
 
 			animation_channel.freeze();
 		}	

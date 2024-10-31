@@ -15,13 +15,13 @@ with (obj_button){
 	triangle_count += model.get_triangle_count();
 	model_count++;
 	
-	animation_string += $"  [{text}] [bones {is_undefined(animation_tree) ? 0 : animation_tree.get_max_bone_count()}] : ";
-	if (is_undefined(animation_tree))
-		animation_string += "N/A";
-	else
-		animation_string += string_join_ext(", ", animation_tree.get_track_names());
+	// animation_string += $"  [{text}] [bones {is_undefined(animation_tree) ? 0 : animation_tree.get_max_bone_count()}] : ";
+	// if (is_undefined(animation_tree))
+	// 	animation_string += "N/A";
+	// else
+	// 	animation_string += string_join_ext(", ", animation_tree.get_track_names());
 		
-	animation_string += "\n";
+	// animation_string += "\n";
 }
 
 if (not is_undefined(body) and obj_render_controller.has_body(body)){
@@ -40,4 +40,40 @@ draw_text_color(12, 12, $"{gpu_string}\n" +
 						$"\n\nMaterials: {material_count}\nModels: {model_count}\nMeshes: {mesh_count}\nPrimitives: {primitive_count}\nTriangles: {triangle_count}",
 						c_white, c_white, c_white, c_white, 1.0);
 
-draw_text_color(12 + 256, 12, animation_string, c_white, c_white, c_white, c_white, 1.0);
+// Draw animation strings + clickable interaction:
+var ax = 256 + 12;
+var ay = 12;
+draw_text_color(ax, 12, "Animation Tracks:", c_white, c_white, c_white, c_white, 1.0);
+
+with (obj_button){
+	if (is_undefined(body))
+		continue;
+	
+	ay += 20;
+	
+	if (is_undefined(animation_tree)){
+		draw_text_color(ax, ay, $"  [{text}] [bones {is_undefined(animation_tree) ? 0 : animation_tree.get_max_bone_count()}] : N/A", c_white, c_white, c_white, c_white, 1.0);
+		continue;
+	}
+	
+	var names = animation_tree.get_track_names();
+	var str = $"  [{text}] [bones {is_undefined(animation_tree) ? 0 : animation_tree.get_max_bone_count()}] : ";
+	draw_text_color(ax, ay, str, c_white, c_white, c_white, c_white, 1.0);
+	for (var i = 0; i < array_length(names); ++i){
+		var xoffset = string_width(str);
+		var c = animation_tree.test_track == names[i] ? c_yellow : c_white;
+		var is_hovered = point_in_rectangle(gmouse.x, gmouse.y, ax + xoffset, ay - 2, ax + xoffset + string_width(names[i]), ay + 16);
+		if (is_hovered){
+			other.cursor = cr_handpoint;
+			c = make_color_rgb(24 + is_hovered * 32, 24 + is_hovered * 32, 48 + is_hovered * 64);
+			if (mouse_check_button_pressed(mb_left)){
+				if (animation_tree.test_track == names[i])
+					animation_tree.test_track = "";
+				else
+					animation_tree.test_track = names[i];
+			}
+		}
+		draw_text_color(ax + xoffset, ay, names[i], c, c, c, c, 1.0);
+		str += names[i] + " ";
+	}
+}

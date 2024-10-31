@@ -14,6 +14,7 @@ function print_traced(prefix="WARNING"){
 /// @desc	Returns if the system is using DirectX for rendering. DirectX handles
 ///			rendering a bit different than OpenGL so we need to change some calculations
 ///			in these cases.
+gml_pragma("forceinline");
 function get_is_directx_pipeline(){
 	return (os_type == os_windows or os_type == os_xboxone or os_type == os_xboxseriesxs);
 }

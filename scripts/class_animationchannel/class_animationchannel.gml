@@ -15,7 +15,7 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	self.bone_id = bone_id;
 	morph_array = [];
 	morph_length = 0;	// Length of the channel, in time units
-	morph_definition = ds_queue_create(); // Was a priority; now is just a queue. Could likely remove this structure altogether now
+	morph_definition = ds_priority_create();
 	#endregion
 	
 	#region STATIC METHODS
@@ -63,13 +63,13 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	function get_morphs_at_time(time){
 		var array = [];
 		var morph_count = array_length(morph_array);
-		for (var i = 0; i < morph_count; ++i){
+		for (var i = morph_count - 1; i >= 0; --i){
 			var morph = morph_array[i];
-			if (morph.time_start <= time and (morph.time_end >= time or i == morph_count - 1)){
+			if (morph.time_stamp <= time or i == 0){
 				array_push(array, morph);
-				if (i < morph_count - 1)	
+				if (i < morph_count - 1)
 					array_push(array, morph_array[i + 1]);
-					
+				
 				break;
 			}
 		}
@@ -91,17 +91,17 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	
 	/// @desc	Adds a morph value to the definition; can only be done if the
 	///			channel is not frozen.
-	function add_morph(time_start, time_end, value, type=ANIMATION_CHANNEL_TRANSFORM.linear){
+	function add_morph(time_stamp, value, type=ANIMATION_CHANNEL_TRANSFORM.linear){
 		if (is_undefined(morph_definition))
 			throw new Exception("failed to add morph, animation channel is frozen.");
 			
-		ds_queue_enqueue(morph_definition, {
-			time_start, time_end, value, type
-		});
+		ds_priority_add(morph_definition, {
+			time_stamp, value, type
+		}, time_stamp);
 	}
 	
 	function transform_step(time, from, to){
-		if (time >= from.time_end)
+		if (time >= to.time_stamp)
 			return to.value;
 		
 		return from.value;
@@ -116,14 +116,14 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 		if (is_undefined(morph_definition)) // Already frozen
 			return;
 		
-		morph_array = array_create(ds_queue_size(morph_definition));
-		for (var i = 0; not ds_queue_empty(morph_definition); ++i){
-			var data = ds_queue_dequeue(morph_definition);
-			morph_length = max(morph_length, data.time_end);
+		morph_array = array_create(ds_priority_size(morph_definition));
+		for (var i = 0; not ds_priority_empty(morph_definition); ++i){
+			var data = ds_priority_delete_min(morph_definition);
+			morph_length = max(morph_length, data.time_stamp);
 			morph_array[i] = data;
 		}
 		
-		ds_queue_destroy(morph_definition);
+		ds_priority_destroy(morph_definition);
 		morph_definition = undefined;
 	}
 	
@@ -131,7 +131,7 @@ function AnimationChannel(bone_id) : U3DObject() constructor {
 	function free(){
 		super.execute("free");
 		if (not is_undefined(morph_definition))
-			ds_queue_destroy(morph_definition);
+			ds_priority_destroy(morph_definition);
 		
 		morph_definition = undefined;
 	}
