@@ -700,8 +700,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				}
 			}
 			
-			if (bone_id < 0)
-				throw new Exception("invalid bone_id in model file.");
+			if (bone_id < 0){
+				Exception.throw_conditional($"invalid bone id [{bone_id}], no node id match [{channel.target.node}]!");
+				continue;
+			}
 			
 			// Grab / Define channel group:
 			var channel_group = (channelgroup_struct[$ bone_id]);

@@ -31,3 +31,12 @@ The `AnimationTree` can be managed manually, however it is more
 effective to attach the tree to the `obj_animation_controller` to 
 allow the controller to handle animation updates and optimize out
 unnecessary calculations.
+
+## Importing
+Animation is fickle, specifically when it comes to scaling. When 
+exporting / designing your armatures you must **guarantee** that
+they have a scale of 1 before exporting and you should have all
+of your transforms **applied** to the model and armatures!
+
+If not designed correctly, this can be a pain to fix in software
+such as Blender and it will be unable to load correctly in U3D!

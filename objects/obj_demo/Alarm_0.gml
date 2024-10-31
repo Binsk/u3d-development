@@ -45,6 +45,19 @@ inst.signaler.add_signal("checked", function(is_checked){
 	else
 		obj_render_controller.remove_body(obj_demo.body);
 });
+
+inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44 - 64, 0, obj_checkbox);
+inst.text = "Rotate Camera";
+inst.is_checked = true;
+inst.signaler.add_signal("checked", function(is_checked){
+	with (obj_demo){
+		rotate_camera = is_checked;
+		if (is_checked)
+			rotation_offset += current_time - rotation_last;
+		else
+			rotation_last = current_time;
+	}
+});
 // Directional Light:
 var subinst;
 ax = 12;

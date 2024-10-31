@@ -2,9 +2,6 @@
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
 -	Shadow multi-samples are causing halos around objects (?)
--	Animations aren't actually interpolating, interp is always 0 or 1 so need to
-	figure out what's wrong w/ the logic.
--	Only Sophia is animating correctly; figure out why the others aren't.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -25,7 +22,3 @@
 -	Add some kind of PrimitiveBuilder where you can define a single primitev along
 	with a number of copies and matrices and it generates a 'multi-primitive' version
 	to render lots of copies as one.
--	Add importing the actual skeleton transforms and auto-add it to animation
-	track as a "default" pose track. Needed if a morph track that lacks bones
-	is set, as it will need to merge w/ this default track or you get a broken
-	mesh.
