@@ -43,6 +43,10 @@ camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)
 
 body = undefined;
 
+material_count = 0;
+model_count = 0;
+mesh_count = 0;
+primitive_count = 0;
 
 gpu_string = "";
 var map = os_get_info();
@@ -55,6 +59,13 @@ if (string_pos("(", gpu_string) > 0)
 	gpu_string = string_copy(gpu_string, 1, string_pos("(", gpu_string) - 1);
 
 ds_map_destroy(map);
+
+function update_data_count(){
+	material_count = get_ref_instance_count(Material);
+	model_count = get_ref_instance_count(Model);
+	mesh_count = get_ref_instance_count(Mesh);
+	primitive_count = get_ref_instance_count(Primitive);
+}
 
 // GameMaker's gui adjustment isn't immediate; just delay GUI element spawn for a bit
 alarm[0] = 60;

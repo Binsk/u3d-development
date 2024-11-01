@@ -561,6 +561,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
 
+		add_child_ref(mesh);
 		return mesh;
 	}
 	

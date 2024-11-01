@@ -14,14 +14,6 @@ with (obj_button){
 	mesh_count += model.get_mesh_count();
 	triangle_count += model.get_triangle_count();
 	model_count++;
-	
-	// animation_string += $"  [{text}] [bones {is_undefined(animation_tree) ? 0 : animation_tree.get_max_bone_count()}] : ";
-	// if (is_undefined(animation_tree))
-	// 	animation_string += "N/A";
-	// else
-	// 	animation_string += string_join_ext(", ", animation_tree.get_track_names());
-		
-	// animation_string += "\n";
 }
 
 if (not is_undefined(body) and obj_render_controller.has_body(body)){
@@ -37,7 +29,10 @@ draw_set_halign(fa_left);
 draw_text_color(12, 12, $"{gpu_string}\n" + 
 						$"\nFPS: {fps}\nResolution: {camera.buffer_width}x{camera.buffer_height}" + 
 						$"\nGBuffer vRAM: {string(camera.get_vram_usage() / 1024 / 1024)}MB" + 
-						$"\n\nMaterials: {material_count}\nModels: {model_count}\nMeshes: {mesh_count}\nPrimitives: {primitive_count}\nTriangles: {triangle_count}",
+						$"\n\nMaterials: {material_count} [{self.material_count} in RAM]\n" +
+						$"Models: {model_count} [{self.model_count} in RAM]\n" + 
+						$"Meshes: {mesh_count} [{self.mesh_count} in RAM]\n" + 
+						$"Primitives: {primitive_count} [{self.primitive_count} in RAM]\nTriangles: {triangle_count}",
 						c_white, c_white, c_white, c_white, 1.0);
 
 // Draw animation strings + clickable interaction:

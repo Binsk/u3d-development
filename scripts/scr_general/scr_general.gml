@@ -54,3 +54,16 @@ function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 }
 
 /// @stub	Add in a sampler version of uniform_set
+
+/// @desc	Returns the number of reference objects with the specified type
+///			currently being watched by the system. Not fast.
+function get_ref_instance_count(type=U3DObject){
+	var keys = struct_get_names(U3D.MEMORY);
+	var count = 0;
+	for (var i = array_length(keys) - 1; i >= 0; --i){
+		if (is_instanceof(U3DObject.get_ref_data(keys[i]), type))
+			count++;
+	}
+	
+	return count;
+}

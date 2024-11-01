@@ -44,6 +44,8 @@ inst.signaler.add_signal("checked", function(is_checked){
 	}
 	else
 		obj_render_controller.remove_body(obj_demo.body);
+	
+	update_data_count();
 });
 
 inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44 - 64, 0, obj_checkbox);

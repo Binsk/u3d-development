@@ -3,7 +3,7 @@ is_hovered = point_in_rectangle(gmouse.x, gmouse.y, x, y, x + width, y + height)
 
 if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_model_button){
-		if (is_undefined(gltf)){
+		if (is_undefined(body)){
 			gltf = new GLTFBuilder(text, "test-models");
 			animation_tree = gltf.generate_animation_tree();
 			model = gltf.generate_model(true, true);
@@ -21,16 +21,18 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			if (not is_undefined(animation_tree))
 				body.set_animation(animation_tree);
 
+			gltf.free();
+			delete gltf;
+
 			obj_render_controller.add_body(body);
+			obj_demo.update_data_count();
 		}
 		else {
 			obj_render_controller.remove_body(body);
 			body.free();
 			delete body;
 			
-			gltf.free();
-			delete gltf;
-			gltf = undefined;
+			obj_demo.update_data_count();
 		}
 	
 		var minimum_y = 0; // Used to align floor height
