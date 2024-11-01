@@ -2,10 +2,16 @@
 /// A 3D mesh is a collection of primitives that are paired with material indices.
 ///	Meshes do not contain material data themselves and rely on the rendering model
 /// to provide the correct material data upon render based on the index.
-
+///
+/// @note	GLTF allows nodes to specify meshes so you can have multiples of
+///			the same mesh in different locations. To prevent memory duplication, 
+///			meshes will contain an optional local matrix built from these transforms
+///			that is applied to each primitive rendered.
 function Mesh() : U3DObject() constructor {
 	#region PROPERTIES
-	primitive_array = [];	// Contains an array of structs of primitive / material values
+	primitive_array = [];		// Contains an array of structs of primitive / material values
+	matrix_model = undefined;	// If set, gets applied to each primitive.
+	matrix_import = undefined;	// If 'apply transforms' is on when importing a model, the transform is stored here
 	#endregion
 	
 	#region METHODS
@@ -31,6 +37,13 @@ function Mesh() : U3DObject() constructor {
 		});
 		
 		add_child_ref(primitive);
+	}
+	
+	function apply_matrix(){
+		if (is_undefined(matrix_model))
+			return;
+		
+		matrix_set(matrix_world, matrix_multiply_post(matrix_get(matrix_world), matrix_model));
 	}
 	
 	/// @desc	Renders a single primitive.
@@ -98,6 +111,20 @@ function Mesh() : U3DObject() constructor {
 		super.execute("free");
 		
 		primitive_array = [];
+	}
+	
+	function duplicate(){
+		var mesh = new Mesh();
+		var al = array_length(primitive_array); 
+		// Add primitives manually so their references are adjusted properly
+		for (var i = 0; i < al; ++i){
+			var primitive = primitive_array[i];
+			mesh.add_primitive(primitive.primitive, primitive.material_index);
+		}
+		
+		mesh.matrix_model = matrix_model;
+		mesh.matrix_import = matrix_import;
+		return mesh;
 	}
 	
 	#endregion

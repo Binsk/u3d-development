@@ -25,3 +25,6 @@
 -	Add some kind of PrimitiveBuilder where you can define a single primitev along
 	with a number of copies and matrices and it generates a 'multi-primitive' version
 	to render lots of copies as one.
+-	Add support for glTF scenes! Meshes are defined / specified in nodes and
+	scenes can specify a sub-set of nodes. Simply allow generating a model based
+	off of a scene index to allow storing multiple 'models' in one file.

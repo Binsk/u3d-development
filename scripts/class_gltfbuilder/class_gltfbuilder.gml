@@ -556,6 +556,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		// Add each primitive to the mesh and attach the material index
 		mesh = new Mesh();
 		mesh.hash = mesh_hash;
+		mesh.matrix_import = transform;
 
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
@@ -568,7 +569,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @note	Materials and primitives generated will be auto-reused across models and cleaned up
 	///			once all generated Model() instances are freed. 
 	///	@note	If possible, make sure your models are exported with all transforms applied!
-	///			Manually applying them upon load is slow.
+	///			Manually applying them upon load is slow but may be necessary for duplicated meshes.
+	/// @note	Scenes are not regarded at this time, ALL nodes will be added to the model!
 	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
 	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives
 	/// @param	{VertexFormat}	vformat=auto	VertexFormat to generate with, will attempt to fill missing data
@@ -591,6 +593,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (count <= 0)
 			return undefined;
 		
+		// Generate all the meshes defined in the file:
 		var mesh_array = array_create(count, undefined);
 		var is_invalid = false;
 		var i;
@@ -615,8 +618,33 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 		
 		model = new Model();
-		for (var i = 0; i < count; ++i)
-			model.add_mesh(mesh_array[i]);
+		
+		// Add meshes, but ONLY those as define in the nodes as they can specify
+		// mesh duplicates and position / rotation offsets!
+		var node_array = (json_header[$ "nodes"] ?? []);
+		count = array_length(node_array);
+		
+		for (var i = 0; i < count; ++i){
+			var node = node_array[i];
+			var mesh_id = node[$ "mesh"];
+			if (is_undefined(mesh_id)) // Not a mesh node; skip
+				continue;
+
+			var matrix = get_node_transform(i);
+			if (matrix_is_identity(matrix))
+				matrix = undefined; // Prevents needless multiplications when rendering
+				
+			var mesh = mesh_array[mesh_id].duplicate();
+			
+			// If applying transforms directly to vertices, we need to UNDO that for the
+			// mesh transform since each mesh will needs its own special offset.
+			if (not is_undefined(matrix) and not is_undefined(mesh.matrix_import))
+				matrix = matrix_multiply(matrix_get_inverse(mesh.matrix_import), matrix);
+			
+			mesh.set_unique_hash();
+			mesh.matrix_model = matrix;
+			model.add_mesh(mesh);
+		}
 			
 		model.set_data(["aabb_min"], get_data(["model_data", "minimum"]));
 		model.set_data(["aabb_max"], get_data(["model_data", "maximum"]));
