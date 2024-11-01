@@ -379,7 +379,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		primitive.define_begin(map_size);
 		
 		var has_tangent_data = (format.get_has_data(VERTEX_DATA.position) and format.get_has_data(VERTEX_DATA.tangent) and format.get_has_data(VERTEX_DATA.texture)); // Used when auto-calculating tangents
-		
 		var loop = array_length(format.vformat_array);
 		for (var i = 0; i < loop; ++i){
 			var format_label = VertexFormat.get_vertex_data_gltf_label(format.vformat_array[i]);
@@ -412,7 +411,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 						var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 1.0);
 						data = vec(result[0], result[1], result[2]);
 					}
-					
 					min_vec.x = min(min_vec.x, data.x);
 					min_vec.y = min(min_vec.y, data.y);
 					min_vec.z = min(min_vec.z, data.z);
@@ -422,7 +420,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				}
 				else if (format.vformat_array[i] == VERTEX_DATA.normal and is_custom_transform){
 					var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 0.0);
-					data = vec_normalize(vec(result[0], result[1], result[2]));
+					data = array_normalize([result[0], result[1], result[2]]);
 				}
 				#endregion
 				#region TANGENT DATA SPECIAL-HANDLING
@@ -467,27 +465,35 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 						var duv1 = [uv_array[1][0] - uv_array[0][0], uv_array[1][1] - uv_array[0][1]];
 						var duv2 = [uv_array[2][0] - uv_array[0][0], uv_array[2][1] - uv_array[0][1]];
 						var f = 1.0 / (duv1[0] * duv2[1] - duv2[0] * duv1[1]);
-						var tangent = vec(
+						var tangent = [
 							f * (duv2[1] * e1[0] - duv1[1] * e2[0]),
 							f * (duv2[1] * e1[1] - duv1[1] * e2[1]),
 							f * (duv2[1] * e1[2] - duv1[1] * e2[2])
-						);
+						];
 						
-						if (vec_is_zero(tangent) or vec_is_nan(tangent))
-							tangent = VertexFormat.get_vertex_data_default(VERTEX_DATA.tangent);
+						// if (vec_is_zero(tangent) or vec_is_nan(tangent))
+						// 	tangent = VertexFormat.get_vertex_data_default(VERTEX_DATA.tangent);
 							
-						data = vec_normalize(tangent);
+						data = array_normalize(tangent);
 					}
 					else if (is_custom_transform){
 						var result = matrix_transform_vertex(transform, data.x, data.y, data.z, 0.0);
-						data = vec_normalize(vec(result[0], result[1], result[2]));
+						data = array_normalize([result[0], result[1], result[2]]);
 					}
 				}
 				#endregion
 				
-				primitive.define_add_data(format.vformat_array[i], data);
+				if (is_struct(data)){
+					if (is_undefined(data[$ "w"]))
+						data = vec_to_array(data);
+					else
+						data = quat_to_array(data);
+				}
+				
+				primitive.define_set_data_raw(j, format.vformat_array[i], data, j == vertex_index_count - 1);
 			}
 		}
+		
 		primitive.define_end();
 		
 		add_child_ref(primitive);

@@ -1,4 +1,7 @@
 # FIXME
+-	[windows] skeletal morph part of shader breaks textures in models. Seems to be
+	a uniform count issue as reducing uniforms fixes the issue (?). Less than 
+	Ink Wars, so not sure what's going on there.
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
 -	Shadow multi-samples are causing halos around objects (?)

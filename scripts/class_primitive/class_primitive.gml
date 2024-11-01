@@ -152,6 +152,18 @@ function Primitive(vformat) : U3DObject() constructor {
 		definition_data[$ type] = array;
 	}
 	
+	/// @desc	Sets a piece of data in the specified index. Does NOT do any error
+	///			checking and expects specific arrays of data for each type. This function
+	///			exists if you know exactly what you are defining as it is faster than
+	///			using the regular add/set functions.
+	function define_set_data_raw(index, type, data, set_index=false){
+		var array = definition_data[$ type];
+		array[index] = data;
+		definition_data[$ type] = array;
+		if (set_index)
+			definition_data[$ $"{type}_index"] = max(definition_data[$ $"{type}_index"] ?? 0, index);
+	}
+	
 	/// @desc	Ends the primitive definition and builds the appropriate vertex buffer
 	function define_end(){
 		if (is_undefined(self[$ "definition_data"]))
