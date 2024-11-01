@@ -264,7 +264,7 @@ function MaterialSpatial() : Material() constructor {
 		uniform_set("u_vEmissive", shader_set_uniform_f, [scalar.emissive[0], scalar.emissive[1], scalar.emissive[2]]);
 		
 		uniform_set("u_fAlphaCutoff", shader_set_uniform_f, alpha_cutoff);
-		uniform_set("uniform_gbuffer_translucent", shader_set_uniform_i, is_translucent);
+		uniform_set("u_iTranslucent", shader_set_uniform_i, is_translucent);
 		
 		gpu_set_cullmode(cull_mode);
 	}
