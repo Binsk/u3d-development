@@ -72,18 +72,20 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		return count;
 	}
 	
-	function get_root_bone_id(){
+	/// @desc	Returns an array of root IDs (there can be > 1)
+	function get_root_bone_ids(){
 		var bone_count = get_max_bone_count();
+		var root_array = [];
 		for (var i = 0; i < bone_count; ++i){
 			var bone = skeleton[$ i];
 			if (is_undefined(bone))
 				continue;
 				
 			if (bone.parent_id < 0)
-				return i;
+				array_push(root_array, i);
 		}
 		
-		return undefined;
+		return root_array;
 	}
 	
 	/// @desc	Returns a cached transform array.
@@ -125,12 +127,13 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		
 		// Loop through bones and multiply matrices by parents
-		var root_bone_id = get_root_bone_id();
-		if (is_undefined(root_bone_id))
+		var root_bone_ids = get_root_bone_ids();
+		if (array_length(root_bone_ids) <= 0)
 			throw new Exception("unable to determine root bone!");
 			
 		var queue = ds_queue_create();
-		ds_queue_enqueue(queue, root_bone_id);
+		for (var i = 0; i < array_length(root_bone_ids); ++i)
+			ds_queue_enqueue(queue, root_bone_ids[i]);
 		
 		while (not ds_queue_empty(queue)){
 			var bone_id = ds_queue_dequeue(queue);
@@ -141,7 +144,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 				ds_queue_enqueue(queue, bone_data.child_id_array[i]);
 			
 			// Transform parent's matrix:
-			if (bone_id == root_bone_id) // No need to transform if root
+			if (bone_data.parent_id < 0) // No need to transform if root
 				continue;
 			
 			var matrix = matrix_data[$ bone_id];
