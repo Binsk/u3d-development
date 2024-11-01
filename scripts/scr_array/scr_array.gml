@@ -42,6 +42,9 @@ function array_normalize(array){
 	for (var i = 0; i < array_length(array); ++i)
 		value += sqr(array[i]);
 	
+	if (value <= 0 or is_nan(value))
+		return array_create(array_length(array), 0);
+		
 	var m = sqrt(value);
 	for (var i = 0; i < array_length(array); ++i)
 		array[i] /= m;

@@ -368,7 +368,7 @@ function Camera() : Node() constructor {
 			
 			var applied_shadows = false;
 			if (not is_translucent)
-				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
+				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque]);
 			
 			if (not applied_shadows){
 				gpu_set_blendmode(bm_add);

@@ -278,7 +278,10 @@ function GLTFLoader() : U3DObject() constructor {
 	///			if no special datatype exists, an array of values. MAT3s will be converted
 	///			to MAT4s
 	/// @note	Does NOT support sparse accessors!
-	function read_accessor(index){
+	/// @param	{int}	accessor			index of the accessor to read data from
+	///	@param	{bool}	skip_parse=false	if true datatype parsing is skipped and only arrays are retruned (faster)
+	/// @note	If parsing is skipped, MAT3 is NOT converted and the array returned is a 1D array!
+	function read_accessor(index, skip_parse=false){
 		var accessor = get_structure(index, "accessors");
 		if (is_undefined(accessor))
 			return undefined;
@@ -308,6 +311,9 @@ function GLTFLoader() : U3DObject() constructor {
 			for (var j = 0; j < element_size; ++j)
 				data[index + j] = clamp(data[index + j], minimum[j], maximum[j]);
 		}
+		
+		if (skip_parse)
+			return data;
 		
 		// Parse data into types
 		var array = array_create(element_count, undefined);

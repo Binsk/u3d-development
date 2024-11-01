@@ -161,7 +161,7 @@ function Primitive(vformat) : U3DObject() constructor {
 		array[index] = data;
 		definition_data[$ type] = array;
 		if (set_index)
-			definition_data[$ $"{type}_index"] = max(definition_data[$ $"{type}_index"] ?? 0, index);
+			definition_data[$ $"{type}_index"] = max(definition_data[$ $"{type}_index"] ?? 0, index + 1);
 	}
 	
 	/// @desc	Ends the primitive definition and builds the appropriate vertex buffer

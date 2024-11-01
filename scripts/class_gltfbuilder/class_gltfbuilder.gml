@@ -531,7 +531,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				break;
 			}
 		}
-		
 		var primitive_array = array_create(count, undefined);
 		var is_invalid = false;
 		var i;
@@ -557,10 +556,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		// Add each primitive to the mesh and attach the material index
 		mesh = new Mesh();
 		mesh.hash = mesh_hash;
-		
+
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
-		
+
 		return mesh;
 	}
 	
