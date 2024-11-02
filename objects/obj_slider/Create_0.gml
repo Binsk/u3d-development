@@ -1,4 +1,6 @@
 text = "";
+text_tooltip = "";
+
 signaler = new Signaler();
 is_dragging = false;
 is_hovered = true;

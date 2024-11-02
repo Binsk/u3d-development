@@ -52,6 +52,8 @@ animation_loop = true;
 animation_smooth = true;
 animation_speed = 1.0;
 animation_freq = 0.033;
+import_textures = true;
+apply_transforms = true;
 
 gpu_string = "";
 var map = os_get_info();

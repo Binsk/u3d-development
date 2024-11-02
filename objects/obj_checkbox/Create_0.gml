@@ -1,4 +1,5 @@
 text = "";
+text_tooltip = "";
 signaler = new Signaler();
 
 size = 24;

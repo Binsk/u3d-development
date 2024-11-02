@@ -6,7 +6,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		if (is_undefined(body)){
 			gltf = new GLTFBuilder(text, "test-models");
 			animation_tree = gltf.generate_animation_tree();
-			model = gltf.generate_model();
+			model = gltf.generate_model(obj_demo.import_textures, obj_demo.apply_transforms);
 			model.freeze();
 			
 			var min_vec = model.get_data("aabb_min", vec());

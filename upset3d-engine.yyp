@@ -78,6 +78,7 @@
     {"id":{"name":"obj_demo","path":"objects/obj_demo/obj_demo.yy",},},
     {"id":{"name":"obj_render_controller","path":"objects/obj_render_controller/obj_render_controller.yy",},},
     {"id":{"name":"obj_slider","path":"objects/obj_slider/obj_slider.yy",},},
+    {"id":{"name":"obj_tooltip","path":"objects/obj_tooltip/obj_tooltip.yy",},},
     {"id":{"name":"room_demo","path":"rooms/room_demo/room_demo.yy",},},
     {"id":{"name":"class_anchor2d","path":"scripts/class_anchor2d/class_anchor2d.yy",},},
     {"id":{"name":"class_animationchannel","path":"scripts/class_animationchannel/class_animationchannel.yy",},},

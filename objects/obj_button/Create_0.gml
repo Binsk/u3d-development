@@ -1,5 +1,7 @@
 signaler = new Signaler();
 text = "";
+text_tooltip = "";
+
 width = 256;
 height = 32;
 gltf = undefined;
