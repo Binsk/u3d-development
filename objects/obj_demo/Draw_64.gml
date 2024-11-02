@@ -56,16 +56,22 @@ with (obj_button){
 	draw_text_color(ax, ay, str, c_white, c_white, c_white, c_white, 1.0);
 	for (var i = 0; i < array_length(names); ++i){
 		var xoffset = string_width(str);
-		var c = animation_tree.test_track == names[i] ? c_yellow : c_white;
+		var c = animation_tree.get_animation_layer_track_name(0) == names[i] ? c_yellow : c_white;
 		var is_hovered = point_in_rectangle(gmouse.x, gmouse.y, ax + xoffset, ay - 2, ax + xoffset + string_width(names[i]), ay + 16);
 		if (is_hovered){
 			other.cursor = cr_handpoint;
 			c = make_color_rgb(24 + is_hovered * 32, 24 + is_hovered * 32, 48 + is_hovered * 64);
 			if (mouse_check_button_pressed(mb_left)){
-				if (animation_tree.test_track == names[i])
-					animation_tree.test_track = "";
-				else
-					animation_tree.test_track = names[i];
+				if (animation_tree.get_animation_layer_track_name(0) == names[i])
+					animation_tree.delete_animation_layer(0);
+				else{
+					if (animation_tree.get_animation_layer_exists(0))
+						animation_tree.queue_animation_layer_transition(0, names[i], 0.25);
+					else{
+						animation_tree.add_animation_layer_auto(0, names[i]);
+						animation_tree.start_animation_layer(0);
+					}
+				}
 			}
 		}
 		draw_text_color(ax + xoffset, ay, names[i], c, c, c, c, 1.0);

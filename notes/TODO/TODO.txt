@@ -5,6 +5,7 @@
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
 -	Shadow multi-samples are causing halos around objects (?)
+-	"Little Tokyo" orbit camera locks up every ~0.9 rotations briefly; figure out why
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
