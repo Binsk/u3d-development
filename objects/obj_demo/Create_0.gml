@@ -48,6 +48,9 @@ model_count = 0;
 mesh_count = 0;
 primitive_count = 0;
 
+animation_loop = true;
+animation_smooth = true;
+
 gpu_string = "";
 var map = os_get_info();
 if (os_type == os_windows)

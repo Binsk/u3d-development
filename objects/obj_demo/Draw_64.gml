@@ -65,11 +65,11 @@ with (obj_button){
 				if (animation_tree.get_animation_layer_track_name(0) == names[i])
 					animation_tree.delete_animation_layer(0);
 				else{
-					if (animation_tree.get_animation_layer_exists(0))
+					if (animation_tree.get_animation_layer_exists(0) and obj_demo.animation_smooth)
 						animation_tree.queue_animation_layer_transition(0, names[i], 0.25);
 					else{
 						animation_tree.add_animation_layer_auto(0, names[i]);
-						animation_tree.start_animation_layer(0);
+						animation_tree.start_animation_layer(0, obj_demo.animation_loop);
 					}
 				}
 			}

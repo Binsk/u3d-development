@@ -23,6 +23,7 @@ inst.is_model_button = false;
 inst.text = "Exit";
 inst.signaler.add_signal("pressed", new Callable(id, game_end));
 
+	// Global properties:
 body_y = 0; // Used to update floor height
 inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44 - 32, 0, obj_checkbox);
 inst.text = "Render Floor";
@@ -60,6 +61,29 @@ inst.signaler.add_signal("checked", function(is_checked){
 			rotation_last = current_time;
 	}
 });
+
+// Animation properties:
+ax -= 256;
+inst = instance_create_depth(ax, 12, 0, obj_checkbox);
+inst.is_checked = true;
+inst.text = "Loop Animations";
+inst.signaler.add_signal("checked", function(is_checked){
+	obj_demo.animation_loop = is_checked;
+	with (obj_button){
+		if (is_undefined(animation_tree))
+			continue;
+		
+		animation_tree.set_animation_layer_loops(0, is_checked);
+	}
+});
+
+inst = instance_create_depth(ax, 12 + 32, 0, obj_checkbox);
+inst.is_checked = true;
+inst.text = "Smooth Transitions";
+inst.signaler.add_signal("checked", function(is_checked){
+	obj_demo.animation_smooth = is_checked;
+});
+
 // Directional Light:
 var subinst;
 ax = 12;

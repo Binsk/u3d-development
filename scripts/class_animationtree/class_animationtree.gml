@@ -288,6 +288,15 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			start_animation_layer(layer_index);
 	}
 	
+	function set_animation_layer_loops(layer_index, loop=true){
+		layer_index = real(layer_index);
+		var data = animation_layers[$ layer_index];
+		if (is_undefined(data) or data.type != 0)
+			return;
+		
+		data.track_loop = loop;
+	}
+	
 	/// @desc	Interpolates between two sets of TRS data.
 	function interpolate_trs_data(trs_data_a, trs_data_b, lerpvalue){
 		var trs_data = {};
