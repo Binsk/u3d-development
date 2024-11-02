@@ -63,7 +63,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 });
 
 // Animation properties:
-ax -= 256;
+ax -= 256 + 12;
 inst = instance_create_depth(ax, 12, 0, obj_checkbox);
 inst.is_checked = true;
 inst.text = "Loop Animations";
@@ -83,6 +83,41 @@ inst.text = "Smooth Transitions";
 inst.signaler.add_signal("checked", function(is_checked){
 	obj_demo.animation_smooth = is_checked;
 });
+
+inst = instance_create_depth(ax, 12 + 32 + 80, 0, obj_slider);
+inst.text = "Animation Speed: 1x";
+inst.min_value = 0.0;
+inst.max_value = 2.0;
+inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
+	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
+	lerpvalue = floor(lerpvalue * 100) / 100;
+	inst.text = $"Animation Speed: {lerpvalue}x";
+	obj_demo.animation_speed = lerpvalue
+	with (obj_button){
+		if (is_undefined(animation_tree))
+			continue;
+		
+		animation_tree.set_animation_layer_speed(0, lerpvalue);
+	}
+},  [undefined, inst]));
+
+inst = instance_create_depth(ax, 12 + 32 + 80 + 80, 0, obj_slider);
+inst.text = "Update Frequency.: 0.03s";
+inst.min_value = 0.016;
+inst.max_value = 0.2;
+inst.drag_value = 0.033 / (inst.max_value - inst.min_value);
+inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
+	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
+	lerpvalue = floor(lerpvalue * 100) / 100;
+	inst.text = $"Update Frequency: {lerpvalue}s";
+	obj_demo.animation_freq = lerpvalue
+	with (obj_button){
+		if (is_undefined(animation_tree))
+			continue;
+		
+		animation_tree.set_update_freq(obj_demo.animation_freq);
+	}
+},  [undefined, inst]));
 
 // Directional Light:
 var subinst;

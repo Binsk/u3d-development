@@ -18,8 +18,10 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 			body.set_model(model);
 			
-			if (not is_undefined(animation_tree))
+			if (not is_undefined(animation_tree)){
 				body.set_animation(animation_tree);
+				animation_tree.set_update_freq(obj_demo.animation_freq);
+			}
 
 			gltf.free();
 			delete gltf;

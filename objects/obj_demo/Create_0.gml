@@ -50,6 +50,8 @@ primitive_count = 0;
 
 animation_loop = true;
 animation_smooth = true;
+animation_speed = 1.0;
+animation_freq = 0.033;
 
 gpu_string = "";
 var map = os_get_info();
