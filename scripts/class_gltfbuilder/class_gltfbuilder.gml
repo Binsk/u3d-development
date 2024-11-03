@@ -118,7 +118,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (not is_undefined(children)){
 			for (var i = array_length(children) - 1; i >= 0; --i)
 				get_node_list(children[i], state);
-				// array_push(array, get_node_list(children[i], state));
 		}
 
 		return struct_get_names(state);
@@ -627,6 +626,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				node_array = array_flatten(array);
 			}
 		}
+		else{
+			var array = array_create(array_length(node_array));
+			for (var i = array_length(node_array) - 1; i >= 0; --i)
+				array[i] = i;
+			
+			node_array = array;
+		}
 		
 		count = array_length(node_array);
 		
@@ -650,10 +656,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				break;
 			}
 			
-			mesh_struct[$ mesh_id] = {
-				mesh : mesh, 
-				node_id : node_array[i]
-			};
+			mesh_struct[$ mesh_id] = mesh;
 		}
 		
 		if (struct_names_count(mesh_struct) <= 0) // No meshes in the model
@@ -662,7 +665,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (is_invalid){
 			var mesh_array = struct_get_values(mesh_struct);
 			for (var j = array_length(mesh_array) - 1; j >= 0; --j){
-				mesh_array[j].mesh.free();
+				mesh_array[j].free();
 				delete mesh_array[j];
 			}
 			Exception.throw_conditional(string_ext("failed to build model, invalid mesh [{0}].", [i]));
@@ -672,14 +675,18 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		model = new Model();
 		
 		// Generate model-specific meshes + transforms
-		var mesh_keys = struct_get_names(mesh_struct);
-		for (var i = array_length(mesh_keys) - 1; i >= 0; --i){
-			var mesh_id = real(mesh_keys[i]);
-			var matrix = get_node_transform(mesh_struct[$ mesh_id].node_id);
+		// var mesh_keys = struct_get_names(mesh_struct);
+		for (var i = array_length(node_array) - 1; i >= 0; --i){
+			var node = get_structure(node_array[i], "nodes");
+			if (is_undefined(node[$ "mesh"]))
+				continue;
+			
+			var mesh_id = node[$ "mesh"];
+			var matrix = get_node_transform(node_array[i]);
 			if (matrix_is_identity(matrix))
 				matrix = undefined; // Prevents needless multiplications when rendering
 				
-			var mesh = mesh_struct[$ mesh_id].mesh.duplicate();
+			var mesh = mesh_struct[$ mesh_id].duplicate();
 			
 			// If applying transforms directly to vertices, we need to UNDO that for the
 			// mesh transform since each mesh will needs its own special offset.
