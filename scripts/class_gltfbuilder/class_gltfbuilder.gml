@@ -771,15 +771,14 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var bone_id = -1;
 			
 			// Calculate the bone id from the channel node:
-			for (var j = array_length(joint_array) - 1; j >= 0; --j){
-				if (joint_array[j] == channel.target.node){
-					bone_id = j;
-					break;
-				}
-			}
+			bone_id = array_get_index(joint_array, channel.target.node);
 			
+			// If the bone_id is not found then it is likely pointing to a node that ISN'T a bone.
+			// This could be a mesh or anything else (which we don't support).
 			if (bone_id < 0){
-				Exception.throw_conditional($"invalid bone id [{bone_id}], no node id match [{channel.target.node}]!");
+/// @todo (?)	Implement caching these node IDs and determine which mesh they may attach to (can be ancestrial)
+///				to provide a way to attach the mesh to the animation tree?
+				print_traced("WARNING", $"invalid channel node id [{channel.target.node}]; animation pointing to mesh instead of bone?");
 				continue;
 			}
 			
