@@ -347,43 +347,9 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	
 	/// @desc	Merges two sets of TRS data evenly so they affect each-other.
 	function merge_trs_data(trs_data_a, trs_data_b){
-/// @stub	Implement properly
+/// @stub	Implement properly. It should take data_b and add in bone data
+///			that doesn't exist in data_a
 		return trs_data_a;
-		// var trs_data = {};
-		
-		// var keys_a = struct_get_names(trs_data_a);
-		// var keys_b = struct_get_names(trs_data_b);
-		// // Loop first set:
-		// for (var i = array_length(keys_a) - 1; i >= 0; --i){
-		// 	var value_from = trs_data_a[$ keys_a[i]];
-		// 	var value_to = trs_data_b[$ keys_a[i]];
-		// 	if (is_undefined(value_to))
-		// 		trs_data[$ keys_a[i]] = value_from;
-		// 	else {
-		// 		trs_data[$ keys_a[i]] = {
-		// 			position : vec_add_vec(value_from.position, value_to.position),
-		// 			rotation : quat_mul_quat(value_from.rotation, value_to.rotation),
-		// 			scale : vec_mul_vec(value_from.scale, value_to.scale)
-		// 		}
-		// 	}
-		// }
-		
-		// // Loop second set in case first set is missing some:
-		// for (var i = array_length(keys_b) - 1; i >= 0; --i){
-		// 	var value_from = trs_data_a[$ keys_b[i]];
-		// 	var value_to = trs_data_b[$ keys_b[i]];
-		// 	if (is_undefined(value_from))
-		// 		trs_data[$ keys_a[i]] = value_to;
-		// 	else {
-		// 		trs_data[$ keys_a[i]] = {
-		// 			position : vec_add_vec(value_from.position, value_to.position),
-		// 			rotation : quat_mul_quat(value_from.rotation, value_to.rotation),
-		// 			scale : vec_mul_vec(value_from.scale, value_to.scale)
-		// 		}
-		// 	}
-		// }
-		
-		// return trs_data;
 	}
 	
 	function process(){

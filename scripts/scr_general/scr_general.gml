@@ -67,3 +67,15 @@ function get_ref_instance_count(type=U3DObject){
 	
 	return count;
 }
+
+function struct_get_values(struct){
+	if (not is_struct(struct))
+		return [];
+	
+	var keys = struct_get_names(struct);
+	var array = array_create(array_length(keys), undefined);
+	for (var i = array_length(keys) - 1; i >= 0; --i)
+		array[i] = struct[$ keys[i]];
+	
+	return array;
+}

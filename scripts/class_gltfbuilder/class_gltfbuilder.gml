@@ -102,6 +102,28 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return array_length(json_header[$ "skins"]);
 	}
 	
+	/// @desc	Given a node ID, generates an array of node IDs attached to it
+	///			including itself. If the node is invalid and empty array is returned.
+	function get_node_list(node_id, state={}){
+		var node = get_structure(node_id, "nodes");
+		if (is_undefined(node))
+			return [];
+		
+		if (not is_undefined(state[$ node_id]))
+			return [];
+			
+		state[$ node_id] = true;
+		
+		var children = node[$ "children"];
+		if (not is_undefined(children)){
+			for (var i = array_length(children) - 1; i >= 0; --i)
+				get_node_list(children[i], state);
+				// array_push(array, get_node_list(children[i], state));
+		}
+
+		return struct_get_names(state);
+	}
+	
 	/// @desc	Generates an array of spatial materials. Note that the materials
 	///			will have dynamically-generated textures attached! Textures are re-used
 	///			across generations to save memory, however materials are newly generated
@@ -571,11 +593,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			once all generated Model() instances are freed. 
 	///	@note	If possible, make sure your models are exported with all transforms applied!
 	///			Manually applying them upon load is slow but may be necessary for duplicated meshes.
-	/// @note	Scenes are not regarded at this time, ALL nodes will be added to the model!
+	/// @note	If an invalid scene is defined then EVERY MESH will be added to the model!
+	///	@param	{int}			scene=-1		Which scene from the model to generate a model from (-1 all meshes, regardless of scene)
 	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
 	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives
 	/// @param	{VertexFormat}	vformat=auto	VertexFormat to generate with, will attempt to fill missing data
-	function generate_model(generate_materials=true, apply_transforms=true, format=undefined){
+	function generate_model(scene=-1, generate_materials=true, apply_transforms=true, format=undefined){
 /// @stub	Implement support for custom formats (requires dynamic shader attributes on Windows)
 		if (not is_undefined(format))
 			throw new Exception("custom formats not yet supported!");
@@ -590,28 +613,56 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		set_data(["model_data", "minimum"], undefined);
 		set_data(["model_data", "maximum"], undefined);
-		var count = get_mesh_count();
-		if (count <= 0)
-			return undefined;
 		
-		// Generate all the meshes defined in the file:
-		var mesh_array = array_create(count, undefined);
+		// Determine which nodes are in our scene:
+		var node_array = (json_header[$ "nodes"] ?? []);
+		var scene_data = get_structure(scene, "scenes");
+		if (not is_undefined(scene_data)){
+			if (not is_undefined(scene_data[$ "nodes"])){
+				var narray = scene_data[$ "nodes"];
+				var array = [];
+				for (var i = array_length(narray) - 1; i >= 0; --i)
+					array_push(array, get_node_list(narray[i]));
+				
+				node_array = array_flatten(array);
+			}
+		}
+		
+		count = array_length(node_array);
+		
+		// Add meshes based off of the nodes in the scene	
+		var mesh_struct = {};
 		var is_invalid = false;
 		var i;
-		for (i = 0; i < count; ++i){
-/// @stub	Determine proper format automatically if unspecified
-			var mesh = generate_mesh(i, format, apply_transforms);
+		for (var i = 0; i < count; ++i){
+			var node = json_header[$ "nodes"][node_array[i]];
+			if (is_undefined(node[$ "mesh"])) // Not a mesh node
+				continue;
+			
+			var mesh_id = node[$ "mesh"];
+			if (not is_undefined(mesh_struct[$ mesh_id])) // Already defined
+				continue;
+			
+/// @stub	Determine the format correctly per-mesh
+			var mesh = generate_mesh(mesh_id, format, apply_transforms);
 			if (is_undefined(mesh)){
 				is_invalid = true;
 				break;
 			}
 			
-			mesh_array[i] = mesh;
+			mesh_struct[$ mesh_id] = {
+				mesh : mesh, 
+				node_id : node_array[i]
+			};
 		}
 		
+		if (struct_names_count(mesh_struct) <= 0) // No meshes in the model
+			return undefined;
+		
 		if (is_invalid){
-			for (var j = 0; j < i; ++j){
-				mesh_array[j].free();
+			var mesh_array = struct_get_values(mesh_struct);
+			for (var j = array_length(mesh_array) - 1; j >= 0; --j){
+				mesh_array[j].mesh.free();
 				delete mesh_array[j];
 			}
 			Exception.throw_conditional(string_ext("failed to build model, invalid mesh [{0}].", [i]));
@@ -620,22 +671,15 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		model = new Model();
 		
-		// Add meshes, but ONLY those as define in the nodes as they can specify
-		// mesh duplicates and position / rotation offsets!
-		var node_array = (json_header[$ "nodes"] ?? []);
-		count = array_length(node_array);
-		
-		for (var i = 0; i < count; ++i){
-			var node = node_array[i];
-			var mesh_id = node[$ "mesh"];
-			if (is_undefined(mesh_id)) // Not a mesh node; skip
-				continue;
-
-			var matrix = get_node_transform(i);
+		// Generate model-specific meshes + transforms
+		var mesh_keys = struct_get_names(mesh_struct);
+		for (var i = array_length(mesh_keys) - 1; i >= 0; --i){
+			var mesh_id = real(mesh_keys[i]);
+			var matrix = get_node_transform(mesh_struct[$ mesh_id].node_id);
 			if (matrix_is_identity(matrix))
 				matrix = undefined; // Prevents needless multiplications when rendering
 				
-			var mesh = mesh_array[mesh_id].duplicate();
+			var mesh = mesh_struct[$ mesh_id].mesh.duplicate();
 			
 			// If applying transforms directly to vertices, we need to UNDO that for the
 			// mesh transform since each mesh will needs its own special offset.

@@ -67,3 +67,13 @@ your instance to start counting references by calling the local function
 `set_unique_hash()`. After calling this function, any instance you attach it to
 will start tracking references and the instance will be auto-freed once all
 references are destroyed.
+
+# Macros / Globals
+There are a number of macros and global properties that can be referenced
+throughout the system. A number of them, specifically the `U3D` global
+struct, can be found in `scr_u3d_init`.
+
+Most global settings, however, are defined as static variables inside of
+the relevant class. As an example, if you wish to enable wireframe mesh
+generation for debugging then you must toggle it through the class `Primitive`
+via `Primitive.GENERATE_WIREFRAMES=true`. 

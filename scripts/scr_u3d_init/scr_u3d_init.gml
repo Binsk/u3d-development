@@ -37,7 +37,7 @@ texturegroup_load("U3DDefaults", true);
 
 // This structure holds a number of defaults and fallback values. The system 
 // relies on this structure but it can also be accessed / modified manually if
-// needed.
+// needed through the U3D macro.
 global.__u3d_global_data = {
 	RENDERING : {
 		MATERIAL : {
