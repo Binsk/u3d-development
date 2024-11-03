@@ -50,9 +50,15 @@ function Mesh() : U3DObject() constructor {
 	function render_primitive(index){
 		if (index < 0 or index >= array_length(primitive_array))
 			return;
-			
 		var primitive = primitive_array[index];
-		vertex_submit(primitive.primitive.vbuffer, pr_trianglelist, -1);
+		if (Camera.ACTIVE_INSTANCE.debug_flags & CAMERA_DEBUG_FLAG.render_wireframe){
+			if (is_undefined(primitive.primitive.vbuffer_wireframe))
+				vertex_submit(primitive.primitive.vbuffer, pr_linelist, -1); // Fake wireframe, but better than nothing
+			else
+				vertex_submit(primitive.primitive.vbuffer_wireframe, pr_linelist, -1);
+		}
+		else
+			vertex_submit(primitive.primitive.vbuffer, pr_trianglelist, -1);
 	}
 	
 	/// @desc	Renders out each primitive, applying the specified materials 

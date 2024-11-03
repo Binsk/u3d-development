@@ -10,6 +10,7 @@ global.mouse = {
 }
 cursor = cr_arrow;
 #macro gmouse global.mouse
+Primitive.GENERATE_WIREFRAMES = true;
 
 camera = new CameraView();
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
@@ -36,7 +37,7 @@ light_ambient.ssao_strength = 4.0;
 light_ambient.ssao_radius = 2.0;
 obj_render_controller.add_light(light_ambient);
 
-light_directional = new LightDirectional(quat(), vec(-50 * 0.25, 60 * 0.25, -70 * 0.25));
+light_directional = new LightDirectional(quat(), vec(50 * 0.25, 60 * 0.25, 70 * 0.25));
 light_directional.look_at(vec());
 
 camera.set_position(vec(distance * dcos(25), distance * 0.5, distance * dsin(25)));

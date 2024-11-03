@@ -12,8 +12,10 @@
 /// 									   will be used in the Primitive.
 function Primitive(vformat) : U3DObject() constructor {
 	#region PROPERTIES
+	static GENERATE_WIREFRAMES = debug_mode;	// If set to true, primitives will also generate a debugging wireframe
 	self.vformat = vformat;
 	self.vbuffer = undefined;
+	self.vbuffer_wireframe = undefined;	// Optionally defined
 	is_frozen = false;
 	#endregion
 
@@ -196,6 +198,11 @@ function Primitive(vformat) : U3DObject() constructor {
 		if (not is_undefined(vbuffer))
 			vertex_delete_buffer(vbuffer);
 		
+		if (not is_undefined(vbuffer_wireframe)){
+			vertex_delete_buffer(vbuffer_wireframe);
+			vbuffer_wireframe = undefined;
+		}
+		
 		var format_components = array_length(vformat.vformat_array);
 		vbuffer = vertex_create_buffer_ext(vformat.get_byte_count() * vertex_count);
 		vertex_begin(vbuffer, vformat.vformat);
@@ -228,6 +235,43 @@ function Primitive(vformat) : U3DObject() constructor {
 		}
 		vertex_end(vbuffer);
 		
+		// If wireframe generation is enabled, create a special wireframe vertex buffer for debugging:
+		if (GENERATE_WIREFRAMES){
+			vbuffer_wireframe = vertex_create_buffer_ext(vformat.get_byte_count() * vertex_count * 2);
+			vertex_begin(vbuffer_wireframe, vformat.vformat);
+			for (var i = 0; i < vertex_count; ++i){
+				var imod = (i % 3);
+				for (var k = 0; k < 2; ++k){
+					for (var j = 0; j < format_components; ++j){
+						var format = vformat.vformat_array[j];
+						var data = definition_data[$ format][k == 0 ? i : (imod == 2 ? i - 2 : i + 1)];
+						switch (format){
+							case VERTEX_DATA.position:
+								vertex_position_3d(vbuffer_wireframe, data[0], data[1], data[2]);
+								break;
+							case VERTEX_DATA.color:
+								vertex_color(vbuffer_wireframe, data[0], data[1]);
+								break;
+							case VERTEX_DATA.texture:
+								vertex_texcoord(vbuffer_wireframe, data[0], data[1]);
+								break;
+							case VERTEX_DATA.normal:
+								vertex_normal(vbuffer_wireframe, data[0], data[1], data[2]);
+								break;
+							case VERTEX_DATA.tangent:
+								vertex_float3(vbuffer_wireframe, data[0], data[1], data[2]);
+								break;
+							case VERTEX_DATA.bone_indices:
+							case VERTEX_DATA.bone_weights:
+								vertex_float4(vbuffer_wireframe, data[0], data[1], data[2], data[3]);
+								break;
+						}
+					}
+				}
+			}
+			vertex_end(vbuffer_wireframe);
+		}
+		
 		// Remove temporary structure:
 		struct_remove(self, "definition_data");
 	}
@@ -245,6 +289,9 @@ function Primitive(vformat) : U3DObject() constructor {
 		if (is_frozen)
 			return true;
 		
+		if (not is_undefined(vbuffer_wireframe))
+			vertex_freeze(vbuffer_wireframe);
+		
 		is_frozen = true;
 		return (vertex_freeze(vbuffer) >= 0);
 	}
@@ -256,6 +303,11 @@ function Primitive(vformat) : U3DObject() constructor {
 		if (not is_undefined(vbuffer)){
 			vertex_delete_buffer(vbuffer);
 			vbuffer = undefined;
+		}
+		
+		if (not is_undefined(vbuffer_wireframe)){
+			vertex_delete_buffer(vbuffer_wireframe);
+			vbuffer_wireframe = undefined;
 		}
 	}
 	#endregion

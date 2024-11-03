@@ -33,7 +33,7 @@ inst.text_tooltip = "Renders a wooden floor at the base of the model.";
 inst.signaler.add_signal("checked", function(is_checked){
 	if (is_checked){
 		if (is_undefined(body)){
-			var gltf = new GLTFBuilder("demo-floor.glb", "test-models");
+			var gltf = new GLTFBuilder("demo-floor.glb");
 			var model = gltf.generate_model();
 			model.freeze();
 			body = new Body();
@@ -84,6 +84,14 @@ inst.signaler.add_signal("checked", function(is_checked){
 	with (obj_demo){
 		apply_transforms = is_checked;
 	}
+});
+
+inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44 - 128 - 32, 0, obj_checkbox);
+inst.text = "Render Wireframe";
+inst.text_tooltip = "Whether or not the model should render as a wireframe.\n\nNote: Wireframes are for debugging only as they are slow to render and require a separate vertex buffer to be generated upon model load.";
+inst.is_checked = false;
+inst.signaler.add_signal("checked", function(is_checked){
+	obj_demo.camera.debug_flags = is_checked;
 });
 
 

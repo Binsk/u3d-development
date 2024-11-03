@@ -18,6 +18,10 @@ foo = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.tex
 foo.free();
 delete foo;
 
+foo = new Primitive(VertexFormat.get_format_instance([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]));
+foo.free();
+delete foo;
+
 foo = new AnimationChannelPosition(-1);
 foo.free();
 delete foo;

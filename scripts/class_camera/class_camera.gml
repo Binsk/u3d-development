@@ -42,8 +42,15 @@ enum CAMERA_TONEMAP {
 	simple,	// Does a simple gamma correction w/o any special exposure calculations
 }
 
+/// @desc	Bitwiseable flags to apply to a camera for debugging purposes.
+enum CAMERA_DEBUG_FLAG {
+	render_wireframe	=	0b1	// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
+}
+
 function Camera() : Node() constructor {
 	#region PROPERTIES
+	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance
+	
 	buffer_width = undefined;	// Render resolution
 	buffer_height = undefined;
 	gbuffer = {
@@ -54,6 +61,7 @@ function Camera() : Node() constructor {
 	render_tonemap = CAMERA_TONEMAP.none;
 	/// @stub	Add post-processing structure & addition / removal / render to camera
 	post_process_effects = {};	// priority -> effect pairs for post processing effects
+	debug_flags = 0;		// CAMERA_DEBUG_FLAGS toggles
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_opaque = -1;
@@ -485,6 +493,7 @@ function Camera() : Node() constructor {
 		if (not U3DObject.are_equal(eye.get_camera(), self))
 			throw new Exception("eye does not belong to rendering camera!");
 		
+		Camera.ACTIVE_INSTANCE = self;
 		// Make sure the GBuffer exists and is valid
 		generate_gbuffer();
 		
@@ -502,6 +511,7 @@ function Camera() : Node() constructor {
 		
 		// Post-processing:
 		render_post_processing();
+		Camera.ACTIVE_INSTANCE = undefined;
 	}
 	
 	/// @desc	Should execute a render_eye for every eye and combine results
