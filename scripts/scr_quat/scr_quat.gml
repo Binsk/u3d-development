@@ -237,3 +237,7 @@ function quat_slerp(q1, q2, time){
 	
 	return quat_normalize(q);
 }
+
+function quat_duplicate(quaternion){
+	return quat(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+}

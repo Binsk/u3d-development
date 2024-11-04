@@ -23,6 +23,7 @@ varying vec4 v_vColor;
 varying vec4 v_vPosition;
 varying mat3 v_mRotation;
 
+
 void main()
 {
     vec4 vPosition = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);

@@ -3,6 +3,11 @@ global.mouse = {
 	y : device_mouse_y_to_gui(0)
 }
 
+if (mouse_wheel_up())
+	distance = max(distance - 1, 1);
+else if (mouse_wheel_down())
+	distance = min(distance + 1, 128);
+
 if (rotate_camera)
 	camera.set_position(vec(distance * cos((current_time - rotation_offset) / 2000), distance * 0.5, distance * -sin((current_time - rotation_offset) / 2000)));
 	

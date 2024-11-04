@@ -284,6 +284,11 @@ function matrix_multiply_post(){
 	return result;
 }
 
+function matrix_multiply_vec(matrix, vector, w=0){
+	var array = matrix_transform_vertex(matrix, vector.x, vector.y, vector.z, w);
+	return vec(array[0], array[1], array[2]);
+}
+
 /// @desc	Converts a 4x4 GameMaker matrix into a 3x3 matrix, used to pass in
 ///			to a shader.
 function matrix_to_matrix3(matrix){

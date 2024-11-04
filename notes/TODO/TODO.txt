@@ -28,3 +28,9 @@
 -	Add support for glTF scenes! Meshes are defined / specified in nodes and
 	scenes can specify a sub-set of nodes. Simply allow generating a model based
 	off of a scene index to allow storing multiple 'models' in one file.
+
+-	Add support for attaching bone indices to meshes.
+-	Add support for attaching bodies to animation trees
+-	Finish implementing animation layer merging & create an example track that makes
+	the character move her head up and down through code.
+-	Switch skeletal to quat+position pairs: https://www.khronos.org/opengl/wiki/Skeletal_Animation

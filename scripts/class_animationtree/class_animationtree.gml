@@ -10,6 +10,8 @@
 /// directly from this class requires a full re-calculation of all animation
 /// tracks that are active.
 
+/// @signals
+
 /// @param	{real}	update_freq=0.033		how frequently the animation should be re-calculated (in seconds); defaults to 30fps
 function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	#region PROPERTIES
@@ -19,9 +21,6 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	update_last = current_time * 0.001 - update_freq;
 	transform_data = U3D.RENDERING.ANIMATION.skeleton_missing;	// Last cached transform data
 	animation_layers = {};
-	
-/// @stub	Track to use until we add the layer system
-	test_track = "";
 	#endregion
 	
 	#region METHODS
@@ -73,7 +72,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		return count;
 	}
 	
-	/// @desc	Returns an array of root IDs (there can be > 1)
+	/// @desc	Returns an array of root IDs (usually just 1, but sometimes > 1)
 	function get_root_bone_ids(){
 		var bone_count = get_max_bone_count();
 		var root_array = [];
@@ -87,6 +86,32 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		
 		return root_array;
+	}
+	
+	/// @desc	Returns an array of bone names. If a bone does not have a name it will
+	///			be added as "bone_<id>"
+	function get_bone_names(){
+		var bone_array = struct_get_values(skeleton);
+		var array = array_create(array_length(bone_array));
+		for (var i = array_length(bone_array) - 1; i >= 0; --i){
+			if (is_undefined(bone_array[i].name))
+				array[i] = $"bone_{i}";
+			else
+				array[i] = bone_array[i].name;
+		}
+		
+		return array;
+	}
+	
+	/// @desc	Given a bone name, returns the bone index or -1 if no match is found.
+	function get_bone_id(name){
+		var keys = struct_get_names(skeleton);
+		for (var i = array_length(keys) - 1; i >= 0; --i){
+			var bone = skeleton[$ keys[i]];
+			if ((bone.name ?? $"bone_{i}") == name)
+				return i;
+		}
+		return -1;
 	}
 	
 	/// @desc	Returns a cached transform array.
@@ -167,9 +192,12 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		
 		// Apply inverse matrices:
 		for (var i = array_length(keys) - 1; i >= 0; --i){
-			var matrix = matrix_data[$ keys[i]];
-			var matrix_inv = skeleton[$ keys[i]].matrix_inv;
-			matrix_data[$ keys[i]] = matrix_multiply(matrix_inv, matrix);
+			var bone_id = keys[i];
+			var matrix = matrix_data[$ bone_id];
+			var matrix_inv = skeleton[$ bone_id].matrix_inv;
+
+			matrix = matrix_multiply(matrix_inv, matrix);
+			matrix_data[$ bone_id] = matrix;
 		}
 		
 		// Write data into final array:

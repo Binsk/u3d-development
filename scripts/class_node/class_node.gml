@@ -2,7 +2,7 @@
 /// Represents a basic 'physical' point in 3D space with a position, rotation,
 /// and scale.
 
-/// SIGNALS
+/// @signals
 ///		"set_position"  (from, to)		-	thrown when the position has been modified
 ///		"set_rotation"  (from, to)		-	thrown when the rotation has been modified
 ///		"set_scale" 	(from, to)		-	thrown when the scale has been modified
@@ -77,6 +77,18 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	///			where each bit represents a layer index.
 	function set_render_layers(bits){
 		render_layer_bits = bits;
+	}
+	
+	function get_position(){
+		return vec_duplicate(position);
+	}
+
+	function get_rotation(){
+		return quat_duplicate(rotation);
+	}
+	
+	function get_scale(){
+		return vec_duplicate(scale);
 	}
 	
 	/// @desc	Adds this instance to the specified render layer(s)
@@ -157,8 +169,8 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		return quat_rotate_vec(rotation, vec(0, 0, 1));
 	}
 	
-	function get_model_matrix(){
-		if (not is_undefined(matrix_model))
+	function get_model_matrix(force_update=false){
+		if (not is_undefined(matrix_model) and not force_update)
 			return matrix_model;
 			
 		matrix_model = matrix_multiply_post(
@@ -169,8 +181,8 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		return matrix_model;
 	}
 	
-	function get_inv_model_matrix(){
-		if (not is_undefined(matrix_inv_model))
+	function get_inv_model_matrix(force_update=false){
+		if (not is_undefined(matrix_inv_model) and not force_update)
 			return matrix_inv_model;
 		
 		matrix_inv_model = matrix_get_inverse(get_model_matrix());

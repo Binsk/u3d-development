@@ -10,7 +10,7 @@
 /// data outside of the generated scope then you can increase the reference number while 
 /// using it and then decrease it once done to let the system free it up when appropriate.
 
-/// SIGNALS
+/// @signals
 ///		"free" ()		-	Thrown when 'free' is called, by the user or the system
 ///		"cleanup" ()	-	Thrown when an instance is being freed automatically due to reference loss
 

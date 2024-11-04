@@ -889,9 +889,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 			
 			skeleton[$ i] = {
-				parent_id : -1,
-				child_id_array : child_array,
-				matrix_inv : matrix_inv_array[i]
+				parent_id : -1,						// Parent bone index (calculated below)
+				child_id_array : child_array,		// Array of bone indices
+				matrix_inv : matrix_inv_array[i],	// Inverse matrix to transform to world
+				name : node[$ "name"]				// String name of bone (optional)
 			}
 		}
 		
