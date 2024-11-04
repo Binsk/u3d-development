@@ -33,4 +33,8 @@
 -	Add support for attaching bodies to animation trees
 -	Finish implementing animation layer merging & create an example track that makes
 	the character move her head up and down through code.
--	Switch skeletal to quat+position pairs: https://www.khronos.org/opengl/wiki/Skeletal_Animation
+-	Implement dual-quaternion skinning, both for better animation transforms and
+	less bandwidth to the GPU.
+	https://rodolphe-vaillant.fr/entry/29/dual-quaternions-skinning-tutorial-and-c-codes
+	This is mostly a skinning method, so just doing a quat+offset pair could also work
+	for bandwidth reasons, but it would still be linear.

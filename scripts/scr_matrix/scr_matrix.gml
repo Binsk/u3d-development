@@ -169,26 +169,25 @@ function matrix_get_inverse(matrix) {
 /// @desc	Calculate the determinant of the specified matrix.
 function matrix_get_determinant(matrix) {
 	var determinant = 0;
+	var a11 = matrix[0],
+    a12 = matrix[1],
+    a13 = matrix[2],
+    a14 = matrix[3],
 
-		var a11 = matrix[0],
-	    a12 = matrix[1],
-	    a13 = matrix[2],
-	    a14 = matrix[3],
-    
-	    a21 = matrix[4],
-	    a22 = matrix[5],
-	    a23 = matrix[6],
-	    a24 = matrix[7],
-    
-	    a31 = matrix[8],
-	    a32 = matrix[9],
-	    a33 = matrix[10],
-	    a34 = matrix[11],
-    
-	    a41 = matrix[12],
-	    a42 = matrix[13],
-	    a43 = matrix[14],
-	    a44 = matrix[15];
+    a21 = matrix[4],
+    a22 = matrix[5],
+    a23 = matrix[6],
+    a24 = matrix[7],
+
+    a31 = matrix[8],
+    a32 = matrix[9],
+    a33 = matrix[10],
+    a34 = matrix[11],
+
+    a41 = matrix[12],
+    a42 = matrix[13],
+    a43 = matrix[14],
+    a44 = matrix[15];
 
 	determinant =	a11 * a22 * a33 * a44 +
 					a11 * a23 * a34 * a42 +
@@ -233,42 +232,42 @@ function matrix_get_transpose(matrix){
 		   matrix[3], matrix[7], matrix[11], matrix[15]];
 }
 
-function matrix_build_scale(xs, ys, zs){
+/// @desc	Given a scaling vector, builds a scaling matrix
+function matrix_build_scale(s){
 	var matrix = matrix_build_identity();
-	matrix[0] = xs;
-	matrix[5] = ys;
-	matrix[10] = zs;
+	matrix[0] = s.x;
+	matrix[5] = s.y;
+	matrix[10] = s.z;
 	return matrix;
 }
 
-function matrix_build_translation(tx, ty, tz){
+/// @desc	Given a positional vector, builds a translation matrix.
+function matrix_build_translation(t){
 	var matrix = matrix_build_identity();
-	matrix[12] = tx;
-	matrix[13] = ty;
-	matrix[14] = tz;
+	matrix[12] = t.x;
+	matrix[13] = t.y;
+	matrix[14] = t.z;
 	return matrix;
 }
 
-function matrix_build_quat(qx, qy, qz, qw){
-	var quat = array_normalize([qx, qy, qz, qw]);
-	qx = quat[0];
-	qy = quat[1];
-	qz = quat[2];
-	qw = quat[3];
+/// @desc	Given a normalized quaternion, generates a rotational matrix.
+///			A scaled quaternion will NOT convert correctly.
+function matrix_build_quat(q){
+	q = quat_normalize(q);
 	
 	var matrix = matrix_build_identity();
 	
-	matrix[0] = 1 - 2 * (sqr(qy) + sqr(qz));
-	matrix[1] = 2 * (qx * qy + qz * qw);
-	matrix[2] = 2 * (qx * qz - qy * qw);
+	matrix[0] = 1 - 2 * (sqr(q.y) + sqr(q.z));
+	matrix[1] = 2 * (q.x * q.y + q.z * q.w);
+	matrix[2] = 2 * (q.x * q.z - q.y * q.w);
 	
-	matrix[4] = 2 * (qx * qy - qz * qw);
-	matrix[5] = 1 - 2 * (sqr(qx) + sqr(qz));
-	matrix[6] = 2 * (qy * qz + qx * qw);
+	matrix[4] = 2 * (q.x * q.y - q.z * q.w);
+	matrix[5] = 1 - 2 * (sqr(q.x) + sqr(q.z));
+	matrix[6] = 2 * (q.y * q.z + q.x * q.w);
 	
-	matrix[8] = 2 * (qx * qz + qy * qw);
-	matrix[9] = 2 * (qy * qz - qx * qw);
-	matrix[10] = 1 - 2 * (sqr(qx) + sqr(qy));
+	matrix[8] = 2 * (q.x * q.z + q.y * q.w);
+	matrix[9] = 2 * (q.y * q.z - q.x * q.w);
+	matrix[10] = 1 - 2 * (sqr(q.x) + sqr(q.y));
 	
 	return matrix;
 }
@@ -284,6 +283,7 @@ function matrix_multiply_post(){
 	return result;
 }
 
+/// @desc	Multiplies a vector against a GameMaker matrix
 function matrix_multiply_vec(matrix, vector, w=0){
 	var array = matrix_transform_vertex(matrix, vector.x, vector.y, vector.z, w);
 	return vec(array[0], array[1], array[2]);
@@ -297,6 +297,25 @@ function matrix_to_matrix3(matrix){
 		matrix[4], matrix[5], matrix[6],
 		matrix[8], matrix[9], matrix[10]
 	];
+}
+
+/// @desc	Takes a GameMaker matrix and returns a quaternion that applies the
+///			rotation and scale. The matrix must have an equal scale across all
+///			axes.
+function matrix_to_quat(matrix){
+	var det = power(matrix_get_determinant(matrix), 1/3);
+	var quaternion = quat(
+		-sqrt(max(0, det + matrix[0] - matrix[5] - matrix[10])) * 0.5,
+		-sqrt(max(0, det - matrix[0] + matrix[5] - matrix[10])) * 0.5,
+		-sqrt(max(0, det - matrix[0] - matrix[5] + matrix[10])) * 0.5,
+		-sqrt(max(0, det + matrix[0] + matrix[5] + matrix[10])) * 0.5
+	);
+	
+	quaternion.x = abs(quaternion.x) * sign(matrix[9] - matrix[6]);
+	quaternion.y = abs(quaternion.y) * sign(matrix[2] - matrix[8]);
+	quaternion.z = abs(quaternion.z) * sign(matrix[4] - matrix[1]);
+	
+	return quaternion;
 }
 
 function matrix_is_identity(matrix){

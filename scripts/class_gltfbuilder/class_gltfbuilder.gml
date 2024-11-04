@@ -30,9 +30,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var rotation = (node[$ "rotation"] ?? [0, 0, 0, 1]);
 			var scale = (node[$ "scale"] ?? [1, 1, 1]);
 
-			var T = matrix_build_translation(translation[0], translation[1], translation[2]);
-			var R = matrix_build_quat(rotation[0], rotation[1], rotation[2], rotation[3]);
-			var S = matrix_build_scale(scale[0], scale[1], scale[2]);
+			var T = matrix_build_translation(vec(translation[0], translation[1], translation[2]));
+			var R = matrix_build_quat(quat(rotation[0], rotation[1], rotation[2], rotation[3]));
+			var S = matrix_build_scale(vec(scale[0], scale[1], scale[2]));
 
 			transform = matrix_multiply_post(T, R, S);
 		}

@@ -155,9 +155,9 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		var matrix_data = {};
 		for (var i = array_length(keys) - 1; i >= 0; --i){
 			var data = trs_data[$ keys[i]];
-			var matrix_t = matrix_build_translation(data.position.x, data.position.y, data.position.z);
-			var matrix_r = matrix_build_quat(data.rotation.x, data.rotation.y, data.rotation.z, data.rotation.w);
-			var matrix_s = matrix_build_scale(data.scale.x, data.scale.y, data.scale.z);
+			var matrix_t = matrix_build_translation(data.position);
+			var matrix_r = matrix_build_quat(data.rotation);
+			var matrix_s = matrix_build_scale(data.scale);
 			var matrix = matrix_multiply_post(matrix_t, matrix_r, matrix_s);
 			matrix_data[$ keys[i]] = matrix;
 		}
