@@ -4,7 +4,7 @@ function matrix_get_inverse(matrix) {
 	var determinant = matrix_get_determinant(matrix);
 	
 	if (determinant == 0){
-		Exception.throw_conditional("Failed to calculate inverse matrix. Determinant = 0!");
+		Exception.throw_conditional("failed to calculate inverse matrix, determinant=0!");
 		return matrix;
 	}
 
