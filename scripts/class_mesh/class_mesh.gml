@@ -78,7 +78,7 @@ function Mesh() : U3DObject() constructor {
 /// @stub	Optimize it prevent re-sending data
 			if (primitive_array[i].has_bones){
 				uniform_set("u_mBone", shader_set_uniform_matrix_array, [data.skeleton]);
-				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > 64]);
+				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > U3D_MAXIMUM_BONES]);
 			}
 				
 			render_primitive(i);
@@ -100,7 +100,7 @@ function Mesh() : U3DObject() constructor {
 /// @stub	Optimize it prevent re-sending data
 			if (primitive_array[i].has_bones){
 				uniform_set("u_mBone", shader_set_uniform_matrix_array, [data.skeleton]);
-				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > 64]);
+				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > U3D_MAXIMUM_BONES]);
 			}
 			
 			render_primitive(i);

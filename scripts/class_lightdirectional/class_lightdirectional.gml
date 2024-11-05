@@ -147,6 +147,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 				skeleton : U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos,
 				skeleton_bone_count : U3D_MAXIMUM_BONES * 2 // Only defines that we are using quatvec pairs
 			}
+			
 			if (not is_undefined(body.animation_instance)){
 				data.skeleton = body.animation_instance.get_transform_array();
 				data.skeleton_bone_count = struct_names_count(body.animation_instance.skeleton);

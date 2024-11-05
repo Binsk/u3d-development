@@ -43,11 +43,18 @@ such as Blender and it will be unable to load correctly in U3D!
 
 ## Maximum Bones
 Because GameMaker is using exceptionally old shader versions we
-don't have access to a number of large-data buffers. Bones must
-all be passed in via mat4[] uniforms which limits us to around
-64 bones (specific hardware may allow more / less).
+don't have access to a number of large-data buffers in the vertex shader. 
+Bones must all be passed in via mat4[] uniforms which limits the number of
+bones that can be sent.
 
-The system can support up to 128 bones if bones have uniform scaling
-in their animation channels and the system will automatically
-enforce this if the character has > 64 bones. Best practice is just to
-not have non-uniform scaling with your bones for now.
+At the moment, the system is limited to 64 full-feature bones on DirectX
+platforms and 80 on OpenGL. These values were taken from my own personal
+machine on my integrated card at roughly the amount where there were too
+many components to run the shader correctly. Different hardware will have
+different limitations.
+
+The maximum partial-feature bones are 128 on DirectX platforms and 160 on
+OpenGL platforms. If your skeleton has more bones than the lower cap then
+they will be sent to the shader as quaternion+position pairs instead of 4x4
+matrices; however this requires that all bones have uniform scales across all
+axes. 

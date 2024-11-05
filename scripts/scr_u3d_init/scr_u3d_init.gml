@@ -36,8 +36,8 @@ texturegroup_load("U3DDefaults", true);
 #endregion
 
 /// Maxmum bones we can safely support (this matches w/ the spatial shader bone counts).
-/// If the model has > U3D_MAXIMUM_BONES bones, then a simplified quat+pos pair is used
-#macro U3D_MAXIMUM_BONES 64
+/// If the model has > U3D_MAXIMUM_BONES bones, then a simplified quat+pos pair is used.
+#macro U3D_MAXIMUM_BONES (get_is_directx_pipeline() ? 64 : 80)
 
 // This structure holds a number of defaults and fallback values. The system 
 // relies on this structure but it can also be accessed / modified manually if

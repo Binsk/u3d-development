@@ -6,7 +6,7 @@ attribute vec3 in_TextureCoord1;	// Tangent
 attribute vec4 in_TextureCoord2;    // Bone IDs
 attribute vec4 in_TextureCoord3;    // Bone weights
 
-const int c_iMaxBones = 64;     // Note: Count is doubled if scaling is disabled
+const int c_iMaxBones = 80;     // Note: Count is doubled if scaling is disabled
 const int c_iBoneInfluence = 4; // Number of bones that can influence a vertex
 
 uniform mat4 u_mBone[c_iMaxBones];  // Matrix transforms for each bone
@@ -22,7 +22,7 @@ mat4 build_matrix(vec4 vQuaternion, vec3 vTranslation){
     mMatrix[3][2] = vTranslation.z;
     
     // Rotation:
-    mMatrix[0][0] = 1.0 - 2 * (vQuaternion.y * vQuaternion.y + vQuaternion.z * vQuaternion.z);
+    mMatrix[0][0] = 1.0 - 2.0 * (vQuaternion.y * vQuaternion.y + vQuaternion.z * vQuaternion.z);
     mMatrix[0][1] = 2.0 * (vQuaternion.x * vQuaternion.y + vQuaternion.z * vQuaternion.w);
     mMatrix[0][2] = 2.0 * (vQuaternion.x * vQuaternion.z - vQuaternion.y * vQuaternion.w);
     
@@ -67,8 +67,8 @@ void main()
         if (u_iBoneNoScale == 0) // Regular matrix morph
             mMatrix = u_mBone[ivBoneID[i]];
         else{ // Quat + translation pair
-            int iIndex = int(ivBoneID[i] * 0.5);
-            int iOffset = int(ceil(fract(ivBoneID[i] * 0.5))) * 2;
+            int iIndex = int(float(ivBoneID[i]) * 0.5);
+            int iOffset = int(ceil(fract(float(ivBoneID[i]) * 0.5))) * 2;
             mMatrix = u_mBone[iIndex];
             mMatrix = build_matrix(mMatrix[iOffset], mMatrix[iOffset + 1].xyz);
         }
