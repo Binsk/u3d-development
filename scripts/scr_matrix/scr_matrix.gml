@@ -232,6 +232,30 @@ function matrix_get_transpose(matrix){
 		   matrix[3], matrix[7], matrix[11], matrix[15]];
 }
 
+/// @desc	Returns the translation component as a vector.
+function matrix_get_translation(matrix){
+	return vec(matrix[12], matrix[13], matrix[14]);
+}
+
+/// @desc	Takes a GameMaker matrix and returns a quaternion that applies the
+///			rotation and scale. The matrix must have an equal scale across all
+///			axes. The quaternion will not be normalized if there is scale.
+function matrix_get_quat(matrix){
+	var det = power(matrix_get_determinant(matrix), 1/3);
+	var quaternion = quat(
+		-sqrt(max(0, det + matrix[0] - matrix[5] - matrix[10])) * 0.5,
+		-sqrt(max(0, det - matrix[0] + matrix[5] - matrix[10])) * 0.5,
+		-sqrt(max(0, det - matrix[0] - matrix[5] + matrix[10])) * 0.5,
+		-sqrt(max(0, det + matrix[0] + matrix[5] + matrix[10])) * 0.5
+	);
+	
+	quaternion.x = abs(quaternion.x) * sign(matrix[9] - matrix[6]);
+	quaternion.y = abs(quaternion.y) * sign(matrix[2] - matrix[8]);
+	quaternion.z = abs(quaternion.z) * sign(matrix[4] - matrix[1]);
+	
+	return quaternion;
+}
+
 /// @desc	Given a scaling vector, builds a scaling matrix
 function matrix_build_scale(s){
 	var matrix = matrix_build_identity();
@@ -297,25 +321,6 @@ function matrix_to_matrix3(matrix){
 		matrix[4], matrix[5], matrix[6],
 		matrix[8], matrix[9], matrix[10]
 	];
-}
-
-/// @desc	Takes a GameMaker matrix and returns a quaternion that applies the
-///			rotation and scale. The matrix must have an equal scale across all
-///			axes.
-function matrix_to_quat(matrix){
-	var det = power(matrix_get_determinant(matrix), 1/3);
-	var quaternion = quat(
-		-sqrt(max(0, det + matrix[0] - matrix[5] - matrix[10])) * 0.5,
-		-sqrt(max(0, det - matrix[0] + matrix[5] - matrix[10])) * 0.5,
-		-sqrt(max(0, det - matrix[0] - matrix[5] + matrix[10])) * 0.5,
-		-sqrt(max(0, det + matrix[0] + matrix[5] + matrix[10])) * 0.5
-	);
-	
-	quaternion.x = abs(quaternion.x) * sign(matrix[9] - matrix[6]);
-	quaternion.y = abs(quaternion.y) * sign(matrix[2] - matrix[8]);
-	quaternion.z = abs(quaternion.z) * sign(matrix[4] - matrix[1]);
-	
-	return quaternion;
 }
 
 function matrix_is_identity(matrix){

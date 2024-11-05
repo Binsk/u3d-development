@@ -6,7 +6,7 @@ attribute vec3 in_TextureCoord1;	// Tangent
 attribute vec4 in_TextureCoord2;    // Bone IDs
 attribute vec4 in_TextureCoord3;    // Bone weights
 
-const int c_iMaxBones = 96;
+const int c_iMaxBones = 64;
 const int c_iBoneInfluence = 4; // Number of bones that can influence a vertex
 
 uniform vec4 u_vAlbedoUV;
@@ -14,6 +14,7 @@ uniform vec4 u_vNormalUV;
 uniform vec4 u_vPBRUV;
 uniform vec4 u_vEmissiveUV;
 uniform mat4 u_mBone[c_iMaxBones];  // Matrix transforms for each bone
+uniform int u_iBoneNoScale;         // Whether or not bones have scaling; modifies how data is read
 
 varying vec2 v_vTexcoordAlbedo;
 varying vec2 v_vTexcoordNormal;
@@ -23,6 +24,28 @@ varying vec4 v_vColor;
 varying vec4 v_vPosition;
 varying mat3 v_mRotation;
 
+mat4 build_matrix(vec4 vQuaternion, vec3 vTranslation){
+    mat4 mMatrix = mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
+    // Set position:
+    mMatrix[3][0] = vTranslation.x;
+    mMatrix[3][1] = vTranslation.y;
+    mMatrix[3][2] = vTranslation.z;
+    
+    // Rotation:
+    mMatrix[0][0] = 1.0 - 2 * (vQuaternion.y * vQuaternion.y + vQuaternion.z * vQuaternion.z);
+    mMatrix[0][1] = 2.0 * (vQuaternion.x * vQuaternion.y + vQuaternion.z * vQuaternion.w);
+    mMatrix[0][2] = 2.0 * (vQuaternion.x * vQuaternion.z - vQuaternion.y * vQuaternion.w);
+    
+    mMatrix[1][0] = 2.0 * (vQuaternion.x * vQuaternion.y - vQuaternion.z * vQuaternion.w);
+    mMatrix[1][1] = 1.0 - 2.0 * (vQuaternion.x * vQuaternion.x + vQuaternion.z * vQuaternion.z);
+    mMatrix[1][2] = 2.0 * (vQuaternion.y * vQuaternion.z + vQuaternion.x * vQuaternion.w);
+    
+    mMatrix[2][0] = 2.0 * (vQuaternion.x * vQuaternion.z + vQuaternion.y * vQuaternion.w);
+    mMatrix[2][1] = 2.0 * (vQuaternion.y * vQuaternion.z - vQuaternion.x * vQuaternion.w);
+    mMatrix[2][2] = 1.0 - 2.0 * (vQuaternion.x * vQuaternion.x + vQuaternion.y * vQuaternion.y);    
+    
+    return mMatrix;
+}
 
 void main()
 {
@@ -36,6 +59,9 @@ void main()
     vec3 vTangentFinal = vec3(0.0);
     ivec4 ivBoneID = ivec4(in_TextureCoord2);
     vec4 vBoneWeight = in_TextureCoord3; // Weights should add to 1!
+    int iMaxBones = c_iMaxBones;
+    if (u_iBoneNoScale > 0)
+        iMaxBones *= 2;
 
         // Morph for each bone
     int iLoopCount = 0;
@@ -43,18 +69,27 @@ void main()
         if (ivBoneID[i] < 0)
             continue;
         
-        if (ivBoneID[i] >= c_iMaxBones){
+        if (ivBoneID[i] >= iMaxBones){
             vPositionFinal = vPosition;
             vNormalFinal = vNormal;
             break;
         }
         
         iLoopCount += 1;
+        mat4 mMatrix;
+        if (u_iBoneNoScale == 0) // Regular matrix morph
+            mMatrix = u_mBone[ivBoneID[i]];
+        else{ // Quat + translation pair
+            int iIndex = int(ivBoneID[i] * 0.5);
+            int iOffset = int(ceil(fract(ivBoneID[i] * 0.5))) * 2;
+            mMatrix = u_mBone[iIndex];
+            mMatrix = build_matrix(mMatrix[iOffset], mMatrix[iOffset + 1].xyz);
+        }
         
-        vec4 vPositionLocal = u_mBone[ivBoneID[i]] * vPosition;
+        vec4 vPositionLocal = mMatrix * vPosition;
         vPositionFinal += vPositionLocal * vBoneWeight[i];
         
-        mat3 mBone = mat3(u_mBone[ivBoneID[i]]);
+        mat3 mBone = mat3(mMatrix);
         vec3 vNormalLocal = mBone * vNormal;
         vNormalFinal += vNormalLocal * vBoneWeight[i];
         

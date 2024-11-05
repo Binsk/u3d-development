@@ -38,3 +38,5 @@
 	https://rodolphe-vaillant.fr/entry/29/dual-quaternions-skinning-tutorial-and-c-codes
 	This is mostly a skinning method, so just doing a quat+offset pair could also work
 	for bandwidth reasons, but it would still be linear.
+	NOTE: Storage buffers would be better for bone data, but GameMaker doesn't support
+	them.

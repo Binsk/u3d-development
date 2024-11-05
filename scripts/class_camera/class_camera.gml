@@ -295,11 +295,16 @@ function Camera() : Node() constructor {
 				continue;
 			
 			matrix_set(matrix_world, body.get_model_matrix());
-			var skeleton = U3D.RENDERING.ANIMATION.skeleton_missing;
-			if (not is_undefined(body.animation_instance))
-				skeleton = body.animation_instance.get_transform_array();
+			var data = {
+				skeleton : U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos,
+				skeleton_bone_count : U3D_MAXIMUM_BONES * 2 // Only defines that we are using quatpos pairs
+			}
+			if (not is_undefined(body.animation_instance)){
+				data.skeleton = body.animation_instance.get_transform_array();
+				data.skeleton_bone_count = struct_names_count(body.animation_instance.skeleton);
+			}
 				
-			body.model_instance.render(self, is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque, skeleton);
+			body.model_instance.render(self, is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque, data);
 		}
 		matrix_set(matrix_world, world_matrix);
 		surface_reset_target();

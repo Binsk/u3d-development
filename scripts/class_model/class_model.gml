@@ -62,20 +62,21 @@ function Model() : U3DObject() constructor {
 		return count;
 	}
 
-	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
+	/// @desc Renders the model out, applying materials as needed.
+	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, extra_data={}){
 		var matrix = matrix_get(matrix_world); // Meshs can modify, so reset after each mesh
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i){
 			mesh_array[i].apply_matrix();
-			mesh_array[i].render(material_data, camera_id, render_stage, skeleton);
+			mesh_array[i].render(material_data, camera_id, render_stage, extra_data);
 			matrix_set(matrix_world, matrix);
 		}
 	}
 	
-	function render_shadows(skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
+	function render_shadows(data={}){
 		var matrix = matrix_get(matrix_world); // Meshs can modify, so reset after each mesh
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i){
 			mesh_array[i].apply_matrix();
-			mesh_array[i].render_shadows(material_data, skeleton);
+			mesh_array[i].render_shadows(material_data, data);
 			matrix_set(matrix_world, matrix);
 		}
 	}

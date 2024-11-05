@@ -63,7 +63,7 @@ function Mesh() : U3DObject() constructor {
 	
 	/// @desc	Renders out each primitive, applying the specified materials 
 	///			according to primitive IDs
-	function render(material_data={}, camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
+	function render(material_data={}, camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, data={}){
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
@@ -76,14 +76,16 @@ function Mesh() : U3DObject() constructor {
 			material.apply(camera_id, render_stage==CAMERA_RENDER_STAGE.translucent);
 
 /// @stub	Optimize it prevent re-sending data
-			if (primitive_array[i].has_bones)
-				uniform_set("u_mBone", shader_set_uniform_matrix_array, [skeleton]);
+			if (primitive_array[i].has_bones){
+				uniform_set("u_mBone", shader_set_uniform_matrix_array, [data.skeleton]);
+				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > 64]);
+			}
 				
 			render_primitive(i);
 		}
 	}
 	
-	function render_shadows(material_data={}, skeleton=U3D.RENDERING.ANIMATION.skeleton_missing){
+	function render_shadows(material_data={}, data={}){
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
@@ -96,8 +98,10 @@ function Mesh() : U3DObject() constructor {
 			material.apply_shadow();
 
 /// @stub	Optimize it prevent re-sending data
-			if (primitive_array[i].has_bones)
-				uniform_set("u_mBone", shader_set_uniform_matrix_array, [skeleton]);
+			if (primitive_array[i].has_bones){
+				uniform_set("u_mBone", shader_set_uniform_matrix_array, [data.skeleton]);
+				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > 64]);
+			}
 			
 			render_primitive(i);
 		}

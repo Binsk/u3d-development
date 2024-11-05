@@ -143,12 +143,16 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 				continue;
 			
 			matrix_set(matrix_world, body.get_model_matrix());
+			var data = {
+				skeleton : U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos,
+				skeleton_bone_count : U3D_MAXIMUM_BONES * 2 // Only defines that we are using quatvec pairs
+			}
+			if (not is_undefined(body.animation_instance)){
+				data.skeleton = body.animation_instance.get_transform_array();
+				data.skeleton_bone_count = struct_names_count(body.animation_instance.skeleton);
+			}
 			
-			var skeleton = U3D.RENDERING.ANIMATION.skeleton_missing;
-			if (not is_undefined(body.animation_instance))
-				skeleton = body.animation_instance.get_transform_array();
-			
-			body.model_instance.render_shadows(skeleton);
+			body.model_instance.render_shadows(data);
 		}
 		shader_reset();
 		matrix_set(matrix_view, mv);

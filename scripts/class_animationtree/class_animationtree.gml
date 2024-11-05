@@ -10,6 +10,12 @@
 /// directly from this class requires a full re-calculation of all animation
 /// tracks that are active.
 
+/// @note	If there are more than 64 bones then the system will explicit bone scaling
+///			to be able to fit more bones into the shader. Maximum bone count is 128.
+
+/// @todo	Implement dual-quaternions to remove the need for the quat+pair option &
+///			to have better volume-conscious skinning.
+
 /// @signals
 
 /// @param	{real}	update_freq=0.033		how frequently the animation should be re-calculated (in seconds); defaults to 30fps
@@ -19,7 +25,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	skeleton = {};		// Bone relation look-up map
 	self.update_freq = update_freq;
 	update_last = current_time * 0.001 - update_freq;
-	transform_data = U3D.RENDERING.ANIMATION.skeleton_missing;	// Last cached transform data
+	transform_data = undefined;	// Last cached transform data
 	animation_layers = {};
 	#endregion
 	
@@ -33,6 +39,10 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	///			key = bone id and value = {parent_id, child_id_array}
 	function set_skeleton(skeleton){
 		self.skeleton = skeleton;
+		if (struct_names_count(self.skeleton) > U3D_MAXIMUM_BONES)
+			transform_data = U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos;
+		else
+			transform_data = U3D.RENDERING.ANIMATION.SKELETON.missing_matrices;
 	}
 	
 	/// @desc	Returns an array of track names currently contained within
@@ -201,13 +211,36 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		
 		// Write data into final array:
-		var array = array_flatten(array_create(get_max_bone_count(), matrix_build_identity()));
-		for (var i = array_length(keys) - 1; i >= 0; --i){
-			var bone_id = keys[i];
-			var matrix = matrix_data[$ bone_id];
-			var offset = real(bone_id) * 16;
-			 for (var j = 0; j < 16; ++j)
-				array[offset + j] = matrix[j];
+		if (array_length(keys) <= 64){
+			// If not skipping, we write the whole matrix
+			var array = array_flatten(array_create(get_max_bone_count(), matrix_build_identity()));
+			for (var i = array_length(keys) - 1; i >= 0; --i){
+				var bone_id = keys[i];
+				var matrix = matrix_data[$ bone_id];
+				var offset = real(bone_id) * 16;
+				 for (var j = 0; j < 16; ++j)
+					array[offset + j] = matrix[j];
+			}
+		}
+		else{
+			// If skipping we just need a quaternion + translation pair
+			var bone_count = get_max_bone_count();
+				// Create quat + translation defaults; note add an extra to the end if uneven as we are sending in as 16-value sets
+			var array = array_flatten(array_create(bone_count + (bone_count % 2), [0, 0, 0, 1, 0, 0, 0, 0]));
+			for (var i = array_length(keys) - 1; i >= 0; --i){
+				var bone_id = keys[i];
+				var matrix = matrix_data[$ bone_id];
+				var translation = matrix_get_translation(matrix);
+				var quaternion = matrix_get_quat(matrix);
+				var offset = real(bone_id) * 8;
+				array[offset] = quaternion.x;
+				array[offset + 1] = quaternion.y;
+				array[offset + 2] = quaternion.z;
+				array[offset + 3] = quaternion.w;
+				array[offset + 4] = translation.x;
+				array[offset + 5] = translation.y;
+				array[offset + 6] = translation.z;
+			}
 		}
 		
 		return array;
@@ -461,8 +494,12 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		
 		if (not is_undefined(trs_final))
 			transform_data = generate_transform_array(trs_final);
-		else
-			transform_data = U3D.RENDERING.ANIMATION.skeleton_missing;
+		else{
+			if (struct_names_count(skeleton ?? {}) > U3D_MAXIMUM_BONES)
+				transform_data = U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos;
+			else
+				transform_data = U3D.RENDERING.ANIMATION.SKELETON.missing_matrices;
+		}
 		
 		update_last = ct;
 	}

@@ -35,6 +35,10 @@ delete foo;
 texturegroup_load("U3DDefaults", true);
 #endregion
 
+/// Maxmum bones we can safely support (this matches w/ the spatial shader bone counts).
+/// If the model has > U3D_MAXIMUM_BONES bones, then a simplified quat+pos pair is used
+#macro U3D_MAXIMUM_BONES 64
+
 // This structure holds a number of defaults and fallback values. The system 
 // relies on this structure but it can also be accessed / modified manually if
 // needed through the U3D macro.
@@ -49,7 +53,10 @@ global.__u3d_global_data = {
 			gamma_correction : new PostProcessFX(shd_gamma_correction)	// Does basic gamma correction; useful if we want to do it manually
 		},
 		ANIMATION : {
-			skeleton_missing : array_flatten(array_create(96, matrix_build_identity()))	// Default skeleton if model is missing one (max bones = 96)
+			SKELETON : {
+				missing_matrices : array_flatten(array_create(U3D_MAXIMUM_BONES, matrix_build_identity())),
+				missing_quatpos : array_flatten(array_create(U3D_MAXIMUM_BONES * 2, [0, 0, 0, 1, 0, 0, 0, 0]))
+			}
 		}
 	},
 	MEMORY : {}	// Used to hold data caches and garbage-collect dynamically generated resources

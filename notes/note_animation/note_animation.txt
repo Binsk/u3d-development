@@ -40,3 +40,14 @@ of your transforms **applied** to the model and armatures!
 
 If not designed correctly, this can be a pain to fix in software
 such as Blender and it will be unable to load correctly in U3D!
+
+## Maximum Bones
+Because GameMaker is using exceptionally old shader versions we
+don't have access to a number of large-data buffers. Bones must
+all be passed in via mat4[] uniforms which limits us to around
+64 bones (specific hardware may allow more / less).
+
+The system can support up to 128 bones if bones have uniform scaling
+in their animation channels and the system will automatically
+enforce this if the character has > 64 bones. Best practice is just to
+not have non-uniform scaling with your bones for now.
