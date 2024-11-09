@@ -57,6 +57,9 @@ animation_freq = 0.033;
 import_textures = true;
 apply_transforms = true;
 
+slider_ay = 0;
+model_scale_slider_array = [];
+
 gpu_string = "";
 var map = os_get_info();
 if (os_type == os_windows)

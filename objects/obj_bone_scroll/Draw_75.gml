@@ -16,6 +16,22 @@ for (var i = 0; i < loop; ++i){
 		if (mouse_check_button_pressed(mb_left)){
 			var button_id = obj_demo.primary_button;
 			button_id.animation_tree.attach_body(child_body, button_id.body, button_id.animation_tree.get_bone_id(bone_name_array[i]));
+			
+			// Calculate the scale relative to the primary body:
+			var child_min_vec = child_body.model_instance.get_data("aabb_min", vec());
+			var child_max_vec = child_body.model_instance.get_data("aabb_max", vec());
+			var child_max_comp = vec_max_component(vec_sub_vec(child_max_vec, child_min_vec));
+			
+			var parent_min_vec = button_id.body.model_instance.get_data("aabb_min", vec());
+			var parent_max_vec = button_id.body.model_instance.get_data("aabb_max", vec());
+			var parent_max_comp = vec_max_component(vec_sub_vec(parent_max_vec, parent_min_vec));
+			
+			var sc = parent_max_comp / child_max_comp * 0.125;
+			child_body.set_scale(vec(sc, sc, sc));
+			slider_id.min_value = child_body.scale.x * 0.25;
+			slider_id.max_value = child_body.scale.x * 5.0;
+			slider_id.drag_value = (child_body.scale.x - slider_id.min_value) / (slider_id.max_value - slider_id.min_value);
+			
 			obj_render_controller.add_body(child_body);
 			obj_demo.update_data_count();
 			instance_destroy();

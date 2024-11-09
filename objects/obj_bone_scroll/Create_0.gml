@@ -3,4 +3,5 @@ y_scroll = 0;		// Actual scroll offset
 y_velocity = 0;		// Movement velocity
 is_hovered = false;
 child_body = undefined;
+slider_id = undefined;
 io_clear();

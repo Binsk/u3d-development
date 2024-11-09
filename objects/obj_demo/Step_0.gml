@@ -53,3 +53,6 @@ else{
 			other.cursor = cr_handpoint;
 	}
 }
+
+for (var i = 0; i < array_length(model_scale_slider_array); ++i)
+	model_scale_slider_array[i].y = slider_ay - i * 64;

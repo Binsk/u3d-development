@@ -22,18 +22,11 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			var generate_as_primary = true;
 			if (obj_demo.primary_button != noone){ // Attempt to attach to currently active model
 				if (not is_undefined(obj_demo.primary_button.animation_tree)){
+					// Create the bone scroll list; it will be responsible for attaching + adding model to rendering
 					instance_create_depth(0, 0, -1, obj_bone_scroll);
 					obj_bone_scroll.bone_name_array = obj_demo.primary_button.animation_tree.get_bone_names();
 					obj_bone_scroll.child_body = body;
 					generate_as_primary = false;
-					// var button_id = obj_demo.primary_button;
-					// var bone_array = button_id.animation_tree.get_bone_names();
-					// // var str = get_string("Select a bone to attach to:\n\n" + string_join_ext(", ", bone_array), bone_array[0]);
-					// var str = bone_array[0];
-					// if (array_get_index(bone_array, str) >= 0){
-					// 	button_id.animation_tree.attach_body(body, button_id.body, button_id.animation_tree.get_bone_id(str));
-					// 	generate_as_primary = false;
-					// }
 				}
 			}
 			
@@ -50,9 +43,25 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 				obj_render_controller.add_body(body);
 				obj_demo.update_data_count();
 			}
-
+	
 			gltf.free();
 			delete gltf;
+			
+			// Generate slider:
+			var slider = instance_create_depth(12, 0, 0, obj_slider);
+			slider.text = $"{text} scale:";
+			slider.button_id = id;
+			slider.min_value = body.scale.x * 0.25;
+			slider.max_value = body.scale.x * 2.0;
+			slider.drag_value = (body.scale.x - slider.min_value) / (slider.max_value - slider.min_value);
+			slider.signaler.add_signal("drag", new Callable(id, function(value, inst){
+				var lerpvalue = lerp(inst.min_value, inst.max_value, value);
+				body.set_scale(vec(lerpvalue, lerpvalue, lerpvalue));
+			}, [undefined, slider]))
+			array_push(obj_demo.model_scale_slider_array, slider);
+			slider_id = slider;
+			with (obj_bone_scroll)
+				slider_id = slider;
 		}
 		else {
 			if (obj_demo.primary_button != id)
@@ -82,6 +91,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		if (not is_undefined(obj_demo.body))
 			obj_demo.body.set_position(vec(0, minimum_y, 0));
 	}
+
 	signaler.signal("pressed");
 }
 	

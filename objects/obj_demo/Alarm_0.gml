@@ -279,3 +279,6 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	obj_demo.camera.set_supersample_multiplier(lerpvalue)
 },  [undefined, inst]));
 sprite_array = [];
+
+
+slider_ay = ay - 64;
