@@ -185,7 +185,7 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		if (not is_undefined(matrix_inv_model) and not force_update)
 			return matrix_inv_model;
 		
-		matrix_inv_model = matrix_get_inverse(get_model_matrix());
+		matrix_inv_model = matrix_inverse(get_model_matrix());
 		return matrix_inv_model;
 	}
 

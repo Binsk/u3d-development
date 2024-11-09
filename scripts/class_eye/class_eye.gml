@@ -74,7 +74,7 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		if (not is_undefined(matrix_inv_view))
 			return matrix_inv_view;
 		
-		matrix_inv_view = matrix_get_inverse(get_view_matrix());;
+		matrix_inv_view = matrix_inverse(get_view_matrix());;
 		return matrix_inv_view;
 	}
 	
@@ -108,7 +108,7 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		if (not is_undefined(matrix_inv_projection))
 			return matrix_inv_projection;
 		
-		matrix_inv_projection = matrix_get_inverse(get_projection_matrix());
+		matrix_inv_projection = matrix_inverse(get_projection_matrix());
 		return matrix_inv_projection;
 	}
 	#endregion

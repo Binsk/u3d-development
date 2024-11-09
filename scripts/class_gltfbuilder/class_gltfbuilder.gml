@@ -691,7 +691,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			// If applying transforms directly to vertices, we need to UNDO that for the
 			// mesh transform since each mesh will needs its own special offset.
 			if (not is_undefined(matrix) and not is_undefined(mesh.matrix_import))
-				matrix = matrix_multiply(matrix_get_inverse(mesh.matrix_import), matrix);
+				matrix = matrix_multiply(matrix_inverse(mesh.matrix_import), matrix);
 			
 			mesh.set_unique_hash();
 			mesh.matrix_model = matrix;
