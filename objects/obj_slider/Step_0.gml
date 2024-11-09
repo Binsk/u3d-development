@@ -1,3 +1,6 @@
+if (instance_exists(obj_bone_scroll))
+	return;
+	
 is_hovered = point_in_rectangle(gmouse.x, gmouse.y, x - 10, y - 12, x + 266, y + 12);
 if (is_hovered and mouse_check_button_pressed(mb_left))
 	is_dragging = true;

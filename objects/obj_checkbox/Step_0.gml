@@ -1,3 +1,6 @@
+if (instance_exists(obj_bone_scroll))
+	return;
+	
 is_hovered = not is_disabled and point_in_rectangle(gmouse.x, gmouse.y, x, y, x + 250, y + size);
 
 if (is_hovered and mouse_check_button_pressed(mb_left)){

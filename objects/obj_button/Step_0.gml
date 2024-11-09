@@ -1,4 +1,7 @@
 /// @description 
+if (instance_exists(obj_bone_scroll))
+	return;
+	
 is_hovered = point_in_rectangle(gmouse.x, gmouse.y, x, y, x + width, y + height);
 
 if (is_hovered and mouse_check_button_pressed(mb_left)){
@@ -19,14 +22,18 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			var generate_as_primary = true;
 			if (obj_demo.primary_button != noone){ // Attempt to attach to currently active model
 				if (not is_undefined(obj_demo.primary_button.animation_tree)){
-					var button_id = obj_demo.primary_button;
-					var bone_array = button_id.animation_tree.get_bone_names();
-					// var str = get_string("Select a bone to attach to:\n\n" + string_join_ext(", ", bone_array), bone_array[0]);
-					var str = bone_array[0];
-					if (array_get_index(bone_array, str) >= 0){
-						button_id.animation_tree.attach_body(body, button_id.body, button_id.animation_tree.get_bone_id(str));
-						generate_as_primary = false;
-					}
+					instance_create_depth(0, 0, -1, obj_bone_scroll);
+					obj_bone_scroll.bone_name_array = obj_demo.primary_button.animation_tree.get_bone_names();
+					obj_bone_scroll.child_body = body;
+					generate_as_primary = false;
+					// var button_id = obj_demo.primary_button;
+					// var bone_array = button_id.animation_tree.get_bone_names();
+					// // var str = get_string("Select a bone to attach to:\n\n" + string_join_ext(", ", bone_array), bone_array[0]);
+					// var str = bone_array[0];
+					// if (array_get_index(bone_array, str) >= 0){
+					// 	button_id.animation_tree.attach_body(body, button_id.body, button_id.animation_tree.get_bone_id(str));
+					// 	generate_as_primary = false;
+					// }
 				}
 			}
 			
@@ -40,13 +47,12 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 				
 				body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp)); // Scale to fit in camera
 				body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
+				obj_render_controller.add_body(body);
+				obj_demo.update_data_count();
 			}
 
 			gltf.free();
 			delete gltf;
-
-			obj_render_controller.add_body(body);
-			obj_demo.update_data_count();
 		}
 		else {
 			if (obj_demo.primary_button != id)

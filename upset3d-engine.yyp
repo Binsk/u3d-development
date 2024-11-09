@@ -73,6 +73,7 @@
     {"id":{"name":"note_textures","path":"notes/note_textures/note_textures.yy",},},
     {"id":{"name":"TODO","path":"notes/TODO/TODO.yy",},},
     {"id":{"name":"obj_animation_controller","path":"objects/obj_animation_controller/obj_animation_controller.yy",},},
+    {"id":{"name":"obj_bone_scroll","path":"objects/obj_bone_scroll/obj_bone_scroll.yy",},},
     {"id":{"name":"obj_button","path":"objects/obj_button/obj_button.yy",},},
     {"id":{"name":"obj_checkbox","path":"objects/obj_checkbox/obj_checkbox.yy",},},
     {"id":{"name":"obj_collision_controller","path":"objects/obj_collision_controller/obj_collision_controller.yy",},},

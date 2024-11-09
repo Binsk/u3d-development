@@ -1,5 +1,5 @@
 
-instance_create_depth(0, 0, 0, obj_tooltip);
+instance_create_depth(0, 0, -2, obj_tooltip);
 
 // Generate GUI:
 	// Scane model files:
