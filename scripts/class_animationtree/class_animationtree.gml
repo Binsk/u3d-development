@@ -17,6 +17,7 @@
 ///			to have better volume-conscious skinning.
 
 /// @signals
+///	transformed_bone_<id>	(matrix)	-	Thrown when an animation transform is applied on the specified bone; matrix = local transform
 
 /// @param	{real}	update_freq=0.033		how frequently the animation should be re-calculated (in seconds); defaults to 30fps
 function AnimationTree(update_freq=0.033) : U3DObject() constructor {
@@ -27,6 +28,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	update_last = current_time * 0.001 - update_freq;
 	transform_data = undefined;	// Last cached transform data
 	animation_layers = {};
+	attached_bodies = {};
 	#endregion
 	
 	#region METHODS
@@ -44,6 +46,27 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		else
 			transform_data = U3D.RENDERING.ANIMATION.SKELETON.missing_matrices;
 	}
+	
+	/// @desc	Sets whether or not the specified animation layer should loop.
+	function set_animation_layer_loops(layer_index, loop=true){
+		layer_index = real(layer_index);
+		var data = animation_layers[$ layer_index];
+		if (is_undefined(data) or data.type != 0)
+			return;
+		
+		data.track_loop = loop;
+	}
+	
+	/// @desc	Sets the speed multiplier for the specified animation layer.
+	function set_animation_layer_speed(layer_index, layer_speed=1){
+		layer_index = real(layer_index);
+		var data = animation_layers[$ layer_index];
+		if (is_undefined(data) or data.type != 0)
+			return;
+		
+		data.track_speed = layer_speed;
+	}
+	
 	
 	/// @desc	Returns an array of track names currently contained within
 	///			this animation tree.
@@ -119,7 +142,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		for (var i = array_length(keys) - 1; i >= 0; --i){
 			var bone = skeleton[$ keys[i]];
 			if ((bone.name ?? $"bone_{i}") == name)
-				return i;
+				return keys[i];
 		}
 		return -1;
 	}
@@ -206,8 +229,11 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			var matrix = matrix_data[$ bone_id];
 			var matrix_inv = skeleton[$ bone_id].matrix_inv;
 
-			matrix = matrix_multiply(matrix_inv, matrix);
-			matrix_data[$ bone_id] = matrix;
+			var nmatrix = matrix_multiply(matrix_inv, matrix);
+			matrix_data[$ bone_id] = nmatrix;
+			
+			skeleton[$ bone_id].matrix_cached = matrix;
+			signaler.signal($"transformed_bone_{bone_id}", [matrix]);
 		}
 		
 		// Write data into final array:
@@ -348,25 +374,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		if (is_undefined(data.track_time))
 			start_animation_layer(layer_index);
 	}
-	
-	function set_animation_layer_loops(layer_index, loop=true){
-		layer_index = real(layer_index);
-		var data = animation_layers[$ layer_index];
-		if (is_undefined(data) or data.type != 0)
-			return;
-		
-		data.track_loop = loop;
-	}
-	
-	function set_animation_layer_speed(layer_index, layer_speed=1){
-		layer_index = real(layer_index);
-		var data = animation_layers[$ layer_index];
-		if (is_undefined(data) or data.type != 0)
-			return;
-		
-		data.track_speed = layer_speed;
-	}
-	
+
 	/// @desc	Interpolates between two sets of TRS data.
 	function interpolate_trs_data(trs_data_a, trs_data_b, lerpvalue){
 		var trs_data = {};
@@ -411,6 +419,63 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 /// @stub	Implement properly. It should take data_b and add in bone data
 ///			that doesn't exist in data_a
 		return trs_data_a;
+	}
+	
+	/// @desc	This uses signals to attach a child body to a bone in the animation
+	///			system. This does NOT update body components! It only updates the render matrix.
+	///			The body should not update its components once attached or it will break the
+	///			render until the next skeletal update.
+	///			Local body transforms will NOT be included in the final transform.
+	/// @param	{Body}		child_body					the body of the child that should be attached to the bone
+	/// @param	{Node}		parent_node					the node to transform relative to (usually the body containing the animation structure)
+	/// @param	{int}		bone_id						id of the bone to attach to (use bone_get_id() to use a name)
+	function attach_body(child_body, parent_node, bone_id, update_components=false){
+		if (not is_instanceof(child_body, Body)){
+			Exception.throw_conditional("invalid type, expected [Body]!");
+			return;
+		}
+		
+		if (not is_instanceof(parent_node, Node)){
+			Exception.throw_conditional("invalid type, expected [Node]!");
+			return;
+		}
+		
+		detach_body(child_body, bone_id); // In case it was already attached
+		if (not update_components){
+			
+/// @stub	Child scale is making the body move; fix this
+			var callable = new Callable(child_body, function(matrix, parent_node){
+				// matrix_model = matrix_multiply_post(get_model_matrix(true), parent_node.get_model_matrix(), matrix);
+				matrix_model = matrix_multiply_post(parent_node.get_model_matrix(), matrix);
+			}, [undefined, parent_node]);
+			
+			attached_bodies[$ child_body.get_index()] = {
+				bone_id : bone_id,
+				callable : callable,
+				child_body : child_body
+			};
+			
+			signaler.add_signal($"transformed_bone_{bone_id}", callable);
+			child_body.signaler.add_signal("free", new Callable(self, detach_body, [child_body]));
+		}
+		else {
+/// @stub	Implement
+		}
+	}
+	
+	function detach_body(child_body){
+		if (not is_instanceof(child_body, Body)){
+			Exception.throw_conditional("invalid type, expected [Body]!");
+			return;
+		}
+		
+		var data = attached_bodies[$ child_body.get_index()];
+		if (is_undefined(data))
+			return;
+		
+		signaler.remove_signal($"transformed_bone_{data.bone_id}", data.callable);
+		child_body.remove_signal("free", new Callable(self, detach_body, [child_body]));
+		struct_remove(attached_bodies, child_body.get_index());
 	}
 	
 	function process(){
@@ -484,7 +549,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 					trs_final = merge_trs_data(trs_final, trs_data);
 			}
 			else if (animation_layer.type == 1){ // Manual lerp
-				
+/// @stub	Implement
 			}
 			else
 				throw new Exception($"invalid animation layer type [{animation_layer.type}]");
@@ -502,6 +567,15 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		
 		update_last = ct;
+	}
+	
+	super.register("free");
+	function free(){
+		var values = struct_get_values(attached_bodies);
+		for (var i = array_length(values) - 1; i >= 0; --i)
+			detach_body(values[i].child_body); // Detach to clean up the signals
+		
+		super.execute("free");
 	}
 	#endregion
 }

@@ -38,4 +38,5 @@
 	for bandwidth reasons, but it would still be linear.
 	NOTE: Storage buffers would be better for bone data, but GameMaker doesn't support
 	them.
+	
 -	Add translucent shadow mapping

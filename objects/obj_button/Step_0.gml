@@ -21,6 +21,18 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			if (not is_undefined(animation_tree)){
 				body.set_animation(animation_tree);
 				animation_tree.set_update_freq(obj_demo.animation_freq);
+				
+				if (text == "sophia.glb"){
+					var gltf2 = new GLTFBuilder("pink-cube.glb", "test-models");
+					var m = gltf2.generate_model();
+					var b = new Body();
+					b.set_model(m);
+					obj_render_controller.add_body(b);
+					animation_tree.attach_body(b, body, animation_tree.get_bone_id("DEF-hand.R"), false);
+
+					gltf2.free();
+					delete gltf2;
+				}
 			}
 
 			gltf.free();
