@@ -211,7 +211,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		
 		// Write data into final array:
-		if (array_length(keys) <= 64){
+		if (array_length(keys) <= U3D_MAXIMUM_BONES){
 			// If not skipping, we write the whole matrix
 			var array = array_flatten(array_create(get_max_bone_count(), matrix_build_identity()));
 			for (var i = array_length(keys) - 1; i >= 0; --i){

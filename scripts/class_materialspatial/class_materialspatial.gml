@@ -86,7 +86,7 @@ function MaterialSpatial() : Material() constructor {
 												// u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
 												// u_fAlphaCutoff		(float)			opaque render sets alpha=0 if < cutoff and 1 if >=
 												// u_iTranslucent		(int)			whether or not it is a translucent pass
-												// u_mBone				(mat4[96])		array of bone transform matrices (up to 96); NOTE: uniform set by mesh, not material!
+												// u_mBone				(mat4[80])		array of bone transform matrices (up to 80); NOTE: uniform set by mesh, not material!
 	#endregion
 	
 	#endregion
