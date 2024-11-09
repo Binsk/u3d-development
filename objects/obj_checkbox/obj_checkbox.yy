@@ -10,10 +10,13 @@
   "name":"obj_checkbox",
   "overriddenProperties":[],
   "parent":{
-    "name":"Testing",
-    "path":"folders/Testing.yy",
+    "name":"Menu",
+    "path":"folders/Demo Interface/Menu.yy",
   },
-  "parentObjectId":null,
+  "parentObjectId":{
+    "name":"obj_menu_item",
+    "path":"objects/obj_menu_item/obj_menu_item.yy",
+  },
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,

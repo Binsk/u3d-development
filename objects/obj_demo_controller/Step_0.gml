@@ -21,27 +21,15 @@ cursor = cr_arrow;
 with (obj_tooltip)
 	text = "";
 	
+/// Bone scroll 'overlays' everything, so disable hovering and such when it exists:
 if (not instance_exists(obj_bone_scroll)){
-	with (obj_button){
-		if (is_hovered){
-			other.cursor = cr_handpoint;
-			obj_tooltip.text = text_tooltip;
-			break;
-		}
-	}
-	with (obj_checkbox){
-		if (is_hovered){
-			other.cursor = cr_handpoint;
-			obj_tooltip.text = text_tooltip;
-			break;
-		}
-	}
-	with (obj_slider){
-		if (is_hovered or is_dragging){
-			other.cursor = cr_handpoint;
-			obj_tooltip.text = text_tooltip;
-			break;
-		}
+	with (obj_menu_item){
+		if (not is_hovered)
+			continue;
+		
+		obj_tooltip.text = text_tooltip;
+		other.cursor = cr_handpoint;
+		break;
 	}
 }
 else{

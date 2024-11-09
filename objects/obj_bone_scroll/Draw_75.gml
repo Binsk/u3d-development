@@ -14,7 +14,7 @@ for (var i = 0; i < loop; ++i){
 		is_hovered = true;
 		
 		if (mouse_check_button_pressed(mb_left)){
-			var button_id = obj_demo.primary_button;
+			var button_id = obj_demo_controller.primary_button;
 			button_id.animation_tree.attach_body(child_body, button_id.body, button_id.animation_tree.get_bone_id(bone_name_array[i]));
 			
 			// Calculate the scale relative to the primary body:
@@ -34,7 +34,7 @@ for (var i = 0; i < loop; ++i){
 			slider_id.signaler.signal("drag", [slider_id.drag_value]);
 			
 			obj_render_controller.add_body(child_body);
-			obj_demo.update_data_count();
+			obj_demo_controller.update_data_count();
 			instance_destroy();
 			return;
 		}

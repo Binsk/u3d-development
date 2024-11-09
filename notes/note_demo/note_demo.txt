@@ -1,0 +1,5 @@
+# About
+
+The demo scene is a setup to test loading models, rendering, and animation with
+the U3D system. It is a robust loader, effectively, to double-check that a specific
+model can be correctly loaded and rendered through the glTFBuilder.

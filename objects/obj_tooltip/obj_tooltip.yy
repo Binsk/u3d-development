@@ -9,8 +9,8 @@
   "name":"obj_tooltip",
   "overriddenProperties":[],
   "parent":{
-    "name":"Testing",
-    "path":"folders/Testing.yy",
+    "name":"Menu",
+    "path":"folders/Demo Interface/Menu.yy",
   },
   "parentObjectId":null,
   "persistent":false,

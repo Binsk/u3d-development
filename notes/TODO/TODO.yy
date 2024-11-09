@@ -3,8 +3,8 @@
   "%Name":"TODO",
   "name":"TODO",
   "parent":{
-    "name":"Testing",
-    "path":"folders/Testing.yy",
+    "name":"upset3d-engine",
+    "path":"upset3d-engine.yyp",
   },
   "resourceType":"GMNotes",
   "resourceVersion":"2.0",

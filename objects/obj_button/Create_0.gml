@@ -1,6 +1,6 @@
-signaler = new Signaler();
-text = "";
-text_tooltip = "";
+/// @signals
+/// pressed	()		-	Thrown when the button is pressed
+event_inherited();
 
 width = 256;
 height = 32;
@@ -8,7 +8,6 @@ gltf = undefined;
 model = undefined;
 body = undefined;
 animation_tree = undefined;
-is_hovered = false;
 is_model_button = true;
 slider_id = undefined;
 
@@ -21,12 +20,12 @@ function cleanup_model(){
 	body.free();
 	delete body;
 	animation_tree = undefined;
-	obj_demo.update_data_count();
+	obj_demo_controller.update_data_count();
 	
-	for (var i = 0; i < array_length(obj_demo.model_scale_slider_array); ++i){
-		var slider = obj_demo.model_scale_slider_array[i];
+	for (var i = 0; i < array_length(obj_demo_controller.model_scale_slider_array); ++i){
+		var slider = obj_demo_controller.model_scale_slider_array[i];
 		if (slider.button_id == id){
-			array_delete(obj_demo.model_scale_slider_array, i, 1);
+			array_delete(obj_demo_controller.model_scale_slider_array, i, 1);
 			instance_destroy(slider);
 			break;
 		}

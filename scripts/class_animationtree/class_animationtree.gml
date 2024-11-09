@@ -268,7 +268,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 				array[offset + 6] = translation.z;
 			}
 		}
-		
+
 		return array;
 	}
 	
