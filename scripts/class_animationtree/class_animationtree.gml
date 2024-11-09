@@ -423,13 +423,11 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	
 	/// @desc	This uses signals to attach a child body to a bone in the animation
 	///			system. This does NOT update body components! It only updates the render matrix.
-	///			The body should not update its components once attached or it will break the
-	///			render until the next skeletal update.
-	///			Local body transforms will NOT be included in the final transform.
+	///			If attached, updating the child's components becomes expensive and should be avoided.
 	/// @param	{Body}		child_body					the body of the child that should be attached to the bone
 	/// @param	{Node}		parent_node					the node to transform relative to (usually the body containing the animation structure)
 	/// @param	{int}		bone_id						id of the bone to attach to (use bone_get_id() to use a name)
-	function attach_body(child_body, parent_node, bone_id, update_components=false){
+	function attach_body(child_body, parent_node, bone_id){
 		if (not is_instanceof(child_body, Body)){
 			Exception.throw_conditional("invalid type, expected [Body]!");
 			return;
@@ -441,26 +439,43 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		
 		detach_body(child_body, bone_id); // In case it was already attached
-		if (not update_components){
+
+		// Create a callable to use every time the bone updates:
+		var callable_bone = new Callable(child_body, function(matrix, parent_node){
+			matrix_model = matrix_multiply_post(parent_node.get_model_matrix(), matrix, get_model_matrix(true));
+			matrix_inv_model = undefined;
+		}, [undefined, parent_node]);
+		
+		// Create a callable to use every time the body updates:
+		var callable_body = new Callable(self, function(_from, _to, child_index){
+			var data = attached_bodies[$ child_index];
+			if (is_undefined(data))
+				return;
 			
-/// @stub	Child scale is making the body move; fix this
-			var callable = new Callable(child_body, function(matrix, parent_node){
-				// matrix_model = matrix_multiply_post(get_model_matrix(true), parent_node.get_model_matrix(), matrix);
-				matrix_model = matrix_multiply_post(parent_node.get_model_matrix(), matrix);
-			}, [undefined, parent_node]);
-			
-			attached_bodies[$ child_body.get_index()] = {
-				bone_id : bone_id,
-				callable : callable,
-				child_body : child_body
-			};
-			
-			signaler.add_signal($"transformed_bone_{bone_id}", callable);
-			child_body.signaler.add_signal("free", new Callable(self, detach_body, [child_body]));
-		}
-		else {
-/// @stub	Implement
-		}
+			var matrix = skeleton[$ data.bone_id][$ "matrix_cached"];
+			if (is_undefined(matrix))
+				return;
+				
+			data.callable_bone.call([matrix, data.parent_node]);
+		}, [undefined, undefined, child_body.get_index()]);
+		
+		// Record the values so we can detach things easily:
+		attached_bodies[$ child_body.get_index()] = {
+			bone_id : bone_id,
+			callable_bone : callable_bone,
+			callable_body : callable_body, 
+			child_body : child_body,
+			parent_node : parent_node
+		};
+		
+		// Attach the body to the animation tree:
+		signaler.add_signal($"transformed_bone_{bone_id}", callable_bone);
+		child_body.signaler.add_signal("free", new Callable(self, detach_body, [child_body]));
+		
+		// Attach the animation tree to the body's updates:
+		child_body.signaler.add_signal("set_position", callable_body);
+		child_body.signaler.add_signal("set_scale", callable_body);
+		child_body.signaler.add_signal("set_rotation", callable_body);
 	}
 	
 	function detach_body(child_body){
@@ -473,8 +488,11 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		if (is_undefined(data))
 			return;
 		
-		signaler.remove_signal($"transformed_bone_{data.bone_id}", data.callable);
-		child_body.remove_signal("free", new Callable(self, detach_body, [child_body]));
+		signaler.remove_signal($"transformed_bone_{data.bone_id}", data.callable_bone);
+		child_body.signaler.remove_signal("free", new Callable(self, detach_body, [child_body]));
+		child_body.signaler.remove_signal("set_position", data.callable_body);
+		child_body.signaler.remove_signal("set_rotation", data.callable_body);
+		child_body.signaler.remove_signal("set_scale", data.callable_body);
 		struct_remove(attached_bodies, child_body.get_index());
 	}
 	

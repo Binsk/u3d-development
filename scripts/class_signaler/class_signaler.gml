@@ -147,6 +147,8 @@ function Signaler() constructor{
 
 /// @desc	A callable is effectively a method() that can also take arguments which will
 ///			be auto-passed when called.
+/// @warning	Due to the identifier hash, passing in a large struct as an instance or argv
+///				value may cause a slow construction! Override the struct's toString() to mitigate this.
 /// @param	{any}			instance	the instance / struct to call in the contect of
 /// @param	{function}		function	the function to call when executed
 /// @param	{array[any]}	argv=[]		the arguments to pass when executed
@@ -190,7 +192,7 @@ function Callable(_instance, _function, argv=[]) constructor {
 			return new Callable(method_get_self(method_ref), method_get_index(method_ref), array_duplicate_shallow(argv));
 		}
 		#endregion
-		
+
 		#region INIT
 		identifier = md5_string_utf8(string(_instance) + string(_function) + string(argv));
 		#endregion

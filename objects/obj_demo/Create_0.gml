@@ -17,7 +17,6 @@ camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);
-camera.set_render_flag(CAMERA_RENDER_FLAG.environment, false);
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);
 U3D.RENDERING.PPFX.grayscale.set_enabled(false);
 U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
@@ -25,6 +24,7 @@ distance = 12;
 rotation_offset = 0;
 rotation_last = current_time;
 rotate_camera = true;
+primary_button = noone;	// Button w/ primary model to attach things to
 
 instance_create_depth(0, 0, 0, obj_render_controller);
 obj_render_controller.render_mode = RENDER_MODE.draw_gui;

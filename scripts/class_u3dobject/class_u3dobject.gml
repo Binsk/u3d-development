@@ -252,6 +252,10 @@ function U3DObject() constructor {
 		remove_child_ref(value_old);
 		return add_child_ref(value_new);
 	}
+	
+	function toString(){
+		return $"[U3DObject:{get_index()}]";
+	}
 
 	/// @desc	Frees up all data related to the object and makes the object 'unusable' from
 	///			this point forward. Can be seen as the 'destructor' for the class. This should
