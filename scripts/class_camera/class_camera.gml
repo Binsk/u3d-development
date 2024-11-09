@@ -47,6 +47,14 @@ enum CAMERA_DEBUG_FLAG {
 	render_wireframe	=	0b1	// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
 }
 
+/// @desc	Bitwiseable flags to enable / disable specific rendering pipeline features for the specific camara
+enum CAMERA_RENDER_FLAG {
+	ppfx				=	0b0001,		// Post processing effects
+	shadows				=	0b0010,		// Light shadow processing functions (includes SSAO)
+	environment			=	0b0100,		// Environmental reflections
+	emission			=	0b1000,		// Emissive texture rendering
+}
+
 function Camera() : Node() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance
@@ -61,7 +69,8 @@ function Camera() : Node() constructor {
 	render_tonemap = CAMERA_TONEMAP.none;
 	/// @stub	Add post-processing structure & addition / removal / render to camera
 	post_process_effects = {};	// priority -> effect pairs for post processing effects
-	debug_flags = 0;		// CAMERA_DEBUG_FLAGS toggles
+	debug_flags = 0;		// CAMERA_DEBUG_FLAG toggles
+	render_flags = -1;		// CAMERA_RENDER_FLAG toggles
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_opaque = -1;
@@ -127,13 +136,21 @@ function Camera() : Node() constructor {
 		bytes += (buffer_width * buffer_height) * (
 			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque albedo + depth
 			(render_stages & CAMERA_RENDER_STAGE.translucent ? 8 : 0) +	// translucent albedo + depth
-			16 +  // Normal, view, emissive, pbr 
+			4 +	// Normal
+			4 + // View
+			(get_has_render_flag(CAMERA_RENDER_FLAG.emission) ? 4 : 0) + // Emission
+			4 + // PBR
 			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque output (16f)
 			(render_stages & CAMERA_RENDER_STAGE.translucent ? 8 : 0) +	// translucent output (16f)
-			16 // Final, post process
+			(get_has_render_flag(CAMERA_RENDER_FLAG.ppfx) ? 8 : 0) + // Post process
+			8		// Final
 		);
 		
 		return bytes;
+	}
+	
+	function get_has_render_flag(flag){
+		return (render_flags & flag == flag);
 	}
 	
 	/// @dsec	Adds a new post processing effect with the specified render priority.
@@ -215,8 +232,15 @@ function Camera() : Node() constructor {
 		}
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.emissive])){
-			surfaces[$ CAMERA_GBUFFER.emissive] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
-			textures[$ CAMERA_GBUFFER.emissive] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.emissive]);
+			if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)){
+				surfaces[$ CAMERA_GBUFFER.emissive] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
+				textures[$ CAMERA_GBUFFER.emissive] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.emissive]);
+			}
+		}
+		else if (not get_has_render_flag(CAMERA_RENDER_FLAG.emission)) {
+			surface_free(surfaces[$ CAMERA_GBUFFER.emissive])
+			surfaces[$ CAMERA_GBUFFER.emissive] = undefined;
+			textures[$ CAMERA_GBUFFER.emissive] = undefined;
 		}
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.light_opaque])){
@@ -243,13 +267,16 @@ function Camera() : Node() constructor {
 		}
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.post_process])){
-			if (struct_names_count(post_process_effects) > 0){
+			if (struct_names_count(post_process_effects) > 0 and get_has_render_flag(CAMERA_RENDER_FLAG.ppfx)){
 				surfaces[$ CAMERA_GBUFFER.post_process] = surface_create(buffer_width, buffer_height, surface_rgba16float);
 				textures[$ CAMERA_GBUFFER.post_process] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.post_process]);
 			}
 		}
-		else if (struct_names_count(post_process_effects) <= 0)
+		else if (struct_names_count(post_process_effects) <= 0 or not get_has_render_flag(CAMERA_RENDER_FLAG.ppfx)){
 			surface_free(surfaces[$ CAMERA_GBUFFER.post_process])
+			surfaces[$ CAMERA_GBUFFER.post_process] = undefined;
+			textures[$ CAMERA_GBUFFER.post_process] = undefined;
+		}
 		
 		surface_depth_disable(false);
 	}
@@ -275,12 +302,14 @@ function Camera() : Node() constructor {
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], 0, 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
+		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
+			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
 		
 		surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
 		surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 		surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
-		surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.emissive]);
+		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
+			surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.emissive]);
 		
 		var world_matrix = matrix_get(matrix_world); // Cache so we can reset for later stages
 		matrix_set(matrix_view, eye.get_view_matrix());
@@ -338,7 +367,7 @@ function Camera() : Node() constructor {
 			return;
 			
 		// Render light shadows:
-		if (not is_translucent){ // We only do so for opaque instances
+		if (not is_translucent and render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows){ // We only do so for opaque instances
 			for (var i = array_length(light_array) - 1; i >= 0; --i){
 				if (light_array[i].get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
 					continue;
@@ -380,7 +409,7 @@ function Camera() : Node() constructor {
 			surface_reset_target();
 			
 			var applied_shadows = false;
-			if (not is_translucent)
+			if (not is_translucent and render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows)
 				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque]);
 			
 			if (not applied_shadows){
@@ -391,6 +420,9 @@ function Camera() : Node() constructor {
 			}
 			gpu_set_blendmode(bm_normal);
 		}
+		
+		if (not get_has_render_flag(CAMERA_RENDER_FLAG.emission))
+			return;
 		
 		// Special render for emissive textures:
 		static uniform_emissive = -1;
@@ -455,7 +487,7 @@ function Camera() : Node() constructor {
 		shader_reset();
 		surface_reset_target();
 		
-		if (struct_names_count(post_process_effects) <= 0)
+		if (struct_names_count(post_process_effects) <= 0 or render_flags & CAMERA_RENDER_FLAG.ppfx != CAMERA_RENDER_FLAG.ppfx)
 			return;
 		
 		var priority = ds_priority_create();

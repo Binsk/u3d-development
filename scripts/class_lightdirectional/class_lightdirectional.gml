@@ -23,7 +23,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shadow_depth_texture = -1;
 	shadow_znear = 0.01;		// How close to the light things will render
 	shadow_zfar = 1024;			// How far away from the light things will render
-	shadow_bias = 0.00005;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
+	shadow_bias = 0.0001;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
 	shadow_viewprojection_matrix = matrix_build_identity();	// Will calculate if shadows are enabled
 	
 	#region SHADER UNIFORMS
@@ -90,7 +90,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		texture_set_stage(uniform_sampler_pbr, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_view, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
 		
-		if (not is_undefined(texture_environment)){
+		if (not is_undefined(texture_environment) and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.environment)){
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			uniform_set("u_iEnvironment", shader_set_uniform_i, true);
 			uniform_set("u_iMipCount", shader_set_uniform_i, [not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count]);

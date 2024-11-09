@@ -27,30 +27,10 @@ function LightAmbient() : Light() constructor {
 	uniform_sampler_view = -1;
 	uniform_sampler_normal = -1;
 	uniform_sampler_environment = -1;
-	uniform_ssao = -1;
-	uniform_light_color = -1;
-	uniform_light_intensity = -1;
-	uniform_texel_size = -1;
-	uniform_blur_samples = -1;
-	uniform_blur_stride = -1;
-	uniform_inv_viewmatrix = -1;
-	uniform_inv_projmatrix = -1;
-	uniform_environment = -1;
-	uniform_cam_position = -1;
-	uniform_mip_count = -1;
 
 	uniform_ssao_sampler_depth = -1;
 	uniform_ssao_sampler_normal = -1;
 	uniform_ssao_sampler_noise = -1;
-	uniform_ssao_invproj = -1;
-	uniform_ssao_view = -1;
-	uniform_ssao_texelsize = -1;
-	uniform_ssao_samples = -1;
-	uniform_ssao_sample_array = -1;
-	uniform_ssao_radius = -1;
-	uniform_ssao_scale = -1;
-	uniform_ssao_bias = -1;
-	uniform_ssao_intensity = -1;
 	
 	#endregion
 	#endregion
@@ -181,7 +161,7 @@ function LightAmbient() : Light() constructor {
 		texture_set_stage(uniform_sampler_pbr, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 		texture_set_stage(uniform_sampler_view, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
 		
-		if (not is_undefined(texture_environment)){
+		if (not is_undefined(texture_environment) and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.environment)){
 			texture_set_stage(uniform_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
 			uniform_set("u_iEnvironment", shader_set_uniform_i, true);
@@ -190,7 +170,7 @@ function LightAmbient() : Light() constructor {
 		else
 			uniform_set("u_iEnvironment", shader_set_uniform_i, false);
 		
-		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0){
+		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0 and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.shadows)){
 			texture_set_stage(uniform_sampler_ssao, surface_get_texture(surface_ssao));
 			
 			uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_ssao), 1.0 / surface_get_height(surface_ssao)]);
@@ -198,8 +178,7 @@ function LightAmbient() : Light() constructor {
 			uniform_set("u_fBlurStride", shader_set_uniform_f, ssao_blur_stride);
 		}
 		
-		// shader_set_uniform_i(uniform_ssao, not is_translucent and casts_shadows);
-		uniform_set("u_iSSAO", shader_set_uniform_i, not is_translucent and casts_shadows);
+		uniform_set("u_iSSAO", shader_set_uniform_i, not is_translucent and casts_shadows and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.shadows));
 	}
 	
 	function apply(){
