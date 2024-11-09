@@ -39,18 +39,27 @@ texturegroup_load("U3DDefaults", true);
 /// If the model has > U3D_MAXIMUM_BONES bones, then a simplified quat+pos pair is used.
 #macro U3D_MAXIMUM_BONES (get_is_directx_pipeline() ? 64 : 80)
 
-// This structure holds a number of defaults and fallback values. The system 
-// relies on this structure but it can also be accessed / modified manually if
-// needed through the U3D macro.
-global.__u3d_global_data = {
+// A global structure that contains fallback defaults and system settings
+#macro U3D global.__u3d_global_data
+
+// Delta time, in seconds, with safety values.
+#macro frame_delta clamp(delta_time / 1000000, 0.004, 0.067)
+
+// Delta time, in percent, relative to a 60fps target. Helpful if the system was
+// designed around 60fps and needs later adjustment.
+#macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
+
+/// Define U3D structure
+U3D = {
 	RENDERING : {
 		MATERIAL : {
-			missing : new MaterialSpatial()	// Default material for when a material is missing
+			missing : new MaterialSpatial(),	// Default material for when a material is missing
+			blank : new MaterialSpatial()		// Default material for when no material is specified
 		},
 		PPFX : { // Pre-made PostProcessingFX that can be attached to render cameras
 			fxaa : new PostProcessFX(shd_fxaa),				// FXAA anti-aliasing
 			grayscale : new PostProcessFX(shd_grayscale),	// Turns the output into grayscale
-			gamma_correction : new PostProcessFX(shd_gamma_correction)	// Does basic gamma correction; useful if we want to do it manually
+			gamma_correction : new PostProcessFX(shd_gamma_correction)	// Does basic gamma correction; useful if we want to do it manually outside the tonemap
 		},
 		ANIMATION : {
 			SKELETON : {
@@ -62,15 +71,8 @@ global.__u3d_global_data = {
 	MEMORY : {}	// Used to hold data caches and garbage-collect dynamically generated resources
 }
 
-#macro U3D global.__u3d_global_data
-
-// Delta time, in seconds, with safety values.
-#macro frame_delta clamp(delta_time / 1000000, 0.004, 0.067)
-
-// Delta time, in percent, relative to a 60fps target. Helpful if the system was
-// designed around 60fps and needs later adjustment.
-#macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
-
 // Define 'missing material' texture:
 U3D.RENDERING.MATERIAL.missing.set_texture("albedo", new Texture2D(sprite_get_texture(spr_missing_texture, 0)));
 U3D.RENDERING.MATERIAL.missing.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
+U3D.RENDERING.MATERIAL.blank.set_texture("albedo", new Texture2D(sprite_get_texture(spr_default_white, 0)));
+U3D.RENDERING.MATERIAL.blank.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;

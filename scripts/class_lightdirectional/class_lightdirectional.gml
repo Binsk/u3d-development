@@ -66,6 +66,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (not is_undefined(texture) and not is_instanceof(texture, TextureCube))
 			throw new Exception("invalid type, expected [TextureCube]!");
 			
+		replace_child_ref(texture, texture_environment);
 		texture_environment = texture;
 	}
 	

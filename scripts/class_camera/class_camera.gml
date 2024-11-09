@@ -126,6 +126,18 @@ function Camera() : Node() constructor {
 		self.render_tonemap = tonemap;
 	}
 	
+	/// @desc	Enables or disables a render flag effect. This can be used to
+	///			toggle specific features per-camera and separate from lights and
+	///			models.
+	/// @param	{CAMERA_RENDER_FLAG}	flag			flag (or bitwised flags) to enable or disable
+	/// @param	{bool}					enabled=true	if true, adds the flag otherwise removes it
+	function set_render_flag(flag, enabled=true){
+		if (enabled)
+			render_flags |= flag;
+		else
+			render_flags &= ~flag;
+	}
+	
 	/// @desc	Returns the estimated amount of vRAM used by the gbuffer, in bytes, for this camera.
 	///			Does NOT account for body materials or light buffers.
 	function get_vram_usage(){
@@ -149,6 +161,8 @@ function Camera() : Node() constructor {
 		return bytes;
 	}
 	
+	/// @desc	Returns whether or noth ALL the specified flags are enabled
+	/// @param	{CAMERA_RENDER_FLAG}	flag		flag (or bitwised flags) to check for enabled state
 	function get_has_render_flag(flag){
 		return (render_flags & flag == flag);
 	}

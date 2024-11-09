@@ -17,6 +17,7 @@ camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);
+camera.set_render_flag(CAMERA_RENDER_FLAG.environment, false);
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);
 U3D.RENDERING.PPFX.grayscale.set_enabled(false);
 U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
