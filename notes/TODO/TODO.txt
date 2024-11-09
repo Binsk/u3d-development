@@ -3,6 +3,10 @@
 -	Cube-mapping seams, especially noticeable w/ the mips
 -	Shadow multi-samples are causing halos around objects (?)
 -	[windows] shadows not working right on Windows w/ animation applied
+-	Framerate drops drastically in cycles. It comes and goes and depends on
+	what I was doing, but I was getting drops from 200 to 40 where then it would
+	inch up to drop again. Seems it may be animation related. Increasing the
+	update frequency to max helps show it best.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

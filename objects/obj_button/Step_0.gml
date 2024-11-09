@@ -49,15 +49,16 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			
 			// Generate slider:
 			var slider = instance_create_depth(12, 0, 0, obj_slider);
-			slider.text = $"{text} scale:";
+			slider.text = $"{text} scale: {body.scale.x}x";
 			slider.button_id = id;
 			slider.min_value = body.scale.x * 0.25;
 			slider.max_value = body.scale.x * 2.0;
 			slider.drag_value = (body.scale.x - slider.min_value) / (slider.max_value - slider.min_value);
-			slider.signaler.add_signal("drag", new Callable(id, function(value, inst){
+			slider.signaler.add_signal("drag", new Callable(id, function(value, inst, label){
 				var lerpvalue = lerp(inst.min_value, inst.max_value, value);
 				body.set_scale(vec(lerpvalue, lerpvalue, lerpvalue));
-			}, [undefined, slider]))
+				inst.text = $"{text} scale: {lerpvalue}x";
+			}, [undefined, slider, $"{text} scale:"]))
 			array_push(obj_demo.model_scale_slider_array, slider);
 			slider_id = slider;
 			with (obj_bone_scroll)

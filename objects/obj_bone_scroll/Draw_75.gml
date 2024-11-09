@@ -31,6 +31,7 @@ for (var i = 0; i < loop; ++i){
 			slider_id.min_value = child_body.scale.x * 0.25;
 			slider_id.max_value = child_body.scale.x * 5.0;
 			slider_id.drag_value = (child_body.scale.x - slider_id.min_value) / (slider_id.max_value - slider_id.min_value);
+			slider_id.signaler.signal("drag", [slider_id.drag_value]);
 			
 			obj_render_controller.add_body(child_body);
 			obj_demo.update_data_count();
