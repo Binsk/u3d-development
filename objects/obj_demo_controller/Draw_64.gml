@@ -5,7 +5,7 @@ var model_count = 0;
 var triangle_count = 0;
 var animation_string = "Animation Tracks:\n";
 
-with (obj_button){
+with (obj_button_model){
 	if (is_undefined(body))
 		continue;
 	
@@ -40,7 +40,7 @@ var ax = 256 + 12;
 var ay = 12;
 draw_text_color(ax, 12, "Animation Tracks:", c_white, c_white, c_white, c_white, 1.0);
 
-with (obj_button){
+with (obj_button_model){
 	if (is_undefined(body))
 		continue;
 	
@@ -52,6 +52,8 @@ with (obj_button){
 	}
 	
 	var names = animation_tree.get_track_names();
+	array_sort(names, true);
+	
 	var str = $"  [{text}] [bones {is_undefined(animation_tree) ? 0 : animation_tree.get_max_bone_count()}] : ";
 	draw_text_color(ax, ay, str, c_white, c_white, c_white, c_white, 1.0);
 	for (var i = 0; i < array_length(names); ++i){

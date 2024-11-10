@@ -6,22 +6,21 @@ instance_create_depth(0, 0, -2, obj_tooltip);
 var file = file_find_first("test-models/*.glb", fa_none);
 var inst;
 var ax = display_get_gui_width() - 12 - 256;
-while (file != "" and instance_number(obj_button) < 18){
-	inst = instance_create_depth(ax, 12 + instance_number(obj_button) * 44, 0, obj_button);
+while (file != "" and instance_number(obj_button_model) < 18){
+	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
 	file = file_find_next();
 }
 file_find_close();
 
 file = file_find_first("test-models/*.gltf", fa_none);
-while (file != "" and instance_number(obj_button) < 18){
-	inst = instance_create_depth(ax, 12 + instance_number(obj_button) * 44, 0, obj_button);
+while (file != "" and instance_number(obj_button_model) < 18){
+	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
 	file = file_find_next();
 }
  
 inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44, 0, obj_button);
-inst.is_model_button = false;
 inst.text = "Exit";
 inst.signaler.add_signal("pressed", new Callable(id, game_end));
 
@@ -55,17 +54,11 @@ inst.signaler.add_signal("checked", function(is_checked){
 
 ay -= 32;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
-inst.text = "Rotate Camera";
-inst.text_tooltip = "Set the camera to automatically rotate around the model.";
-inst.is_checked = true;
+inst.text = "Render Wireframe";
+inst.text_tooltip = "Whether or not the model should render as a wireframe.\n\nNote: Wireframes are for debugging only as they are slow to render and require a separate vertex buffer to be generated upon model load.";
+inst.is_checked = false;
 inst.signaler.add_signal("checked", function(is_checked){
-	with (obj_demo_controller){
-		rotate_camera = is_checked;
-		if (is_checked)
-			rotation_offset += current_time - rotation_last;
-		else
-			rotation_last = current_time;
-	}
+	obj_demo_controller.camera.debug_flags = is_checked;
 });
 
 ay -= 32;
@@ -92,13 +85,18 @@ inst.signaler.add_signal("checked", function(is_checked){
 
 ay -= 32;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
-inst.text = "Render Wireframe";
-inst.text_tooltip = "Whether or not the model should render as a wireframe.\n\nNote: Wireframes are for debugging only as they are slow to render and require a separate vertex buffer to be generated upon model load.";
-inst.is_checked = false;
+inst.text = "Rotate Camera";
+inst.text_tooltip = "Set the camera to automatically rotate around the model.";
+inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
-	obj_demo_controller.camera.debug_flags = is_checked;
+	with (obj_demo_controller){
+		rotate_camera = is_checked;
+		if (is_checked)
+			rotation_offset += current_time - rotation_last;
+		else
+			rotation_last = current_time;
+	}
 });
-
 
 // Animation properties:
 ax -= 256 + 12;
@@ -108,7 +106,7 @@ inst.text = "Loop Animations";
 inst.text_tooltip = "Whether animation channels should loop or pause at the end of the track.";
 inst.signaler.add_signal("checked", function(is_checked){
 	obj_demo_controller.animation_loop = is_checked;
-	with (obj_button){
+	with (obj_button_model){
 		if (is_undefined(animation_tree))
 			continue;
 		
@@ -134,7 +132,7 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	lerpvalue = floor(lerpvalue * 100) / 100;
 	inst.text = $"Animation Speed: {lerpvalue}x";
 	obj_demo_controller.animation_speed = lerpvalue
-	with (obj_button){
+	with (obj_button_model){
 		if (is_undefined(animation_tree))
 			continue;
 		
@@ -153,7 +151,7 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	lerpvalue = floor(lerpvalue * 100) / 100;
 	inst.text = $"Update Frequency: {lerpvalue}s";
 	obj_demo_controller.animation_freq = lerpvalue
-	with (obj_button){
+	with (obj_button_model){
 		if (is_undefined(animation_tree))
 			continue;
 		

@@ -36,6 +36,7 @@ for (var i = 0; i < loop; ++i){
 			obj_render_controller.add_body(child_body);
 			obj_demo_controller.update_data_count();
 			instance_destroy();
+			io_clear();
 			return;
 		}
 	}

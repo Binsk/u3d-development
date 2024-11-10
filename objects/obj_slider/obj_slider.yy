@@ -11,7 +11,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Menu",
-    "path":"folders/Demo Interface/Menu.yy",
+    "path":"folders/Demo Interface/Objects/Menu.yy",
   },
   "parentObjectId":{
     "name":"obj_menu_item",
