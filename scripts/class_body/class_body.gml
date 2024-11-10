@@ -6,6 +6,7 @@ function Body() : Node() constructor {
 	#region PROPERTIES
 	model_instance = undefined;			// Renderable 3D Model()
 	animation_instance = undefined;		// AnimationTree() to apply to the model
+	collidable_instance = undefined;	// Collidable() to apply to the model
 	#endregion
 	
 	#region METHODS
@@ -34,6 +35,17 @@ function Body() : Node() constructor {
 		
 		replace_child_ref(tree, animation_instance);
 		animation_instance = tree;
+	}
+	
+	function set_collidable(collidable){
+		if (not is_instanceof(collidable, Collidable)){
+			Exception.throw_conditional("invalid type, expected [Collidable]!");
+			return;
+		}
+		
+		replace_child_ref(collidable, collidable_instance);
+		collidable_instance = collidable;
+		set_data("collision", undefined);	// Remove cached collidable data
 	}
 	
 	function get_model(){

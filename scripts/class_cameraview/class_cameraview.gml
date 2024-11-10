@@ -86,8 +86,45 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh), 0, 0);
 		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh) + anchor.get_dx(rh), 1, 1);
 		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh) + anchor.get_dy(rh), 0, 1);
-		draw_primitive_end();
+		draw_primitive_end(); 
 		shader_reset();
+	}
+	
+	/// @desc	Given 2D point on the canvas, projects the location into 3D space and
+	///			updates the provided ray to contain projection direction. Origin point
+	///			can be assumed to be the camera's position.
+	function calculate_world_ray(px, py, ray){
+		if (not is_instanceof(ray, Ray)){
+			Exception.throw_conditional("invalid type, expected [Ray]!");
+			return;
+		}
+		
+		if (px < 0 or py < 0)
+			return;
+		if (px >= render_width or py >= render_height)
+			return;
+			
+		// Convert to screen space [-1..1]:
+			/// @note	We inverte the axes due to the rendering canvas being flipped
+		px = -((px / render_width) * 2.0 - 1.0);
+		py = -((1.0 - py / render_height) * 2.0 - 1.0);
+		if (get_is_directx_pipeline())
+			py = -py;
+		
+		// Reverse-project the point into view space:
+		var point_far = matrix_transform_vertex(eye_id.get_inverse_projection_matrix(), px, py, 1, 1);	// Location at far-clip
+		var point_near = matrix_transform_vertex(eye_id.get_inverse_projection_matrix(), px, py, 0, 1);	// Location at near-clip
+		
+		for (var i = 0; i < 3; ++i){ // Scale by w
+			point_far[i] /= point_far[3];
+			point_near[i] /= point_near[3];
+		}
+		
+		// Project from view space into world space:
+		point_far = matrix_transform_vertex(eye_id.get_inverse_view_matrix(), point_far[0], point_far[1], point_far[2], 1);
+		point_near = matrix_transform_vertex(eye_id.get_inverse_view_matrix(), point_near[0], point_near[1], point_near[2], 1);
+		
+		ray.orientation = vec_normalize(vec(point_far[0] - point_near[0], point_far[1] - point_near[1], point_far[2] - point_near[2]));
 	}
 	#endregion
 	

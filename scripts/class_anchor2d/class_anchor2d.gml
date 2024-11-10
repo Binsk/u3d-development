@@ -47,5 +47,13 @@ function Anchor2D() constructor {
 	function get_dy(canvas_height){
 		return (canvas_height * anchor.y2 + margin.y2) - (canvas_height * anchor.y1 + margin.y1);
 	}
+	
+	function get_lx(lerpvalue, canvas_width){
+		return get_x(canvas_width) + get_dx(canvas_width) * lerpvalue;
+	}
+	
+	function get_ly(lerpvalue, canvas_height){
+		return get_y(canvas_width) + get_dy(canvas_width) * lerpvalue;
+	}
 	#endregion
 }
