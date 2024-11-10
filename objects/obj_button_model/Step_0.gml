@@ -63,7 +63,6 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			slider_id = slider;
 	}
 	else {
-		show_message(text);
 		if (obj_demo_controller.primary_button != id)
 			cleanup_model();
 		else {
