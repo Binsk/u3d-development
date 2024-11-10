@@ -1,6 +1,8 @@
 /// @about
 /// Handles loading GLTF data from disk into RAM as well as some basic 
-/// data navigation and parsing.
+/// data navigation and parsing. This structure only handles basic data loading
+/// and parsing and does not handle converting data into U3D instances. For that
+/// you need the GLTFBuilder().
 
 function GLTFLoader() : U3DObject() constructor {
 	#region PROPERTIES

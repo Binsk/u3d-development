@@ -75,7 +75,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 ay -= 32;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.text = "Apply Transforms";
-inst.text_tooltip = "Whether or not node transforms should be applied directly to the vertex buffers upon load.";
+inst.text_tooltip = "Whether or not node transforms should be applied directly to the vertex buffers upon load.\n\nThis can reduce CPU-side matrix multiplications but can also break models that re-use primitives across meshes.";
 inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
 	with (obj_demo_controller){

@@ -1,34 +1,38 @@
 // Good source of test models:
 // https://github.com/mrdoob/three.js/tree/master/examples/models/gltf
+#macro gmouse global.mouse
 window_set_fullscreen(true);
 display_set_gui_maximise();
-game_set_speed(999, gamespeed_fps);
-global.mouse = {
+game_set_speed(9999, gamespeed_fps);
+gmouse = {
 	x : 0,
 	y : 0
 }
 
 cursor = cr_arrow;
-#macro gmouse global.mouse
-Primitive.GENERATE_WIREFRAMES = true;
+Primitive.GENERATE_WIREFRAMES = true; // All generated models will have wireframe versions generated as well
 
+// Create our camera:
 camera = new CameraView();
-camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);
+camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);			// Add post processing, but disable it
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);
 U3D.RENDERING.PPFX.grayscale.set_enabled(false);
 U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
+
 distance = 12;
 rotation_offset = 0;
 rotation_last = current_time;
 rotate_camera = true;
-primary_button = noone;	// Button w/ primary model to attach things to
 
-instance_create_depth(0, 0, 0, obj_render_controller);
-obj_render_controller.render_mode = RENDER_MODE.draw_gui;
-obj_render_controller.add_camera(camera);
+primary_button = noone;	// Model buttons contain loaded model data, this is the primary button that others get attached to
+
+instance_create_depth(0, 0, 0, obj_animation_controller);	// Allow auto-handling animation updates
+instance_create_depth(0, 0, 0, obj_render_controller);		// Allow auto-handling rendering updates
+obj_render_controller.render_mode = RENDER_MODE.draw_gui;	// Set to display in GUI just for simplicity in rendering resolution
+obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
 
 environment_map = undefined;
 
@@ -50,12 +54,15 @@ model_count = 0;
 mesh_count = 0;
 primitive_count = 0;
 
-animation_loop = true;
+animation_loop = true;		// Animation properties we will apply to the currently animated models (all global)
 animation_smooth = true;
 animation_speed = 1.0;
 animation_freq = 0.033;
 import_textures = true;
 apply_transforms = true;
+
+error_array = [];
+error_time = 0;
 
 slider_ay = 0;
 model_scale_slider_array = [];
@@ -77,6 +84,11 @@ function update_data_count(){
 	model_count = get_ref_instance_count(Model);
 	mesh_count = get_ref_instance_count(Mesh);
 	primitive_count = get_ref_instance_count(Primitive);
+}
+
+function push_error(message){
+	error_time = current_time;
+	array_push(error_array, message);
 }
 
 // GameMaker's gui adjustment isn't immediate; just delay GUI element spawn for a bit

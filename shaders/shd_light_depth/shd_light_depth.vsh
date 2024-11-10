@@ -86,4 +86,14 @@ void main()
     gl_Position = vPosition;
 
     v_vTexcoord = in_TextureCoord0;
+    
+    #ifdef _YY_HLSL11_
+    /// Note:   Each attribute must be referenced under Windows, otherwise we
+    ///         get data sent to the wrong attribute and it breaks things like
+    ///         skeletal animation. These throwaway assignments work around
+    ///         the issue.
+    vec3 vFoo = in_TextureCoord1;
+	vec4 vBar = in_Colour;
+	vec3 vFooBar = in_Normal;
+	#endif
 }

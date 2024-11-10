@@ -36,6 +36,14 @@ function Body() : Node() constructor {
 		animation_instance = tree;
 	}
 	
+	function get_model(){
+		return model_instance;
+	}
+	
+	function get_animation(){
+		return animation_instance;
+	}
+	
 	super.register("free");
 	function free(){
 		super.execute("free");

@@ -2,10 +2,6 @@
 -	Textures not on 'own texture page' not rendering right
 -	Cube-mapping seams, especially noticeable w/ the mips
 -	Shadow multi-samples are causing halos around objects (?)
--	[windows] shadows not working right on Windows w/ animation applied
-	NOTE: There IS also some shadow flicker on Linux, but much less. Easiest
-	to see if model is blown up and animation update is frequent. Maybe bias, 
-	maybe update timing?
 -	Framerate drops drastically in cycles. It comes and goes and depends on
 	what I was doing, but I was getting drops from 200 to 40 where then it would
 	inch up to drop again. Seems it may be animation related. Increasing the
@@ -30,10 +26,6 @@
 -	Add some kind of PrimitiveBuilder where you can define a single primitev along
 	with a number of copies and matrices and it generates a 'multi-primitive' version
 	to render lots of copies as one.
--	Add support for glTF scenes! Meshes are defined / specified in nodes and
-	scenes can specify a sub-set of nodes. Simply allow generating a model based
-	off of a scene index to allow storing multiple 'models' in one file.
-
 -	Add support for attaching bone indices to meshes.
 -	Add support for attaching bodies to animation trees
 -	Finish implementing animation layer merging & create an example track that makes
@@ -45,5 +37,9 @@
 	for bandwidth reasons, but it would still be linear.
 	NOTE: Storage buffers would be better for bone data, but GameMaker doesn't support
 	them.
-	
 -	Add translucent shadow mapping
+-	Implement shadow sampling optimization (make it sample outer edges first, if
+	they are all dark assume the inside ones are and exit early)
+-	Add support for GLTF spawning a full "scene" including light and camera nodes.
+-	Add support to the GLTFBuilder to be provided a direct buffer; this allows
+	the programmer to manually load a file and then parse through the loader.

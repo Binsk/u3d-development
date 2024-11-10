@@ -1,3 +1,7 @@
+
+if (not is_undefined(animation_tree))
+	animation_tree.process(); /// @stub	Move into animation controller
+
 event_inherited();
 
 if (instance_exists(obj_bone_scroll))
@@ -5,16 +9,42 @@ if (instance_exists(obj_bone_scroll))
 	
 if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_undefined(body)){
-		gltf = new GLTFBuilder(text, "test-models");
-		animation_tree = gltf.generate_animation_tree();
-		model = gltf.generate_model(0, obj_demo_controller.import_textures, obj_demo_controller.apply_transforms);
-		model.freeze();
+		try{
+			gltf = new GLTFBuilder(text, "test-models");
+			animation_tree = gltf.generate_animation_tree();
+			model = gltf.generate_model(0, obj_demo_controller.import_textures, obj_demo_controller.apply_transforms);
+			model.freeze();
+		}
+		catch(e){
+			if (is_instanceof(e, Exception))
+				obj_demo_controller.push_error($"(glTF) {e.message}");
+			
+			if (is_instanceof(gltf, GLTFBuilder)){
+				gltf.free();
+				delete gltf;
+			}
+			
+			if (is_instanceof(animation_tree, AnimationTree)){
+				animation_tree.free();
+				delete animation_tree;
+			}
+			
+			if (is_instanceof(model, Model)){
+				model.free();
+				delete model;
+			}
+			
+			return;
+		}
 		
 		body = new Body();
 		body.set_model(model);
 		if (not is_undefined(animation_tree)){
 			body.set_animation(animation_tree);
 			animation_tree.set_update_freq(obj_demo_controller.animation_freq);
+			// Add to the animation system for automatic updates; note that freeing the body
+			// will automatically remove it from the system.
+			obj_animation_controller.add_body(body);
 		}
 		
 		var generate_as_primary = true;

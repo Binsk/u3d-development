@@ -149,14 +149,6 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	
 	/// @desc	Returns a cached transform array.
 	function get_transform_array(){
-/// @stub	This function should always return a track WITHOUT processing!
-///			We are processing here for testing, but it should be handled by the
-///			animation handler automatically (to open the doors for multi-threading later)\
-		var ct = current_time * 0.001;
-		if (ct - update_last < update_freq)
-			return transform_data;
-
-		process(); // Update skeleton
 		return transform_data;
 	}
 	
@@ -497,6 +489,11 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	}
 	
 	function process(){
+/// @stub	Remove time check from here; make it handled by the animation process
+		var ct = current_time * 0.001;
+		if (ct - update_last < update_freq)
+			return;
+			
 		var priority = ds_priority_create();
 		var keys = struct_get_names(animation_layers);
 		for (var i = array_length(keys) - 1; i >= 0; --i)

@@ -42,7 +42,6 @@
   ],
   "IncludedFiles":[
     {"$GMIncludedFile":"","%Name":"demo-floor.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-floor.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
-    {"$GMIncludedFile":"","%Name":"bee_bot.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"bee_bot.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"beetle_bot_fused.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"beetle_bot_fused.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"blocks.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"blocks.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"boom-box.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"boom-box.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
@@ -55,7 +54,6 @@
     {"$GMIncludedFile":"","%Name":"little-tokyo.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"little-tokyo.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"michelle-reexport.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"michelle-reexport.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"pink-cube.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"pink-cube.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
-    {"$GMIncludedFile":"","%Name":"simple-char.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"simple-char.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"sophia.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"sophia.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"tower.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"tower.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"xbot-reexport.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"xbot-reexport.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},

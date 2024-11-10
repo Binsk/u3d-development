@@ -1,0 +1,52 @@
+# Controller Objects
+## About
+Controller objects are not strictly necessary but they handle automating
+complex tasks and are highly recommended for any serious project. The
+controller systems also generally provide a number of optimized processing
+methods to improve performance that would be difficult or complex to manage
+manually.
+
+There should generally be a maximum of 1 of each type of controller in
+existence at any one time. It is possible to have more if you require
+multiple 'worlds' running at once, however.
+
+### Render Controller
+The render controller handles automatically updating cameras and graphical
+buffers. This may also include pushing the results of these updates to the
+screen automatically, similar to a GameMaker viewport.
+
+This controller manages cameras, lights, and bodies and will sort and render
+them as necessary. It can also be given a partitioning system to help 
+perform instance culling before a render is executed.
+
+If you wish not to use this controller you can still render a scene by manually updating
+a camera's render buffer while providing a list of bodies and lights to consider.
+
+### Collision Controller
+The collision controller helps process collisions in an efficient and 
+orderly way. While collisions can be checked manually, the controller will
+instead cache any body changes and check for new collisions only with those
+bodies all at once at the end of the frame but before rendering occurs.
+
+The collision system relies on signals to indicate when a collision occurs
+and will provide collision data in the signal's arguments for you to use.
+
+This system does NOT manage what should happen when a collision occurs; it
+only detects for collisions and data relating the each collision type but
+it is up to you to implement the reaction to the collisions.
+
+If you wish not to use this controller you can still detect collisions by
+manually executing the collision process per-body and providing a list of
+collision bodies to check against.
+
+### Animation Controller
+The animation controller takes a list of bodies and will automatically
+update any relevant animation tree systems while accounting for animation
+update speeds.
+
+The controller attempts to cull out needless updates to bones if the bone
+was not changed since the last tick and is generally more efficient than
+performing manual updates.
+
+If you wish not to use this controller you can still animate your meshes
+by calling the `process()` function in each `AnimationTree` instance.
