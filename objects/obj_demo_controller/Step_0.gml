@@ -10,9 +10,15 @@ if (not instance_exists(obj_bone_scroll)){
 		distance = min(distance + 1, 128);
 }
 
-if (rotate_camera)
-	camera.set_position(vec(distance * cos((current_time - rotation_offset) / 2000), distance * 0.5, distance * -sin((current_time - rotation_offset) / 2000)));
-	
+if (rotate_camera){
+	var pos = vec(cos((current_time - rotation_offset) / 2000), 0.5, -sin((current_time - rotation_offset) / 2000));
+	camera.set_position(vec_set_length(pos, distance));
+}
+else{
+	var pos = camera.get_position();
+	pos = vec_set_length(pos, distance);
+	camera.set_position(pos);
+}
 camera.look_at_up(vec());
 
 window_set_cursor(cursor);
