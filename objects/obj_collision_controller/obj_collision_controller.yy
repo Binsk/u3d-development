@@ -11,7 +11,10 @@
     "name":"Objects",
     "path":"folders/Upset 3D/Objects.yy",
   },
-  "parentObjectId":null,
+  "parentObjectId":{
+    "name":"obj_u3d_controller",
+    "path":"objects/obj_u3d_controller/obj_u3d_controller.yy",
+  },
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,

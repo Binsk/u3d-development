@@ -15,6 +15,8 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			model = gltf.generate_model(0, obj_demo_controller.import_textures, obj_demo_controller.apply_transforms);
 			model.freeze();
 		}
+		// Catch any glTF loading errors in this case; generally due to glTF features
+		// not supported by the U3D implementation.
 		catch(e){
 			if (is_instanceof(e, Exception))
 				obj_demo_controller.push_error($"(glTF) {e.message}");
