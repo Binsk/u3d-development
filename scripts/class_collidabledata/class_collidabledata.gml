@@ -6,6 +6,8 @@ function CollidableData(type_a=Collidable, type_b=Collidable) constructor {
 	#region PROPERTIES
 	self.type_a = type_a;
 	self.type_b = type_b;
+	body_a = undefined;
+	body_b = undefined;
 	data = {};
 	#endregion
 	
@@ -24,6 +26,14 @@ function CollidableData(type_a=Collidable, type_b=Collidable) constructor {
 	/// @desc	Returns the class type of the instance the collision is checked against.
 	function get_affected_class(){
 		return type_b;
+	}
+	
+	function get_colliding_body(){
+		return body_a;
+	}
+	
+	function get_affected_body(){
+		return body_b;
 	}
 	#endregion
 }

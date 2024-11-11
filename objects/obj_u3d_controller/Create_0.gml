@@ -5,6 +5,7 @@
 
 #region PROPERTIES
 super = new Super(id);
+signaler = new Signaler();
 body_map = {};
 #endregion
 

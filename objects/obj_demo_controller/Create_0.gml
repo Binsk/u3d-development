@@ -31,6 +31,8 @@ primary_button = noone;	// Model buttons contain loaded model data, this is the 
 
 instance_create_depth(0, 0, 0, obj_animation_controller);	// Allow auto-handling animation updates
 instance_create_depth(0, 0, 0, obj_render_controller);		// Allow auto-handling rendering updates
+instance_create_depth(0, 0, 0, obj_collision_controller);
+
 obj_render_controller.render_mode = RENDER_MODE.draw_gui;	// Set to display in GUI just for simplicity in rendering resolution
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
 
@@ -93,3 +95,18 @@ function push_error(message){
 
 // GameMaker's gui adjustment isn't immediate; just delay GUI element spawn for a bit
 alarm[0] = 60;
+
+#region COLLISION TEST
+// var ray = new Ray();
+// var plane = new Plane();
+// plane_body = new Body();
+// camera.set_collidable(ray);
+// plane_body.set_collidable(plane);
+// obj_collision_controller.add_body(camera);
+// obj_collision_controller.add_body(plane_body);
+// obj_collision_controller.add_signal(camera, new Callable(id, function(array){
+// 	if (not is_undefined(body)){
+// 		body.set_position(array[0].get_data().intersection);
+// 	}
+// }));
+#endregion

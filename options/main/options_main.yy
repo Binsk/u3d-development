@@ -1,5 +1,5 @@
 {
-  "$GMMainOptions":"v2",
+  "$GMMainOptions":"v3",
   "%Name":"Main",
   "name":"Main",
   "option_audio_error_behaviour":true,

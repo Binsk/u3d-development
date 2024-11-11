@@ -24,7 +24,9 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	matrix_model = undefined;		// 4x4 transform matrix
 	matrix_inv_model = undefined;	// 4x4 inverse transform matrix
 	
-	render_layer_bits = int64(-1);	// Which layers we render on (by default, all layers)
+	render_layer_bits = int64(-1);		// Which layers we render on (by default, all layers)
+	collidable_scan_bits = int64(-1);	// Which layers we look at for collisions
+	collidable_mask_bits = int64(-1);	// Which layers we occupy for collisions
 	#endregion
 	
 	#region METHODS

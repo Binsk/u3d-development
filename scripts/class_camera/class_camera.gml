@@ -55,7 +55,7 @@ enum CAMERA_RENDER_FLAG {
 	emission			=	0b1000,		// Emissive texture rendering
 }
 
-function Camera() : Node() constructor {
+function Camera() : Body() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance
 	

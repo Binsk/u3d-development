@@ -3,6 +3,9 @@ gmouse = {
 	y : device_mouse_y_to_gui(0)
 }
 
+// camera.calculate_world_ray(gmouse.x, gmouse.y, camera.collidable_instance);
+// obj_collision_controller.queue_update(camera);
+
 if (not instance_exists(obj_bone_scroll)){
 	if (mouse_wheel_up())
 		distance = max(distance - 1, 1);
