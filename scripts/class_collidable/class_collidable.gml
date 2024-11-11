@@ -29,6 +29,12 @@ function Collidable() : U3DObject() constructor {
 				return Ray.collide_plane(collidable_a, collidable_b, node_a, node_b);
 		}
 		#endregion
+		#region PLANE CHECKS
+		if (is_instanceof(collidable_a, Plane)){
+			if (is_instanceof(collidable_b, Ray))
+				return Plane.collide_ray(collidable_a, collidable_b, node_a, node_b);
+		}
+		#endregion
 			
 		return undefined;
 	}
