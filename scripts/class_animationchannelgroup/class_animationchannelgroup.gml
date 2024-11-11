@@ -1,8 +1,13 @@
-/// @desc	Contains a group of channels for a specific bone ID. Grouping bone
-///			channels together simplifies generating transformation matrices.
-function AnimationChannelGroup(bone_id) : U3DObject() constructor {
+/// @desc	Contains a group of the three primary channel types and handles
+///			interpolating them together as well as interpolating defaults if
+///			a channel is undefined. There should generally be one channel group
+///			per bone per animation track.
+///
+/// @note	Channel groups are assigned a bone index once they are attached to
+///			an animation track; thus they can be re-used across animations or
+///			even separate skeletons.
+function AnimationChannelGroup() : U3DObject() constructor {
 	#region PROPERTIES
-	self.bone_id = bone_id;
 	position_channel = undefined;
 	rotation_channel = undefined;
 	scale_channel = undefined;
@@ -44,10 +49,6 @@ function AnimationChannelGroup(bone_id) : U3DObject() constructor {
 			throw new Exception("failed to set channel, [AnimationChannel] is a template class!");
 		else
 			throw new Exception("invalid type, expected [AnimationChannel]!");
-	}
-	
-	function get_bone_index(){
-		return bone_id;
 	}
 	
 	function get_channel_count(){

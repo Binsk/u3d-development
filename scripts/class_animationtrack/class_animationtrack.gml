@@ -32,14 +32,15 @@ function AnimationTrack(name) : U3DObject() constructor {
 		return channel_length;
 	}
 	
-	function add_channel_group(group){
+	/// @desc	Adds a channel group to the track and assigns it to a specific bone index.
+	function add_channel_group(group, bone_index){
 		if (not is_instanceof(group, AnimationChannelGroup)){
 			Exception.throw_conditional("invalid type, expected [AnimationChannelGroup]!");
 			return;
 		}
-		
-		replace_child_ref(group, channel_data[$ group.get_bone_index()]);
-		channel_data[$ group.get_bone_index()] = group;
+
+		replace_child_ref(group, channel_data[$ bone_index]);
+		channel_data[$ bone_index] = group;
 		channel_length = max(channel_length, group.get_channel_length());
 	}
 

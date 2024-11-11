@@ -797,7 +797,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			// Grab / Define channel group:
 			var channel_group = (channelgroup_struct[$ bone_id]);
 			if (is_undefined(channel_group)){
-				channel_group = new AnimationChannelGroup(bone_id);
+				channel_group = new AnimationChannelGroup();
 				channelgroup_struct[$ bone_id] = channel_group;
 			}
 			
@@ -806,11 +806,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 
 			var animation_channel;
 			if (ttype == 0)
-				animation_channel = new AnimationChannelPosition(bone_id);
+				animation_channel = new AnimationChannelPosition();
 			else if (ttype == 1)
-				animation_channel = new AnimationChannelRotation(bone_id);
+				animation_channel = new AnimationChannelRotation();
 			else if (ttype == 2)
-				animation_channel = new AnimationChannelScale(bone_id);
+				animation_channel = new AnimationChannelScale();
 			else
 				throw new Exception($"invalid animation channel path, [{channel.target.path}]!");
 				
@@ -832,7 +832,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = array_length(group_keys) - 1; i >= 0; --i){
 			var group = channelgroup_struct[$ group_keys[i]];
 			group.set_unique_hash();
-			animation_track.add_channel_group(group);
+			animation_track.add_channel_group(group, group_keys[i]);
 		}
 		
 		return animation_track;

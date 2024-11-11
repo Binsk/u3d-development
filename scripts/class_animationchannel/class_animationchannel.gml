@@ -10,9 +10,8 @@ enum ANIMATION_CHANNEL_TRANSFORM {
 	cubicspline	// Not supported ATM
 }
 
-function AnimationChannel(bone_id) : U3DObject() constructor {
+function AnimationChannel() : U3DObject() constructor {
 	#region PROPERTIES
-	self.bone_id = bone_id;
 	morph_array = [];
 	morph_length = 0;	// Length of the channel, in time units
 	morph_definition = ds_priority_create();

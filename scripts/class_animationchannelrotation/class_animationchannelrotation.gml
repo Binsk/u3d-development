@@ -1,4 +1,4 @@
-function AnimationChannelRotation(bone_id) : AnimationChannel(bone_id) constructor {
+function AnimationChannelRotation() : AnimationChannel() constructor {
 	#region STATIC METHODS
 	/// @desc	Default 'undefined' morph value for this type.
 	static get_morph_default = function(){
