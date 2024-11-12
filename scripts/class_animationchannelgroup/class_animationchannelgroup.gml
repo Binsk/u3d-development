@@ -73,8 +73,8 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		lerpvalue = clamp(lerpvalue, 0, 1);
 		return {
 			position : is_undefined(position_channel) ? AnimationChannelPosition.get_morph_default() : position_channel.get_transformed_lerp(lerpvalue),
-			rotation : is_undefined(position_channel) ? AnimationChannelRotation.get_morph_default() : rotation_channel.get_transformed_lerp(lerpvalue),
-			scale : is_undefined(position_channel) ? AnimationChannelScale.get_morph_default() : scale_channel.get_transformed_lerp(lerpvalue),
+			rotation : is_undefined(rotation_channel) ? AnimationChannelRotation.get_morph_default() : rotation_channel.get_transformed_lerp(lerpvalue),
+			scale : is_undefined(scale_channel) ? AnimationChannelScale.get_morph_default() : scale_channel.get_transformed_lerp(lerpvalue),
 		}
 	}
 	

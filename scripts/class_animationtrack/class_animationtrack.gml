@@ -44,7 +44,7 @@ function AnimationTrack(name) : U3DObject() constructor {
 		channel_length = max(channel_length, group.get_channel_length());
 	}
 
-	function get_trs_array_lerp(lerpvalue){
+	function get_trs_data_lerp(lerpvalue){
 		var keys = struct_get_names(channel_data);
 		var trs_data = {};
 		for (var i = array_length(keys) - 1; i >= 0; --i)
@@ -54,7 +54,7 @@ function AnimationTrack(name) : U3DObject() constructor {
 	}
 	
 	/// @desc	Returns a struct of TRS properties, one for each bone.
-	function get_trs_array_time(time){
+	function get_trs_data_time(time){
 		var keys = struct_get_names(channel_data);
 		var trs_data = {};
 		for (var i = array_length(keys) - 1; i >= 0; --i)

@@ -43,3 +43,5 @@
 -	Add support for GLTF spawning a full "scene" including light and camera nodes.
 -	Add support to the GLTFBuilder to be provided a direct buffer; this allows
 	the programmer to manually load a file and then parse through the loader.
+-	Add proper animation forming w/ tracks that don't define all bones; may 
+	require default skeleton bones to be multiplied?

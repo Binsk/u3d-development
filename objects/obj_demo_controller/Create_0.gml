@@ -1,3 +1,6 @@
+/// DEF-spine.005	-	Left/Right
+/// DEF-spine.006	-	Up/Down
+
 // Good source of test models:
 // https://github.com/mrdoob/three.js/tree/master/examples/models/gltf
 #macro gmouse global.mouse
@@ -106,7 +109,41 @@ alarm[0] = 60;
 // obj_collision_controller.add_body(plane_body);
 // obj_collision_controller.add_signal(camera, new Callable(id, function(array){
 // 	if (not is_undefined(body)){
-// 		body.set_position(array[0].get_data().intersection);
+// 		body.set_position(array[0].get_data().intersection_point);
 // 	}
 // }));
+#endregion
+
+#region ANIMATION HEAD TILT TEST
+channel_lr = new AnimationChannelRotation();
+channel_lr.add_morph(0, veca_to_quat(veca(0, 1, 0, pi / 4))); // Left
+channel_lr.add_morph(1, veca_to_quat(veca(0, 1, 0, -pi / 4))); // Right
+channel_lr.freeze();
+
+channel_ud = new AnimationChannelRotation();
+channel_ud.add_morph(0, veca_to_quat(veca(1, 0, 0, pi / 6))); // Down
+channel_ud.add_morph(1, veca_to_quat(veca(1, 0, 0, -pi / 3))); // Up
+channel_ud.freeze();
+
+cgroup_lr = new AnimationChannelGroup();
+cgroup_lr.set_channel(channel_lr);
+cgroup_ud = new AnimationChannelGroup();
+cgroup_ud.set_channel(channel_ud);
+
+animation_plane = new Plane(vec(1, 0, 0));	// Used to project mouse & detect look location
+animation_plane_body = new Body();
+animation_plane_body.set_position(vec(2, 0, 0));
+animation_plane_body.set_collidable(animation_plane);
+obj_collision_controller.add_body(animation_plane_body);
+
+animation_ray = new Ray();	// Used for mouse projection
+look_point = vec();	// Used to store the 'look point' of the collision
+camera.set_collidable(animation_ray);
+obj_collision_controller.add_body(camera);
+obj_collision_controller.add_signal(camera, new Callable(id, function(data_array){
+	look_point = data_array[0].get_data().intersection_point;
+}));
+
+animation_lr = 0.5;
+animation_ud = 0.5;
 #endregion

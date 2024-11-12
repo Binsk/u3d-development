@@ -3,7 +3,9 @@
 /// for a single property. A bone may have multple animation channels assigned
 /// to it with mixed time-stamps. The following class is a template and doesn't
 /// define a specific supported type. A child-class should be used instead.
-
+///
+/// @note	Channels MUST be frozen after definition, otherwise they will not
+///			animate at all.
 enum ANIMATION_CHANNEL_TRANSFORM {
 	step,
 	linear,		// lerp or slerp

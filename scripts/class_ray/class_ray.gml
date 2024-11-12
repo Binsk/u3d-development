@@ -44,7 +44,7 @@ function Ray(orientation=vec(1, 0, 0), local_orientation=false) : Collidable() c
 		
 		data.data = {
 			is_backface : is_back,	// Whether or not the ray is intersecting the backside of the plane
-			intersection : vec_add_vec(node_a.position, dx)	// Intersection point in world space
+			intersection_point : vec_add_vec(node_a.position, dx)	// Intersection point in world space
 		};
 		return data;
 	}

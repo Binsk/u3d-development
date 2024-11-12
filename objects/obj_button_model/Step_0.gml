@@ -72,6 +72,22 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 			obj_render_controller.add_body(body);
 			obj_demo_controller.update_data_count();
+			
+			#region HARD-CODED DYNAMIC ANIMATION FORM sophia.glb
+			if (text == "sophia.glb"){
+				// Generate dynamic tracks for making the character look around:
+				var lr_index = animation_tree.get_bone_id("DEF-spine.005");
+				var ud_index = animation_tree.get_bone_id("DEF-spine.006");
+				animation_track_lr = new AnimationTrack("look-lr");
+				animation_track_ud = new AnimationTrack("look-ud");
+				
+				animation_track_lr.add_channel_group(obj_demo_controller.cgroup_lr, lr_index);
+				animation_track_ud.add_channel_group(obj_demo_controller.cgroup_ud, ud_index);
+				
+				animation_tree.add_animation_track(animation_track_lr);
+				animation_tree.add_animation_track(animation_track_ud);
+			}
+			#endregion
 		}
 
 		gltf.free();

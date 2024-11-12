@@ -1,14 +1,37 @@
+// Render 'group border' for light check boxes:
 draw_set_alpha(0.8);
 draw_rectangle_color(11, display_get_gui_height() - 37, 256 * 3 - 96, display_get_gui_height() - 11, c_gray, c_gray, c_gray, c_gray, true);
 draw_rectangle_color(11, display_get_gui_height() - 37 - 36, 256 * 3 - 96, display_get_gui_height() - 11 - 36, c_gray, c_gray, c_gray, c_gray, true);
 draw_set_alpha(1.0);
 
+// Render axis display:
+var cx = 12 + 48;
+var cy = 256 + 64;
+var length = 48;
+var forward = vec(1, 0, 0);
+var right = vec(0, 0, 1);
+var up = vec(0, 1, 0);
+var viewprojection = matrix_multiply(camera.eye_id.get_view_matrix(), camera.eye_id.get_projection_matrix());
+forward = vec_set_length(matrix_multiply_vec(viewprojection, forward), length);
+right = vec_set_length(matrix_multiply_vec(viewprojection, right), length);
+up = vec_set_length(matrix_multiply_vec(viewprojection, up), length);
+
+right.x = -right.x;		// Invert due to the camera display being flipped
+forward.x = -forward.x;
+up.x = -up.x;
+
+draw_line_width_color(cx, cy, cx + forward.x, cy + forward.y, 3, c_red, c_red);
+draw_line_width_color(cx, cy, cx + right.x, cy + right.y, 3, c_blue, c_blue);
+draw_line_width_color(cx, cy, cx + up.x, cy + up.y, 3, c_lime, c_lime);
+
+// Render 'fade out' for bone scroll menu:
 if (instance_exists(obj_bone_scroll)){
 	draw_set_alpha(0.6);
 	draw_rectangle_color(0, 0, display_get_gui_width(), display_get_gui_height(), c_black, c_black, c_black, c_black, false);
 	draw_set_alpha(1.0)
 }
 
+// Render error messages:
 if (array_length(error_array) > 0){
 	var cx = display_get_gui_width() * 0.5 - 398 * 0.5;
 	var cy = display_get_gui_height() * 0.5;

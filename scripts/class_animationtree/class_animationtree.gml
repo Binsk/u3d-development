@@ -9,15 +9,15 @@
 /// the controller can optimize out redundant transforms and calling states 
 /// directly from this class requires a full re-calculation of all animation
 /// tracks that are active.
-
 /// @note	If there are more than 64 bones then the system will explicit bone scaling
 ///			to be able to fit more bones into the shader. Maximum bone count is 128.
 
-/// @todo	Implement dual-quaternions to remove the need for the quat+pair option &
-///			to have better volume-conscious skinning.
-
 /// @signals
 ///	transformed_bone_<id>	(matrix)	-	Thrown when an animation transform is applied on the specified bone; matrix = local transform
+
+/// @todo	Implement dual-quaternions to remove the need for the quat+pair option &
+///			to have better volume-conscious skinning.
+/// @todo	Implement proper 'animation' transforms if a track is missing bones
 
 /// @param	{real}	update_freq=0.033		how frequently the animation should be re-calculated (in seconds); defaults to 30fps
 function AnimationTree(update_freq=0.033) : U3DObject() constructor {
@@ -65,6 +65,16 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			return;
 		
 		data.track_speed = layer_speed;
+	}
+
+	/// @desc	Sets the lerp position for a lerped track.	
+	function set_animation_layer_lerp(layer_index, lerpvalue){
+		layer_index = real(layer_index);
+		var data = animation_layers[$ layer_index];
+		if (is_undefined(data) or data.type != 1)
+			return;
+		
+		data.track_lerp = clamp(lerpvalue, 0.0, 1.0);
 	}
 	
 	
@@ -169,6 +179,10 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		return "";
 	}
 	
+	function get_animation_layer_exists(animation_layer){
+		return not is_undefined(animation_layers[$ real(animation_layer)]);
+	}
+	
 	/// @desc	Given calculated TRS data for each bone, builds a 1D flattened
 	///			array of all matrices built from the data, formatted to be sent
 	///			into a shader.
@@ -209,8 +223,14 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 				continue;
 			
 			var matrix = matrix_data[$ bone_id];
+			if (is_undefined(matrix))
+				continue;
+				
 			var matrix_parent = matrix_data[$ bone_data.parent_id];
-			matrix_data[$ bone_id] = matrix_multiply(matrix, matrix_parent);
+			if (is_undefined(matrix_parent))
+				matrix_data[$ bone_id] = matrix;
+			else
+				matrix_data[$ bone_id] = matrix_multiply(matrix, matrix_parent);
 		}
 		
 		ds_queue_destroy(queue);
@@ -228,13 +248,15 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			signaler.signal($"transformed_bone_{bone_id}", [matrix]);
 		}
 		
+		var matrix_identity = matrix_build_identity();
+		keys = struct_get_names(skeleton);
 		// Write data into final array:
 		if (array_length(keys) <= U3D_MAXIMUM_BONES){
 			// If not skipping, we write the whole matrix
 			var array = array_flatten(array_create(get_max_bone_count(), matrix_build_identity()));
 			for (var i = array_length(keys) - 1; i >= 0; --i){
 				var bone_id = keys[i];
-				var matrix = matrix_data[$ bone_id];
+				var matrix = (matrix_data[$ bone_id] ?? matrix_identity);
 				var offset = real(bone_id) * 16;
 				 for (var j = 0; j < 16; ++j)
 					array[offset + j] = matrix[j];
@@ -247,7 +269,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			var array = array_flatten(array_create(bone_count + (bone_count % 2), [0, 0, 0, 1, 0, 0, 0, 0]));
 			for (var i = array_length(keys) - 1; i >= 0; --i){
 				var bone_id = keys[i];
-				var matrix = matrix_data[$ bone_id];
+				var matrix = (matrix_data[$ bone_id] ?? matrix_identity);
 				var translation = matrix_get_translation(matrix);
 				var quaternion = matrix_get_quat(matrix);
 				var offset = real(bone_id) * 8;
@@ -292,6 +314,19 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			track_is_active : false,
 			track_lerp : 0,
 			track_lerp_length : 0
+		};
+		animation_layers[$ layer_index] = animation_layer;
+	}
+	
+	function add_animation_layer_lerp(layer_index, track_name, lerpvalue=0){
+		layer_index = real(layer_index);
+		if (not is_undefined(animation_layers[$ layer_index]))
+			delete animation_layers[$ layer_index];
+		
+		var animation_layer = {
+			type : 1,
+			track : track_name,
+			track_lerp : clamp(lerpvalue, 0, 1.0)
 		};
 		animation_layers[$ layer_index] = animation_layer;
 	}
@@ -367,7 +402,9 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			start_animation_layer(layer_index);
 	}
 
-	/// @desc	Interpolates between two sets of TRS data.
+	/// @desc	Interpolates between two sets of TRS data based on the specified
+	///			lerp value.
+	///			Generally used when mixing between two frames of
 	function interpolate_trs_data(trs_data_a, trs_data_b, lerpvalue){
 		var trs_data = {};
 		
@@ -393,9 +430,9 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			var value_from = trs_data_a[$ keys_b[i]];
 			var value_to = trs_data_b[$ keys_b[i]];
 			if (is_undefined(value_from))
-				trs_data[$ keys_a[i]] = value_to;
+				trs_data[$ keys_b[i]] = value_to;
 			else {
-				trs_data[$ keys_a[i]] = {
+				trs_data[$ keys_b[i]] = {
 					position : vec_lerp(value_from.position, value_to.position, lerpvalue),
 					rotation : quat_slerp(value_from.rotation, value_to.rotation, lerpvalue),
 					scale : vec_lerp(value_from.scale, value_to.scale, lerpvalue)
@@ -406,11 +443,28 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		return trs_data;
 	}
 	
-	/// @desc	Merges two sets of TRS data evenly so they affect each-other.
+	/// @desc	Merges two sets of TRS data where the first set sets its defines 
+	///			and the second set only sets defines NOT already defined by the first set.
+	///			Generally used when mixing an automated track and a lerped track.
 	function merge_trs_data(trs_data_a, trs_data_b){
-/// @stub	Implement properly. It should take data_b and add in bone data
-///			that doesn't exist in data_a
-		return trs_data_a;
+		var trs_data = {};
+		
+		var keys_a = struct_get_names(trs_data_a);
+		var keys_b = struct_get_names(trs_data_b);
+		
+		// Loop first set:
+		for (var i = array_length(keys_a) - 1; i >= 0; --i)
+			trs_data[$ keys_a[i]] = trs_data_a[$ keys_a[i]];
+		
+		// Loop any unset bones that may exist in data b
+		for (var i = array_length(keys_b) - 1; i >= 0; --i){
+			if (not is_undefined(trs_data[$ keys_b[i]]))
+				continue;
+				
+			trs_data[$ keys_b[i]] = trs_data_b[$ keys_b[i]];
+		}
+		
+		return trs_data;
 	}
 	
 	/// @desc	This uses signals to attach a child body to a bone in the animation
@@ -502,12 +556,13 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		var array = array_create(array_length(keys));
 		var index = 0;
 		while (not ds_priority_empty(priority))
-			array[index++] = ds_priority_delete_min(priority);
+			array[index++] = ds_priority_delete_max(priority);
 			
 		var trs_final = undefined;
 		var ct = current_time * 0.001;
 		for (var i = 0; i < index; ++i){
 			var animation_layer = array[i];
+			var trs_data = {};
 			if (animation_layer.type == 0){ // Auto
 				var track_from = track_struct[$ animation_layer.track_from];
 				if (is_undefined(track_from)){
@@ -532,7 +587,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 				}
 				
 				// Calculate transforms:
-				var trs_data = track_from.get_trs_array_time(time);
+				trs_data = track_from.get_trs_data_time(time);
 				
 				// Calculate transition, if one is set:
 				var track_to = track_struct[$ animation_layer.track_to];
@@ -546,7 +601,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 					else
 						time2 = clamp(time2, 0, time_max);
 					
-					trs_data = interpolate_trs_data(trs_data, track_to.get_trs_array_time(time2) , clamp(animation_layer.track_lerp, 0, 1));
+					trs_data = interpolate_trs_data(trs_data, track_to.get_trs_data_time(time2) , clamp(animation_layer.track_lerp, 0, 1));
 						// If finished lerp, reset channel to new track:
 					if (animation_layer.track_lerp >= 1){
 						animation_layer.track_lerp = 0;
@@ -556,18 +611,25 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 						animation_layer.track_time = time2;
 					}
 				}
-				
-				// Merge transforms:
-				if (is_undefined(trs_final))
-					trs_final = trs_data;
-				else
-					trs_final = merge_trs_data(trs_final, trs_data);
 			}
 			else if (animation_layer.type == 1){ // Manual lerp
-/// @stub	Implement
+				var track_from = track_struct[$ animation_layer.track];
+			
+				if (is_undefined(track_from)){
+					print_traced("WARNING", $"invalid animation track [{track_from}]");
+					continue;
+				}
+				
+				trs_data = track_from.get_trs_data_lerp(animation_layer.track_lerp);
 			}
 			else
 				throw new Exception($"invalid animation layer type [{animation_layer.type}]");
+			
+			// Merge transforms:
+			if (is_undefined(trs_final))
+				trs_final = trs_data;
+			else
+				trs_final = merge_trs_data(trs_final, trs_data);
 		}
 		
 		ds_priority_destroy(priority);
