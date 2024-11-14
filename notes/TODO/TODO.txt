@@ -48,3 +48,5 @@
 -	Add proper animation forming w/ tracks that don't define all bones; may 
 	require default skeleton bones to be multiplied?
 -	Add blend type for animation layers (replace, like what I'm currently doing, or merge)
+-	Implement KHR_draco_mesh_compression to glTF loading, as a number of models seem
+	to use it and it reduces the file size amount by quite a bit.

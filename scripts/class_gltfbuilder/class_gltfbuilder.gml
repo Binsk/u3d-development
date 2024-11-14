@@ -375,6 +375,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			Exception.throw_conditional(string_ext("failed to read accessor [{0}]!", [accessor_index]));
 			return undefined;
 		}
+		
+		/// https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md
+/// @todo	Implement support
+		if (not is_undefined(primitive_header[$ "extensions"])){
+			if (not is_undefined(primitive_header.extensions[$ "KHR_draco_mesh_compression"]))
+				throw new Exception("unsupported KHR extension, [KHR_draco_mesh_compression]!");
+		}
 
 		#region BUILD ATTRIBUTE LOOKUP
 		// Now we build array groups of attributes that match the vertex format for quick look-up

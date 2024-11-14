@@ -297,8 +297,14 @@ function GLTFLoader() : U3DObject() constructor {
 		var element_count = accessor.count;	// How many elements we are reading
 		var data = [];
 		
-		if (is_undefined(accessor[$ "bufferView"]))
-			throw new Exception("unsupported accessor type!");
+		if (is_undefined(accessor[$ "bufferView"])){
+/// @todo	Implement sparse accessors
+			if (not is_undefined(accessor[$ "sparse"]))
+				throw new Exception("sparse accessors are not currently supported!");
+				
+			// Per the spec, fill components w/ zeros
+			data = array_create(element_count * element_size, 0);
+		}
 		else {
 			var buffer = read_buffer_view(accessor.bufferView);
 			if (is_undefined(buffer)) // Invalid buffer
