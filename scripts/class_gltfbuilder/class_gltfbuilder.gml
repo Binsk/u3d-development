@@ -361,6 +361,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		check_unsupported_extensions(primitive_header);
 
+		if (not is_undefined(primitive_header[$ "targets"])){
+/// @stub	Implement! This requires a whole new style of animation.
+			throw new Exception("unsupported primitive feature, [morph targets]!");
+		}
+
 		var accessor_index = primitive_header.indices;
 		if (is_undefined(accessor_index)){ // We only support index definition through accessors
 			Exception.throw_conditional("unsupported primitive definition, indices accessor required!");

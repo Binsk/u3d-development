@@ -48,3 +48,5 @@
 -	Add proper animation forming w/ tracks that don't define all bones; may 
 	require default skeleton bones to be multiplied?
 -	Add blend type for animation layers (replace, like what I'm currently doing, or merge)
+-	Implement morph targets for glTF loading: https://github.com/KhronosGroup/glTF-Tutorials/blob/main/gltfTutorial/gltfTutorial_017_SimpleMorphTarget.md
+	It is effectively vertex morphing animation.
