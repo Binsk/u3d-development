@@ -165,14 +165,19 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					Exception.throw_conditional(string_ext("failed to find image [{0}].", [load_directory + data.uri]));
 					continue;
 				}
-				
-				sprite = sprite_add(load_directory + data.uri, 1, false, false, 0, 0);
-				if (sprite < 0)
-					throw new Exception(string_ext("failed to add sprite [{0}]!", [load_directory + data.uri]));
 					
-				texture = new Texture2D(sprite_get_texture(sprite, 0));
+				texture = new Texture2D();
 				texture.hash = texture_hash;	// Mark that this is a dynamic resource
-				texture.signaler.add_signal("cleanup", new Callable(texture, sprite_delete), [sprite]);
+				
+				var label = load_directory + data.uri;
+				sprite = sprite_add_ext(label, 1, 0, 0, true);
+					// Track the sprite load so we assign it to the texture once loaded
+				U3D_ASYNC.add_sprite_track(sprite, new Callable(texture, function(sprite, filepath){
+					file_delete(filepath);
+					set_texture(sprite_get_texture(sprite, 0));
+					signaler.add_signal("cleanup", new Callable(self, sprite_delete, [sprite]));
+				}, [sprite, label]));
+
 				
 				add_child_ref(texture);
 				array_push(texture_array, texture);
@@ -192,23 +197,20 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 
 			// Save the image data to disk:
-			buffer_save(buffer, "__import");
-			sprite = sprite_add("__import", 1, false, false, 0, 0); // Load w/ GameMaker's function
+			texture = new Texture2D();
+			texture.hash = texture_hash;	// Mark that this is a dynamic resource
 			
-			if (sprite < 0){ // If a problem, clean up and skip
-				buffer_delete(buffer);
-				file_delete("__import");
-				
-				Exception.throw_conditional("failed to add sprite from buffer!");
-				continue;
-			}
+			var label = $"__import_{texture_hash}";
+			buffer_save(buffer, label);
+			sprite = sprite_add_ext(label, 1, 0, 0, true);
+				// Track the sprite load so we assign it to the texture once loaded
+			U3D_ASYNC.add_sprite_track(sprite, new Callable(texture, function(sprite, filepath){
+				file_delete(filepath);
+				set_texture(sprite_get_texture(sprite, 0));
+				signaler.add_signal("cleanup", new Callable(self, sprite_delete, [sprite]));
+			}, [sprite, label]));
 	
 			buffer_delete(buffer);
-			file_delete("__import");
-			
-			texture = new Texture2D(sprite_get_texture(sprite, 0));
-			texture.hash = texture_hash;	// Mark that this is a dynamic resource
-			texture.signaler.add_signal("cleanup", new Callable(texture, sprite_delete, [sprite]));
 			
 			add_child_ref(texture);
 			array_push(texture_array, texture);

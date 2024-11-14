@@ -8,6 +8,8 @@
 	update frequency to max helps show it best.
 -	Controller body detachments likely only execute the parent detach
 	script and not the child.
+-	Duck normal texture not loading correctly; have tried re-exporting via gimp
+	and even shrunk and it still doesn't work right.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

@@ -50,6 +50,17 @@ if (array_get_index(texturegroup_get_names(), "u3d_default") >= 0)
 // Delta time, in seconds, with safety values.
 #macro frame_delta clamp(delta_time / 1000000, 0.004, 0.067)
 
+// A convenient "async" function that allows calling functions from the
+// async controller without having to worry about its existence.
+function __async_instance_id(){
+	with (obj_async_controller)
+		return id;
+	
+	return instance_create_depth(0, 0, 0, obj_async_controller);
+}
+
+#macro U3D_ASYNC __async_instance_id()
+
 // Delta time, in percent, relative to a 60fps target. Helpful if the system was
 // designed around 60fps and needs later adjustment.
 #macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
