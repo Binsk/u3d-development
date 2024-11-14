@@ -198,7 +198,7 @@ subinst.signaler.add_signal("checked", function(is_checked){
 		obj_demo_controller.light_directional.set_environment_texture(undefined);
 	else{
 		if (is_undefined(obj_demo_controller.environment_map))
-			obj_demo_controller.environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment_cube, 0), 1024, 2, true);
+			obj_demo_controller.environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
 		
 		obj_demo_controller.light_directional.set_environment_texture(obj_demo_controller.environment_map);
 	}
@@ -234,7 +234,7 @@ subinst.signaler.add_signal("checked", function(is_checked){
 		obj_demo_controller.light_ambient.set_environment_texture(undefined);
 	else{
 		if (is_undefined(obj_demo_controller.environment_map))
-			obj_demo_controller.environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment_cube, 0), 1024, 2, true);
+			obj_demo_controller.environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
 		
 		obj_demo_controller.light_ambient.set_environment_texture(obj_demo_controller.environment_map);
 	}

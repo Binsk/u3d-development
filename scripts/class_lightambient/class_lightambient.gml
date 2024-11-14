@@ -119,7 +119,7 @@ function LightAmbient() : Light() constructor {
 		
 		texture_set_stage(uniform_ssao_sampler_depth, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
 		texture_set_stage(uniform_ssao_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
-		texture_set_stage(uniform_ssao_sampler_noise, sprite_get_texture(spr_ssao_noise, 0));
+		texture_set_stage(uniform_ssao_sampler_noise, sprite_get_texture(spr_default_ssao_noise, 0));
 		
 		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye_id.get_inverse_projection_matrix()]);
 		uniform_set("u_mView", shader_set_uniform_f_array, [matrix_to_matrix3(eye_id.get_view_matrix())]);

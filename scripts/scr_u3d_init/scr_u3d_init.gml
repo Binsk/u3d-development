@@ -35,7 +35,8 @@ foo.free();
 delete foo;
 
 // Load necessary fallback textures:
-texturegroup_load("U3DDefaults", true);
+if (array_length(texturegroup_get_sprites("U3DDefaults")) > 0)
+	texturegroup_load("U3DDefaults", true);
 #endregion
 
 /// Maximum number of full-data bones we can safely support (this matches w/ the spatial
@@ -76,7 +77,7 @@ U3D = {
 }
 
 // Define 'missing material' texture:
-U3D.RENDERING.MATERIAL.missing.set_texture("albedo", new Texture2D(sprite_get_texture(spr_missing_texture, 0)));
+U3D.RENDERING.MATERIAL.missing.set_texture("albedo", new Texture2D(sprite_get_texture(spr_default_missing, 0)));
 U3D.RENDERING.MATERIAL.missing.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
 U3D.RENDERING.MATERIAL.blank.set_texture("albedo", new Texture2D(sprite_get_texture(spr_default_white, 0)));
 U3D.RENDERING.MATERIAL.blank.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
