@@ -24,6 +24,17 @@ render_mode = RENDER_MODE.draw;
 #endregion
 
 #region METHODS
+/// @desc	Specifies how CameraViews should auto-render.
+/// @param	{RENDER_MODE}	mode
+function set_render_mode(mode){
+	if (not is_real(mode) and not in_range(mode, RENDER_MODE.draw, RENDER_MODE.none)){
+		Exception.throw_conditional("invalid type, expected [RENDER_MODE]!");
+		return;
+	}
+	
+	render_mode = mode;
+}
+
 /// @desc	Add a light to the rendering system if it isn't already added. Returns
 ///			if successful.
 function add_light(light){

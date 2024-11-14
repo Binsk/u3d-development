@@ -1,12 +1,23 @@
+/// @about
+/// This initializes all the GUI instances. This is a mess. Uncondensed expressions
+///	are for quick changes when moving the GUI around. GUI elements were all defined
+/// via x/y but have now been hackily-changed to switch to anchor positions in the
+/// create of the menu element.
 
-instance_create_depth(0, 0, -2, obj_tooltip);
+instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has set text
 
 // Generate GUI:
 	// Scane model files:
 var file = file_find_first("test-models/*.glb", fa_none);
 var inst;
 var ax = display_get_gui_width() - 12 - 256;
-while (file != "" and instance_number(obj_button_model) < 18){
+var is_maxed = false;
+while (file != "" and not is_maxed){
+	if (instance_number(obj_button_model) >= 18){
+		is_maxed = true;
+		break;
+	}
+	
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
 	file = file_find_next();
@@ -14,40 +25,49 @@ while (file != "" and instance_number(obj_button_model) < 18){
 file_find_close();
 
 file = file_find_first("test-models/*.gltf", fa_none);
-while (file != "" and instance_number(obj_button_model) < 18){
+while (file != "" and not is_maxed){
+	if (instance_number(obj_button_model) >= 18){
+		is_maxed = true;
+		break;
+	}
+	
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
 	file = file_find_next();
 }
+file_find_close();
  
+if (is_maxed) // Only used to prevent GUI overlap, really.
+	push_error("too many model files, stopping at 18...");
+
+// Exit button:
 inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44, 0, obj_button);
 inst.text = "Exit";
 inst.signaler.add_signal("pressed", new Callable(id, game_end));
 
 	// Global properties:
 var ay = display_get_gui_height() - 12 - 44 - 32;
-body_y = 0; // Used to update floor height
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.text = "Render Floor";
 inst.text_tooltip = "Renders a wooden floor at the base of the model.";
 inst.signaler.add_signal("checked", function(is_checked){
 	if (is_checked){
-		if (is_undefined(body)){
+		if (is_undefined(body_floor)){
 			var gltf = new GLTFBuilder("demo-floor.glb");
 			var model = gltf.generate_model();
 			model.freeze();
-			body = new Body();
-			body.set_model(model);
-			obj_render_controller.add_body(body);
+			body_floor = new Body();
+			body_floor.set_model(model);
+			obj_render_controller.add_body(body_floor);
 			gltf.free();
 			delete gltf;
 		}
 		
-		obj_render_controller.add_body(obj_demo_controller.body);
-		obj_demo_controller.body.set_position(vec(0, obj_demo_controller.body_y, 0));
+		obj_render_controller.add_body(obj_demo_controller.body_floor);
+		obj_demo_controller.body_floor.set_position(vec(0, obj_demo_controller.body_floor_y, 0));
 	}
 	else
-		obj_render_controller.remove_body(obj_demo_controller.body);
+		obj_render_controller.remove_body(obj_demo_controller.body_floor);
 	
 	update_data_count();
 });
@@ -90,11 +110,11 @@ inst.text_tooltip = "Set the camera to automatically rotate around the model.";
 inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
 	with (obj_demo_controller){
-		rotate_camera = is_checked;
+		camera_is_rotating = is_checked;
 		if (is_checked)
-			rotation_offset += current_time - rotation_last;
+			camera_rotation_offset += current_time - camera_rotation_last;
 		else
-			rotation_last = current_time;
+			camera_rotation_last = current_time;
 	}
 });
 
@@ -292,5 +312,4 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 },  [undefined, inst]));
 sprite_array = [];
 
-
-slider_ay = ay - 64;
+slider_ay = ay - 64; // Record so dynamic sliders know where to spawn

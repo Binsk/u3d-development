@@ -16,11 +16,11 @@ with (obj_button_model){
 	model_count++;
 }
 
-if (not is_undefined(body) and obj_render_controller.has_body(body)){
-	material_count += body.model_instance.get_material_count();
-	primitive_count += body.model_instance.get_primitive_count();
-	mesh_count += body.model_instance.get_mesh_count();
-	triangle_count += body.model_instance.get_triangle_count();
+if (not is_undefined(body_floor) and obj_render_controller.has_body(body_floor)){
+	material_count += body_floor.model_instance.get_material_count();
+	primitive_count += body_floor.model_instance.get_primitive_count();
+	mesh_count += body_floor.model_instance.get_mesh_count();
+	triangle_count += body_floor.model_instance.get_triangle_count();
 	model_count++;
 }
 

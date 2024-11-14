@@ -72,9 +72,9 @@ function AnimationChannelGroup() : U3DObject() constructor {
 	/// @desc	Retruns the largest time-stamp across all attached channels.
 	function get_channel_length(){
 		return max(
-			is_undefined(position_channel) ? 0 : position_channel.get_morph_lenghth(),
-			is_undefined(rotation_channel) ? 0 : rotation_channel.get_morph_lenghth(),
-			is_undefined(scale_channel) ? 0 : scale_channel.get_morph_lenghth()
+			is_undefined(position_channel) ? 0 : position_channel.get_morph_length(),
+			is_undefined(rotation_channel) ? 0 : rotation_channel.get_morph_length(),
+			is_undefined(scale_channel) ? 0 : scale_channel.get_morph_length()
 		);
 	}
 	

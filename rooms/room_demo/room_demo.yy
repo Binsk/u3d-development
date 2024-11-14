@@ -17,8 +17,8 @@
   ],
   "name":"room_demo",
   "parent":{
-    "name":"Demo Interface",
-    "path":"folders/Demo Interface.yy",
+    "name":"Model Loader Demo",
+    "path":"folders/Model Loader Demo.yy",
   },
   "parentRoom":null,
   "physicsSettings":{

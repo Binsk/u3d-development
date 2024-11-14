@@ -81,8 +81,8 @@
   "swatchColours":null,
   "swfPrecision":0.5,
   "textureGroupId":{
-    "name":"U3DDefaults",
-    "path":"texturegroups/U3DDefaults",
+    "name":"u3d_default",
+    "path":"texturegroups/u3d_default",
   },
   "type":0,
   "VTile":false,

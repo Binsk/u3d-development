@@ -3,3 +3,12 @@
 The demo scene is a setup to test loading models, rendering, and animation with
 the U3D system. It is a robust loader, effectively, to double-check that a specific
 model can be correctly loaded and rendered through the glTFBuilder.
+
+If a model doesn't seem to load correctly first try importing it into Blender
+and re-exporting it as a GLB or GLTF as the system has been designed around
+Blender's export formatting. If that still doesn't work and you believe your 
+model isn't using any unsupported features then please file a bug report!
+
+### Loading Models
+Any GLTF of GLB files located in the `test-models` folder should be automatically
+detected by the system and a button spawned in the interface.

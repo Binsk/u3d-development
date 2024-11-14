@@ -35,8 +35,8 @@ foo.free();
 delete foo;
 
 // Load necessary fallback textures:
-if (array_length(texturegroup_get_sprites("U3DDefaults")) > 0)
-	texturegroup_load("U3DDefaults", true);
+if (array_get_index(texturegroup_get_names(), "u3d_default") >= 0)
+	texturegroup_load("u3d_default", true);
 #endregion
 
 /// Maximum number of full-data bones we can safely support (this matches w/ the spatial

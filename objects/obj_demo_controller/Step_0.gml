@@ -1,7 +1,11 @@
+// Update mouse coordinate:
 gmouse = {
 	x : device_mouse_x_to_gui(0),
 	y : device_mouse_y_to_gui(0)
 }
+
+render_width = display_get_gui_width();
+render_height = display_get_gui_height();
 
 	// Handle animation look:
 if (mouse_check_button(mb_right)){
@@ -51,18 +55,18 @@ else {
 
 if (not instance_exists(obj_bone_scroll)){
 	if (mouse_wheel_up())
-		distance = max(distance - 1, 1);
+		camera_orbit_distance = max(camera_orbit_distance - 1, 1);
 	else if (mouse_wheel_down())
-		distance = min(distance + 1, 128);
+		camera_orbit_distance = min(camera_orbit_distance + 1, 128);
 }
 
-if (rotate_camera){
-	var pos = vec(cos((current_time - rotation_offset) / 2000), 0.5, -sin((current_time - rotation_offset) / 2000));
-	camera.set_position(vec_set_length(pos, distance));
+if (camera_is_rotating){
+	var pos = vec(cos((current_time - camera_rotation_offset) / 2000), 0.5, -sin((current_time - camera_rotation_offset) / 2000));
+	camera.set_position(vec_set_length(pos, camera_orbit_distance));
 }
 else{
 	var pos = camera.get_position();
-	pos = vec_set_length(pos, distance);
+	pos = vec_set_length(pos, camera_orbit_distance);
 	camera.set_position(pos);
 }
 camera.look_at_up(vec());

@@ -123,8 +123,8 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 
 	var minimum_y = 0; // Used to align floor height
 	var body_index = -1;
-	if (not is_undefined(obj_demo_controller.body))
-		body_index = obj_demo_controller.body.get_index();
+	if (not is_undefined(obj_demo_controller.body_floor))
+		body_index = obj_demo_controller.body_floor.get_index();
 		
 	var body_array = obj_render_controller.build_render_body_array(-1);
 	for (var i = 0 ; i < array_length(body_array); ++i){
@@ -134,9 +134,9 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			
 		minimum_y = min(minimum_y, sbody.position.y + sbody.model_instance.get_data("aabb_min", vec()).y * sbody.scale.y);
 	}
-	obj_demo_controller.body_y = minimum_y;
-	if (not is_undefined(obj_demo_controller.body))
-		obj_demo_controller.body.set_position(vec(0, minimum_y, 0));
+	obj_demo_controller.body_floor_y = minimum_y;
+	if (not is_undefined(obj_demo_controller.body_floor))
+		obj_demo_controller.body_floor.set_position(vec(0, minimum_y, 0));
 }
 	
 event_inherited();

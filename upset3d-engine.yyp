@@ -10,10 +10,9 @@
   },
   "defaultScriptType":1,
   "Folders":[
-    {"$GMFolder":"","%Name":"Demo Interface","folderPath":"folders/Demo Interface.yy","name":"Demo Interface","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Functions","folderPath":"folders/Demo Interface/Functions.yy","name":"Functions","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Objects","folderPath":"folders/Demo Interface/Objects.yy","name":"Objects","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Menu","folderPath":"folders/Demo Interface/Objects/Menu.yy","name":"Menu","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Model Loader Demo","folderPath":"folders/Model Loader Demo.yy","name":"Model Loader Demo","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Objects","folderPath":"folders/Model Loader Demo/Objects.yy","name":"Objects","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Menu","folderPath":"folders/Model Loader Demo/Objects/Menu.yy","name":"Menu","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Upset 3D","folderPath":"folders/Upset 3D.yy","name":"Upset 3D","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Classes","folderPath":"folders/Upset 3D/Classes.yy","name":"Classes","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Collisions","folderPath":"folders/Upset 3D/Classes/Collisions.yy","name":"Collisions","resourceType":"GMFolder","resourceVersion":"2.0",},
@@ -138,7 +137,6 @@
     {"id":{"name":"scr_array","path":"scripts/scr_array/scr_array.yy",},},
     {"id":{"name":"scr_buffer","path":"scripts/scr_buffer/scr_buffer.yy",},},
     {"id":{"name":"scr_debug","path":"scripts/scr_debug/scr_debug.yy",},},
-    {"id":{"name":"scr_demo","path":"scripts/scr_demo/scr_demo.yy",},},
     {"id":{"name":"scr_general","path":"scripts/scr_general/scr_general.yy",},},
     {"id":{"name":"scr_math","path":"scripts/scr_math/scr_math.yy",},},
     {"id":{"name":"scr_matrix","path":"scripts/scr_matrix/scr_matrix.yy",},},
@@ -173,6 +171,6 @@
   "templateType":"game",
   "TextureGroups":[
     {"$GMTextureGroup":"","%Name":"Default","autocrop":false,"border":2,"compressFormat":"bz2","customOptions":"","directory":"","groupParent":null,"isScaled":false,"loadType":"default","mipsToGenerate":0,"name":"Default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
-    {"$GMTextureGroup":"","%Name":"U3DDefaults","autocrop":false,"border":2,"compressFormat":"bz2","customOptions":"","directory":"u3d_defaults","groupParent":null,"isScaled":false,"loadType":"dynamicpages","mipsToGenerate":0,"name":"U3DDefaults","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
+    {"$GMTextureGroup":"","%Name":"u3d_default","autocrop":false,"border":2,"compressFormat":"bz2","customOptions":"","directory":"u3d_defaults","groupParent":null,"isScaled":false,"loadType":"dynamicpages","mipsToGenerate":0,"name":"u3d_default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
   ],
 }
