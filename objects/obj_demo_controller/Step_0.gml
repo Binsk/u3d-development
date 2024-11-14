@@ -50,9 +50,7 @@ else {
 	}
 }
 
-// camera.calculate_world_ray(gmouse.x, gmouse.y, camera.collidable_instance);
-// obj_collision_controller.queue_update(camera);
-
+// Scroll bone attachment menu:
 if (not instance_exists(obj_bone_scroll)){
 	if (mouse_wheel_up())
 		camera_orbit_distance = max(camera_orbit_distance - 1, 1);
@@ -60,6 +58,7 @@ if (not instance_exists(obj_bone_scroll)){
 		camera_orbit_distance = min(camera_orbit_distance + 1, 128);
 }
 
+// Update camera position:
 if (camera_is_rotating){
 	var pos = vec(cos((current_time - camera_rotation_offset) / 2000), 0.5, -sin((current_time - camera_rotation_offset) / 2000));
 	camera.set_position(vec_set_length(pos, camera_orbit_distance));
@@ -71,8 +70,10 @@ else{
 }
 camera.look_at_up(vec());
 
+// Set window cursor to what was calculated last frame:
 window_set_cursor(cursor);
 
+// Recalculate tooltip and cursor icon:
 cursor = cr_arrow;
 with (obj_tooltip)
 	text = "";

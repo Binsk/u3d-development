@@ -638,7 +638,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				var array = [];
 				for (var i = array_length(narray) - 1; i >= 0; --i)
 					array_push(array, get_node_list(narray[i]));
-				
+			
 				node_array = array_flatten(array);
 			}
 		}
@@ -695,7 +695,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var node = get_structure(node_array[i], "nodes");
 			if (is_undefined(node[$ "mesh"]))
 				continue;
-			
+
 			var mesh_id = node[$ "mesh"];
 			var matrix = get_node_transform(node_array[i]);
 			if (matrix_is_identity(matrix))

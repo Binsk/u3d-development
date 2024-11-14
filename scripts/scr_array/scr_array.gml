@@ -120,7 +120,7 @@ function array_length_nested(array){
 	var count = array_length(array);
 	for (var i = count - 1; i >= 0; --i){
 		if (is_array(array[i]))
-			count += array_length_nested(array[i]);
+			count += array_length_nested(array[i]) - 1;
 	}
 	
 	return count;
