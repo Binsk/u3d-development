@@ -50,11 +50,12 @@ void main() {
 		vec2 vCoord1 = reflect(vC, vRand) * fSampleRadius;
 		vec2 vCoord2 = vec2(vCoord1.x * 0.707 - vCoord1.y * 0.707, vCoord1.x * 0.707 + vCoord1.y * 0.707);
 		fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.25, vPosition, vNormal);
-		fAO += calculate_ao(v_vTexcoord, vCoord2 * 0.5, vPosition, vNormal);
-		fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.75, vPosition, vNormal);
+/// @note	Having the 4 samples looks cleaner but it is just way too costly
+		// fAO += calculate_ao(v_vTexcoord, vCoord2 * 0.5, vPosition, vNormal);
+		// fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.75, vPosition, vNormal);
 		fAO += calculate_ao(v_vTexcoord, vCoord2, vPosition, vNormal);
 	}
 		
-	fAO = clamp(fAO / float(u_iSamples * 4), 0.0, 1.0);
+	fAO = clamp(fAO / float(u_iSamples * 2.0), 0.0, 1.0);
 	gl_FragColor.r = 1.0 - fAO;
 }

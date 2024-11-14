@@ -1,3 +1,5 @@
+// https://learn.microsoft.com/en-us/windows/win32/dxtecharts/common-techniques-to-improve-shadow-depth-maps?redirectedfrom=MSDN
+
 uniform sampler2D u_sDepth;     // Regular depth
 uniform sampler2D u_sShadow;    // Light's perspective depth
 

@@ -104,6 +104,7 @@ obj_render_controller.add_light(light_ambient);	// Add the light to the renderin
 	// shadow mapping renders from the light position.
 light_directional = new LightDirectional(quat(), vec(50 * 0.25, 60 * 0.25, 70 * 0.25));
 light_directional.look_at(vec()); // Specify to look at the center point where the model will spawn
+light_directional.shadow_world_units = 24;
 
 // Define render size (will be auto-updated w/ the GUI)
 render_width = display_get_gui_width();
