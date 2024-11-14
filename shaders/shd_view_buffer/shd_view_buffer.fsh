@@ -6,6 +6,7 @@ uniform vec3 u_vCamPosition;
 
 varying vec2 v_vTexcoord;
 
+/// @desc	Convert the cached depth value into a position in world space.
 vec3 depth_to_world(float fDepth, vec2 vUV){
 	#ifdef _YY_HLSL11_
     float fZ = fDepth;

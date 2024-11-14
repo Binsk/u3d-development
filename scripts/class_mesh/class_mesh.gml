@@ -10,15 +10,19 @@
 function Mesh() : U3DObject() constructor {
 	#region PROPERTIES
 	primitive_array = [];		// Contains an array of structs of primitive / material values
-	matrix_model = undefined;	// If set, gets applied to each primitive.
+	matrix_model = undefined;	// If set, gets applied to each primitive; used when there are mesh duplicates in the model
 	matrix_import = undefined;	// If 'apply transforms' is on when importing a model, the transform is stored here
 	#endregion
 	
-	#region METHODS
+	#region METHODS 
+	/// @desc Returns the number of primitives contained in the mesh.
+	/// @returns {real}
 	function get_primitive_count(){
 		return array_length(primitive_array);
 	}
 	
+	/// @desc Returns the total number of triangles in the mesh across all primitives.
+	/// @returns {real}
 	function get_triangle_count(){
 		var count = 0;
 		for (var i = array_length(primitive_array) - 1; i >= 0; --i)
@@ -30,6 +34,8 @@ function Mesh() : U3DObject() constructor {
 	/// @desc	Adds a primitive into the system to be rendered and pairs it with
 	///			a material index. Note that primitives can be added multiple times
 	///			with different materials, if necessary.
+	/// @param	{Primitive}	primitive
+	/// @param	{real}		material_index
 	function add_primitive(primitive, material_index){
 		array_push(primitive_array, {
 			primitive, material_index, 
@@ -39,6 +45,7 @@ function Mesh() : U3DObject() constructor {
 		add_child_ref(primitive);
 	}
 	
+	/// @desc	Applies the custom model matrix to the current world matrix.
 	function apply_matrix(){
 		if (is_undefined(matrix_model))
 			return;
@@ -47,6 +54,7 @@ function Mesh() : U3DObject() constructor {
 	}
 	
 	/// @desc	Renders a single primitive.
+	/// @param	{real}	index		index of the primitive to render
 	function render_primitive(index){
 		if (index < 0 or index >= array_length(primitive_array))
 			return;
@@ -61,8 +69,12 @@ function Mesh() : U3DObject() constructor {
 			vertex_submit(primitive.primitive.vbuffer, pr_trianglelist, -1);
 	}
 	
-	/// @desc	Renders out each primitive, applying the specified materials 
+	/// @desc	Renders out each primitive, applying the specified materials
 	///			according to primitive IDs
+	/// @param	{struct}	material_data	a struct containing material index -> Material() pairs
+	/// @param	{Camera}	camera_id		id of the camera that is currently rendering
+	/// @param	{CAMERA_RENDER_STAGE} render_stage	the currently executing render stage
+	/// @param	{struct}	data			arbitrary data calculated by the renderer; things like skeletal animation
 	function render(material_data={}, camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, data={}){
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
@@ -86,6 +98,9 @@ function Mesh() : U3DObject() constructor {
 		}
 	}
 	
+	/// @desc	Renders out each primitive specifically for the shadow pass.
+	/// @param	{struct}	material_data	a struct containing material index -> Material() pairs
+	/// @param	{struct}	data			arbitrary data calculated by the renderer; things like skeletal animation-
 	function render_shadows(material_data={}, data={}){
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
@@ -110,8 +125,6 @@ function Mesh() : U3DObject() constructor {
 	
 	/// @desc		Will execute a buffer freeze on all attached primitives, loading them into
 	///				vRAM. Much faster to render but constantly takes up vRAM.
-	/// @warning	For dynamically generated resources, this will apply a freeze in ALL
-	///				meshes using the resources!
 	function freeze(){
 		for (var i = array_length(primitive_array) - 1; i >= 0; --i)
 			primitive_array[i].primitive.define_freeze();
@@ -143,3 +156,5 @@ function Mesh() : U3DObject() constructor {
 	#region INIT
 	#endregion
 }
+
+

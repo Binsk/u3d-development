@@ -1,3 +1,5 @@
+/// @about
+/// Renders the effects of a directional light and its reflections.
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;
 

@@ -7,7 +7,7 @@
 /// formats.
 
 /// @desc	The VERTEX_DATA enum contains possible format attributes for the built-in
-/// 		  rendering system. 
+/// 		rendering system. 
 enum VERTEX_DATA {
 	position,		// 3D position
 	color,			// Color / Alpha pair
@@ -19,7 +19,7 @@ enum VERTEX_DATA {
 };
 
 /// @desc	Creates a new vertex format and stores the vertex definition order.
-/// @param	{array[VERTEX_DATA]}	formats=[]	Array of VERTEX_DATA values specifying the data to be stored in the format
+/// @param	{array}	vformat_array	Array of VERTEX_DATA values specifying the data to be stored in the format
 function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture]) : U3DObject() constructor {
 	#region PROPERTIES
 	static FORMAT_MAP = {};	// Used to cache similar formats to help prevent duplication
@@ -65,7 +65,7 @@ function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture])
 			[0, 0],
 			vec(0, 0, 1),
 			vec(),
-			quat(-1, -1, -1, -1), // < 0 will be ignored in the shader
+			quat(-1, -1, -1, -1), // <0 will be ignored in the shader
 			quat()
 		];
 		
@@ -85,6 +85,7 @@ function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture])
 	}
 	
 	/// @desc	Returns if this format has the specified kind of vertex data.
+	/// @param	{VERTEX_DATA}	value
 	function get_has_data(value){
 		for (var i = array_length(vformat_array) - 1; i >= 0; --i){
 			if (vformat_array[i] == value)
@@ -102,6 +103,8 @@ function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture])
 		return byte_count;
 	}
 	
+	/// @desc	Returns the format look-up hash. This is NOT the same as the U3DObject
+	///			referencing hash.
 	function get_hash(){
 		return md5_string_utf8(string(vformat_array));
 	}

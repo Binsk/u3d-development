@@ -1,3 +1,5 @@
+/// @about
+///	Renders an input texture out in a pleasing grayscale.
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;
 

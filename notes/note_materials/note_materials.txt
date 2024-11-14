@@ -1,9 +1,10 @@
 # Materials
 ## About
-Materials are a simple structure that help define how the initial
-gbuffer pass for a model should be handled. Materials are **not**
-responsible for lighting details and the like, but **are** responsible
-for managing PBR textures, skeletal animation, and special rendering
-cases like billboards or sky-boxes.
+Materials group together various textures and PBR properties and 
+define how light should be reflected when applied to a Primitive.
 
-Every model you render requires a material.
+Models can have a number of Materials and Materials may have a
+number of Textures.
+
+Materials effectively define how the GBuffer is built before 
+it is passed into the lighting and shading stages.

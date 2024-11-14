@@ -17,7 +17,8 @@ function abs_min(value1, value2){
 	return value2;
 }
 
-/// @desc	Performs a modulo wrap between [0..wrap)
+/// @desc	Performs a modulo wrap between [0..wrap) instead of
+/// 		the regular (-wrap..wrap)
 function modwrap(value, wrap){
 	value %= wrap; // Normal wrap
 	

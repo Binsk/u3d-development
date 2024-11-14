@@ -1,7 +1,9 @@
 event_inherited();
 /// @about
-/// The render controller handles executing the rendering pipeline and merging camera
-/// buffers together onto the screen.
+/// The render controller handles updating cameras and buffers, rendering bodies and lights
+///	attached to the controller.
+/// Any kind of camera can be added to this controller to be updated automatically, it does
+/// not need to be a camera that renders to the screen.
 
 enum RENDER_STAGE {
 	build_gbuffer,
@@ -10,9 +12,9 @@ enum RENDER_STAGE {
 }
 
 enum RENDER_MODE {
-	draw,		// Auto-renders out cameras to the draw event
-	draw_gui,	// Auto-renders out cameras to the draw_gui event
-	none		// Doesn't auto-render out cameras
+	draw,		// Auto-renders out CameraViews to the draw event
+	draw_gui,	// Auto-renders out CameraViews to the draw_gui event
+	none		// Doesn't auto-render out CameraViews
 }
 
 #region PROPERTIES
@@ -101,6 +103,8 @@ function build_render_body_array(camera_id){
 	return array;
 }
 
+/// @desc	Takes all attached cameras and renders them out to their respective
+///			targets.
 function render_cameras(){
 	var camera_keys = struct_get_names(camera_map);
 	for (var i = array_length(camera_keys) - 1; i >= 0; --i){

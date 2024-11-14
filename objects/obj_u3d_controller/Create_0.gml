@@ -1,5 +1,5 @@
 /// @about
-/// The U3DController object is a base controller class that all controller systems
+/// This object is a base controller class that all controller systems
 /// inherit from. It defines expected methods for the controller systems and handles
 /// threading / async (once implemented).
 
@@ -10,7 +10,9 @@ body_map = {};
 #endregion
 
 #region METHODS
-/// @desc	Adds a body to the controller and returns if the body was added
+
+/// @desc	Adds a body to the controller and returns if the body was added.
+///			Bodies are automatically detached when freed.
 function add_body(body){
 	if (not is_instanceof(body, Body)){
 		Exception.throw_conditional("invalid type, expected [Body]!");
@@ -26,6 +28,7 @@ function add_body(body){
 	return true;
 }
 
+/// @desc	Explicitly removes a body from the controller.
 function remove_body(body){
 	if (not is_instanceof(body, Body)){
 		Exception.throw_conditional("invalid type, expected [Body]!");
@@ -41,9 +44,11 @@ function remove_body(body){
 	return true;
 }
 
+/// @desc	Returns if the body has already been added to this controller.
 function has_body(body){
 	return not is_undefined(body_map[$ body.get_index()]);
 }
 
+/// @desc	Processes the main event for this controller.
 function process(){};
 #endregion

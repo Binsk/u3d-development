@@ -8,10 +8,10 @@
 ///		"set_scale" 	(from, to)		-	thrown when the scale has been modified
 
 /// @desc	a 3D point in space with a position, rotation, and scale
-/// @param	{vec}	 position		a position represented by a vector
+/// @param	{vec}	position		a position represented by a vector
 /// @param	{quat}	rotation		a rotation represented by a quaternion
-/// @param	{scale}   scale		   a scale represented by a vector
-function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() constructor {
+/// @param	{vec}	scale			a scale represented by a vector
+function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject() constructor {
 	#region PROPERTIES
 	static AXIS_FORWARD = vec(1, 0, 0); // Global axes for convenient access
 	static AXIS_UP = vec(0, 1, 0);
@@ -19,7 +19,7 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	
 	self.position = position;
 	self.rotation = rotation;
-	self.scale = (scale ?? vec(1, 1, 1));
+	self.scale = scale;
 	
 	matrix_model = undefined;		// 4x4 transform matrix
 	matrix_inv_model = undefined;	// 4x4 inverse transform matrix
@@ -30,6 +30,9 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	#endregion
 	
 	#region METHODS
+	/// @desc	Sets the current position of the node in world space.
+	/// @param	{vec}	position
+	/// @param	{bool}	relative	if true, the specified position will be relative to the current position
 	function set_position(position=vec(), relative=false){
 		var value_start = self.position;
 		if (relative)
@@ -45,6 +48,11 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		signaler.signal("set_position", [value_start, self.position]);
 	}
 	
+	/// @desc	Sets the current rotation of the node in world space. All nodes are
+	///			assumed to 'point' down the +X axis by default and the specified 
+	///			quaternion rotates relative to that.
+	/// @param	{quat}	rotation
+	/// @param	{bool}	relative	if set, the rotation quaternion will be multiplied against the current rotation.
 	function set_rotation(rotation=quat(), relative=false){
 		var value_start = self.rotation;
 		if (relative)
@@ -60,6 +68,9 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		signaler.signal("set_rotation", [value_start, self.rotation]);
 	}
 	
+	/// @desc	Sets the scale of the node in world space.
+	/// @param	{vec}	scale
+	/// @param	{bool}	relative	if set, the specified scale will be added to the current scale.
 	function set_scale(scale=vec(), relative=false){
 		var value_start = self.scale;
 		if (relative)
@@ -75,20 +86,29 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		signaler.signal("set_scale", [value_start, self.scale]);
 	}
 	
-	/// @desc	Sets which render layers this instance on. This is a bitwised value
+	/// @desc	Sets which render layers this instance appears on. This is a bitwised value
 	///			where each bit represents a layer index.
 	function set_render_layers(bits){
 		render_layer_bits = bits;
 	}
 	
+	/// @desc	Returns a copy of the position vector.
+	/// @note	It is faster to simply access the position value, however it must ALWAYS
+	///			be treated as constant in that case.
 	function get_position(){
 		return vec_duplicate(position);
 	}
 
+	/// @desc	Returns a copy of the rotation quaternion.
+	/// @note	It is faster to simply access the rotation value, however it must ALWAYS
+	///			be treated as constant in that case.
 	function get_rotation(){
 		return quat_duplicate(rotation);
 	}
 	
+	/// @desc	Returns a copy of the scale vector.
+	/// @note	It is faster to simply access the scale value, however it must ALWAYS
+	///			be treated as constant in that case.
 	function get_scale(){
 		return vec_duplicate(scale);
 	}
@@ -104,6 +124,8 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	}
 	
 	/// @desc	Rotates the node to face the specified point from its current position.
+	/// 		This does not consider the UP vector so the rotation may cause leaning.
+	/// @param	{vec}	position	the position to rotate towards
 	function look_at(position){
 		var forward_vector = Node.AXIS_FORWARD;
 		var look = vec_sub_vec(position, self.position);
@@ -133,7 +155,10 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	}
 	
 	/// @desc	The same as look_at but attempts to keep the up vector as close to the
-	///			specified up vector as possible
+	///			specified up vector as possible while remaining perpendicular to the forward
+	/// 		vector.
+	/// @param	{vec}	position	the position to rotate towards
+	/// @param	{vec}	up			the vector to treat as the local up value
 	function look_at_up(position, up=Node.AXIS_UP){
 		look_at(position); // Perform regular look_at
 		
@@ -159,18 +184,24 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		
 	}
 	
+/// @todo (?) might be worth caching these like w/ the matrices? Quat OPs are not fast.
+	/// @desc	Returns the current facing vector in world space.
 	function get_forward_vector(){
 		return quat_rotate_vec(rotation, vec(1, 0, 0));
 	}
 	
+	/// @desc	Returns the current up vector in world space.
 	function get_up_vector(){
 		return quat_rotate_vec(rotation, vec(0, 1, 0));
 	}
 	
+	/// @desc	Returns the current right vector in world space.
 	function get_right_vector(){
 		return quat_rotate_vec(rotation, vec(0, 0, 1));
 	}
 	
+	/// @desc	Returns the current model matrix.
+	/// @param	{bool}	force_update	if true, forces a recalculation regardless of the cache
 	function get_model_matrix(force_update=false){
 		if (not is_undefined(matrix_model) and not force_update)
 			return matrix_model;
@@ -183,6 +214,8 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 		return matrix_model;
 	}
 	
+	/// @desc	Retruns the current inverse of the model matrix.
+	/// @param	{bool}	force_update	if true, forces a recalculation regardless of the cache
 	function get_inv_model_matrix(force_update=false){
 		if (not is_undefined(matrix_inv_model) and not force_update)
 			return matrix_inv_model;
@@ -195,8 +228,5 @@ function Node(position=vec(), rotation=quat(), scale=undefined) : U3DObject() co
 	function get_render_layers(){
 		return render_layer_bits;
 	}
-	#endregion
-	
-	#region INIT
 	#endregion
 }

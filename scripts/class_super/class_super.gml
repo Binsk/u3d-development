@@ -3,6 +3,7 @@
 /// executing parent functions on behalf of its owner class.
 
 /// @desc	creates a new function recorder for the structure 'class'.
+/// @param	{struct}	class	struct or instance that this super is recording
 function Super(class) constructor {
 	#region PROPERTIES
 	self.class = class;
@@ -12,6 +13,7 @@ function Super(class) constructor {
 	#region METHODS
 	/// @desc	Registers a function name to be recorded into the super. This should be
 	///			done just before overriding a parent function so as to store the parent's version.
+	/// @param	{string}	name	name of the function to register
 	function register(name=""){
 		if (is_undefined(class[$ name])){
 			Exception.throw_conditional(string_ext("failed to register [{0}] as super; method doesn't exist!", [name]));
@@ -27,9 +29,9 @@ function Super(class) constructor {
 	///			This works similarly to event_inherited(), only for arbitrary function names.
 	///			This will return whatever the parent function returns, or undefined.
 	/// @param	{string}	name			the name of the parent function to call
-	/// @param	{array}		argv=[]			array of arguments to pass into the parent function
-	/// @param	{int}		offset=0		the offset in the array to start reading from
-	/// @param	{int}		count=all		the number of array elements to pass in
+	/// @param	{array}		argv			array of arguments to pass into the parent function
+	/// @param	{int}		offset			the offset in the array to start reading from
+	/// @param	{int}		count			the number of array elements to pass in
 	function execute(name, argv=[], offset=0, count=infinity){
 		var array = data[$ name];
 		if (is_undefined(array)) // Nothing to execute

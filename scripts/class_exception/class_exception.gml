@@ -15,8 +15,8 @@
 /// value checks upon release.
 
 /// @desc	An exception class that can contain / display an error message.
-/// @param	{string}	message	an error message to display if the exception isn't caught
-/// @param	{int}	   index=0	  a generic index to help identify exception type
+/// @param	{string}	message		an error message to display if the exception isn't caught
+/// @param	{real}		index		a generic index to help identify exception type
 function Exception(message=undefined, index=0) constructor {
 	#region PROPERTIES
 	static SILENT_THROW = false;	// If true, the exception WON'T throw through throw_conditional(), but instead print to console
@@ -47,6 +47,8 @@ function Exception(message=undefined, index=0) constructor {
 	}
 	#endregion
 	#region METHODS
+	/// @desc	Regenerates the exception message w/ the trace.
+	/// @param	{real}	debug_pop	number of messages to pop off the end of the call stack
 	function _update_message(debug_pop=0){
 		stacktrace = debug_get_callstack();
 
@@ -63,6 +65,7 @@ function Exception(message=undefined, index=0) constructor {
 		longMessage = string_ext("[Upset 3D Trace]\nin {0}, (line {1})\n{2}\nTrace:\n  {3}", [script, line, self.message, array_glue("\n  ", stacktrace, 0, -2)]);
 	}
 	
+	/// @desc	Returns the specified exception index stored by this exception.
 	function get_index(){
 		return index;
 	}

@@ -1,5 +1,5 @@
 /// @about
-/// A very simple shader that simply adds the specified imissive color on top
+/// A very simple shader that adds the specified emissive color on top
 /// of the render like a regular light.
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;

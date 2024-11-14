@@ -9,6 +9,11 @@ function AnimationChannelPosition() : AnimationChannel() constructor {
 	
 	#region METHODS
 	super.register("add_morph");
+	/// @desc	Adds a morph value to the definition; can only be done if the
+	///			channel is not frozen.
+	/// @param	{real}	time_stamp	the time at which this morph is applied (in seconds)
+	/// @param	{vec}	value		the morph value to apply
+	/// @param	{ANIMATION_CHANNEL_TRANSFORM}	type	morph method to use
 	function add_morph(time_start, value, type=ANIMATION_CHANNEL_TRANSFORM.linear){
 		if (not is_vec(value))
 			throw new Exception("invalid type, expected [vec]!");
@@ -16,6 +21,10 @@ function AnimationChannelPosition() : AnimationChannel() constructor {
 		super.execute("add_morph", [time_start, value, type]);
 	}
 	
+	/// @desc	Execute the 'interpolated' morph method.
+	/// @param	{real}	time	current time in the channel
+	/// @param	{vec}	from	morph we are transforming from
+	/// @param	{vec}	to		morph we are transforming to
 	function transform_linear(time, from, to){
 		var percent = 1.0;
 		if (to.time_stamp != from.time_stamp)

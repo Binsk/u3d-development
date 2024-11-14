@@ -8,6 +8,7 @@ function vec(x=0, y=0, z=0){
 	}
 }
 
+/// @desc	Returns if the specified value is a 3D vec().
 function is_vec(value){
 	if (not is_struct(value))
 		return false;
@@ -27,6 +28,7 @@ function is_vec(value){
 	return true;
 }
 
+/// @desc	Creates a copy of the specified vector.
 function vec_duplicate(vector){
 	return vec(vector.x, vector.y, vector.z);
 }
@@ -34,6 +36,10 @@ function vec_duplicate(vector){
 /// @desc	A convenient container to represent a vec + angle of rotation in 
 ///			radians. Generally should not be processed directly, but can be used
 ///			to transfer data between functions easily.
+/// @param	{real}	x
+/// @param	{real}	y
+/// @param	{real}	z
+/// @param	{real}	angle	angle to rotate around the vector components, in radians.
 function veca(x=0, y=0, z=0, a=0){
 	return {
 		x, y, z, a
@@ -41,6 +47,8 @@ function veca(x=0, y=0, z=0, a=0){
 }
 
 /// @desc	A container that represents a vector + angle.
+/// @param	{vec}	vector		vector to rotate around
+/// @param	{real}	angle		number of radians to rotate
 function vec_to_veca(vector=vec(), a=0){
 	return {
 		x : vector.x,
@@ -55,9 +63,9 @@ function veca_to_vec(veca){
 	return vec(veca.x, veca.y, veca.z);
 }
 
-/// 	@desc	Returns the cross product (as a struct) between two vectors.
-///	@param	{vec}	vector1		vector a to multiply (as a struct)
-///	@param	{vec}	vector2		vector b to multiply (as a struct)
+///	@desc	Returns the cross product between the two vectors.
+///	@param	{vec}	vector1		vector a to multiply
+///	@param	{vec}	vector2		vector b to multiply
 function vec_cross(v1, v2) {
 	return vec( v1.y * v2.z - v1.z * v2.y,
 				v1.z * v2.x - v1.x * v2.z,
@@ -69,13 +77,13 @@ function vec_dot(v1, v2){
 	return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 }
 
-/// @desc	Subtract vector components.
+/// @desc	Subtract v2 components from v1.
 function vec_sub_vec(v1, v2){
 	return vec(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
 }
 
 
-/// @desc	Add vector components.
+/// @desc	Add vector components together.
 function vec_add_vec(v1, v2){
 	return vec(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
 }
@@ -85,12 +93,14 @@ function vec_mul_vec(v1, v2){
 	return vec(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
 }
 
-/// @desc	Divides components of two vectors directly across.
+/// @desc	Divides v1 components by v2 components directly across.
 function vec_div_vec(v1, v2){
 	return vec(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
 }
 
-/// @desc	Divides components of two vectors directly across.
+/// @desc	Peforms the same as vec_div_vec, only if the divisor is
+/// 		the specified 'val' then that value will be returned instead
+/// 		of the division.
 function vec_div2_vec(v1, v2, val=0){
 	return vec(v2.x == 0 ? val : v1.x / v2.x, v2.y == 0 ? val : v1.y / v2.y, v2.z == 0 ? val : v1.z / v2.z);
 }
@@ -111,11 +121,14 @@ function vec_sign(v){
 }
 
 /// @desc	Applies clamp() to each component of the vector and returns the result
+/// @param	{vec}	vector	vector to modify
+/// @param	{vec}	min		vector containing minimum components
+/// @param	{vec}	max		vector containing maximum components
 function vec_clamp(v, vm, vM){
 	return vec(
 		clamp(v.x, vm.x, vM.x),
 		clamp(v.y, vm.y, vM.y),
-		clamp(v.z, vm.z, vM.z),
+		clamp(v.z, vm.z, vM.z)
 	);
 }
 
@@ -129,6 +142,7 @@ function vec_mul_scalar(v1, scalar){
 	return vec(v1.x * scalar, v1.y * scalar, v1.z * scalar);
 }
 
+/// @desc	Adds a scalar to each component in the vector.
 function vec_add_scalar(v1, scalar){
 	return vec(v1.x + scalar, v1.y + scalar, v1.z + scalar);
 }
@@ -142,7 +156,7 @@ function vec_normalize(v){
 	return vec(v.x / m, v.y / m, v.z / m);
 }
 
-/// @desc	Returns the specified vector with a modified length.
+/// @desc	Returns the specified vector with a new length.
 function vec_set_length(v, length){
 	return vec_mul_scalar(vec_normalize(v), length);
 }
@@ -160,6 +174,7 @@ function vec_is_nan(v){
 		return true;
 	if (is_nan(v.z))
 		return true;
+	
 	return false;
 }
 
@@ -171,6 +186,9 @@ function vec_to_array(vector){
 }
 
 /// @desc	Rotates the specified vector around an arbitrary axis by a number of radians
+/// @param	{vec}	vector 		vector to be rotated
+/// @param	{vec}	axis		vector to be rotated around
+/// @param	{real}	angle		number of radians to rotate by
 function vec_rotate(vector, axis, radians) {
 	var par = vec_mul_scalar(axis, vec_dot(vector, axis) / vec_dot(axis, axis));
 	var perp = vec_sub_vec(vector, par);
@@ -196,14 +214,15 @@ function vec_rotate(vector, axis, radians) {
 }
 
 /// @desc	Returns the number of radians to get from vector1 to vector2.
-/// 		  The result is NOT SIGNED and will always be positive.
+/// 		The result is NOT SIGNED and will always be positive.
 function vec_angle_difference(vector1, vector2) {
 	vector1 = vec_normalize(vector1);
 	vector2 = vec_normalize(vector2);
 	return arccos(vec_dot(vector1, vector2));
 }
 
-/// @desc	Returns the inverse of the specified vector.
+/// @desc	Returns the inverse of the specified vector. The vector's components
+/// 		should generally be between [0..1]
 function vec_invert(vector){
 	return vec(
 		vector.x == 0 ? 0 : 1.0 / vector.x,
@@ -222,6 +241,9 @@ function vec_reverse(vector){
 }
 
 /// @desc	Lerps components across from one vector to another.
+/// @param	{vec}	from	vector to lerp from
+/// @param	{vec}	to		vector to lerp to
+/// @param	{real}	lerp	percentage to lerp between vectors
 function vec_lerp(vector1, vector2, percent){
 	return vec(
 		lerp(vector1.x, vector2.x, percent),
@@ -230,8 +252,11 @@ function vec_lerp(vector1, vector2, percent){
 	);
 }
 
-/// @desc	Performs a spherical lerp between two vectors; note that both vectors
-///		  must be normalized!
+/// @desc	Performs a spherical lerp between two vectors. Each
+/// 		vector must be normalized.
+/// @param	{vec}	from	vector to lerp from
+/// @param	{vec}	to		vector to lerp to
+/// @param	{real}	lerp	percentage to lerp between vectors
 function vec_slerp(vector1, vector2, percent) {
 	percent = clamp(percent, 0, 1);
 	var dot = vec_dot(vector1, vector2);
@@ -254,13 +279,13 @@ function vec_slerp(vector1, vector2, percent) {
 		scalar_vec2 = angle_sin_partial / angle_sin;
 	
 	return vec_add_vec(	vec_mul_scalar(vector1, scalar_vec1), 
-								vec_mul_scalar(vector2, scalar_vec2));
+						vec_mul_scalar(vector2, scalar_vec2));
 
 
 }
 
 /// @desc	Projects a vector onto a normal (effectively removing that axis from the vector)
-///		  The normal should be normalized.
+///		 The normal should be normalized.
 function vec_project(vector, normal){
 	var dot = vec_dot(vector, normal); // Magnitude of vector along the normal
 	var normal_mag = vec_mul_scalar(normal, dot);
@@ -281,10 +306,12 @@ function vec_get_perpendicular(vector){
 	return vec(vector.x, vector.z, -vector.y);
 }
 
+/// @desc	Returns if the specified vector contains only values of 0.
 function vec_is_zero(vector){
 	return (vector.x == 0 and vector.y == 0 and vector.z == 0);
 }
 
+/// @desc	Returns if the two vectors are mathematically equal.
 function vec_equals_vec(v1, v2){
 	if (v1.x != v2.x)
 		return false;
@@ -299,7 +326,9 @@ function vec_equals_vec(v1, v2){
 }
 
 /// @desc	Performs a 'step' on each component of the vector where 0 is returned
-/// 		  if the threshold is not met and 1 is returned if the threshold is met.
+/// 		if the threshold is not met and 1 is returned if the threshold is met.
+/// @param	{vec}	vector	vector to step
+/// @param	{real}	edge	cutoff threshold
 function vec_step(vector, edge){
 	return vec(
 		vector.x < edge.x ? 0 : 1,
@@ -313,7 +342,7 @@ function vec_min(vector1, vector2){
 	return vec(
 		min(vector1.x, vector2.x),
 		min(vector1.y, vector2.y),
-		min(vector1.z, vector2.z),
+		min(vector1.z, vector2.z)
 	);
 }
 
@@ -322,7 +351,7 @@ function vec_max(vector1, vector2){
 	return vec(
 		max(vector1.x, vector2.x),
 		max(vector1.y, vector2.y),
-		max(vector1.z, vector2.z),
+		max(vector1.z, vector2.z)
 	);
 }
 
@@ -332,21 +361,24 @@ function vec_abs_max(vector1, vector2){
 	return vec(
 		abs_max(vector1.x, vector2.x),
 		abs_max(vector1.y, vector2.y),
-		abs_max(vector1.z, vector2.z),
+		abs_max(vector1.z, vector2.z)
 	);
 }
 
+/// @desc	Returns the smallest component in the vector.
 function vec_min_component(vector){
 	return min(vector.x, vector.y, vector.z);
 }
 
+/// @desc	Returns the largest component in the vector.
 function vec_max_component(vector){
 	return max(vector.x, vector.y, vector.z);
 }
 
 
-/// @desc	A bit of a hack to easily convert a 4-component struct to a color. Done 
+/// @desc	A bit of a hack to easily convert a 3-component struct to a color. Done
 ///			to simplify color data loading in the glTF loader.
 function vec_to_color(vector){
 	return make_color_rgb(vector.x * 255, vector.y * 255, vector.z * 255);
 }
+

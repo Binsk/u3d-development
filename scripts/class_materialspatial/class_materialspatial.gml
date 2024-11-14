@@ -16,7 +16,7 @@
 // Building the GBuffer
 // This material is used when the primary GBuffer is built. No lighting or visual effects
 // are performed in this stage. Instead, textures will be generated for all details
-// required such as depth, albedo, normals, and pbr data. This stage will also handle
+// required such as depth, albedo, normals, pbr, and emissive data. This stage will also handle
 // any and all vertex transforms, such as skeletal animation.
 
 // Transluscency:
@@ -33,13 +33,13 @@
 // or 1 and, in the case of an alpha of 0, the depth output should be changed to
 // the z-far clip or the fragment discarded so as to allow proper 'see through'.
 // Not doing this will result in rendering artifacts. The transluscent pass can
-// simply render out without modification.
+// simply render out without modification, including the depth buffer.
 #endregion
 
 /// @note	The PBR color index for roughness and metalness are defined as part
 ///			of the glTF spec. We are choosing to use R as the specular channel.
 enum PBR_COLOR_INDEX {
-	specular,		// R channel
+	specular,		// R channel	(Note: Not currently used, have some math bits to figure out)
 	roughness,		// G channel
 	metalness,		// B channel
 }
@@ -50,7 +50,7 @@ function MaterialSpatial() : Material() constructor {
 	cull_mode = cull_noculling;
 	shadow_cull_mode = cull_noculling;
 	render_stage = CAMERA_RENDER_STAGE.opaque;
-	alpha_cutoff = 0.5;
+	alpha_cutoff = 0.5;		// Opaque render will step the alpha from 0 to 1 based around this cutoff
 	
 	// Textures
 	texture = {
@@ -67,13 +67,16 @@ function MaterialSpatial() : Material() constructor {
 	///			before everything is converted back to sRGB at the end.
 	scalar = {
 		albedo : [1, 1, 1, 1],
-		pbr : [1, 1, 1], // See PBR_COLOR_INDEX for layout
+		pbr : [1, 1, 1],		// See PBR_COLOR_INDEX for layout
 		emissive : [1, 1, 1]	// ONLY applies if there is an emission texture
 	}
 	
 	#region GBUFFER UNIFORMS
+	// The following are the uniforms that are available toy our spatial shader. If a uniform is
+	// not specified in your shader then it will not be sent.
+	//												UNIFORM					TYPE			DESCRIPTION
 	uniform_gbuffer_sampler_albedo = -1;		// u_sAlbedo			(sampler2D)		4color material w/o lighting
-	uniform_gbuffer_albedo_uv = -1;				// u_vAlbedoUV			(vec4)			UV bounds on texture page for albed
+	uniform_gbuffer_albedo_uv = -1;				// u_vAlbedoUV			(vec4)			UV bounds on texture page for albedo
 												// u_vAlbedo			(vec4)			color multiplier (or direct color if no texture)
 	uniform_gbuffer_sampler_normal = -1;		// u_sNormal			(sampler2D)		normal direction texture in tangent space
 	uniform_gbuffer_normal_uv = -1;				// u_vNormalUV			(vec4)			UV bounds on texture page for normal
@@ -88,7 +91,6 @@ function MaterialSpatial() : Material() constructor {
 												// u_iTranslucent		(int)			whether or not it is a translucent pass
 												// u_mBone				(mat4[80])		array of bone transform matrices (up to 80); NOTE: uniform set by mesh, not material!
 	#endregion
-	
 	#endregion
 	
 	#region METHODS
@@ -156,21 +158,25 @@ function MaterialSpatial() : Material() constructor {
 	}
 	
 	/// @desc	Sets the Texture2D to use for the albedo texture, or undefined.
+	/// @param	{Texture2D}	texture
 	function set_albedo_texture(texture){
 		set_texture("albedo", texture);
 	}
 	
 	/// @desc	Sets the Texture2D to use for the normal texture, or undefined.
+	/// @param	{Texture2D}	texture
 	function set_normal_texture(texture){
 		set_texture("normal", texture);
 	}
 	
 	/// @desc	Sets the Texture2D to use for the pbr texture, or undefined.
+	/// @param	{Texture2D}	texture
 	function set_pbr_texture(texture){
 		set_texture("pbr", texture);
 	}
 	
 	/// @desc	Sets the Texture2D to use for the emissive texture, or undefined.
+	/// @param	{Texture2D}	texture
 	function set_emissive_texture(texture){
 		set_texture("emissive", texture);
 	}
@@ -220,7 +226,7 @@ function MaterialSpatial() : Material() constructor {
 		return make_color_rgb(scalar.emissive[0] * 255, scalar.emissive[1] * 255, scalar.emissive[2] * 255);
 	}
 	
-		/// @desc	Return an array of shaders in their respective execution orders (see header notes)
+	/// @desc	Returns the current shader set for this material.
 	function get_shader(){
 		return shader_gbuffer;
 	}

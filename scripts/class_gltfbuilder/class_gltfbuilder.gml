@@ -14,6 +14,10 @@
 ///			including mesh positions. This is NOT supported! Only bone -> vertex morph
 ///			animation is supported in this loader and meshes will have their parent-
 ///			morph hierarchy pre-calculated upon load. 
+
+/// @todo	Implement passing a buffer directly to allow loading encrypted model files
+/// 		and similar such abilities.
+/// 
 function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	#region PROPERTIES
 	self.name = name;
@@ -91,6 +95,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return array;
 	}
 	
+	/// @desc	Return the number of animation tracks available for this model.
 	function get_animation_track_count(){
 		if (is_undefined(json_header[$ "animations"]))
 			return 0;
@@ -108,7 +113,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	}
 	
 	/// @desc	Given a node ID, generates an array of node IDs attached to it
-	///			including itself. If the node is invalid and empty array is returned.
+	///			including itself all the way down the tree to the last grandchild.
+	/// @param	{real}		node_id		index of the specific node to scan
+	/// @param	{struct}	state		the current scan state; should be left empty when calling
+	/// @return	{array}
 	function get_node_list(node_id, state={}){
 		var node = get_structure(node_id, "nodes");
 		if (is_undefined(node))
@@ -313,10 +321,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			specified format. If the format contains values that are undefined by the
 	///			model, the system will attempt to generate them (if possible) or fill them
 	///			with 0 values. Returns 'undefined' if an error occurred.
-	/// @param	{int}	mesh_index				index of the mesh to read from
-	/// @param	{int}	primitive_index			index of the primitive to generate
+	/// @param	{real}	mesh_index				index of the mesh to read from
+	/// @param	{real}	primitive_index			index of the primitive to generate
 	/// @param	{VertexFormat} vertex_format	vertex format to specify data layout and inclusion
-	/// @param	{int}	transform=undefined		transform matrix to apply to each vertex position
+	/// @param	{real}	transform=undefined		transform matrix to apply to each vertex position
 	function generate_primitive(mesh_index, primitive_index, format, transform=undefined) {
 		if (not in_range(mesh_index, 0, get_mesh_count() - 1))	// Invalid mesh index
 			return undefined;
@@ -369,7 +377,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 
 		#region BUILD ATTRIBUTE LOOKUP
-		// Now we bulid array groups of attributes that match the vertex format for quick look-up
+		// Now we build array groups of attributes that match the vertex format for quick look-up
 		// when building the mesh
 		var vertex_index_count = array_length(vertex_index_array);
 		var missing_data = [];	// Record which data is missing so we can spit a warning
@@ -531,6 +539,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	
 	/// @desc	Given a mesh index, attempts to generate a Mesh. See generate_primitive for more
 	///			specifics in regards to data handling.
+	/// @param	{real}			index				index of the mesh in the glTF array
+	///	@param	{VertexFormat}	format				vertex format to use when building the primitives
+	/// @param	{bool}			apply_transforms	if true, applies node transforms directly to vertex buffers
 	function generate_mesh(mesh_index, format, apply_transforms=true){
 		var count = get_primitive_count(mesh_index);
 		if (count <= 0)
@@ -598,10 +609,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///	@note	If possible, make sure your models are exported with all transforms applied!
 	///			Manually applying them upon load is slow but may be necessary for duplicated meshes.
 	/// @note	If an invalid scene is defined then EVERY MESH will be added to the model!
-	///	@param	{int}			scene=-1		Which scene from the model to generate a model from (-1 all meshes, regardless of scene)
-	/// @param	{bool}			materials=true	Whether or not to generate materials for the model (Material indices will still be set)
-	/// @param	{bool}			apply=true		Whether or not node transforms should be applied to the primitives
-	/// @param	{VertexFormat}	vformat=auto	VertexFormat to generate with, will attempt to fill missing data
+	///	@param	{real}			scene				Which scene from the model to generate a model from (-1 all meshes, regardless of scene)
+	/// @param	{bool}			materials			Whether or not to generate materials for the model (Material indices will still be set)
+	/// @param	{bool}			apply_transforms	Whether or not node transforms should be applied to the primitives
+	/// @param	{VertexFormat}	vformat				VertexFormat to generate with, will attempt to fill missing data
 	function generate_model(scene=-1, generate_materials=true, apply_transforms=true, format=undefined){
 /// @stub	Implement support for custom formats (requires dynamic shader attributes on Windows)
 		if (not is_undefined(format))
@@ -641,7 +652,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		count = array_length(node_array);
 		
-		// Add meshes based off of the nodes in the scene	
+		// Add meshes based off of the nodes in the scene
 		var mesh_struct = {};
 		var is_invalid = false;
 		var i;
@@ -680,7 +691,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		model = new Model();
 		
 		// Generate model-specific meshes + transforms
-		// var mesh_keys = struct_get_names(mesh_struct);
 		for (var i = array_length(node_array) - 1; i >= 0; --i){
 			var node = get_structure(node_array[i], "nodes");
 			if (is_undefined(node[$ "mesh"]))
@@ -723,7 +733,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	Given an animation track name or animation track index and a skin,
 	///			attempts to generate an AnimationTrack.
 	/// @warning	The generated AnimationTrack MUST be manually freed when no longer
-	///				needed! All sub-structures, such as AnimationTrack, will be freed
+	///				needed! All sub-structures, such as AnimationGroup, will be freed
 	///				along with the AnimationTrack
 	function generate_animation_track(name_or_index, skin=0){
 		if (is_undefined(json_header[$ "animations"]))
@@ -843,6 +853,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			the name "track_<index>" where <index> is the index number of the track.
 	///	@warning	The AnimationTree generated MUST be manually freed! All animation tracks
 	///				and morphs generated will be freed automatically along with the tree.
+	/// @param	{real}	skin		the skin index to use when generating the animation tracks and skeleton
 	function generate_animation_tree(skin=0){
 		var track_count = get_animation_track_count();
 		if (track_count <= 0)
@@ -864,10 +875,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return animation_tree;
 	}
 	
-	/// @desc	Generates a bone relational struct.
-	///			Does NOT contain bone transform data of any kind, simply bone IDs
-	///			and how they relate to each-other. Transform data is specified by
-	///			animation tracks.
+	/// @desc	Generates a bone relational struct. Does NOT contain transform data
+	///			apart from the inverse bone matrices.
 	function generate_skeleton(skin){
 		var skin_data = get_structure(skin, "skins");
 		if (is_undefined(skin_data))

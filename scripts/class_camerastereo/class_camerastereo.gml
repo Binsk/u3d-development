@@ -4,5 +4,5 @@
 /// 3D televisions, or anaglyph rendering.
 
 function CameraStereo() : Camera() constructor {
-/// @stub	Implement	
+/// @stub	Implement
 }

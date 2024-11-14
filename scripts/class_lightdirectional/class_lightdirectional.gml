@@ -15,12 +15,13 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	light_normal = vec_normalize(quat_rotate_vec(rotation, vec(1, 0, 0)));
 	light_color = c_white;
 	texture_environment = undefined;
+/// @todo	Add light intensity! (whoops)
 	
 	shadow_resolution = 4096;	// Texture resolution for the lighting render (larger = sharper shadows but more expensive)
 	shadow_world_units = 64;	// Number of world-units width/height-wise the shadow map should cover (larger = more of the world has shadows but blurrier)
-	shadow_surface = -1;		// Only used to extract the depth buffer
+	shadow_surface = -1;		// Only used to extract the depth buffer ATM (might be used for colored translucent shadows later)
 	shadowbit_surface = -1;		// Used in the deferred pass for shadow sampling
-	shadow_depth_texture = -1;
+	shadow_depth_texture = -1;	// Extracted from shadow_surface
 	shadow_znear = 0.01;		// How close to the light things will render
 	shadow_zfar = 1024;			// How far away from the light things will render
 	shadow_bias = 0.0001;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
@@ -42,12 +43,12 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	#region METHODS
 
 	/// @desc	Sets several properties for the shadow rendering, if enabled.
-	/// @param	{real}	resolution=4096		resolution of shadow texture to render to
-	/// @param	{real}	units=64			world units the render camera should cover
-	/// @param	{real}	bias=0.00005		sample depth offset; used to balance shadow acne / peter panning issues
-	/// @param	{real}	znear=0.01			near clipping distance for the shadow's camera
-	/// @param	{real}	zfar=1024			far clipping distance for the shadow's camera
-	function set_shadow_properties(resolution=4096, units=64, bias=0.00005, znear=0.01, zfar=1024){
+	/// @param	{real}	resolution	resolution of shadow texture to render to
+	/// @param	{real}	units		world units the render camera should cover
+	/// @param	{real}	bias		sample depth offset; used to balance shadow acne / peter panning issues
+	/// @param	{real}	znear		near clipping distance for the shadow's camera
+	/// @param	{real}	zfar		far clipping distance for the shadow's camera
+	function set_shadow_properties(resolution=4096, units=64, bias=0.0001, znear=0.01, zfar=1024){
 		shadow_resolution = resolution;
 		shadow_world_units = units;
 		shadow_bias = bias;
@@ -55,13 +56,14 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		shadow_zfar = zfar;
 	}
 	
+	/// @desc	Sets the color of the light's albedo.
 	function set_color(color=c_white){
 		light_color = color;
 	}
 	
 	/// @desc	Sets an environment texture to be used for reflections. If set to anything
 	///			other than 'undefined' environmental mapping will be enabled for this light.
-	/// @param	{TextureCube}	texture=undefined		a TextureCube texture, specifying the cube-map to use
+	/// @param	{TextureCube}	texture	a TextureCube texture, specifying the cube-map to use
 	function set_environment_texture(texture=undefined){
 		if (not is_undefined(texture) and not is_instanceof(texture, TextureCube))
 			throw new Exception("invalid type, expected [TextureCube]!");
@@ -101,7 +103,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	}
 	
 	function apply(){
-/// @stub	Figure out why the light needs these two axes inverted
 		uniform_set("u_vLightNormal", shader_set_uniform_f, [-light_normal.x, -light_normal.y, -light_normal.z]);
 		uniform_set("u_vLightColor", shader_set_uniform_f, [color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255]);
 	}

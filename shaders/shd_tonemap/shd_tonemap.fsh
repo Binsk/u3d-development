@@ -16,16 +16,16 @@ vec4 to_srgb(vec4 vColor){
 
 void main()
 {
-    vec4 vColor = texture2D(u_sTexture, v_vTexcoord);
-    
-    if (u_iTonemap == 1){ // Simple
-        // Gamma correction:
-        vColor.rgb /= vColor.rgb + vec3(1.0);
-	    vColor.rgb = pow(vColor.rgb, vec3(1.0 / 2.2));
-    }
-    
-    if (vColor.a > 0.0) // Fix issues w/ translucent combination but still allow stenciling out
+	vec4 vColor = texture2D(u_sTexture, v_vTexcoord);
+	
+	if (u_iTonemap == 1){ // Simple
+		// Gamma correction:
+		vColor.rgb /= vColor.rgb + vec3(1.0);
+		vColor.rgb = pow(vColor.rgb, vec3(1.0 / 2.2));
+	}
+	
+	if (vColor.a > 0.0) // Fix issues w/ translucent combination but still allow stenciling out
 		vColor.a = 1.0;
 		
-    gl_FragColor = vColor;
+	gl_FragColor = vColor;
 }

@@ -1,7 +1,8 @@
 /// @about
-/// An AnimationTrack() contains a series of AnimationPose() instances as well
-///	as time stamps for each pose. An AnimationTrack is responsible for calculating
-/// skeletal morphs over time for a single animation.
+/// An AnimationTrack() contains a series of AnimationGroup() instances for
+/// each bone and can calculate bone transforms across all group transforms.
+/// 
+/// @param	{string}	name	the name of the track; will be used to activate in the AnimationTree
 function AnimationTrack(name) : U3DObject() constructor {
 	#region PROPERTIES
 	self.name = name;
@@ -10,14 +11,18 @@ function AnimationTrack(name) : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Return the current name of the track.
 	function get_name(){
 		return name;
 	}
 	
+	/// @desc	Returns the number of bones defined under this track.
+	/// @note	May NOT equate to the number of bones in the model.
 	function get_bone_count(){
 		return struct_names_count(channel_data);
 	}
 	
+	/// @desc	Return the number of channels defined under this track.
 	function get_channel_count(){
 		var count = 0;
 		var names = struct_get_names(channel_data);
@@ -44,6 +49,8 @@ function AnimationTrack(name) : U3DObject() constructor {
 		channel_length = max(channel_length, group.get_channel_length());
 	}
 
+	/// @desc	Given a lerp value between 0 and 1, returns the transforms at that point
+	///			In the form of individual TRS components for each bone.
 	function get_trs_data_lerp(lerpvalue){
 		var keys = struct_get_names(channel_data);
 		var trs_data = {};
@@ -53,7 +60,8 @@ function AnimationTrack(name) : U3DObject() constructor {
 		return trs_data;
 	}
 	
-	/// @desc	Returns a struct of TRS properties, one for each bone.
+	/// @desc	Given a time value through the track, returns the transforms at that point
+	///			in the form of individual TRS components for each bone.
 	function get_trs_data_time(time){
 		var keys = struct_get_names(channel_data);
 		var trs_data = {};

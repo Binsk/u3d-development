@@ -1,3 +1,6 @@
+/// @about
+/// The default shader used by spatial materials to build the GBuffer. This shader
+/// writes out all the necessary GBuffer textures and calculates skeletal animation.
 attribute vec3 in_Position;         // Vertex position
 attribute vec3 in_Normal;           // Vertex normal
 attribute vec4 in_Colour;           // Vertex color
@@ -24,6 +27,7 @@ varying vec4 v_vColor;
 varying vec4 v_vPosition;
 varying mat3 v_mRotation;
 
+/// @desc	Builds a matrix out of a rotational quaternion and translation vector.
 mat4 build_matrix(vec4 vQuaternion, vec3 vTranslation){
     mat4 mMatrix = mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
     // Set position:
@@ -113,6 +117,8 @@ void main()
     
     v_mRotation = mat3(vTangent, vBiTangent, vNormal);
     v_vColor = in_Colour;
+/// @todo	Remove these custom texcoord aspects; they aren't working correctly and aren't likely
+///			to be needed in the end after all due to how glTF loading is being handled.
     v_vTexcoordAlbedo = mix(u_vAlbedoUV.xy, u_vAlbedoUV.zw, in_TextureCoord0);
     v_vTexcoordNormal = mix(u_vNormalUV.xy, u_vNormalUV.zw, in_TextureCoord0);
     v_vTexcoordPBR = mix(u_vPBRUV.xy, u_vPBRUV.zw, in_TextureCoord0);

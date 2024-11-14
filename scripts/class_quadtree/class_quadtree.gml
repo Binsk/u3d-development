@@ -1,8 +1,7 @@
 /// @about
-/// A Quadtree is generally used for 2D collisions on a plane but can also be 
-/// used in 3D games that disregard the up-axis. In the case of this design, 
-/// the quadtree is defined on the x/z axis and will recursively sub-divide 
-/// quadrants into equally-sized sub-quadrants.
+/// A Quadtree is used to segment points in 2D space. It can still be used for
+/// optimizations in 3D games, however, if the game's mechanics work on a 2D
+/// plane.
 
 function Quadtree() : Partition() constructor {
 	

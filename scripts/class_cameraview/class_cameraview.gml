@@ -4,6 +4,10 @@
 /// will be auto-calculated based on obj_render_controller's render mode and the anchor
 /// will specify where on the screen it will render.
 
+/// @param	{real}	znear		the closest to the camera a model can render
+/// @param	{real}	zfar		the furthest from the camera a model can render
+/// @param	{fov}	fov			the field of view of the camera
+/// @param	{Anchor2D} anchor	the anchor used to specify where in the window the camera should render
 function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Camera() constructor {
 	#region PROPERTIES
 	self.anchor = anchor;
@@ -93,11 +97,17 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 	/// @desc	Given 2D point on the canvas, projects the location into 3D space and
 	///			updates the provided ray to contain projection direction. Origin point
 	///			can be assumed to be the camera's position.
+	/// @param	{real}	px	relative x-coordinate on the camera's canvas w/o supersample modifications
+	/// @param	{real}	py	relative y-coordinate on the camera's canvas w/o supersample modifications
+	/// @param	{Ray}	ray	collidable ray to update w/ the mouse projection
 	function calculate_world_ray(px, py, ray){
 		if (not is_instanceof(ray, Ray)){
 			Exception.throw_conditional("invalid type, expected [Ray]!");
 			return;
 		}
+		
+		px *= supersample_multiplier;
+		py *= supersample_multiplier;
 		
 		if (px < 0 or py < 0)
 			return;

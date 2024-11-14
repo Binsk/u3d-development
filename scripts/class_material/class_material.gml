@@ -1,22 +1,30 @@
 /// @about
-/// A generic material class that is fairly worthless on its own, however it is
-/// a common base for all other material types.
+/// A generic material class template that should define how the GBuffer
+/// should be built.
+/// 
+/// A material's shader should write out 4 separate textures:
+/// 	0:	Albedo	(rgba)
+/// 	1:	Normals	(rgb)
+/// 	2:	PBR		(gb)	Note: MUST be actual green and blue channels!
+/// 	3:	Emission(rgba)
 
+/// @todo	Implement an automated means of specifying a variable number of
+/// 		shaders that can be picked depending on vertex format!
 function Material() : U3DObject() constructor {
 	#region PROPERTIES
 	render_keys = {};
-	render_stage = CAMERA_RENDER_STAGE.none;
+	render_stage = CAMERA_RENDER_STAGE.none;	// Which stage(es) this material renders in
 	#endregion
 	
 	#region METHODS
-	/// @desc	Simply returns if this material is the 'missing texture' material
+	/// @desc	Returns if this material is the default "Missing" material. Useful to check
+	///			if a material was correctly loaded.
 	function get_is_missing_material(){
 		return get_index() == U3D.RENDERING.MATERIAL.missing.get_index();
 	}
 	
-	/// @desc	Should apply the necessary shaders, uniforms, and so-forth for
-	///			the material. It will be automatically executed by the rendering
-	///			system.
+	/// @desc	Should apply the necessary shader, uniforms, and textures necessary to build
+	///			the GBuffer.
 	/// @param	{Camera}		camera_id				id of the camera currently rendering the material
 	///	@param	{bool}			is_translucent=false	whether or not this is the translucent pass
 	function apply(camera_id, is_translucent=false){

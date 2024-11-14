@@ -57,6 +57,8 @@ function matrix_get_determinant(matrix) {
 	return determinant;
 }
 
+/// @desc	Returns the transpose of the specified matrix as if it has
+///			been rotated 180 degrees across its diagonal.
 function matrix_get_transpose(matrix){
 	return[matrix[0], matrix[4], matrix[8], matrix[12],
 		   matrix[1], matrix[5], matrix[9], matrix[13],
@@ -72,6 +74,7 @@ function matrix_get_translation(matrix){
 /// @desc	Takes a GameMaker matrix and returns a quaternion that applies the
 ///			rotation and scale. The matrix must have an equal scale across all
 ///			axes. The quaternion will not be normalized if there is scale.
+///			If the matrix has unequal scales then the quaternion will be incorrect.
 function matrix_get_quat(matrix){
 	var det = power(matrix_get_determinant(matrix), 1/3);
 	var quaternion = quat(
@@ -106,8 +109,7 @@ function matrix_build_translation(t){
 	return matrix;
 }
 
-/// @desc	Given a normalized quaternion, generates a rotational matrix.
-///			A scaled quaternion will NOT convert correctly.
+/// @desc	Given a quaternion, generates a rotational matrix.
 function matrix_build_quat(q){
 	q = quat_normalize(q);
 	
@@ -139,7 +141,8 @@ function matrix_multiply_post(){
 	return result;
 }
 
-/// @desc	Multiplies a vector against a GameMaker matrix
+/// @desc	Multiplies a vector against a GameMaker matrix, similar to
+///			matrix_transform_vertex, only the w component will be discarded.
 function matrix_multiply_vec(matrix, vector, w=0){
 	var array = matrix_transform_vertex(matrix, vector.x, vector.y, vector.z, w);
 	return vec(array[0], array[1], array[2]);
@@ -155,6 +158,7 @@ function matrix_to_matrix3(matrix){
 	];
 }
 
+/// @desc	Returns if the specified matrix is the identity matrix.
 function matrix_is_identity(matrix){
 	var identity = matrix_build_identity();
 	for (var i = array_length(identity) - 1; i >= 0; --i){

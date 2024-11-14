@@ -35,10 +35,10 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		self.zfar = zfar;
 	}
 	
-	function set_fow(fow){
+	function set_fov(fov){
 		self.matrix_projection = undefined;
 		self.matrix_inv_projection = undefined;
-		self.fow = fow;
+		self.fov = fov;
 	}
 	
 	/// @desc	Sets the local eye matrix, relative to the camera. If set to undefined
@@ -50,11 +50,12 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		self.matrix_inv_view = undefined;
 	}
 	
+	/// @desc	Return the camera instance the eye belongs to.
 	function get_camera(){
 		return camera_id;
 	}
 	
-	/// @desc	Build the view matrix required for this camera.
+	/// @desc	Return / Build the view matrix for this eye.
 	function get_view_matrix(){
 		if (not is_undefined(self.matrix_view))
 			return self.matrix_view;
@@ -70,6 +71,7 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		return self.matrix_view;
 	}
 	
+	/// @desc	Return / Build the inverse of the view matrix for this eye.
 	function get_inverse_view_matrix(){
 		if (not is_undefined(matrix_inv_view))
 			return matrix_inv_view;
@@ -78,7 +80,7 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		return matrix_inv_view;
 	}
 	
-	/// @desc	Build the projection matrix required for this camera.
+	/// @desc	Return / Build the projection matrix for this eye.
 	function get_projection_matrix(){
 		if (not is_undefined(self.matrix_projection))
 			return self.matrix_projection;
@@ -104,6 +106,7 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		return matrix;
 	}
 	
+	/// @desc	Return / Build the inverse projection matrix for this eye.
 	function get_inverse_projection_matrix(){
 		if (not is_undefined(matrix_inv_projection))
 			return matrix_inv_projection;

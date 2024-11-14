@@ -1,6 +1,8 @@
 /// @about
-/// A body represents a 3D thing in the scene. It can contain a model, collision
-/// shape, and handle various interactions and signals.
+/// A body represents a 3D thing in the scene and is the core structure used
+/// by the controller systems. Bodies can contain models, animation trees, 
+/// and collisions and a number of systems, such as the Camera, is based off
+/// of the Body class.
 
 function Body() : Node() constructor {
 	#region PROPERTIES
@@ -10,9 +12,8 @@ function Body() : Node() constructor {
 	#endregion
 	
 	#region METHODS
-	/// @desc	Assigns a Model() to the body to render. The body must still be
-	///			added to obj_render_controller first in order to be processed
-	///			by the cameras.
+	/// @desc	Assigns a Model() to the body to render. In order to render,
+	///			this instance must be added to the render controller.
 	function set_model(model){
 		if (not is_instanceof(model, Model)){
 			Exception.throw_conditional("invalid type, expected [Model]!");
@@ -24,9 +25,8 @@ function Body() : Node() constructor {
 	}
 	
 	/// @desc	Assigns an AnimationTree() to apply to the Model() attached to
-	///			this body. The AnimationTree() should be attached to the
-	///			obj_animation_controller, but it can also manually be processed
-	///			on-demand.
+	///			this body. In order to animate, this instance must be added to
+	///			the animation controller.
 	function set_animation(tree){
 		if (not is_instanceof(tree, AnimationTree)){
 			Exception.throw_conditional("invalid type, expected [AnimationTree]!");
@@ -37,6 +37,8 @@ function Body() : Node() constructor {
 		animation_instance = tree;
 	}
 	
+	/// @desc	Assigns a Collidable() to the body. In order to detect collisions, this
+	///			instance must be added to the collision controller.
 	function set_collidable(collidable){
 		if (not is_instanceof(collidable, Collidable)){
 			Exception.throw_conditional("invalid type, expected [Collidable]!");
@@ -48,18 +50,29 @@ function Body() : Node() constructor {
 		set_data("collision", undefined);	// Remove cached collidable data
 	}
 	
+	/// @desc	Returns the currently attached Model.
+	/// @return	{Model}
 	function get_model(){
 		return model_instance;
 	}
 	
+	/// @desc	Returns the currently attached AnimationTree.
+	/// @return {AnimationTree}
 	function get_animation(){
 		return animation_instance;
+	}
+	
+	/// @desc	Retruns the currently attached Collidable.
+	function get_collidable(){
+		return collidable_instance;
 	}
 	
 	super.register("free");
 	function free(){
 		super.execute("free");
 		model_instance = undefined;
+		animation_instance = undefined;
+		collidable_instance = undefined;
 	}
 	#endregion
 }

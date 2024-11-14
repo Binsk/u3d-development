@@ -7,9 +7,9 @@
 /// @note	Channels MUST be frozen after definition, otherwise they will not
 ///			animate at all.
 enum ANIMATION_CHANNEL_TRANSFORM {
-	step,
-	linear,		// lerp or slerp
-	cubicspline	// Not supported ATM
+	step,		// immediate switch form one morph to another
+	linear,		// lerp or slerp between morphs
+	cubicspline	// NOT supported by U3D, but defined in glTF spec
 }
 
 function AnimationChannel() : U3DObject() constructor {
@@ -81,17 +81,16 @@ function AnimationChannel() : U3DObject() constructor {
 		return array;
 	}
 	
-	function get_bone_index(){
-		return bone_id;
-	}
-	
 	/// @desc	Returns how long this morph lasts, in seconds.
-	function get_morph_lenghth(){
+	function get_morph_length(){
 		return morph_length;
 	}
 	
 	/// @desc	Adds a morph value to the definition; can only be done if the
 	///			channel is not frozen.
+	/// @param	{real}	time_stamp	the time at which this morph is applied (in seconds)
+	/// @param	{any}	value		the morph value to apply
+	/// @param	{ANIMATION_CHANNEL_TRANSFORM}	type	morph method to use
 	function add_morph(time_stamp, value, type=ANIMATION_CHANNEL_TRANSFORM.linear){
 		if (is_undefined(morph_definition))
 			throw new Exception("failed to add morph, animation channel is frozen.");
@@ -101,6 +100,11 @@ function AnimationChannel() : U3DObject() constructor {
 		}, time_stamp);
 	}
 	
+	/// @desc	Execute the 'step' morph method.
+	/// @note	Morph datatypes are specific to the child classes.
+	/// @param	{real}	time	current time in the channel
+	/// @param	{any}	from	morph we are transforming from
+	/// @param	{any}	to		morph we are transforming to
 	function transform_step(time, from, to){
 		if (time >= to.time_stamp)
 			return to.value;
@@ -108,6 +112,11 @@ function AnimationChannel() : U3DObject() constructor {
 		return from.value;
 	}
 	
+	/// @desc	Execute the 'interpolated' morph method.
+	/// @note	Morph datatypes are specific to the child classes.
+	/// @param	{real}	time	current time in the channel
+	/// @param	{any}	from	morph we are transforming from
+	/// @param	{any}	to		morph we are transforming to
 	function transform_linear(time, from, to){
 		return get_morph_default();
 	}

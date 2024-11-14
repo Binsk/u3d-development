@@ -130,9 +130,9 @@ cgroup_lr.set_channel(channel_lr);
 cgroup_ud = new AnimationChannelGroup();
 cgroup_ud.set_channel(channel_ud);
 
-animation_plane = new Plane(vec(1, 0, 0));	// Used to project mouse & detect look location
+animation_plane = new Plane(vec(0, 0, 1));	// Used to project mouse & detect look location
 animation_plane_body = new Body();
-animation_plane_body.set_position(vec(2, 0, 0));
+animation_plane_body.set_position(vec(0, 0, 2));
 animation_plane_body.set_collidable(animation_plane);
 obj_collision_controller.add_body(animation_plane_body);
 

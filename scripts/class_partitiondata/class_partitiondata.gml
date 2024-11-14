@@ -1,9 +1,13 @@
 /// @about
 /// A generic data container that can be added into a partition system. Usually
-/// used as a wraper for a Body or some other complex structure.
+/// used as a wraper for a Body or some other complex structure. The data contains
+/// A center position and extends to specify a volume. Not all partitioning systems
+/// will use volume-based calculations and may only regard the position.
 
 function PartitionData(data) constructor {
 	#region PROPERTIES
+	static TYPE_METHODS = {};
+	
 	self.data = data;
 	self.position = vec();
 	self.extends = vec();

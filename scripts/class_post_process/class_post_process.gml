@@ -10,6 +10,8 @@
 ///
 /// The input and output textures are in the rgba16float format with colors in
 /// linear space.
+
+/// @todo	Update this class, it needs a lot of love. Way too janky, needs to be more robust.
 function PostProcessFX(shader) : U3DObject() constructor {
 	#region PROPERTIES
 	self.shader = shader;
@@ -29,6 +31,7 @@ function PostProcessFX(shader) : U3DObject() constructor {
 		if (not is_enabled)
 			return;
 			
+/// @todo	Add more samplers and uniforms to this
 		if (uniform_sampler_input < 0)
 			uniform_sampler_input = shader_get_sampler_index(shader, "u_sInput");
 		

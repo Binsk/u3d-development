@@ -14,6 +14,8 @@ function AnimationChannelGroup() : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Sets the channel to use for the positional transforms.
+	/// @param	{AnimationChannelPosition}	channel
 	function set_position_channel(channel=undefined){
 		if (not is_instanceof(channel, AnimationChannelPosition) and not is_undefined(channel))
 			throw new Exception("invalid type, expected [AnimationChannelPosition]!");
@@ -22,6 +24,8 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		position_channel = channel;
 	}
 	
+	/// @desc	Sets the channel to use for the rotational transforms.
+	/// @param	{AnimationChannelRotation}	channel
 	function set_rotation_channel(channel=undefined){
 		if (not is_instanceof(channel, AnimationChannelRotation) and not is_undefined(channel))
 			throw new Exception("invalid type, expected [AnimationChannelPosition]!");
@@ -30,6 +34,8 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		rotation_channel = channel;
 	}
 	
+	/// @desc	Sets the channel to use for the scalar transforms.
+	/// @param	{AnimationChannelScale}	channel
 	function set_scale_channel(channel=undefined){
 		if (not is_instanceof(channel, AnimationChannelScale) and not is_undefined(channel))
 			throw new Exception("invalid type, expected [AnimationChannelScale]!");
@@ -38,6 +44,9 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		scale_channel = channel;
 	}
 	
+	/// @desc	Assigns a channel to this group. Automatically sorts 
+	/// 		the channel type and assigns accordingly.
+	/// @param	{AnimationChannel}	channel
 	function set_channel(channel){
 		if (is_instanceof(channel, AnimationChannelScale))
 			set_scale_channel(channel);
@@ -51,6 +60,7 @@ function AnimationChannelGroup() : U3DObject() constructor {
 			throw new Exception("invalid type, expected [AnimationChannel]!");
 	}
 	
+	/// @desc	Returns the number of channels currently defined for this group.
 	function get_channel_count(){
 		var count = 0;
 		count += not is_undefined(position_channel);
@@ -59,6 +69,7 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		return count;
 	}
 	
+	/// @desc	Retruns the largest time-stamp across all attached channels.
 	function get_channel_length(){
 		return max(
 			is_undefined(position_channel) ? 0 : position_channel.get_morph_lenghth(),

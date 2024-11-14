@@ -15,6 +15,7 @@ function GLTFLoader() : U3DObject() constructor {
 	#region STATIC METHODS
 	/// @desc	Given a GLTF magic number representing a component type, converts it
 	///			to the appropriate buffer component type. If invalid, undefined is returned.
+	/// @param	{real}	component
 	static get_buffer_ctype_from_gltf_ctype = function(component){
 		if (component == 5120)
 			return buffer_s8;
@@ -206,6 +207,9 @@ function GLTFLoader() : U3DObject() constructor {
 	
 	/// @desc	Given a label and index, attempts to return the specified structure
 	///			at the index under the specified label.
+	/// @param	{real}		index	index of the array under the label
+	/// @param	{string}	label	label to scan for values
+	/// @return {json} or undefined
 	function get_structure(index, label=""){
 		if (is_undefined(json_header[$ label]))
 			return undefined;
@@ -280,8 +284,8 @@ function GLTFLoader() : U3DObject() constructor {
 	///			if no special datatype exists, an array of values. MAT3s will be converted
 	///			to MAT4s
 	/// @note	Does NOT support sparse accessors!
-	/// @param	{int}	accessor			index of the accessor to read data from
-	///	@param	{bool}	skip_parse=false	if true datatype parsing is skipped and only arrays are retruned (faster)
+	/// @param	{real}	index		index of the accessor to read data from
+	///	@param	{bool}	skip_parse	if true datatype parsing is skipped and only arrays are retruned (faster)
 	/// @note	If parsing is skipped, MAT3 is NOT converted and the array returned is a 1D array!
 	function read_accessor(index, skip_parse=false){
 		var accessor = get_structure(index, "accessors");
@@ -330,7 +334,6 @@ function GLTFLoader() : U3DObject() constructor {
 			else if (element_size == 4) // Could also be a MAT2/VEC4, but we use a QUAT for storage
 				array[i] = quat(data[index], data[index + 1], data[index + 2], data[index + 3]);
 			else if (element_size == 9){	// MAT3, we convert to MAT4
-/// @todo	Test, we may need the transpose
 				var subarray = matrix_build_identity();
 				for (var j = 0; j < 3; ++j){
 					subarray[j] = data[index + j];

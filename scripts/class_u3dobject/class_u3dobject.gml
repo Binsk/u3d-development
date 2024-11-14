@@ -28,6 +28,7 @@ function U3DObject() constructor {
 	#region STATIC METHODS
 	/// @desc	Cleans up the data for the specified hash. Note that the hash MUST be valid,
 	///			and all references removed!
+	/// @param	{string}	hash
 	static clean_ref = function(hash){
 		if (is_undefined(hash))
 			throw new Exception("cannot cleanup static resource!");
@@ -50,7 +51,8 @@ function U3DObject() constructor {
 	}
 	
 	/// @desc	Returns the data (aka., U3DObject instance) monitored w/ the specified
-	///			hash value.
+	///			hash value, or undefined if none exists.
+	/// @param	{string}	hash
 	static get_ref_data = function(hash){
 		if (is_undefined(hash))
 			return undefined;
@@ -63,7 +65,8 @@ function U3DObject() constructor {
 	}
 	
 	/// @desc	Returns the number of references to this instance. ONLY applies to 
-	///			dynamically allocated resources w/ a memory hash. 
+	///			dynamically allocated resources w/ a memory hash.
+	/// @param	{string}	hash
 	static get_ref_count = function(hash){
 		if (is_undefined(hash))
 			return 0;
@@ -77,6 +80,7 @@ function U3DObject() constructor {
 	
 	/// @desc	Returns if the specified value is a valid U3DObject. This checks for
 	///			struct existance as well as freed state.
+	/// @param	{any}	value
 	static get_is_valid_object = function(value){
 		if (not is_struct(value))
 			return false;
@@ -92,6 +96,9 @@ function U3DObject() constructor {
 	
 	/// @desc	A safe way to compare if two U3DObject instances are equal. If a
 	///			value is NOT a valid U3DObject the function will return false.
+	///	@note	This checks index numbers no stored data, similar to comparing pointers.
+	/// @param	{U3DObject}		value1
+	/// @param	{U3DObject}		value2
 	static are_equal = function(value1, value2){
 		if (not U3DObject.get_is_valid_object(value1))
 			return false;
@@ -108,6 +115,8 @@ function U3DObject() constructor {
 	///			de-duplication as the hash is tied to the unique ID of the instance;
 	///			however it can be used to auto-cleanup the instance when the parent
 	///			is freed.
+	/// @note	This function MUST be called before passing the instance into any
+	///			other instance functions.
 	function set_unique_hash(){
 		if (not is_undefined(hash))
 			throw new Exception("cannot assign hash to already hashed instance!");
@@ -118,7 +127,8 @@ function U3DObject() constructor {
 	
 	/// @desc	Sets a value into the custom data under the set chain of keys.
 	/// @param	{array}		keys			array of string keys to set the value 
-	/// @param				value=undefined	the value to set under the keys (if undefined, removes the value)
+	/// @param	{any}		value=undefined	the value to set under the keys (if undefined, removes the value)
+	/// @note	E.g., set_data(["foo", "bar"], "foobar") equates to self.data[$ "foo"][$ "bar"] = "foobar"
 	function set_data(keys, value=undefined){
 		if (not is_array(keys))
 			keys = [string(keys)];
@@ -145,6 +155,8 @@ function U3DObject() constructor {
 	
 	/// @desc	Fetches the value contained within the string of keys, or the default
 	///			value if unset.
+	/// @param	{array}		keys				array of string keys to fetch the value 
+	/// @param	{any}		default=undefined	the value to return if the key doesn't exist
 	function get_data(keys, default_value=undefined){
 		if (not is_array(keys))
 			keys = [string(keys)];
@@ -169,6 +181,7 @@ function U3DObject() constructor {
 	
 	/// @desc	Returns if the provided data is the exact same data as this calling
 	///			instance.
+	/// @param	{any}	value
 	function is_equal(data){
 		if (not is_struct(data))
 			return false;
@@ -212,6 +225,7 @@ function U3DObject() constructor {
 
 	/// @desc	Attempts to add a U3DObject as an owned reference so that it will be
 	///			auto decremented upon free. Discards duplicates and invalid instances.
+	/// @param	{U3DObject}		value
 	function add_child_ref(value){
 		if (not U3DObject.get_is_valid_object(value))
 			return false;
@@ -228,6 +242,7 @@ function U3DObject() constructor {
 	}
 
 	/// @desc	Attempts to remove a U3DObject that has been registered as a child reference.
+	/// @param	{U3DObject}		value
 	function remove_child_ref(value){
 		if (not U3DObject.get_is_valid_object(value))
 			return false;
@@ -244,7 +259,9 @@ function U3DObject() constructor {
 	}
 	
 	/// @desc	Replaces one reference for another; checks for duplicates and
-	///			invalid references.
+	///			invalid references. Can handle undefined values.
+	/// @param	{U3DObject}		value_new		the new instance to reference
+	/// @param	{U3DObject}		value_old		the old instance to dereference
 	function replace_child_ref(value_new, value_old){
 		if (U3DObject.are_equal(value_new, value_old))
 			return false;
@@ -253,6 +270,8 @@ function U3DObject() constructor {
 		return add_child_ref(value_new);
 	}
 	
+	/// @desc	string() override; prints out [U3DOBject:<index>]. This string should remain
+	///			simple for signal hash reasons.
 	function toString(){
 		return $"[U3DObject:{get_index()}]";
 	}
@@ -272,16 +291,13 @@ function U3DObject() constructor {
 		
 		// Free references:
 		var	data = get_data("ref");
-		var keys = struct_get_names(data);
-		for (var i = array_length(keys) - 1; i >= 0; --i){
-			var instance = data[$ keys[i]];
+		var instance_array = struct_get_values(data);
+		for (var i = array_length(instance_array) - 1; i >= 0; --i){
+			var instance = instance_array[i];
 			remove_child_ref(instance);
 		}
 		
 		is_freed = true;
 	}
-	#endregion
-	
-	#region INIT
 	#endregion
 }

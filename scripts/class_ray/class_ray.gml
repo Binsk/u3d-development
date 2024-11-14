@@ -1,6 +1,8 @@
 /// @about
-/// A Ray defines a 3D infinite ray that is defined with a starting point and 
+/// A Ray defines a 3D infinite line that is defined with a starting point and 
 /// orientation.
+/// As rays are often used for floor checks and similar more 'static' checks
+/// they have a flag to ignore their node's rotation.
 
 /// @param	{vec}	orientation			the orientation of the ray
 /// @param	{bool}	local_orientation	if true, the orientation is relative to the transform node; otherwise it is global
@@ -11,11 +13,21 @@ function Ray(orientation=vec(1, 0, 0), local_orientation=false) : Collidable() c
 	#endregion
 	
 	#region STATIC METHODS
+	/// @desc	Returns collision data between two rays.
+	/// @param	{Ray}	ray_a
+	/// @param	{Ray}	ray_b
+	/// @param	{Node}	node_a		node defining spatial information for ray_a
+	/// @param	{Node}	node_b		node defining spatial information for ray_b
 	static collide_ray = function(ray_a, ray_b, node_a, node_b){
 /// @stub	implement 
 		return undefined;
 	}
 	
+	/// @desc	Returns collision data bteween a ray and a plane.
+	/// @param	{Ray}	ray
+	/// @param	{Plane}	plane
+	/// @param	{Node}	node_a		node defining spatial information for ray
+	/// @param	{Node}	node_b		node defining spatial information for plane
 	static collide_plane = function(ray_a, plane_b, node_a, node_b){
 		var plane_normal = node_b.get_data(["collision", "orientation"], vec(0, 1, 0));
 		var ray_normal;

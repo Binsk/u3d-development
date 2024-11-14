@@ -1,3 +1,7 @@
+/// @about
+/// Applies a tonemap to the final result to help convert between colorspaces.
+/// It takes f16 buffers and converts them back down into u8.
+/// This is generally the last call when finalizing the result.
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;
 

@@ -1,3 +1,6 @@
+/// @about
+/// Performs gamma correction on the input texture. This shader is generally used
+/// as a separate PPFX pass if some effects need a manually handled gamma correction.
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;
 

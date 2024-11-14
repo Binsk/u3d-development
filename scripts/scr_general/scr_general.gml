@@ -19,6 +19,8 @@ function get_is_directx_pipeline(){
 	return (os_type == os_windows or os_type == os_xboxone or os_type == os_xboxseriesxs);
 }
 
+/// @desc	Clears the specified surface with a color and alpha, just as you would with
+/// 		a draw_clear() call.
 function surface_clear(surface, color, alpha=1.0){
 	if (not surface_exists(surface))
 		return;
@@ -39,7 +41,7 @@ function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 	if (shader < 0) // Skip if no shader set
 		return;
 		
-	var label = $"__uniform_{name}_{shader}";
+	var label = $"uniform_{name}_{shader}";
 	var uniform = UNIFORM_CACHE[$ label];
 	
 	if (is_undefined(uniform)){ // If we haven't checked this uniform + shader combo, look it up
@@ -56,7 +58,8 @@ function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 /// @stub	Add in a sampler version of uniform_set
 
 /// @desc	Returns the number of reference objects with the specified type
-///			currently being watched by the system. Not fast.
+///			currently being watched by the system. This is slow and intended
+/// 		only for debugging use to catch potentially missed references.
 function get_ref_instance_count(type=U3DObject){
 	var keys = struct_get_names(U3D.MEMORY);
 	var count = 0;
@@ -68,6 +71,8 @@ function get_ref_instance_count(type=U3DObject){
 	return count;
 }
 
+/// @desc	Similar to struct_get_names(), only it just grabs the values
+/// 		instead of the keys.
 function struct_get_values(struct){
 	if (not is_struct(struct))
 		return [];

@@ -1,3 +1,6 @@
+/// @about
+/// Renders a simplified version of the gbuffer shader specifically for a light and is
+/// intended for generating a directional shadow map.
 attribute vec3 in_Position;         // Vertex position
 attribute vec3 in_Normal;           // Vertex normal
 attribute vec4 in_Colour;           // Vertex color

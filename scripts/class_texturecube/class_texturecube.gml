@@ -31,8 +31,8 @@ enum TEXTURECUBE_FACE {
 /// @desc	creates a new cube-map with the specified properties. Any texture supplied
 ///			is assumed to be in the correct format! Textures can also be manually built
 ///			through the TextureCube class to guarantee proper layout.
-/// @param	{texture}	texture_id=undefined		pre-formatted cube-map texture to use
-/// @param	{int}		resolution=1024				resolution to use as maximum when generating
+/// @param	{texture}	texture_id	pre-formatted cube-map texture to use
+/// @param	{int}		resolution	resolution to use as maximum when generating
 function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_id) constructor {
 	#region PROPERTIES
 	static BUILD_MAP = {};	// Used by the renderer to build all the textures before rendering
@@ -47,6 +47,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 	
 	#region METHODS
 	
+	/// @desc	Specifies a GameMaker texture to use as the cube map.
 	function set_texture(texture_id){
 		// Wipe any old cube-maps:
 		if (sprite_exists(sprite_index)){
@@ -83,6 +84,8 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		TextureCube.BUILD_MAP[$ get_index()] = self;
 	}
 	
+	/// @desc	Renders the 6 cube faces to the specified surface in the proper layout.
+	/// @param	{surface}	surface_id	id of the surface to render to
 	function render_faces_to_cubemap(surface_id){
 		var dx = surface_get_width(surface_id) / 4;
 		var dy = surface_get_height(surface_id) / 3;

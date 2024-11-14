@@ -9,10 +9,10 @@
 /// @desc	Create a new empty Primitive that can be defined and passed around
 ///			to numerous Mesh instances.
 /// @param   {VertexFormat}	vformat	The special VertexFormat that defines what data
-/// 									   will be used in the Primitive.
+/// 								will be used in the Primitive.
 function Primitive(vformat) : U3DObject() constructor {
 	#region PROPERTIES
-	static GENERATE_WIREFRAMES = debug_mode;	// If set to true, primitives will also generate a debugging wireframe
+	static GENERATE_WIREFRAMES = false;	// If set to true, primitives will also generate a debugging wireframe
 	self.vformat = vformat;
 	self.vbuffer = undefined;
 	self.vbuffer_wireframe = undefined;	// Optionally defined
@@ -20,10 +20,13 @@ function Primitive(vformat) : U3DObject() constructor {
 	#endregion
 
 	#region METHODS
+	/// @desc	Returns if the primitive is frozen. A frozen buffer cannot
+	///			be unfrozen.
 	function get_is_frozen(){
 		return is_frozen;
 	}
 	
+	/// @desc	Returns the number of triangles in the defined primitive.
 	function get_triangle_count(){
 		if (is_undefined(vbuffer))
 			return 0;
@@ -31,6 +34,7 @@ function Primitive(vformat) : U3DObject() constructor {
 		return vertex_get_number(vbuffer) / 3;
 	}
 	
+	/// @desc	Returns if this primitive contains bone data or not.
 	function get_has_bones(){
 		return	array_get_index(vformat.vformat_array, VERTEX_DATA.bone_indices) >= 0 or
 				array_get_index(vformat.vformat_array, VERTEX_DATA.bone_weights) >= 0
@@ -38,6 +42,7 @@ function Primitive(vformat) : U3DObject() constructor {
 	
 	/// @desc	Begins defining the vertex buffer for this primitive. Note that ALL primitives
 	///			should be defined in the pr_trianglelist format.
+	/// @param	{real}	size	if specified, pre-allocates space for this number of vertices
 	function define_begin(size=0){
 		if (not is_undefined(self[$ "definition_data"]))
 			throw new Exception("cannot start new [Primitive] definition; definition already in progress!");
@@ -57,6 +62,8 @@ function Primitive(vformat) : U3DObject() constructor {
 	/// @desc	Returns an already defined piece of data from the primitive's definition.
 	///			This is only valid while the definition is occurring. Returns undefined if
 	///			there is a problem.
+	/// @param	{VERTEX_DATA}	type	type of data to fetch
+	/// @param	{real}			index	vertex index to read from
 	function define_get_data(type=VERTEX_DATA.position, index=0){
 		if (is_undefined(self[$ "definition_data"])) // Not defining
 			return undefined;
@@ -158,6 +165,7 @@ function Primitive(vformat) : U3DObject() constructor {
 	///			checking and expects specific arrays of data for each type. This function
 	///			exists if you know exactly what you are defining as it is faster than
 	///			using the regular add/set functions.
+	/// @note	This was primarily added for faster glTF loading.
 	function define_set_data_raw(index, type, data, set_index=false){
 		var array = definition_data[$ type];
 		array[index] = data;

@@ -135,40 +135,40 @@ vec4 texture2DMip(sampler2D sTexture, vec2 vUV, float fMip){
 
 void main()
 {
-    vec4 vAlbedo = texture2D(u_sAlbedo, v_vTexcoord);
-    vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
-    vec3 vPBR = texture2D(u_sPBR, v_vTexcoord).rgb; // Spec, Rough, Met
-    
-    float fSpecular = vPBR.r;
-    float fRoughness = vPBR.g;
-    float fMetallic = vPBR.b;
-    
-    vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);
-    vView = -vView;
-    vec3 vHalf = normalize(vView + u_vLightNormal);
-    
-        // Calculate environment reflections, if enabled:
-    vec3 vCubeColor = vec3(0);   // If no environment map; just reflect 'black'
-    if (u_iEnvironment > 0){
-        vec2 vCube = cube_uv(normalize(reflect(-vView, vNormal)));
-        vCubeColor = texture2DMip(u_sEnvironment, vCube, vPBR.g).rgb;
-    }
-    
-/// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04
-    vec3 vF0 = vec3(0.04);
-    vF0 = mix(vF0, vAlbedo.rgb, fMetallic);
-    vec3 vRadiance = u_vLightColor;  // Always the color, as directional doesn't have attenuation
-    float fNDF = distribution_ggx(vNormal, vHalf, fRoughness);
-    float fG = geometry_smith(vNormal, vView, u_vLightNormal, fRoughness);
-    vec3 vF = fresnel_schlick(max(dot(vHalf, vView), 0.0), vF0);
-    
-    vec3 vKD = mix(vec3(1.0) - vF, vCubeColor, fMetallic);
-    // vec3 vKD = vec3(1.0) - vF; // <- Simplified; still adds color w/ metallic (stylistic option if no environment?)
-    vec3 vNumerator = fNDF * fG * vF;
-    float fDenominator = 4.0 * max(dot(vNormal, vView), 0.0) * max(dot(vNormal, u_vLightNormal), 0.0);
-    vec3 vSpecular = vNumerator / max(fDenominator, 0.00001);
-    float fNdotL = max(dot(vNormal, u_vLightNormal), 0.0);
-    vAlbedo.rgb = (vKD * vAlbedo.rgb / fPI + vSpecular) * vRadiance * fNdotL;
-    
-    gl_FragColor = vAlbedo;
+	vec4 vAlbedo = texture2D(u_sAlbedo, v_vTexcoord);
+	vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);
+	vec3 vPBR = texture2D(u_sPBR, v_vTexcoord).rgb; // Spec, Rough, Met
+	
+	float fSpecular = vPBR.r;
+	float fRoughness = vPBR.g;
+	float fMetallic = vPBR.b;
+	
+	vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);
+	vView = -vView;
+	vec3 vHalf = normalize(vView + u_vLightNormal);
+	
+	// Calculate environment reflections, if enabled:
+	vec3 vCubeColor = vec3(0);   // If no environment map; just reflect 'black'
+	if (u_iEnvironment > 0){
+		vec2 vCube = cube_uv(normalize(reflect(-vView, vNormal)));
+		vCubeColor = texture2DMip(u_sEnvironment, vCube, vPBR.g).rgb;
+	}
+	
+	/// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04
+	vec3 vF0 = vec3(0.04);
+	vF0 = mix(vF0, vAlbedo.rgb, fMetallic);
+	vec3 vRadiance = u_vLightColor;  // Always the color, as directional doesn't have attenuation
+	float fNDF = distribution_ggx(vNormal, vHalf, fRoughness);
+	float fG = geometry_smith(vNormal, vView, u_vLightNormal, fRoughness);
+	vec3 vF = fresnel_schlick(max(dot(vHalf, vView), 0.0), vF0);
+	
+	vec3 vKD = mix(vec3(1.0) - vF, vCubeColor, fMetallic);
+	// vec3 vKD = vec3(1.0) - vF; // <- Simplified; still adds color w/ metallic (stylistic option if no environment?)
+	vec3 vNumerator = fNDF * fG * vF;
+	float fDenominator = 4.0 * max(dot(vNormal, vView), 0.0) * max(dot(vNormal, u_vLightNormal), 0.0);
+	vec3 vSpecular = vNumerator / max(fDenominator, 0.00001);
+	float fNdotL = max(dot(vNormal, u_vLightNormal), 0.0);
+	vAlbedo.rgb = (vKD * vAlbedo.rgb / fPI + vSpecular) * vRadiance * fNdotL;
+	
+	gl_FragColor = vAlbedo;
 }

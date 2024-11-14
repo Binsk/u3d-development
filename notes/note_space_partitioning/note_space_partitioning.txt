@@ -7,3 +7,7 @@ are not applicable to the current task.
 
 Space partitioning can be attached to the collision system to help speed-up
 collision scans as well as the renderer for instance culling.
+
+Both systems require some sort of space partitioning to function. If you do 
+not wish to use anything special then you can use the `Unsorted` class
+which effectively acts as a simple unsorted list of bodies.

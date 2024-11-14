@@ -1,9 +1,10 @@
 /// @desc	A (fake) mip-mapped TextureCube. Only really implemented to allow an irradiance
-///			map sample for roughness sampling w/ environment maps.
-/// @param	{texture}	texture_id=undefined			if set, uses this texture for the cube map
-/// @param	{int}		resolution=1024					resolution of the cube map to generate
-/// @param	{int}		mip_count=0						number of mips to generate (0=single original texture)
-/// @param	{bool}		is_pbr=false					if true, the mips will be blurred for use w/ pbr reflections
+///			map sample for roughness sampling w/ environment maps. This class is jank as beans
+/// 		and will need heavy adjustment.
+/// @param	{texture}	texture_id	if set, uses this texture for the cube map
+/// @param	{real}		resolution	resolution of the cube map to generate
+/// @param	{real}		mip_count	number of mips to generate (0=single original texture)
+/// @param	{bool}		is_pbr		if true, the mips will be blurred for use w/ pbr reflections
 function TextureCubeMip(texture_id=undefined, resolution=1024, mip_count=0, is_pbr=false) : TextureCube(texture_id, resolution) constructor {
 	#region INIT
 	self.mip_count = clamp(mip_count, 1, 5);
@@ -54,7 +55,7 @@ function TextureCubeMip(texture_id=undefined, resolution=1024, mip_count=0, is_p
 		
 /// @stub	Implement PROPER conversion; this gaussian blur is a really hacky 'good enough for now' implementation
 		// https://learnopengl.com/PBR/IBL/Specular-IBL
-			// We generate mips as we can fit it all in one column (minus the first image)
+		// We generate mips as we can fit it all in one column (minus the first image)
 		var surface_swap1 = surface_create(resolution, resolution);
 		var surface_swap2 = surface_create(resolution, resolution);
 			

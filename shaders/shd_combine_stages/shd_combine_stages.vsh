@@ -1,5 +1,8 @@
-attribute vec3 in_Position;                  // (x,y,z)
-attribute vec2 in_TextureCoord;              // (u,v)
+/// @about
+/// Merges the translucent and opaque rendering stages together, taking their 
+/// respective depth buffers into account.
+attribute vec3 in_Position;
+attribute vec2 in_TextureCoord;
 
 varying vec2 v_vTexcoord;
 

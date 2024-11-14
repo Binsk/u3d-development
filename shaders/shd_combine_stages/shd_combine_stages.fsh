@@ -14,16 +14,16 @@ void main()
 	float fDepthTranslucent = texture2D(u_sDepthTranslucent, v_vTexcoord).r;
 	
 	vec4 vColor;
-	if (u_iRenderStages == 1)
+	if (u_iRenderStages == 1)	// Only opaque stage
 		vColor = vColorOpaque;
-	else if (u_iRenderStages == 2)
+	else if (u_iRenderStages == 2)	// Only translucent stage
 		vColor = vColorTranslucent;
-	else {
-		if (fDepthOpaque < fDepthTranslucent)
+	else { // Both stages, do a regular color blend
+		if (fDepthOpaque < fDepthTranslucent) // If opaque is in front, no need to blend as it covers
 			vColor = vColorOpaque;
 		else
 			vColor = (vColorTranslucent * vColorTranslucent.a) + (vColorOpaque * (1.0 - vColorTranslucent.a));
 	}
 	
-    gl_FragColor = vColor;
+	gl_FragColor = vColor;
 }

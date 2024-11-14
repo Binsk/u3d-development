@@ -6,6 +6,8 @@
 	what I was doing, but I was getting drops from 200 to 40 where then it would
 	inch up to drop again. Seems it may be animation related. Increasing the
 	update frequency to max helps show it best.
+-	Controller body detachments likely only execute the parent detach
+	script and not the child.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -45,3 +47,4 @@
 	the programmer to manually load a file and then parse through the loader.
 -	Add proper animation forming w/ tracks that don't define all bones; may 
 	require default skeleton bones to be multiplied?
+-	Add blend type for animation layers (replace, like what I'm currently doing, or merge)

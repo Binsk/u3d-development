@@ -13,11 +13,11 @@ if (mouse_check_button(mb_right)){
 		
 		var look_vector = vec_sub_vec(other.look_point, vec(0, 0.5, 0));
 
-		var dif_lr = vec_angle_difference(vec(1, 0, 0), vec(look_vector.x, 0, look_vector.z));
+		var dif_lr = vec_angle_difference(vec(0, 0, 1), vec(look_vector.x, 0, look_vector.z));
 		dif_lr /= pi * 0.5;
-		dif_lr = 0.5 + (dif_lr * sign(look_vector.z));
+		dif_lr = 0.5 + (dif_lr * -sign(look_vector.x));
 		
-		var dif_ud = vec_angle_difference(vec(1, 0, 0), vec(1.0, look_vector.y, 0));
+		var dif_ud = vec_angle_difference(vec(0, 0, 1), vec(0, look_vector.y, 1));
 		dif_ud /= pi * 0.5;
 		dif_ud = 0.5 + (dif_ud * sign(look_vector.y)) * 0.5;
 		
@@ -34,17 +34,16 @@ if (mouse_check_button(mb_right)){
 		}
 	}
 }
-else if (mouse_check_button_released(mb_right)){
+else {
 	with (obj_button_model){
 		if (is_undefined(animation_track_lr))
 			continue;
-			
-		animation_tree.delete_animation_layer(1);
-		animation_tree.delete_animation_layer(2);
+		
+		other.animation_lr = lerp(other.animation_lr, 0.5, 0.1 * frame_delta_relative);
+		other.animation_ud = lerp(other.animation_ud, 0.5, 0.1 * frame_delta_relative);
+		animation_tree.set_animation_layer_lerp(2, other.animation_lr);
+		animation_tree.set_animation_layer_lerp(1, other.animation_ud);
 	}
-	
-	animation_lr = 0.5;
-	animation_ud = 0.5;
 }
 
 // camera.calculate_world_ray(gmouse.x, gmouse.y, camera.collidable_instance);

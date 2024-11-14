@@ -7,3 +7,14 @@ visual element handlers. This covers both 2D and 3D visual elements.
 Many visual elements, such as primitives, can be created once and
 used in multiple places and, in fact, **should** be re-used as much
 as possible to help speed up the rendering system.
+
+In order to appear on screen, rendering elements must be attached
+to a Body and that Body must be added to the rendering controller.
+
+## Rotations
+Rotations for almost all visual elements are handled and updated 
+through quaternions. While quaternions are fantastic mathematically, 
+they can be hard to visualize. When specifying a direction you may
+find the functions `vec_to_quat` or `veca_to_quat` useful if you wish
+to specify a point direction or rotation around an axis and convert
+that into a quaternion.

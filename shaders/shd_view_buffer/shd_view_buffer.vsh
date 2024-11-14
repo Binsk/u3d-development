@@ -1,3 +1,8 @@
+/// @about
+///	A number of shaders require the fragment view vector and it is somewhat slow to calculate.
+/// This shader calculates it into a buffer that can be passed into those shaders to reduce
+/// the number of matrix OPs in the fragment shader.
+
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;
 

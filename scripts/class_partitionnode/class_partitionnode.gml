@@ -1,7 +1,8 @@
 /// @about
 /// The PartitionNode is a special class used internally by the partitioning system.
 /// It is a generic container that represents an axis-aligned area of space within
-/// the partitioning structure.
+/// the partitioning structure.Nodes can generally hold one or more PartitionData
+/// instances.
 
 function PartitionNode(position=vec(), extends=vec()) constructor {
 	#region PROPERTIES
@@ -15,6 +16,8 @@ function PartitionNode(position=vec(), extends=vec()) constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Adds another PartitionNode as the child of this node.
+	/// @param	{PartitionNode}	node
 	function add_child(node){
 		if (not is_instanceof(node, PartitionNode)){
 			Exception.throw_conditional("invalid type, expected [PartitionNode]!");

@@ -1,4 +1,4 @@
-/// ABOUT
+/// @about
 /// An ambient light is the simplest of lights and will simply apply its 
 /// lighting to everything in the scene equally.
 function LightAmbient() : Light() constructor {
@@ -8,8 +8,8 @@ function LightAmbient() : Light() constructor {
 	surface_ssao = -1;
 	light_color = c_white;
 	light_intensity = 1.0;		// Intensity of the ambient lighting
-	casts_shadows = false; // Toggles SSAO in this case
-	texture_environment = undefined;	// If set, an environment map will be reflected; otherwise albedo color is used
+	casts_shadows = false;		// Toggles SSAO in this case
+	texture_environment = undefined;	// If set, an environment map will be reflected; otherwise black is used
 	
 	ssao_samples = 8;		// Number of samples per pixel (more = less noise, more expensive)
 	ssao_radius = 1.0;		// Unitless sample radius around pixel (multiplies against auto-scaled radius)
@@ -40,11 +40,13 @@ function LightAmbient() : Light() constructor {
 	///			must be enabled to allow SSAO to render. If SSAO strength <= 0
 	///			then the SSAO pass will simply be skipped.
 	///			Property values will highly depend on game asthetics and perceived rendering scale.
-	/// @param	{int}	samples=8		how many samples per pixel when generating SSAO (more = less noise)
-	/// @param	{real}	strength=1.0	how intense the SSAO effect is (higher = darker)
-	/// @param	{real}	radius=0.5		radius scalar for sampling distance from original point (higher = wider SSAO effect)
-	/// @param	{int}	blur_passes=2	blur pass multiplier for SSAO application where the value will be (2x + 1)^2 (more = blurrier)
-	/// @param	{real}	blur_stride=1.0	number of texels to stride per blur pass (more = blurrier but lower quality blur)
+	/// @param	{real}	samples		how many samples per pixel when generating SSAO (more = less noise)
+	/// @param	{real}	strength	how intense the SSAO effect is (higher = darker)
+	/// @param	{real}	radius		radius scalar for sampling distance from original point (higher = wider SSAO effect)
+	/// @param	{real}	bias		normal bias when comparing surface directions (larger = less likely to cause SSAO)
+	/// @param	{real}	scale		depth scale between samples (higher = greater perceived distance between samples)
+	/// @param	{real}	blur_passes	blur pass multiplier for SSAO application where the value will be (2x + 1)^2 (more = blurrier)
+	/// @param	{real}	blur_stride	number of texels to stride per blur pass (more = blurrier but lower quality blur)
 	function set_ssao_properties(samples=8, strength=1.0, radius=1.0, bias=0.01, scale=1.0, blur_passes=2, blur_stride=1.0){
 		ssao_samples = floor(clamp(samples, 1, 64)); // Shader is limited to max of 64
 		ssao_strength = max(0.0, strength)
@@ -70,13 +72,14 @@ function LightAmbient() : Light() constructor {
 		set_casts_shadows(enabled);
 	}
 	
+	/// @desc	Sets the color of the light's albedo.
 	function set_color(color=c_white){
 		light_color = color;
 	}
 	
 	/// @desc	Sets an environment texture to be used for reflections. If set to anything
 	///			other than 'undefined' environmental mapping will be enabled for this light.
-	/// @param	{TextureCube}	texture=undefined		a TextureCube texture, specifying the cube-map to use
+	/// @param	{TextureCube}	texture		a TextureCube texture, specifying the cube-map to use
 	function set_environment_texture(texture=undefined){
 		if (not is_undefined(texture) and not is_instanceof(texture, TextureCube))
 			throw new Exception("invalid type, expected [TextureCube]!");

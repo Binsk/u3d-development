@@ -18,25 +18,29 @@ foo = new VertexFormat([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.tex
 foo.free();
 delete foo;
 
+// Define GENERATE_WIREFRAMES
 foo = new Primitive(VertexFormat.get_format_instance([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent]));
 foo.free();
 delete foo;
 
-foo = new AnimationChannelPosition(-1);
+// Define relevant LERP functions:
+foo = new AnimationChannelPosition();
 foo.free();
 delete foo;
-foo = new AnimationChannelRotation(-1);
+foo = new AnimationChannelRotation();
 foo.free();
 delete foo;
-foo = new AnimationChannelScale(-1);
+foo = new AnimationChannelScale();
 foo.free();
 delete foo;
 
+// Load necessary fallback textures:
 texturegroup_load("U3DDefaults", true);
 #endregion
 
-/// Maxmum bones we can safely support (this matches w/ the spatial shader bone counts).
-/// If the model has > U3D_MAXIMUM_BONES bones, then a simplified quat+pos pair is used.
+/// Maximum number of full-data bones we can safely support (this matches w/ the spatial
+/// shader bone counts). 
+/// We can render twice as many partial-data bones (so long as scale is uniform).
 #macro U3D_MAXIMUM_BONES (get_is_directx_pipeline() ? 64 : 80)
 
 // A global structure that contains fallback defaults and system settings
@@ -63,8 +67,8 @@ U3D = {
 		},
 		ANIMATION : {
 			SKELETON : {
-				missing_matrices : array_flatten(array_create(U3D_MAXIMUM_BONES, matrix_build_identity())),
-				missing_quatpos : array_flatten(array_create(U3D_MAXIMUM_BONES * 2, [0, 0, 0, 1, 0, 0, 0, 0]))
+				missing_matrices : array_flatten(array_create(U3D_MAXIMUM_BONES, matrix_build_identity())),	// Default skeleton for full-data bones
+				missing_quatpos : array_flatten(array_create(U3D_MAXIMUM_BONES * 2, [0, 0, 0, 1, 0, 0, 0, 0]))	// Default skeleton for partial-data bones
 			}
 		}
 	},

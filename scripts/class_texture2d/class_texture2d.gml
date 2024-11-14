@@ -19,6 +19,7 @@ function Texture2D(texture_id=undefined)  : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Returns the GameMaker texture stored by this texture.
 	function get_texture(){
 		if (is_undefined(self.texture_id))
 			return Texture2D.get_missing_texture();
@@ -26,15 +27,11 @@ function Texture2D(texture_id=undefined)  : U3DObject() constructor {
 		return self.texture_id;
 	}
 	
+	/// @desc	Sets the GameMaker texture to use when rendering.
 	function set_texture(texture_id){
 		self.texture_id = texture_id;
 		if (not is_undefined(texture_id))
 			cache_properties();
-	}
-	
-	/// @desc	Returns if the texture is in the sRGB color space.
-	function get_is_srgb(){
-		return is_sRGB;
 	}
 	
 	/// @desc	Returns if the texture is on its own texture page. This is usually

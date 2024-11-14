@@ -3,17 +3,10 @@
 /// of AnimationTracks() together to allow smooth track transitions and combined
 /// animations. When animating a model an AnimationTree() is necessary, even if
 /// the tree only contains a single animation track.
-///
-/// Note that, for performance reasons, animations should be auto-managed via
-/// obj_animation_controller. It is possible to handle them manually, however
-/// the controller can optimize out redundant transforms and calling states 
-/// directly from this class requires a full re-calculation of all animation
-/// tracks that are active.
-/// @note	If there are more than 64 bones then the system will explicit bone scaling
-///			to be able to fit more bones into the shader. Maximum bone count is 128.
 
 /// @signals
-///	transformed_bone_<id>	(matrix)	-	Thrown when an animation transform is applied on the specified bone; matrix = local transform
+///		"transformed_bone_<id>"	(matrix)		Thrown when an animation transform is applied on the specified bone;
+/// 											matrix = local transform
 
 /// @todo	Implement dual-quaternions to remove the need for the quat+pair option &
 ///			to have better volume-conscious skinning.
@@ -67,7 +60,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		data.track_speed = layer_speed;
 	}
 
-	/// @desc	Sets the lerp position for a lerped track.	
+	/// @desc	Sets the lerp position for a lerped track.
 	function set_animation_layer_lerp(layer_index, lerpvalue){
 		layer_index = real(layer_index);
 		var data = animation_layers[$ layer_index];
@@ -162,10 +155,13 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		return transform_data;
 	}
 	
+	/// @desc	Returns if the specified animation layer index exists.
 	function get_animation_layer_exists(animation_layer){
 		return not is_undefined(animation_layers[$ real(animation_layer)]);
 	}
 	
+	/// @desc	Returns the name of the specified animation index. If the
+	///			index is invalid, an empty string is returned.
 	function get_animation_layer_track_name(animation_layer){
 		if (not get_animation_layer_exists(animation_layer))
 			return "";
@@ -177,10 +173,6 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			return data.track;
 		
 		return "";
-	}
-	
-	function get_animation_layer_exists(animation_layer){
-		return not is_undefined(animation_layers[$ real(animation_layer)]);
 	}
 	
 	/// @desc	Given calculated TRS data for each bone, builds a 1D flattened
@@ -286,6 +278,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		return array;
 	}
 	
+	/// @desc	Adds a track to the animation system.
 	function add_animation_track(track){
 		if (not is_instanceof(track, AnimationTrack))
 			throw new Exception("invalid type, expected [AnimationTrack]!");
@@ -297,8 +290,11 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	/// @desc	Creates a new animation layer to calculate. This will automatically animate through
 	///			the track at a set speed without any further input.
 	///	@note	Layers are paused by default and must be manually started.
-	///	@note	Layers are merged from lowest index to highest; index number can be arbitrary
+	///	@note	Layers are merged from highest index to lowest; index number can be arbitrary
 	/// @note	Only ONE LAYER per index! If you re-assign an index, the old layer is lost
+	/// @param	{real}		layer_index		index to assign to the new layer
+	/// @param	{string}	track_name		name of the track to assign to the layer
+	/// @param	{real}		track_speed		the playback rate of the track
 	function add_animation_layer_auto(layer_index, track_name, track_speed=1.0){
 		layer_index = real(layer_index);
 		if (not is_undefined(animation_layers[$ layer_index]))
@@ -318,6 +314,12 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		animation_layers[$ layer_index] = animation_layer;
 	}
 	
+	/// @desc	Creates a new animation layer to calculate. This layer does not animate
+	///			but can be manually lerped through for static posing. These layers are
+	///			generally used for dynamic or context-aware animations.
+	/// @param	{real}		layer_index		index to assign to the new layer
+	/// @param	{string}	track_name		name of the track to assign to the layer
+	/// @param	{real}		lerp_value		the percentage through the track to use
 	function add_animation_layer_lerp(layer_index, track_name, lerpvalue=0){
 		layer_index = real(layer_index);
 		if (not is_undefined(animation_layers[$ layer_index]))
@@ -345,7 +347,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	///			finished and the new one started.
 	///	@param	{int}		layer_index		index of the layer to queue on
 	/// @param	{string}	track_name		name of the track to transition to
-	/// @param	{real}		lerp_length=1.0	number of seconds the transition should take
+	/// @param	{real}		lerp_length		number of seconds the transition should take
 	function queue_animation_layer_transition(layer_index, track_name, lerp_length=1.0){
 		layer_index = real(layer_index);
 		var data = animation_layers[$ layer_index];
@@ -360,11 +362,12 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		data.track_lerp_length = lerp_length;
 	}
 	
-	/// @desc	Starts the animation on an 'auto' layer. Does nothing for a manual layer.
+	/// @desc	Starts the animation on an 'auto' layer. Does nothing for a manual layer
+	///			or layers currently running.
 	function start_animation_layer(layer_index, loop=true){
 		layer_index = real(layer_index);
 		var data = animation_layers[$ layer_index];
-		if (is_undefined(data) or data.type != 0)
+		if (is_undefined(data) or data.type != 0 or data.track_is_active)
 			return;
 		
 		data.track_time ??= 0;
@@ -372,6 +375,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		data.track_loop = loop;
 	}
 	
+	/// @desc	Stops the animation on an auto layer and resets th seek to the start.
 	function stop_animation_layer(layer_index){
 		layer_index = real(layer_index);
 		var data = animation_layers[$ layer_index];
@@ -382,6 +386,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		data.track_is_active = false;
 	}
 	
+	/// @desc	Pauses the animation on an auto layer while keeping the seek location.
 	function pause_animation_layer(layer_index){
 		layer_index = real(layer_index);
 		var data = animation_layers[$ layer_index];
@@ -391,6 +396,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		data.track_is_active = false;
 	}
 	
+	/// @desc	Resumes the animation on an auto layer from the current seek position.
 	function resume_animation_layer(layer_index){
 		layer_index = real(layer_index);
 		var data = animation_layers[$ layer_index];
@@ -404,7 +410,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 
 	/// @desc	Interpolates between two sets of TRS data based on the specified
 	///			lerp value.
-	///			Generally used when mixing between two frames of
+	///			Generally used when mixing between two frames of animation.
 	function interpolate_trs_data(trs_data_a, trs_data_b, lerpvalue){
 		var trs_data = {};
 		
@@ -446,6 +452,8 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	/// @desc	Merges two sets of TRS data where the first set sets its defines 
 	///			and the second set only sets defines NOT already defined by the first set.
 	///			Generally used when mixing an automated track and a lerped track.
+/// @todo Implement actual bone value merging instead of just this form of 'stepping.
+/// 	  Should allow specifying merge method w/ layer creation.
 	function merge_trs_data(trs_data_a, trs_data_b){
 		var trs_data = {};
 		
@@ -524,6 +532,8 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		child_body.signaler.add_signal("set_rotation", callable_body);
 	}
 	
+	/// @desc	Detaches a body from the animation tree, if it exists. This will
+	///			wipe all connected signals connecting the two instances.
 	function detach_body(child_body){
 		if (not is_instanceof(child_body, Body)){
 			Exception.throw_conditional("invalid type, expected [Body]!");
@@ -542,6 +552,9 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		struct_remove(attached_bodies, child_body.get_index());
 	}
 	
+	/// @desc	Performs a processing tick of the animation tree. This is handled
+	///			automatically by the animation controller but it can also be called
+	///			manually.
 	function process(){
 /// @stub	Remove time check from here; make it handled by the animation process
 		var ct = current_time * 0.001;

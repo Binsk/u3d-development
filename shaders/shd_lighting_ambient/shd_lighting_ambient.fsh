@@ -123,10 +123,7 @@ void main()
     float fSSAO = 1.0;
     if (u_iSSAO > 0)
         fSSAO = sample_ssao(u_iBlurSamples);
-        
-/// @stub   Add cube-mapping and whatnot for specularity simulation
-/// @stub   https://learnopengl.com/PBR/IBL/Specular-IBL
-
+ 
     if (u_iEnvironment > 0){
         vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);
         vec3 vNormal = normalize(texture2D(u_sNormal, v_vTexcoord).xyz * 2.0 - 1.0);

@@ -1,14 +1,17 @@
 /// @about
 /// Contains a number of scripts dealing with 4D rotational quaternions.
-/// The quaternion struct is also commonly used as a simple 4-value container.
+/// The quaternion struct is also commonly used as a simple 4-value container
+/// when passing data around to functions.
 
 /// @desc	generates a new quaternion and returns the result.
+///			Defaults to the identity quaternion.
 function quat(x=0, y=0, z=0, w=1){
 	return {
 		x, y, z, w
 	}
 }
 
+/// @desc	Returns if the specified value is a quaternion.
 function is_quat(value){
 	if (not is_struct(value))
 		return false;
@@ -31,6 +34,7 @@ function is_quat(value){
 	return true;
 }
 
+/// @desc	Returns if the specified quaternion is the identity quaternion.
 function quat_is_identity(quaternion){
 	if (quaternion.x != 0)
 		return false;
@@ -47,6 +51,7 @@ function quat_is_identity(quaternion){
 	return true;
 }
 
+/// @desc	Returns if every value in the quaternion is zero.
 function quat_is_zero(quaternion){
 	if (quaternion.x != 0)
 		return false;
@@ -63,21 +68,25 @@ function quat_is_zero(quaternion){
 	return true;
 }
 
+/// @desc	Returns an array of 4 values in the order of [x, y, z, w].
 function quat_to_array(quaternion){
 	return [
 		quaternion.x, quaternion.y, quaternion.z, quaternion.w
 	];
 }
 
+/// @desc	Returns the length of the quaternion.
 function quat_magnitude(quaternion){
 	return sqrt(sqr(quaternion.x) + sqr(quaternion.y) + sqr(quaternion.z) + sqr(quaternion.w));
 }
 
+/// @desc	Retruns a version of the quaternion with a length of 1.
 function quat_normalize(quaternion){
 	var m = quat_magnitude(quaternion);
 	return quat(quaternion.x / m, quaternion.y / m, quaternion.z / m, quaternion.w / m);
 }
 
+/// @desc	Returns if two quaternions are mathematically identical.
 function quat_equals_quat(q1, q2){
 	if (q1.x != q2.x)
 		return false;
@@ -94,7 +103,10 @@ function quat_equals_quat(q1, q2){
 	return true;
 }
 
-/// @desc	Takes a quaternion and returns a vector + angle pair.
+/// @desc	Takes a quaternion and returns a vector + angle pair that
+///			equates to the same rotation.
+/// @note	If there is no rotation then we don't have a defined axis so
+///			the resulting axis + angle will be the up vector and 0.
 function quat_to_veca(quaternion){
 	var angle = 2.0 * arccos(quaternion.w);
 	
@@ -112,13 +124,14 @@ function quat_to_veca(quaternion){
 	var vector = vec(
 		quaternion.x / qws,
 		quaternion.y / qws,
-		quaternion.z / qws,
+		quaternion.z / qws
 	);
 	
 	return vec_to_veca(vector, angle);
 }
 
-/// @desc	Given a veca(), converts it into a quaternion.
+/// @desc	Given an axis + angle pair, converts it into a 
+///			quaternion rotation.
 function veca_to_quat(vectora){
 	var asin = sin(vectora.a * 0.5);
 	var quaternion = quat(vectora.x * asin,
@@ -142,7 +155,8 @@ function vec_to_quat(vector){
 	
 	if (vec_equals_vec(vector, vec_reverse(Node.AXIS_FORWARD))){
 		// If exactly opposite, attempt to rotate around an arbitrary perp vector.
-		// This will NOT work in all cases.
+		// This will NOT work consistently in all cases as it depends on the which
+		// axes we are pointing.
 		rotation_axis = vec_get_perpendicular(vector);
 		rotation_angle = pi;
 	}
@@ -165,10 +179,9 @@ function quat_mul_quat(quat1, quat2){
 	);
 }
 
-/// @desc	Given an axis to rotate around and an angle (in radians), determines the
-///			euler angles to perform the same rotation. Assumes the axis is normalized
-///			and that euler rotations are performed in the ZXY order with the following
-///			axis layout:
+/// @desc	Given a rotation quaternion, returns a vector containing the required
+///			euler angles (in radians) required to arrive at that same rotation when
+///			executed in the ZXY order.
 ///				x - forward
 ///				y - up
 ///				z - right
@@ -193,6 +206,7 @@ function quat_to_euler(quat){
 	return vec(roll, yaw, -pitch);
 }
 
+/// @desc	Returns the conjugate of the specified quaternion.
 function quat_get_conjugate(quaternion){
 	return quat(-quaternion.x, -quaternion.y, -quaternion.z, quaternion.w);
 }
@@ -209,6 +223,10 @@ function quat_rotate_vec(quaternion, vector){
 	return vec(nquaternion.x, nquaternion.y, nquaternion.z);
 }
 
+/// @desc	Performs a spherical interpolation between two quaternions.
+/// @param	{quat}	from	quaternion to rotate from
+/// @param	{quat}	to		quaternion to rotate to
+/// @param	{real}	lerp	lerp value to use between the two
 function quat_slerp(q1, q2, time){
 	q1 = quat_to_array(q1);
 	q2 = quat_to_array(q2)
@@ -238,6 +256,7 @@ function quat_slerp(q1, q2, time){
 	return quat_normalize(q);
 }
 
+/// @desc	Returns a mathematically identical quaternion to the one specified.
 function quat_duplicate(quaternion){
 	return quat(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 }

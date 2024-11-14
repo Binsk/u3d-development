@@ -2,6 +2,8 @@
 ///	A simple container use to return collision data when a collision is detected.
 ///	The collidable class types and collision-specific data will be stored for
 ///	access.
+/// @param	{Collidable}	type_a
+/// @param	{Collidable}	type_b
 function CollidableData(type_a=Collidable, type_b=Collidable) constructor {
 	#region PROPERTIES
 	self.type_a = type_a;
@@ -28,12 +30,16 @@ function CollidableData(type_a=Collidable, type_b=Collidable) constructor {
 		return type_b;
 	}
 	
+	/// @desc	Returns the body containing the instance of the collidable checking for the collision.
 	function get_colliding_body(){
 		return body_a;
 	}
 	
+	/// @desc	Returns the body containing the instance of the collidable being checked against.
 	function get_affected_body(){
 		return body_b;
 	}
 	#endregion
 }
+
+

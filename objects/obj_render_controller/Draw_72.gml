@@ -1,18 +1,19 @@
 // Build any cube-map textures
-	/// @note This WAS handled automatically upon render, but we started having
-	///		  shader conflicts so this separate update pass was added.
+	/// @note	This WAS handled automatically upon render, but we started having
+	///			shader conflicts so this separate update pass was added.
 var cube_keys = struct_get_names(TextureCube.BUILD_MAP);
 for (var i = array_length(cube_keys) - 1; i >= 0; --i){
 	var cube_map = TextureCube.BUILD_MAP[$ cube_keys[i]];
 	cube_map.build();
 }
 
+// Cache GPU state for any other systems that may render after this.
 var gpu_state = gpu_get_state();
 
 // Regenerate camera GBuffers as needed
 var camera_keys = struct_get_names(camera_map);
 	
-// Render camera scenes
+	// Render camera scenes
 for (var i = array_length(camera_keys) - 1; i >= 0; --i){
 	var camera = camera_map[$ camera_keys[i]];
 	
@@ -32,6 +33,7 @@ for (var i = array_length(camera_keys) - 1; i >= 0; --i){
 	camera.render(body_array, light_array);
 }
 
+// Restore render states:
 if (shader_current() >= 0)
 	shader_reset();
 

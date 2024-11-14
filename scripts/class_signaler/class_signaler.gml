@@ -1,4 +1,4 @@
-/// @desc   Creates a new signaler system that can execute multiple methods
+/// @about	Creates a new signaler system that can execute multiple methods
 ///         at a time while passing optional static and dynamic arguments.
 ///
 ///         Signalers can be slow to create / destroy but they are fast to 
@@ -28,8 +28,8 @@ function Signaler() constructor{
 	}
 	
 	/// @desc   Cleans the signaler, removing all attached signals for a given label.
-	/// @param  {string}    name
-	/// @return {bool}  whether or not the signal map was changed
+	/// @param  {string}    label
+	/// @return {bool}  	whether or not the signal map was changed
 	function clear_label(name=""){
 		
 		var array = signal_map[$ name];
@@ -44,7 +44,7 @@ function Signaler() constructor{
 	}
 	
 	/// @desc   Returns whether the specified signal is defined in the system.
-	/// @param  {string}    name        name of the signal that was added
+	/// @param  {string}    name		name of the signal that was added
 	/// @param  {method}    method      method/callable of the signal that was added
 	/// @return {bool}      true if success
 	function signal_exists(_name, _method){
@@ -151,7 +151,7 @@ function Signaler() constructor{
 ///				value may cause a slow construction! Override the struct's toString() to mitigate this.
 /// @param	{any}			instance	the instance / struct to call in the contect of
 /// @param	{function}		function	the function to call when executed
-/// @param	{array[any]}	argv=[]		the arguments to pass when executed
+/// @param	{array}			argv=[]		the arguments to pass when executed
 function Callable(_instance, _function, argv=[]) constructor {
 		#region PROPERTIES
 		method_ref = method(_instance, _function);
@@ -167,6 +167,8 @@ function Callable(_instance, _function, argv=[]) constructor {
 		/// @desc	Executes the Callable. Any arguments passed will OVERRIDE the currently
 		///			stored argv values! E.g., if you created the callable with argv=[1, 2]
 		///			and executed call([2]) then the system would execute with argv=[2, 2]
+		///			If a value is undefined then the default pre-defined value will be
+		///			substituted in.
 		function call(argv=[]){
 			var other_loop = array_length(argv);
 			var loop = max(array_length(self.argv), other_loop);
@@ -181,13 +183,18 @@ function Callable(_instance, _function, argv=[]) constructor {
 			method_call(method_ref, nargv);
 		}
 		
+		/// @desc	Returns if the specified callable contains the same data.
+		/// @param	{Callable}	callable	callable instance to check against
+		/// @return	{bool}
 		function is_equal(callable){
 			if (not is_instanceof(callable, Callable))
 				return false;
 				
 			return identifier == callable.identifier;
 		}
-		
+	
+		/// @desc	Creates an identical copy of this callable instance.
+		/// @return {Callable}
 		function duplicate(){
 			return new Callable(method_get_self(method_ref), method_get_index(method_ref), array_duplicate_shallow(argv));
 		}

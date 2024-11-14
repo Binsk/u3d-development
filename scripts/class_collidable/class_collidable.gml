@@ -6,16 +6,14 @@
 ///	collidable shapes over multiplie bodies.
 
 function Collidable() : U3DObject() constructor {
-	#region PROPERTIES
-	#endregion
-	
 	#region STATIC METHODS
 	/// @desc	Calculates if there is a collision between two collidables and, if so,
 	///			returns a CollidableData structure. 'undefined' is returned if no 
 	///			collision exists. If no collision handler exists, no collision will be
 	///			returned.
 	///	@note	If transform() has not been called on each collidable before-hand then
-	///			it must be done manually.
+	///			it must be done manually. If added to the collision system then it will
+	///			have been called automatically.
 	/// @param	{Collidable}	collidable_a	the first collidable shape to use
 	/// @param	{Collidable}	collidable_b	the second collidable shape to use
 	/// @param	{Node}			node_a			the first node to use for transforms
@@ -44,9 +42,7 @@ function Collidable() : U3DObject() constructor {
 	/// @desc	Given a node, calculates the transformed values relative to the 
 	///			collidable. The results should be stored in the node's 'generic data'
 	///			container for cache before a collision is checked.
+	/// @param	{Node}	node
 	function transform(node){}
-	#endregion
-	
-	#region INIT
 	#endregion
 }

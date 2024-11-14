@@ -7,9 +7,9 @@ event_inherited();
 
 /// @signals
 /// "collision_<id>"	(data[])	-	thrown when a body is scanned w/ collisions where <id> is the body id that triggered the update.
-///										'data' is an array of CollidableData structs.
+///										'data' is an array of CollidableData structs for all collisions with that body.
 
-/// @stub	Add partitioning system; even if it is just an array
+/// @stub	Add partitioning system
 
 update_map = {};	// Updates queued this frame
 
@@ -72,7 +72,7 @@ function remove_signal(body, callable){
 	body.signaler.remove_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
 }
 
-/// @desc	Calculates the animation state updates for all bodies in the system.
+/// @desc	Calculates all collisions for bodies that have been updated.
 function process(){
 	/// @stub	optimize forming the body array
 	var instance_array = struct_get_values(update_map);
@@ -113,7 +113,7 @@ function process(){
 			array_push(data_array, data);
 		}
 		
-		if (array_length(data_array) > 0)
+		if (array_length(data_array) > 0) // If there were collisions then we signal them out
 			signaler.signal($"collision_{body.get_index()}", [data_array]);
 	}
 }

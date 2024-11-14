@@ -4,6 +4,8 @@
 ///	the CameraView(), which will render straight to the screen. The Camera() class
 ///	is a template class and should be inherited, not used directly.
 
+/// @todo	Add orthographic Eye / rendering
+
 /// @desc	Defines the necessary buffers we will need for the graphics pipeline
 ///			for this camera. We use separate albedo/depth pairs simply for the
 ///			depth buffer.
@@ -57,7 +59,7 @@ enum CAMERA_RENDER_FLAG {
 
 function Camera() : Body() constructor {
 	#region PROPERTIES
-	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance
+	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance; not usually used for clarity but available if necessary
 	
 	buffer_width = undefined;	// Render resolution
 	buffer_height = undefined;
@@ -66,8 +68,8 @@ function Camera() : Body() constructor {
 		textures : {}  // Gbuffer textures, in some cases they do NOT have an equivalent surface!
 	};
 	render_stages = CAMERA_RENDER_STAGE.both; // Which render stages to perform
-	render_tonemap = CAMERA_TONEMAP.none;
-	/// @stub	Add post-processing structure & addition / removal / render to camera
+	render_tonemap = CAMERA_TONEMAP.none; 
+/// @stub	Add post-processing structure & addition / removal / render to camera
 	post_process_effects = {};	// priority -> effect pairs for post processing effects
 	debug_flags = 0;		// CAMERA_DEBUG_FLAG toggles
 	render_flags = -1;		// CAMERA_RENDER_FLAG toggles
@@ -107,10 +109,10 @@ function Camera() : Body() constructor {
 			eye_array[i].set_zfar(zfar);
 	}
 	
-	function set_fow(fow){
+	function set_fov(fov){
 		var eye_array = get_eye_array();
 		for (var i = array_length(eye_array) - 1; i >= 0; --i)
-			eye_array[i].set_fow(fow);
+			eye_array[i].set_fov(fov);
 	}
 	
 	/// @desc	Sets the render size for the camera, in pixels. This size will
@@ -122,6 +124,7 @@ function Camera() : Body() constructor {
 	
 	/// @desc	Sets the tonemap to use when converting the final linearized 
 	///			color buffer to the rgba8 channels to display to the screen.
+	/// @param	{CAMERA_TONEMAP}	tonemap
 	function set_tonemap(tonemap){
 		self.render_tonemap = tonemap;
 	}
@@ -129,8 +132,8 @@ function Camera() : Body() constructor {
 	/// @desc	Enables or disables a render flag effect. This can be used to
 	///			toggle specific features per-camera and separate from lights and
 	///			models.
-	/// @param	{CAMERA_RENDER_FLAG}	flag			flag (or bitwised flags) to enable or disable
-	/// @param	{bool}					enabled=true	if true, adds the flag otherwise removes it
+	/// @param	{CAMERA_RENDER_FLAG}	flag	flag (or bitwised flags) to enable or disable
+	/// @param	{bool}					enabled	if true, adds the flag otherwise removes it
 	function set_render_flag(flag, enabled=true){
 		if (enabled)
 			render_flags |= flag;
@@ -167,8 +170,10 @@ function Camera() : Body() constructor {
 		return (render_flags & flag == flag);
 	}
 	
-	/// @dsec	Adds a new post processing effect with the specified render priority.
+	/// @desc	Adds a new post processing effect with the specified render priority.
 	///			Does NOT check for duplicates.
+	/// @param	{PostProcessFX}	effect
+	/// @param	{real}			priority
 	function add_post_process_effect(effect, priority=0){
 		if (not is_instanceof(effect, PostProcessFX))
 			throw new Exception("invalid type, expected [PostProcessFX]!");
@@ -298,6 +303,9 @@ function Camera() : Body() constructor {
 	/// @desc	Given an array of renderable bodies, the camera will render all the
 	///			texture data into the GBuffer to later be passed into the lighting
 	///			stage.
+	/// @param	{Eye}	eye				the eye we should use for the view and projection
+	/// @param	{array}	body_array		array of Body instances to render
+	/// @param	{bool}	is_translucent	whether or not this is the translucent pass
 	function render_gbuffer(eye, body_array=[], is_translucent=false){
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
@@ -373,6 +381,10 @@ function Camera() : Body() constructor {
 	
 	/// @desc	Renders all the shadows and lights, including emissive tetures, and adds
 	///			them together on the final light surface.
+	/// @param	{Eye}	eye				the eye we should use for the view and projection
+	/// @param	{array}	light_array		array of Light instances to render
+	/// @param	{array}	body_array		array of Body instances to render
+	/// @param	{bool}	is_translucent	whether or not this is the translucent pass
 	function render_lighting(eye, light_array=[], body_array=[], is_translucent=false){
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
@@ -535,8 +547,8 @@ function Camera() : Body() constructor {
 	
 	/// @desc	Performs a complete render of an eye of the camera
 	/// @param	{Eye}	eye					the eye structure to render
-	/// @param	{array}	body_array=[]		the array of renderable bodies to process
-	/// @param	{array}	light_array=[]		the array of renderable lights to process
+	/// @param	{array}	body_array		the array of renderable bodies to process
+	/// @param	{array}	light_array		the array of renderable lights to process
 	function render_eye(eye, body_array=[], light_array=[]){
 		if (not is_instanceof(eye, Eye))
 			throw new Exception("invalid type, expected [Eye]!");

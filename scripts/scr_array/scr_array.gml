@@ -68,6 +68,8 @@ function array_execute(array, callable){
 	return array;
 }
 
+/// @desc	Treats a1 and a2 like n-dimentional vectors and calculates the dot-product.
+/// 		Both arrays MUST be the same size.
 function array_dot(a1, a2){
 	var value = 0;
 	for (var i = array_length(a1) - 1; i >= 0; --i)
@@ -76,6 +78,7 @@ function array_dot(a1, a2){
 	return value;
 }
 
+/// @desc	Performs a per-component clamp over the array. All arrays MUST be the same size.
 function array_clamp(array, min_array, max_array){
 	if (array_length(min_array) < array_length(array))
 		throw new Exception("cannot clamp array, minimum array is invalid size.");
@@ -89,8 +92,8 @@ function array_clamp(array, min_array, max_array){
 	return array;
 }
 
-/// @desc	Takes a nested array an flattens it into a single 1D array. Does not check
-///			for recursive references.
+/// @desc	Takes a nested array and flattens it into a single 1D array. Does not check
+///			for recursive references but DOES flatten recursively.
 function array_flatten(array){
 	var narray = array_create(array_length_nested(array));
 	
@@ -112,7 +115,7 @@ function array_flatten(array){
 }
 
 /// @desc	Returns the total number of elements in a nested array. Does not check
-///			for recursive references.
+///			for recursive references but does count elements recursively.
 function array_length_nested(array){
 	var count = array_length(array);
 	for (var i = count - 1; i >= 0; --i){

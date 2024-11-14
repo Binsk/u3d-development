@@ -5,11 +5,14 @@
 Cameras are how you view the 3D world in your game. A camera should be created
 and then added to `obj_render_controller` in order for it to start rendering.
 
-Cameras inherit from the `Node()` class and, as such, can have their positions and
-orientations changed just as you would a Node. Cameras look down the +X axis and
+Cameras inherit from the `Body()` class and, as such, can have their positions and
+orientations changed just as you would a Body. Cameras look down the +X axis and
 consider Y+ their 'UP' vector by default.
 
 There are various kinds of cameras and the base `Camera()` class can be inherited
 to create new kinds as necessary. This provides you the ability to have cameras that
 render to the screen, to VR headset, or just an in-game surface for effects like
 portals or dynamic cube-map generation.
+
+The most common camera that you will likely be using is the CameraView which renders
+straight to the game window.
