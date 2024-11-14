@@ -70,6 +70,11 @@ function Exception(message=undefined, index=0) constructor {
 		return index;
 	}
 	
+	/// @desc	Returns the error message without any of the tracing or formatting.
+	function get_message(){
+		return message;
+	}
+	
 	function toString(){
 		// toString is generally used to help print things out whet GameMaker's actual error display
 		// takes over.

@@ -1,26 +1,25 @@
-
-if (not is_undefined(animation_tree))
-	animation_tree.process(); /// @stub	Move into animation controller
-
 event_inherited();
 
 if (instance_exists(obj_bone_scroll))
 	return;
 	
 if (is_hovered and mouse_check_button_pressed(mb_left)){
-	if (is_undefined(body)){
+	if (is_undefined(body)){ // Don't have our model loaded, so we can load now
 		try{
-			gltf = new GLTFBuilder(text, "test-models");
-			animation_tree = gltf.generate_animation_tree();
-			model = gltf.generate_model(0, obj_demo_controller.import_textures, obj_demo_controller.apply_transforms);
-			model.freeze();
+			gltf = new GLTFBuilder(text, "test-models"); // Loads in the model data 
+			animation_tree = gltf.generate_animation_tree();	// Constructs an animation tree (if one exists)
+			model = gltf.generate_model(0, obj_demo_controller.import_textures, obj_demo_controller.apply_transforms); // Constructs scene 0 of the model (usually all we need)
+			model.freeze(); // Freeze the model into vRAM so we don't have to re-send all the vertex data every frame
 		}
 		// Catch any glTF loading errors in this case; generally due to glTF features
 		// not supported by the U3D implementation.
 		catch(e){
-			if (is_instanceof(e, Exception))
-				obj_demo_controller.push_error($"(glTF) {e.message}");
+			if (is_instanceof(e, Exception)) // It was a U3D error, print it cleanly on the screen
+				obj_demo_controller.push_error($"(glTF) {e.get_message()}");
+			else
+				show_error(e, true); // If an unexpected error, let GameMaker throw a normal error
 			
+			// Clean up any potential left-overs
 			if (is_instanceof(gltf, GLTFBuilder)){
 				gltf.free();
 				delete gltf;
@@ -39,9 +38,9 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			return;
 		}
 		
-		body = new Body();
+		body = new Body();		// Generate a body to hold the model
 		body.set_model(model);
-		if (not is_undefined(animation_tree)){
+		if (not is_undefined(animation_tree)){	// If there is animation, add it to the system as well
 			body.set_animation(animation_tree);
 			animation_tree.set_update_freq(obj_demo_controller.animation_freq);
 			// Add to the animation system for automatic updates; note that freeing the body
@@ -50,6 +49,8 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		}
 		
 		var generate_as_primary = true;
+			// If a model is already loaded w/ a skeleton, we show the bone selection tree to attach
+			// this body to:
 		if (obj_demo_controller.primary_button != noone){ // Attempt to attach to currently active model
 			if (not is_undefined(obj_demo_controller.primary_button.animation_tree)){
 				// Create the bone scroll list; it will be responsible for attaching + adding model to rendering
@@ -60,6 +61,8 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			}
 		}
 		
+		// If this is the first model loaded, we want to auto-scale it to fit into view nicely 
+		// and then add it to the center of the view:
 		if (generate_as_primary){
 			if (obj_demo_controller.primary_button == noone)
 				obj_demo_controller.primary_button = id;
@@ -72,28 +75,18 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 			obj_render_controller.add_body(body);
 			obj_demo_controller.update_data_count();
-			
-			#region HARD-CODED DYNAMIC ANIMATION FORM sophia.glb
-			if (text == "sophia.glb"){
-				// Generate dynamic tracks for making the character look around:
-				var lr_index = animation_tree.get_bone_id("DEF-spine.005");
-				var ud_index = animation_tree.get_bone_id("DEF-spine.006");
-				animation_track_lr = new AnimationTrack("look-lr");
-				animation_track_ud = new AnimationTrack("look-ud");
-				
-				animation_track_lr.add_channel_group(obj_demo_controller.cgroup_lr, lr_index);
-				animation_track_ud.add_channel_group(obj_demo_controller.cgroup_ud, ud_index);
-				
-				animation_tree.add_animation_track(animation_track_lr);
-				animation_tree.add_animation_track(animation_track_ud);
-			}
-			#endregion
 		}
 
+		// Free up the loader.
+		/// @note	The loader has a reference to all the generated model data. This means if 
+		///			you free this BEFORE adding it to a body, it will be freed from RAM before you can
+		///			add it since all references are removed! Alternatively, if you destroy the loader AFTER
+		///			assigning the model to a body, re-generating a new model will be instantaneous because
+		///			a reference of the data still exists in the body.
 		gltf.free();
 		delete gltf;
 		
-		// Generate slider:
+		// Generate scaling slider:
 		var slider = instance_create_depth(12, 0, 0, obj_slider);
 		slider.text = $"{text} scale: {body.scale.x}x";
 		slider.button_id = id;
@@ -104,16 +97,18 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			var lerpvalue = lerp(inst.min_value, inst.max_value, value);
 			body.set_scale(vec(lerpvalue, lerpvalue, lerpvalue));
 			inst.text = $"{text} scale: {lerpvalue}x";
-		}, [undefined, slider, $"{text} scale:"]))
+		}, [undefined, slider, $"{text} scale:"]));
+		
 		array_push(obj_demo_controller.model_scale_slider_array, slider);
 		slider_id = slider;
+		
 		with (obj_bone_scroll)
 			slider_id = slider;
 	}
-	else {
+	else { // Model already loaded, go ahead and free the data:
 		if (obj_demo_controller.primary_button != id)
 			cleanup_model();
-		else {
+		else { // We are the primary, free all other models in the scene as well
 			with (obj_button_model)
 				cleanup_model();
 			
@@ -121,6 +116,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		}
 	}
 
+	// Calculate floor height to compensate for the model change:
 	var minimum_y = 0; // Used to align floor height
 	var body_index = -1;
 	if (not is_undefined(obj_demo_controller.body_floor))

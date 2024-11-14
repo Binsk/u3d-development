@@ -1,13 +1,12 @@
+/// @about
+/// A button that loads a model and adds it to the render system when pressed.
+///	Models are NOT cached so removing the model will require a fresh load.
+
 event_inherited();
 gltf = undefined;
 model = undefined;
 body = undefined;
 animation_tree = undefined;
-
-#region HARD-CODED DYNAMIC ANIMATION TEST FOR sophia.glb
-animation_track_lr = undefined;	// Special track for testing lerp animation
-animation_track_ud = undefined;	// Special track for testing lerp animation
-#endregion
 
 slider_id = undefined;
 
@@ -30,17 +29,5 @@ function cleanup_model(){
 			instance_destroy(slider);
 			break;
 		}
-	}
-	
-	if (not is_undefined(animation_track_lr)){
-		animation_track_lr.free();
-		delete animation_track_lr;
-		animation_track_lr = undefined;
-	}
-	
-	if (not is_undefined(animation_track_ud)){
-		animation_track_ud.free();
-		delete animation_track_ud;
-		animation_track_ud = undefined;
 	}
 }

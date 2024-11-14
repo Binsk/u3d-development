@@ -12,3 +12,20 @@ model isn't using any unsupported features then please file a bug report!
 ### Loading Models
 Any GLTF of GLB files located in the `test-models` folder should be automatically
 detected by the system and a button spawned in the interface.
+
+### Excuses
+So yeah, I whipped up the demo loader for myself to do a quick test. I kept it
+sloppy. I slowly kept adding things as I needed to test more things so the 
+system is a bit of a mess. 
+
+Since I am including it, I went through a lot of stuff and cleaned it up and
+added some comments but I didn't bother re-designing things to work better. As
+such, don't use this as an example as to how the 3D systems should be set up, 
+at least not as a whole. A lot of this stuff is overly convoluted as I changed
+things a lot as I went.
+
+By the time this is public I'll have a video demonstrating basic system
+setups. I'm assuming it will be available either on my Patreon or Odysee account:
+
+https://odysee.com/@binsk:9
+https://patreon/upset3d

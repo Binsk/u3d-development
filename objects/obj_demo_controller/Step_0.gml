@@ -7,49 +7,6 @@ gmouse = {
 render_width = display_get_gui_width();
 render_height = display_get_gui_height();
 
-	// Handle animation look:
-if (mouse_check_button(mb_right)){
-	camera.calculate_world_ray(gmouse.x, gmouse.y, animation_ray);
-	
-	with (obj_button_model){
-		if (is_undefined(animation_track_lr))
-			continue;
-		
-		var look_vector = vec_sub_vec(other.look_point, vec(0, 0.5, 0));
-
-		var dif_lr = vec_angle_difference(vec(0, 0, 1), vec(look_vector.x, 0, look_vector.z));
-		dif_lr /= pi * 0.5;
-		dif_lr = 0.5 + (dif_lr * -sign(look_vector.x));
-		
-		var dif_ud = vec_angle_difference(vec(0, 0, 1), vec(0, look_vector.y, 1));
-		dif_ud /= pi * 0.5;
-		dif_ud = 0.5 + (dif_ud * sign(look_vector.y)) * 0.5;
-		
-		other.animation_lr = lerp(other.animation_lr, dif_lr, 0.1 * frame_delta_relative);
-		other.animation_ud = lerp(other.animation_ud, dif_ud, 0.1 * frame_delta_relative);
-		
-		if (animation_tree.get_animation_layer_exists(1)){
-			animation_tree.set_animation_layer_lerp(2, other.animation_lr);
-			animation_tree.set_animation_layer_lerp(1, other.animation_ud);
-		}
-		else {
-			animation_tree.add_animation_layer_lerp(2, "look-lr", other.animation_lr);
-			animation_tree.add_animation_layer_lerp(1, "look-ud", other.animation_ud);
-		}
-	}
-}
-else {
-	with (obj_button_model){
-		if (is_undefined(animation_track_lr))
-			continue;
-		
-		other.animation_lr = lerp(other.animation_lr, 0.5, 0.1 * frame_delta_relative);
-		other.animation_ud = lerp(other.animation_ud, 0.5, 0.1 * frame_delta_relative);
-		animation_tree.set_animation_layer_lerp(2, other.animation_lr);
-		animation_tree.set_animation_layer_lerp(1, other.animation_ud);
-	}
-}
-
 // Scroll bone attachment menu:
 if (not instance_exists(obj_bone_scroll)){
 	if (mouse_wheel_up())
