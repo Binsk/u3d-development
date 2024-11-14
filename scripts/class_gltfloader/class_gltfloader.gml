@@ -7,8 +7,12 @@
 /// @extensions
 ///	The following KHR extensions are supported:
 ///	-	N/A
-/// @note	As no extensions are currently supported, the models will fail to load!
-///			This can be worked around by re-exporting the models w/o the use of the extension.
+///
+/// The following KHR extensions are ignored:
+///	-	KHR_materials_*
+
+/// @note	Ignored extensions will allow model building but may look incorrect.
+///			Unsupported extensions will throw an exception.
 
 /// @todo	Look into supporting KHR_draco_mesh_compression, but it seems to be a
 ///			complex Google library.
@@ -243,8 +247,11 @@ function GLTFLoader() : U3DObject() constructor {
 		
 		var keys = struct_get_names(header_data.extensions);
 		for (var i = array_length(keys) - 1; i >= 0; --i){
-/// @note	It simply throws for every extension, but this will be changed as extension
-///			support is added.
+			if (string_starts_with(keys[i], "KHR_materials_")){
+				print_traced("WARNING", $"ignoring unsupported glTF extension [{keys[i]}]");
+				continue;
+			}
+
 			throw new Exception($"model uses unsupported extension, [{keys[i]}]");
 		}
 	}
