@@ -156,6 +156,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 			
 			var data = sprite_data_array[i];
+			
+			check_unsupported_extensions(data);
+			
 			var sprite;
 			if (not is_undefined(data[$ "uri"])){ // External file, load normally
 				if (not file_exists(load_directory + data.uri)){
@@ -221,6 +224,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 			
 			var material_data = material_data_array[i];
+			
+			check_unsupported_extensions(material_data);
+			
 			var pbr_data = material_data[$ "pbrMetallicRoughness"]; // May not be set!
 			// First, a quick check to see if we failed to load the sprite and fill w/ 'no texture'
 			if (not is_undefined(pbr_data) and not is_undefined(pbr_data[$ "baseColorTexture"]) and is_undefined(texture_array[pbr_data[$ "baseColorTexture"]])){
@@ -352,6 +358,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			Exception.throw_conditional(string_ext("unsupported topology type [{0}], expected [{1}]!", [mode_labels[primitive_header[$ "mode"] ?? 4], mode_labels[4]]));
 			return undefined;
 		}
+		
+		check_unsupported_extensions(primitive_header);
 
 		var accessor_index = primitive_header.indices;
 		if (is_undefined(accessor_index)){ // We only support index definition through accessors
@@ -361,26 +369,23 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// Grab the accessor so we can fetch a list of vertex indices
 		var primitive_accessor = get_structure(accessor_index, "accessors");
+		
 		if (is_undefined(primitive_accessor)){
 			Exception.throw_conditional(string_ext("invalid accessor index [{0}]!", [accessor_index]));
 			return undefined;
 		}
+	
 		if ((primitive_accessor[$ "type"] ?? "UNKNOWN") != "SCALAR"){
 			Exception.throw_conditional(string_ext("unsupported index type [{0}], expected type [SCALAR].", [primitive_accessor[$ "type"] ?? "UNKNOWN"]));
 			return undefined;
 		}
 		
+		check_unsupported_extensions(primitive_accessor);
+		
 		var vertex_index_array = read_accessor(accessor_index); // Array of integers pointing to vertex data indices
 		if (is_undefined(vertex_index_array)){ // If anything goes wrong, throw a generic error
 			Exception.throw_conditional(string_ext("failed to read accessor [{0}]!", [accessor_index]));
 			return undefined;
-		}
-		
-		/// https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md
-/// @todo	Implement support
-		if (not is_undefined(primitive_header[$ "extensions"])){
-			if (not is_undefined(primitive_header.extensions[$ "KHR_draco_mesh_compression"]))
-				throw new Exception("unsupported KHR extension, [KHR_draco_mesh_compression]!");
 		}
 
 		#region BUILD ATTRIBUTE LOOKUP

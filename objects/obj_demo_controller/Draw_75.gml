@@ -50,7 +50,7 @@ if (array_length(error_array) > 0){
 	cy -= text_h * 0.5 - 12;
 	
 	var a = 1.0;
-	var t = min(3000 * array_length(error_array), 12000);
+	var t = min(3000 * array_length(error_array), 12000) + 2000;
 	if (current_time - error_time > t)
 		a = max(0, 1.0 - ((current_time - t) - error_time) * 0.001);
 		

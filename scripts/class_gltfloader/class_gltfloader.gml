@@ -4,6 +4,15 @@
 /// and parsing and does not handle converting data into U3D instances. For that
 /// you need the GLTFBuilder().
 
+/// @extensions
+///	The following KHR extensions are supported:
+///	-	N/A
+/// @note	As no extensions are currently supported, the models will fail to load!
+///			This can be worked around by re-exporting the models w/o the use of the extension.
+
+/// @todo	Look into supporting KHR_draco_mesh_compression, but it seems to be a
+///			complex Google library.
+
 function GLTFLoader() : U3DObject() constructor {
 	#region PROPERTIES
 	gltf_version = undefined;
@@ -65,6 +74,24 @@ function GLTFLoader() : U3DObject() constructor {
 			return 16;
 		
 		return 0;
+	}
+	
+	/// @desc	Given a label and index, attempts to return the specified structure
+	///			at the index under the specified label.
+	/// @param	{real}		index	index of the array under the label
+	/// @param	{string}	label	label to scan for values
+	/// @return {json} or undefined
+	function get_structure(index, label=""){
+		if (is_undefined(json_header[$ label]))
+			return undefined;
+		
+		if (index < 0)
+			index = modwrap(index, array_length(json_header[$ label]));
+		
+		if (index >= array_length(json_header[$ label]))
+			return undefined;
+		
+		return json_header[$ label][index];
 	}
 	#endregion
 	
@@ -205,22 +232,21 @@ function GLTFLoader() : U3DObject() constructor {
 		return success;
 	}
 	
-	/// @desc	Given a label and index, attempts to return the specified structure
-	///			at the index under the specified label.
-	/// @param	{real}		index	index of the array under the label
-	/// @param	{string}	label	label to scan for values
-	/// @return {json} or undefined
-	function get_structure(index, label=""){
-		if (is_undefined(json_header[$ label]))
-			return undefined;
+	/// @desc	Given a struct, checks for the 'extras' section and whether or
+	///			not it requires an unsupported extension.
+	function check_unsupported_extensions(header_data){
+		if (not is_struct(header_data))
+			return;
 		
-		if (index < 0)
-			index = modwrap(index, array_length(json_header[$ label]));
+		if (is_undefined(header_data[$ "extensions"]))
+			return;
 		
-		if (index >= array_length(json_header[$ label]))
-			return undefined;
-		
-		return json_header[$ label][index];
+		var keys = struct_get_names(header_data.extensions);
+		for (var i = array_length(keys) - 1; i >= 0; --i){
+/// @note	It simply throws for every extension, but this will be changed as extension
+///			support is added.
+			throw new Exception($"model uses unsupported extension, [{keys[i]}]");
+		}
 	}
 	
 	/// @desc	Given the image index, attempts to import it from the disk and 
