@@ -174,6 +174,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					// Track the sprite load so we assign it to the texture once loaded
 				U3D_ASYNC.add_sprite_track(sprite, new Callable(texture, function(sprite, filepath){
 					file_delete(filepath);
+						// If the texture got freed at some point
+					if (not U3DObject.get_is_valid_object(self) and sprite_exists(sprite)){
+						sprite_delete(sprite);
+						return;
+					}
 					set_texture(sprite_get_texture(sprite, 0));
 					signaler.add_signal("cleanup", new Callable(self, sprite_delete, [sprite]));
 				}, [sprite, label]));
@@ -206,6 +211,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				// Track the sprite load so we assign it to the texture once loaded
 			U3D_ASYNC.add_sprite_track(sprite, new Callable(texture, function(sprite, filepath){
 				file_delete(filepath);
+					// If the texture got freed at some point
+				if (not U3DObject.get_is_valid_object(self) and sprite_exists(sprite)){
+					sprite_delete(sprite);
+					return;
+				}
+				
 				set_texture(sprite_get_texture(sprite, 0));
 				signaler.add_signal("cleanup", new Callable(self, sprite_delete, [sprite]));
 			}, [sprite, label]));

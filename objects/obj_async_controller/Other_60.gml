@@ -12,6 +12,5 @@ if (async_load[? "status"] < 0)
 
 // Assume all is good, call the function:
 var callable = image_track[$ sprite_id];
-struct_remove(image_track, sprite_id);
-
 callable.call();
+struct_remove(image_track, sprite_id);
