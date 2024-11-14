@@ -20,6 +20,13 @@ right.x = -right.x;		// Invert due to the camera display being flipped
 forward.x = -forward.x;
 up.x = -up.x;
 
+	// DirectX y-coordinates are upside-down so we flip them:
+if (get_is_directx_pipeline()){
+	right.y = -right.y;
+	forward.y = -forward.y;
+	up.y = -up.y;
+}
+
 draw_line_width_color(cx, cy, cx + forward.x, cy + forward.y, 3, c_red, c_red);
 draw_line_width_color(cx, cy, cx + right.x, cy + right.y, 3, c_blue, c_blue);
 draw_line_width_color(cx, cy, cx + up.x, cy + up.y, 3, c_lime, c_lime);
