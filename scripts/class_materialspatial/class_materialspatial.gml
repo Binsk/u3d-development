@@ -36,7 +36,7 @@
 // simply render out without modification, including the depth buffer.
 #endregion
 
-#region GBUFFER UNIFORMS
+#region AVAILABLE UNIFORMS
 // The following are the uniforms that are available to your spatial shader. If a uniform is
 // not specified in your shader then it will not be sent.
 //	UNIFORM					TYPE			DESCRIPTION
@@ -79,26 +79,7 @@ function MaterialSpatial() : Material() constructor {
 		normal : undefined,
 		pbr : undefined,
 		emissive : undefined
-	};	#region GBUFFER UNIFORMS
-	// The following are the uniforms that are available toy our spatial shader. If a uniform is
-	// not specified in your shader then it will not be sent.
-	//	UNIFORM					TYPE			DESCRIPTION
-	// u_sAlbedo			(sampler2D)		4color material w/o lighting
-	// u_vAlbedoUV			(vec4)			UV bounds on texture page for albedo
-	// u_vAlbedo			(vec4)			color multiplier (or direct color if no texture)
-	// u_sNormal			(sampler2D)		normal direction texture in tangent space
-	// u_vNormalUV			(vec4)			UV bounds on texture page for normal
-	// u_sPBR				(sampler2D)		PBR material in [R: specular, G: roughness, B: metallic] layout
-	// u_vPBRUV				(vec4)			UV bounds on texture page for PBR
-	// u_vPBR				(vec3)			PBR multiplier (or direct value if no nexture)
-	// u_sEmissive			(sampler2D)		3color material for emission
-	// u_vEmissiveUV		(vec4)			UV bounds on texture page for Emissive
-	// u_vEmissive			(vec3)			Emission multiplier (when texture exists)
-	// u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
-	// u_fAlphaCutoff		(float)			opaque render sets alpha=0 if < cutoff and 1 if >=
-	// u_iTranslucent		(int)			whether or not it is a translucent pass
-	// u_mBone				(mat4[80])		array of bone transform matrices (up to 80); NOTE: uniform set by mesh, not material!
-	#endregion
+	};
 	
 	/// @note	scalar albedo is multiplicative, however if no texture exists and no vertex
 	///			color exists, it will be used as-is for the color in LINEAR space! Vertex
