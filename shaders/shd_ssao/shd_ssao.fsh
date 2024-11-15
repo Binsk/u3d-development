@@ -56,6 +56,6 @@ void main() {
 		fAO += calculate_ao(v_vTexcoord, vCoord2, vPosition, vNormal);
 	}
 		
-	fAO = clamp(fAO / float(u_iSamples * 2.0), 0.0, 1.0);
+	fAO = clamp(fAO / float(u_iSamples * 2), 0.0, 1.0);
 	gl_FragColor.r = 1.0 - fAO;
 }

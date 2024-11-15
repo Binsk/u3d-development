@@ -50,7 +50,6 @@ function PPFXBloom(luminocity_threshold=1.0, resolution_scale=0.5, blur_passes=5
 		gpu_set_texrepeat(false);
 		
 		// Copy the "illuminated" parts to the surface:
-		gpu_set_blendmode_ext(bm_one, bm_zero);
 		surface_set_target(surface_a);
 		if (shader_current() != shader)
 			shader_set(shader);
@@ -86,16 +85,25 @@ function PPFXBloom(luminocity_threshold=1.0, resolution_scale=0.5, blur_passes=5
 			active_index = not active_index;
 		}
 		shader_reset();
-		gpu_set_blendmode(bm_add);
 		
-		// Add to final surface:
-		surface_set_target(surface_out);
+		surface_set_target(surface_out); 
+		// Draw current swap to surface:
+		draw_primitive_begin_texture(pr_trianglestrip, gbuffer[$ CAMERA_GBUFFER.final]);
+		draw_vertex_texture(0, 0, 0, 0);
+		draw_vertex_texture(buffer_width, 0, 1, 0);
+		draw_vertex_texture(0, buffer_height, 0, 1);
+		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
+		draw_primitive_end();
+		
+		gpu_set_blendmode(bm_add);
+		// Add bloom on top:
 		draw_primitive_begin_texture(pr_trianglestrip, surface_get_texture(active_index ? surface_a : surface_b));
 		draw_vertex_texture(0, 0, 0, 0);
 		draw_vertex_texture(buffer_width, 0, 1, 0);
 		draw_vertex_texture(0, buffer_height, 0, 1);
 		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
 		draw_primitive_end();
+		
 		surface_reset_target();
 		gpu_set_blendmode(bm_normal);
 	}

@@ -84,9 +84,9 @@ obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display i
 // Create our camera:
 ppfx_bloom = new PPFXBloom(0.0, 0.35, 8, 1.25);
 camera = new CameraView(0.01, 128);	// CameraView auto-renders to screen; defaults to full screen
+camera.add_post_process_effect(ppfx_bloom, 1);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);	// Add some post-processing effects to the camera
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
-camera.add_post_process_effect(ppfx_bloom);
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);					// Disable the post-processing; it can be toggled through the interface
 U3D.RENDERING.PPFX.grayscale.set_enabled(false);
 ppfx_bloom.set_enabled(false);

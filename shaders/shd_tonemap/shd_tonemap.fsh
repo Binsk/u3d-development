@@ -28,11 +28,11 @@ void main()
 		vColor.rgb = vColor.rgb * (1.0 + vColor.rgb / (u_fWhite * u_fWhite)) / (1.0 + vColor.rgb);
 	}
 	else if (u_iTonemap == 2){ // ACES
-		float fA = 2.51f;
-		float fB = 0.03f;
-		float fC = 2.43f;
-		float fD = 0.59f;
-		float fE = 0.14f;
+		float fA = 2.51;
+		float fB = 0.03;
+		float fC = 2.43;
+		float fD = 0.59;
+		float fE = 0.14;
 		vColor.rgb = clamp((vColor.rgb * (fA * vColor.rgb + fB)) / (vColor.rgb * (vColor.rgb * fC + fD) + fE), 0.0, 1.0);
 		vColor.rgb /= u_fWhite;
 	}

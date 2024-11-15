@@ -537,6 +537,7 @@ function Camera() : Body() constructor {
 			if (not data.is_enabled)
 				continue;
 				
+			gpu_set_blendmode_ext(bm_one, bm_zero);
 			data.render(gbuffer.surfaces[$ CAMERA_GBUFFER.post_process]);
 
 			// Swap surfaces / textures since the modified data will have been
