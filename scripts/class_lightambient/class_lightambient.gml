@@ -91,7 +91,7 @@ function LightAmbient() : Light() constructor {
 	/// @desc	Set the lighting intensity which multiplies against the light's
 	///			color in the shader.
 	function set_intensity(intensity=1.0){
-		self.intensity = max(0, intensity);
+		self.light_intensity = max(0, intensity);
 	}
 	
 	function render_shadows(eye_id=undefined, body_array=[]){

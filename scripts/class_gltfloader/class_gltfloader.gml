@@ -5,17 +5,21 @@
 /// you need the GLTFBuilder().
 
 /// @extensions
-///	The following KHR extensions are supported:
+///	The following KHR extensions are FULLY supported:
 ///	-	N/A
 ///
-/// The following KHR extensions are ignored:
+/// The following KHR extensions are PARTIALLY supported:
+/// -	KHR_lights_punctual
+///			Only directional lights are supported
+///
+/// The following KHR extensions are IGNORED:
 ///	-	KHR_materials_*
 
 /// @note	Ignored extensions will allow model building but may look incorrect.
 ///			Unsupported extensions will throw an exception.
 
 /// @todo	Look into supporting KHR_draco_mesh_compression, but it seems to be a
-///			complex Google library.
+///			complex Google library. Used fairly frequently with models, however.
 
 function GLTFLoader() : U3DObject() constructor {
 	#region PROPERTIES
@@ -113,13 +117,33 @@ function GLTFLoader() : U3DObject() constructor {
 	
 	/// @desc	Returns if the specified extension name is implemented by this loader.
 	function get_is_extension_implemented(name){
-		return false;
+		static EXTENSIONS = {
+			"KHR_lights_punctual" : 			true,
+			"KHR_draco_mesh_compression" :		false,		// Want to implement (requires research on complexity)
+			"KHR_materials_ior" :				false,		// Will likely implement (Requires in-shader IOR conversion)
+			"KHR_materials_specular" :			false,		// May implement (requires extra RGB buffer)
+			"KHR_materials_unlit" : 			false,		// Will likely implement
+		}
+		
+		return EXTENSIONS[$ name] ?? false;
 	}
 	
 	/// @desc	Returns if the specified extension can be ignored by this loader and still
 	///			load successfully.
 	function get_is_extension_ignoreable(name){
 		return string_starts_with(name, "KHR_materials_"); // Materials can be ignored, they just render off
+	}
+	
+	/// @desc	Returns if the specified extenion is specified in the model.
+	///			Returns 0 if false, 1 if included, 2 if required
+	function get_has_extension(name){
+		if (array_get_index(get_extensions_required(), name) >= 0)
+			return 2;
+		
+		if (array_get_index(get_extensions_used(), name) >= 0)
+			return 1;
+		
+		return 0;
 	}
 	#endregion
 	

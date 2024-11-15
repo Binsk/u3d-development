@@ -122,7 +122,7 @@ ay -= 32;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.text = "V-Sync";
 inst.text_tooltip = "Enable full-screen V-Sync";
-inst.is_checked = false;
+inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
 	display_reset(0, is_checked);
 });

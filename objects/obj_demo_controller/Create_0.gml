@@ -16,6 +16,7 @@ gmouse = {
 	y : 0
 }
 game_set_speed(9999, gamespeed_fps);
+display_reset(0, true);
 cursor = cr_arrow;	// Updated every step for button / hover sliders
 
 camera_orbit_distance = 12; 	// How far away from the model to orbit

@@ -6,6 +6,7 @@ uniform sampler2D u_sView;
 
 uniform vec3 u_vLightNormal;
 uniform vec3 u_vLightColor;
+uniform float u_fIntensity;
 uniform int u_iEnvironment;
 uniform int u_iMipCount;
 
@@ -157,7 +158,7 @@ void main()
 	/// @stub make specular adjust F0 by calculating "Index of Refraction" where 0.5 = 0.04
 	vec3 vF0 = vec3(0.04);
 	vF0 = mix(vF0, vAlbedo.rgb, fMetallic);
-	vec3 vRadiance = u_vLightColor;  // Always the color, as directional doesn't have attenuation
+	vec3 vRadiance = u_vLightColor * u_fIntensity;  // Always the color, as directional doesn't have attenuation
 	float fNDF = distribution_ggx(vNormal, vHalf, fRoughness);
 	float fG = geometry_smith(vNormal, vView, u_vLightNormal, fRoughness);
 	vec3 vF = fresnel_schlick(max(dot(vHalf, vView), 0.0), vF0);

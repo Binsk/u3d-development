@@ -9,11 +9,11 @@
 ///
 /// @note	The GLTFBuilder does NOT support the full glTF spec and all of its
 ///			nuances. It was designed to handle general-case usage of Blender exports.
-/// @note	GLTF uses a generic 'node' structure to represent EVERYTHING so it is
-///			possible for skeletal animations to animate literally anything in the scene,
-///			including mesh positions. This is NOT supported! Only bone -> vertex morph
-///			animation is supported in this loader and meshes will have their parent-
-///			morph hierarchy pre-calculated upon load. 
+///
+/// @note	Skeletal animation only supports vertex skinning! Some glTF models can
+///			specify morphing mesh positions directly through nodes, this is NOT supported!
+///
+/// @note	For supported KHR extensions, check the GLTFLoader header.
 
 /// @todo	Implement passing a buffer directly to allow loading encrypted model files
 /// 		and similar such abilities.
@@ -134,6 +134,32 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 
 		return struct_get_names(state);
+	}
+	
+	/// @desc	Returns an array of all the nodes in a specific scene. If the scene
+	///			specified is -1 then all nodes in the model are returned
+	function get_scene_nodes(scene=-1){
+		var node_array;
+		var scene_data = get_structure(scene, "scenes");
+		if (not is_undefined(scene_data)){
+			if (not is_undefined(scene_data[$ "nodes"])){
+				var narray = scene_data[$ "nodes"];
+				var array = [];
+				for (var i = array_length(narray) - 1; i >= 0; --i)
+					array_push(array, get_node_list(narray[i]));
+			
+				node_array = array_flatten(array);
+			}
+		}
+		else{
+			var array = array_create(array_length(node_array));
+			for (var i = array_length(node_array) - 1; i >= 0; --i)
+				array[i] = i;
+			
+			node_array = array;
+		}
+		
+		return node_array;
 	}
 	
 	/// @desc	Generates an array of spatial materials. Note that the materials
@@ -660,25 +686,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		set_data(["model_data", "maximum"], undefined);
 		
 		// Determine which nodes are in our scene:
-		var node_array = (json_header[$ "nodes"] ?? []);
-		var scene_data = get_structure(scene, "scenes");
-		if (not is_undefined(scene_data)){
-			if (not is_undefined(scene_data[$ "nodes"])){
-				var narray = scene_data[$ "nodes"];
-				var array = [];
-				for (var i = array_length(narray) - 1; i >= 0; --i)
-					array_push(array, get_node_list(narray[i]));
-			
-				node_array = array_flatten(array);
-			}
-		}
-		else{
-			var array = array_create(array_length(node_array));
-			for (var i = array_length(node_array) - 1; i >= 0; --i)
-				array[i] = i;
-			
-			node_array = array;
-		}
+		var node_array = get_scene_nodes(scene);
 		
 		count = array_length(node_array);
 		
@@ -951,6 +959,64 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 		
 		return skeleton;
+	}
+	
+	/// @desc	Generates an array of lights included in the scene data. This requires that
+	///			the model has the KHR_lights_punctual extension specified. 
+	/// @note	Lights ARE NOT RESOURCE MANAGED meaning that the array of lights returned MUST be
+	///			manually freed!
+	/// @param	{real}	scene		scene to spawn lights from or -1 for all lights in the model
+	function generate_lights(scene=0){
+		if (not get_has_extension("KHR_lights_punctual"))
+			return [];
+
+		if (is_undefined(json_header[$ "extensions"]))
+			return [];
+		
+		var light_array = json_header.extensions[$ "KHR_lights_punctual"];
+		if (is_undefined(light_array))
+			return [];
+		
+		light_array = light_array.lights;
+		var node_array = get_scene_nodes(scene);
+		var array = [];
+		
+		// Scan nodes and generate lights:
+		for (var i = array_length(node_array) - 1; i >= 0; --i){
+			var node = get_structure(node_array[i], "nodes");
+			if (is_undefined(node[$ "extensions"]))
+				continue;
+			
+			if (is_undefined(node.extensions[$ "KHR_lights_punctual"]))
+				continue;
+			
+			var light_id = (node.extensions.KHR_lights_punctual[$ "light"] ?? -1);
+
+			if (light_id < 0 or light_id >= array_length(light_array)) // Invalid light index
+				continue;
+			
+			var light = light_array[light_id];
+			if (light.type != "directional"){
+				print_traced("WARNING", $"unsupported light type [{light.type}], skipping...");
+				continue;
+			}
+			
+			var transform = get_node_transform(node_array[i]);
+			var rotation = quat_reverse(quat_normalize(matrix_get_quat(transform)));
+			rotation = quat_rotate_vec(rotation, vec(0, 0, -1));	// glTF specifies lights point down -Z, not +X like in U3D, so we rotate
+			
+			var translation = matrix_get_translation(transform); // Technically should be ignored, but including for shadow mapping
+			var light_instance = new LightDirectional(vec_to_quat(rotation), translation);
+			light_instance.set_intensity((light[$ "intensity"] ?? 683) / 683);
+			
+			if (not is_undefined(light[$ "color"]))
+				light_instance.set_color(make_color_rgb(255 * light[$ "color"][0], 255 * light[$ "color"][1], 255 * light[$ "color"][2]));
+
+			array_push(array, light_instance);
+/// @stub	Implement spot and point lights
+		}
+		
+		return array;
 	}
 	#endregion
 	

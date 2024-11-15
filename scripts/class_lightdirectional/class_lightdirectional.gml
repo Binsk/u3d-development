@@ -14,8 +14,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shader_lighting = shd_lighting_directional;
 	light_normal = vec_normalize(quat_rotate_vec(rotation, vec(1, 0, 0)));
 	light_color = c_white;
+	light_intensity = 1.0;
 	texture_environment = undefined;
-/// @todo	Add light intensity! (whoops)
 	
 	shadow_resolution = 4096;	// Texture resolution for the lighting render (larger = sharper shadows but more expensive)
 	shadow_world_units = 64;	// Number of world-units width/height-wise the shadow map should cover (larger = more of the world has shadows but blurrier)
@@ -59,6 +59,12 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	/// @desc	Sets the color of the light's albedo.
 	function set_color(color=c_white){
 		light_color = color;
+	}
+	
+	/// @desc	Set the lighting intensity which multiplies against the light's
+	///			color in the shader.
+	function set_intensity(intensity=1.0){
+		self.light_intensity = max(0, intensity);
 	}
 	
 	/// @desc	Sets an environment texture to be used for reflections. If set to anything
@@ -105,6 +111,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	function apply(){
 		uniform_set("u_vLightNormal", shader_set_uniform_f, [-light_normal.x, -light_normal.y, -light_normal.z]);
 		uniform_set("u_vLightColor", shader_set_uniform_f, [color_get_red(light_color) / 255, color_get_green(light_color) / 255, color_get_blue(light_color) / 255]);
+		uniform_set("u_fIntensity", shader_set_uniform_f, light_intensity);
 	}
 	
 	function render_shadows(eye_id=undefined, body_array=[]){

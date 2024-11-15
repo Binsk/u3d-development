@@ -86,6 +86,11 @@ function quat_normalize(quaternion){
 	return quat(quaternion.x / m, quaternion.y / m, quaternion.z / m, quaternion.w / m);
 }
 
+/// @desc	Returns the quaternion with all components sign's flipped.
+function quat_reverse(quaternion){
+	return quat(-quaternion.x, -quaternion.y, -quaternion.z, -quaternion.w);
+}
+
 /// @desc	Returns if two quaternions are mathematically identical.
 function quat_equals_quat(q1, q2){
 	if (q1.x != q2.x)
