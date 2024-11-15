@@ -8,6 +8,13 @@ is_hovered = false;	// Whether or not the mouse is over this instance
 text = "";				// The text to display on behalf of this instance
 text_tooltip = "";		// The text (if any) to display in the tooltip when hovered
 anchor = new Anchor2D();
+
+color_bright = c_white;			// Static bright; text and the like
+color_bright_disabled = c_gray;
+color_primary = make_color_rgb(24 + 12, 24 + 12, 48 + 24);	// Background color
+color_primary_disabled = make_color_rgb(24, 24, 24);
+color_hovered = make_color_rgb(24 + 32, 24 + 32, 48 + 64);	// Interaction color
+color_highlight = c_yellow;	// Selected / Grabbed color
 #endregion
 
 #region METHODS

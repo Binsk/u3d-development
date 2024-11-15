@@ -776,13 +776,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	function generate_animation_track(name_or_index, skin=0){
 		if (is_undefined(json_header[$ "animations"]))
 			return undefined;
-		
+			
 		if (is_undefined(json_header[$ "skins"]))
 			return undefined;
-		
+			
 		if (skin < 0 or skin >= array_length(json_header[$ "skins"]))
 			return undefined;
-		
+			
 		#region FETCH ANIMATION HEADER
 		var animation_data = undefined;
 		var animation_name = "";

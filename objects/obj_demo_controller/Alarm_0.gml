@@ -305,6 +305,7 @@ inst = instance_create_depth(ax, ay, 0, obj_slider);
 inst.text = "White Level: 1x";
 inst.min_value = 0;
 inst.max_value = 16;
+inst.is_disabled = true;
 inst.drag_value = 1 / 17;
 inst.text_tooltip = "Adjusts the camera's white level, applied after tonemapping.";
 inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
@@ -350,6 +351,12 @@ inst.signaler.add_signal("pressed", new Callable(inst, function(){
 		"Tonemap: ACES"
 	];
 	text = labels[tonemap];
+	with (obj_slider){
+		if (string_starts_with(text, "White Level")){
+			is_disabled = (other.tonemap == 0);
+			break;
+		}
+	}
 }));
 
 sprite_array = [];
