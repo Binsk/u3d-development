@@ -95,7 +95,7 @@ obj_render_controller.add_camera(camera);					// Assign our camera to be managed
 
 // Create our ambient light:
 light_ambient = new LightAmbient();
-light_ambient.light_intensity = 0.025;
+light_ambient.light_intensity = 0.1;
 light_ambient.ssao_strength = 4.0;	// SSAO properties will heavily depend on the project; these work fairly well for this setup
 light_ambient.ssao_radius = 2.0;
 obj_render_controller.add_light(light_ambient);	// Add the light to the rendering system so it is processed
@@ -106,6 +106,7 @@ obj_render_controller.add_light(light_ambient);	// Add the light to the renderin
 light_directional = new LightDirectional(quat(), vec(50 * 0.25, 60 * 0.25, 70 * 0.25));
 light_directional.look_at(vec()); // Specify to look at the center point where the model will spawn
 light_directional.shadow_world_units = 24;
+light_directional.set_intensity(2.0);
 
 // Define render size (will be auto-updated w/ the GUI)
 render_width = display_get_gui_width();

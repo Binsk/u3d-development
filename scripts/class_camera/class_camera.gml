@@ -38,10 +38,11 @@ enum CAMERA_RENDER_STAGE {
 	both = 3			// Renders in both stages (not usually desired)
 }
 
-/// @desc	defines the tonemapping to use for the camera.
+/// @desc	Defines the tonemap to apply when rendering out.
 enum CAMERA_TONEMAP {
-	none,	// Does nothing, lights may blow-out. Only use if a custom PPFX is used to handle gamma correction
-	simple,	// Does a simple gamma correction w/o any special exposure calculations
+	linear,		// No tonemapping
+	reinhard,
+	aces,		// (modified) ACES tonemapping
 }
 
 /// @desc	Bitwiseable flags to apply to a camera for debugging purposes.
@@ -68,11 +69,14 @@ function Camera() : Body() constructor {
 		textures : {}  // Gbuffer textures, in some cases they do NOT have an equivalent surface!
 	};
 	render_stages = CAMERA_RENDER_STAGE.both; // Which render stages to perform
-	render_tonemap = CAMERA_TONEMAP.none; 
+	render_tonemap = CAMERA_TONEMAP.linear;
 /// @stub	Add post-processing structure & addition / removal / render to camera
 	post_process_effects = {};	// priority -> effect pairs for post processing effects
 	debug_flags = 0;		// CAMERA_DEBUG_FLAG toggles
 	render_flags = -1;		// CAMERA_RENDER_FLAG toggles
+	exposure_level = 1.0;
+	white_level = 1.0;
+	gamma_correction = true;
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_opaque = -1;
@@ -129,6 +133,7 @@ function Camera() : Body() constructor {
 		self.render_tonemap = tonemap;
 	}
 	
+	
 	/// @desc	Enables or disables a render flag effect. This can be used to
 	///			toggle specific features per-camera and separate from lights and
 	///			models.
@@ -139,6 +144,21 @@ function Camera() : Body() constructor {
 			render_flags |= flag;
 		else
 			render_flags &= ~flag;
+	}
+	
+	/// @desc	Camera exposure to apply before tonemapping.
+	function set_exposure(exposure){
+		exposure_level = clamp(exposure, 0, 16);
+	}
+	
+	/// @desc	White level to apply after tonemapping.
+	function set_white(white){
+		white_level = clamp(white, 0, 16);
+	}
+	
+	/// @desc	Whether or not to apply gamma correction.
+	function set_gamma_correction(enabled){
+		gamma_correction = bool(enabled);
 	}
 	
 	/// @desc	Returns the estimated amount of vRAM used by the gbuffer, in bytes, for this camera.

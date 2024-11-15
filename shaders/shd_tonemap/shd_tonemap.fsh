@@ -1,5 +1,8 @@
 uniform sampler2D u_sTexture;
 uniform int u_iTonemap; // Tonemap style (see enum CAMERA_TONEMAP)
+uniform int u_iGamma;	// Whether or not to apply gamma correction
+uniform float u_fExposure;
+uniform float u_fWhite;
 
 varying vec2 v_vTexcoord;
 
@@ -18,11 +21,25 @@ void main()
 {
 	vec4 vColor = texture2D(u_sTexture, v_vTexcoord);
 	
-	if (u_iTonemap == 1){ // Simple
-		// Gamma correction:
-		vColor.rgb /= vColor.rgb + vec3(1.0);
-		vColor.rgb = pow(vColor.rgb, vec3(1.0 / 2.2));
+	vColor.rgb *= u_fExposure;
+	
+	if (u_iTonemap == 1){// Reinhard
+		// vColor.rgb /= vColor.rgb + vec3(1.0);
+		vColor.rgb = vColor.rgb * (1.0 + vColor.rgb / (u_fWhite * u_fWhite)) / (1.0 + vColor.rgb);
 	}
+	else if (u_iTonemap == 2){ // ACES
+		float fA = 2.51f;
+		float fB = 0.03f;
+		float fC = 2.43f;
+		float fD = 0.59f;
+		float fE = 0.14f;
+		vColor.rgb = clamp((vColor.rgb * (fA * vColor.rgb + fB)) / (vColor.rgb * (vColor.rgb * fC + fD) + fE), 0.0, 1.0);
+		vColor.rgb /= u_fWhite;
+	}
+	
+	// Gamma correction:
+	if (u_iGamma > 0)
+		vColor.rgb = pow(vColor.rgb, vec3(1.0 / 2.2));
 	
 	if (vColor.a > 0.0) // Fix issues w/ translucent combination but still allow stenciling out
 		vColor.a = 1.0;

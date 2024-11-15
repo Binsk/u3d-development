@@ -14,7 +14,7 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 	supersample_multiplier = 1.0;
 	render_width = 1;	// Size of the canvas we render out on (not our actual render size)
 	render_height = 1;
-	render_tonemap = CAMERA_TONEMAP.simple;
+	render_tonemap = CAMERA_TONEMAP.linear;
 	eye_id = new Eye(self, znear, zfar, fov);
 	
 	#region SHADER UNIFORMS
@@ -85,6 +85,9 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 		shader_set(shd_tonemap);
 		texture_set_stage(uniform_sampler_texture, gbuffer.textures[$ CAMERA_GBUFFER.final]);
 		uniform_set("u_iTonemap", shader_set_uniform_i, render_tonemap);
+		uniform_set("u_fExposure", shader_set_uniform_f, exposure_level);
+		uniform_set("u_fWhite", shader_set_uniform_f, white_level);
+		uniform_set("u_iGamma", shader_set_uniform_i, gamma_correction);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh), 1, 0);
 		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh), 0, 0);

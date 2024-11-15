@@ -302,6 +302,33 @@ inst.signaler.add_signal("checked", function(is_checked){
 
 ay -= 24;
 inst = instance_create_depth(ax, ay, 0, obj_slider);
+inst.text = "White Level: 1x";
+inst.min_value = 0;
+inst.max_value = 16;
+inst.drag_value = 1 / 17;
+inst.text_tooltip = "Adjusts the camera's white level, applied after tonemapping.";
+inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
+	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
+	lerpvalue = floor(lerpvalue * 100) / 100;
+	inst.text = $"White Level: {lerpvalue}x";
+	obj_demo_controller.camera.set_white(lerpvalue)
+},  [undefined, inst]));
+
+inst = instance_create_depth(ax + 256 + 24, ay, 0, obj_slider);
+inst.text = "Exposure: 1x";
+inst.min_value = 0;
+inst.max_value = 16;
+inst.drag_value = 1 / 17;
+inst.text_tooltip = "Adjusts the camera's exposure, applied before tonemapping.";
+inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
+	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
+	lerpvalue = floor(lerpvalue * 100) / 100;
+	inst.text = $"Exposure: {lerpvalue}x";
+	obj_demo_controller.camera.set_exposure(lerpvalue)
+},  [undefined, inst]));
+
+ay -= 64;
+inst = instance_create_depth(ax, ay, 0, obj_slider);
 inst.text = "Supersampling: 1x";
 inst.text_tooltip = "Changes the native rendering resolution by multiplying this value against the base render resolution.";
 inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
@@ -310,6 +337,20 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	inst.text = $"Supersampling: {lerpvalue}x";
 	obj_demo_controller.camera.set_supersample_multiplier(lerpvalue)
 },  [undefined, inst]));
-sprite_array = [];
 
+inst = instance_create_depth(ax + 256 + 24, ay - 18, 0, obj_button);
+inst.text = "Tonemap: Linear";
+inst.tonemap = 0;
+inst.signaler.add_signal("pressed", new Callable(inst, function(){
+	tonemap = modwrap(++tonemap, 3);
+	obj_demo_controller.camera.set_tonemap(tonemap);
+	var labels = [
+		"Tonemap: Linear",
+		"Tonemap: Reinhard",
+		"Tonemap: ACES"
+	];
+	text = labels[tonemap];
+}));
+
+sprite_array = [];
 slider_ay = ay - 64; // Record so dynamic sliders know where to spawn
