@@ -75,7 +75,6 @@ U3D = {
 		PPFX : { // Pre-made PostProcessingFX that can be attached to render cameras
 			fxaa : new PostProcessFX(shd_fxaa),				// FXAA anti-aliasing
 			grayscale : new PostProcessFX(shd_grayscale),	// Turns the output into grayscale
-			gamma_correction : new PostProcessFX(shd_gamma_correction)	// Does basic gamma correction; useful if we want to do it manually outside the tonemap
 		},
 		ANIMATION : {
 			SKELETON : {

@@ -152,7 +152,6 @@
     {"id":{"name":"shd_build_gbuffer","path":"shaders/shd_build_gbuffer/shd_build_gbuffer.yy",},},
     {"id":{"name":"shd_combine_stages","path":"shaders/shd_combine_stages/shd_combine_stages.yy",},},
     {"id":{"name":"shd_fxaa","path":"shaders/shd_fxaa/shd_fxaa.yy",},},
-    {"id":{"name":"shd_gamma_correction","path":"shaders/shd_gamma_correction/shd_gamma_correction.yy",},},
     {"id":{"name":"shd_gaussian_13","path":"shaders/shd_gaussian_13/shd_gaussian_13.yy",},},
     {"id":{"name":"shd_grayscale","path":"shaders/shd_grayscale/shd_grayscale.yy",},},
     {"id":{"name":"shd_light_depth","path":"shaders/shd_light_depth/shd_light_depth.yy",},},

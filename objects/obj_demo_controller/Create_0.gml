@@ -85,10 +85,8 @@ obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display i
 camera = new CameraView();	// CameraView auto-renders to screen; defaults to full screen
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);	// Add some post-processing effects to the camera
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
-camera.add_post_process_effect(U3D.RENDERING.PPFX.gamma_correction);
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);					// Disable the post-processing; it can be toggled through the interface
 U3D.RENDERING.PPFX.grayscale.set_enabled(false);
-U3D.RENDERING.PPFX.gamma_correction.set_enabled(false);
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pass by default; translucent can be enabled through the interface
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
