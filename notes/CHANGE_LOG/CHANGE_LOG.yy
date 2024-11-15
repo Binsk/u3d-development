@@ -1,0 +1,11 @@
+{
+  "$GMNotes":"",
+  "%Name":"CHANGE_LOG",
+  "name":"CHANGE_LOG",
+  "parent":{
+    "name":"upset3d-engine",
+    "path":"upset3d-engine.yyp",
+  },
+  "resourceType":"GMNotes",
+  "resourceVersion":"2.0",
+}

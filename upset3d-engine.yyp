@@ -68,6 +68,7 @@
   },
   "name":"upset3d-engine",
   "resources":[
+    {"id":{"name":"CHANGE_LOG","path":"notes/CHANGE_LOG/CHANGE_LOG.yy",},},
     {"id":{"name":"note_about","path":"notes/note_about/note_about.yy",},},
     {"id":{"name":"note_animation","path":"notes/note_animation/note_animation.yy",},},
     {"id":{"name":"note_cameras","path":"notes/note_cameras/note_cameras.yy",},},

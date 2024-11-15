@@ -74,7 +74,6 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp)); // Scale to fit in camera
 			body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 			obj_render_controller.add_body(body);
-			obj_demo_controller.update_data_count();
 		}
 
 		// Free up the loader.
@@ -85,6 +84,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		///			a reference of the data still exists in the body.
 		gltf.free();
 		delete gltf;
+		obj_demo_controller.update_data_count();
 		
 		// Generate scaling slider:
 		var slider = instance_create_depth(12, 0, 0, obj_slider);
