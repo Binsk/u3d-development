@@ -97,6 +97,30 @@ function GLTFLoader() : U3DObject() constructor {
 		
 		return json_header[$ label][index];
 	}
+	
+	/// @desc	Returns an array of extension names specified as used in this model that
+	///			may be able to be ignored.
+	function get_extensions_used(){
+		return json_header[$ "extensionsUsed"] ?? [];
+	}
+	
+	
+	/// @desc	Returns an array of extension names specified that MUST be supported to
+	///			load this model.
+	function get_extensions_required(){
+		return json_header[$ "extensionsRequired"] ?? [];
+	}
+	
+	/// @desc	Returns if the specified extension name is implemented by this loader.
+	function get_is_extension_implemented(name){
+		return false;
+	}
+	
+	/// @desc	Returns if the specified extension can be ignored by this loader and still
+	///			load successfully.
+	function get_is_extension_ignoreable(name){
+		return string_starts_with(name, "KHR_materials_"); // Materials can be ignored, they just render off
+	}
 	#endregion
 	
 	#region METHODS
@@ -168,14 +192,21 @@ function GLTFLoader() : U3DObject() constructor {
 			
 			json_header = json;
 			
+			var success = false;
 			try{
-				var success = import_buffers(directory);
+				success = import_buffers(directory);
 				if (not success)
 					free();
 			}
 			catch(e){
 				free();
 				throw e;
+			}
+				
+			var required_extensions = get_extensions_required();
+			for (var i = array_length(required_extensions) - 1; i >= 0; --i){
+				if (not get_is_extension_implemented(required_extensions[i]))
+					throw new Exception($"model uses unsupported extension, [{required_extensions[i]}]");
 			}
 				
 			return success;
@@ -222,8 +253,9 @@ function GLTFLoader() : U3DObject() constructor {
 		#endregion
 
 		json_header = json;
+		var success = false;
 		try{
-			var success = import_buffers(directory);
+			success = import_buffers(directory);
 
 			if (not success)
 				free();
@@ -232,12 +264,19 @@ function GLTFLoader() : U3DObject() constructor {
 			free();
 			throw e;
 		}
+		
+		var required_extensions = get_extensions_required();
+		for (var i = array_length(required_extensions) - 1; i >= 0; --i){
+			if (not get_is_extension_implemented(required_extensions[i]))
+				throw new Exception($"model uses unsupported extension, [{required_extensions[i]}]");
+		}
 			
 		return success;
 	}
 	
 	/// @desc	Given a struct, checks for the 'extras' section and whether or
-	///			not it requires an unsupported extension.
+	///			not it requires an unsupported extension. If it is unsupported an exception
+	///			is thrown immediately.
 	function check_unsupported_extensions(header_data){
 		if (not is_struct(header_data))
 			return;
@@ -247,12 +286,12 @@ function GLTFLoader() : U3DObject() constructor {
 		
 		var keys = struct_get_names(header_data.extensions);
 		for (var i = array_length(keys) - 1; i >= 0; --i){
-			if (string_starts_with(keys[i], "KHR_materials_")){
-				print_traced("WARNING", $"ignoring unsupported glTF extension [{keys[i]}]");
-				continue;
+			if (not get_is_extension_implemented(keys[i])){
+				if (not get_is_extension_ignoreable(keys[i]))
+					throw new Exception($"model uses unsupported extension, [{keys[i]}]");
+				else
+					print_traced("WARNING", $"ignoring unsupported glTF extension [{keys[i]}]");
 			}
-
-			throw new Exception($"model uses unsupported extension, [{keys[i]}]");
 		}
 	}
 	
