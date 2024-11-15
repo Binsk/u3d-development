@@ -330,13 +330,23 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 
 ay -= 64;
 inst = instance_create_depth(ax, ay, 0, obj_slider);
-inst.text = "Supersampling: 1x";
-inst.text_tooltip = "Changes the native rendering resolution by multiplying this value against the base render resolution.";
+inst.text = "Bloom: disabled";
+inst.min_value = 0;
+inst.max_value = 2.0;
+inst.drag_value = 0;
+inst.text_tooltip = $"Adjusts the threshold at which bloom appears.\n\nFor this test, bloom properties are set to:\nPasses: {ppfx_bloom.passes}, Scale: {ppfx_bloom.scale}, Stride: {ppfx_bloom.stride}";
 inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
-	lerpvalue = floor(lerpvalue * 100) / 100;
-	inst.text = $"Supersampling: {lerpvalue}x";
-	obj_demo_controller.camera.set_supersample_multiplier(lerpvalue)
+	if (lerpvalue <= 0)
+		obj_demo_controller.ppfx_bloom.set_enabled(false);
+	else
+		obj_demo_controller.ppfx_bloom.set_enabled(true);
+	
+	obj_demo_controller.ppfx_bloom.threshold = (2.0 - lerpvalue);
+	if (lerpvalue <= 0)
+		inst.text = $"Bloom: disabled";
+	else
+		inst.text = $"Bloom: {2.0 - lerpvalue} lum.";
 },  [undefined, inst]));
 
 inst = instance_create_depth(ax + 256 + 24, ay - 18, 0, obj_button);
@@ -358,6 +368,17 @@ inst.signaler.add_signal("pressed", new Callable(inst, function(){
 		}
 	}
 }));
+
+ay -= 64;
+inst = instance_create_depth(ax, ay, 0, obj_slider);
+inst.text = "Supersampling: 1x";
+inst.text_tooltip = "Changes the native rendering resolution by multiplying this value against the base render resolution.";
+inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
+	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
+	lerpvalue = floor(lerpvalue * 100) / 100;
+	inst.text = $"Supersampling: {lerpvalue}x";
+	obj_demo_controller.camera.set_supersample_multiplier(lerpvalue)
+},  [undefined, inst]));
 
 sprite_array = [];
 slider_ay = ay - 64; // Record so dynamic sliders know where to spawn
