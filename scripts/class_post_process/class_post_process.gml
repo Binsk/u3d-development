@@ -19,7 +19,6 @@ function PostProcessFX(shader) : U3DObject() constructor {
 	
 	uniform_sampler_input = -1;				// u_sInput				(sampler2D)		finalized input texture to pull from
 	uniform_texel_size = -1;				// u_vTexelSize			(vec2)			texel size for the input sampler
-/// @stub	Add support for more GBuffer textures
 	#endregion
 	
 	#region METHODS
@@ -27,9 +26,15 @@ function PostProcessFX(shader) : U3DObject() constructor {
 		is_enabled = bool(enabled);
 	}
 	
-	function render(surface_out, gbuffer, buffer_width, buffer_height){
+	/// @desc	The function that is called when processing the post-processing effect.
+	/// @param	{surface}	surface_out		the surface to render the final result to
+	function render(surface_out){
 		if (not is_enabled)
 			return;
+			
+		var buffer_width = Camera.ACTIVE_INSTANCE.buffer_width;
+		var buffer_height = Camera.ACTIVE_INSTANCE.buffer_height;
+		var gbuffer = Camera.ACTIVE_INSTANCE.gbuffer.textures;
 			
 /// @todo	Add more samplers and uniforms to this
 		if (uniform_sampler_input < 0)

@@ -26,18 +26,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shadow_zfar = 1024;			// How far away from the light things will render
 	shadow_bias = 0.0001;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
 	shadow_viewprojection_matrix = matrix_build_identity();	// Will calculate if shadows are enabled
-	
-	#region SHADER UNIFORMS
-	uniform_sampler_albedo = -1;
-	uniform_sampler_normal = -1;
-	uniform_sampler_pbr = -1;
-	uniform_sampler_view = -1;
-	uniform_sampler_environment = -1;
-	uniform_shadow_sampler_shadow = -1;
-	uniform_shadow_sampler_depth = -1;     
-	uniform_shadow_sampler_albedo = -1;
-	uniform_shadow_alpha_cutoff = -1;
-	#endregion
 	#endregion
 	
 	#region METHODS
@@ -79,28 +67,13 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	}
 	
 	function apply_gbuffer(camera_id, is_translucent=false){
-		if (uniform_sampler_albedo < 0)
-			uniform_sampler_albedo = shader_get_sampler_index(shader_lighting, "u_sAlbedo");
-		
-		if (uniform_sampler_normal < 0)
-			uniform_sampler_normal = shader_get_sampler_index(shader_lighting, "u_sNormal");
-		
-		if (uniform_sampler_pbr < 0)
-			uniform_sampler_pbr = shader_get_sampler_index(shader_lighting, "u_sPBR");
-		
-		if (uniform_sampler_view < 0)
-			uniform_sampler_view = shader_get_sampler_index(shader_lighting, "u_sView");
-		
-		if (uniform_sampler_environment < 0)
-			uniform_sampler_environment = shader_get_sampler_index(shader_lighting, "u_sEnvironment");
-		
-		texture_set_stage(uniform_sampler_albedo, camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
-		texture_set_stage(uniform_sampler_normal, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
-		texture_set_stage(uniform_sampler_pbr, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
-		texture_set_stage(uniform_sampler_view, camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
+		sampler_set("u_sAlbedo", camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
+		sampler_set("u_sNormal", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
+		sampler_set("u_sPBR", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
+		sampler_set("u_sView", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
 		
 		if (not is_undefined(texture_environment) and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.environment)){
-			texture_set_stage(uniform_sampler_environment, texture_environment.get_texture());
+			sampler_set("u_sEnvironment", texture_environment.get_texture());
 			uniform_set("u_iEnvironment", shader_set_uniform_i, true);
 			uniform_set("u_iMipCount", shader_set_uniform_i, [not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count]);
 		}
@@ -121,12 +94,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		
 		if (surface_get_width(shadow_surface) != shadow_resolution)
 			surface_resize(shadow_surface, shadow_resolution, shadow_resolution);
-			
-		if (uniform_shadow_sampler_albedo < 0)
-			uniform_shadow_sampler_albedo = shader_get_sampler_index(shd_light_depth, "u_sAlbedo");
-		
-		if (uniform_shadow_alpha_cutoff < 0)
-			uniform_shadow_alpha_cutoff = shader_get_sampler_index(shd_light_depth, "u_fAlphaCutoff");
 			
 		shadow_depth_texture = surface_get_texture_depth(shadow_surface);
 		surface_set_target(shadow_surface);
@@ -191,19 +158,13 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 
 		surface_clear(shadowbit_surface, c_black);
 		
-		if (uniform_shadow_sampler_shadow < 0)
-			uniform_shadow_sampler_shadow = shader_get_sampler_index(shd_lighting_sample_shadow, "u_sShadow");
-		
-		if (uniform_shadow_sampler_depth < 0)
-			uniform_shadow_sampler_depth = shader_get_sampler_index(shd_lighting_sample_shadow, "u_sDepth");
-		
 		/// Render to shadow buffer
 		/// @note	This was done as an MRT in the lighting pass, but the Windows platform
 		///			was failing to write out for some reason so we switched to a separate pass.
 		surface_set_target(shadowbit_surface);
 		shader_set(shd_lighting_sample_shadow);
-		texture_set_stage(uniform_shadow_sampler_shadow, shadow_depth_texture);
-		texture_set_stage(uniform_shadow_sampler_depth, eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+		sampler_set("u_sShadow", shadow_depth_texture);
+		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
 		uniform_set("u_fShadowBias", shader_set_uniform_f, shadow_bias);
 		uniform_set("u_mShadow", shader_set_uniform_matrix_array, [shadow_viewprojection_matrix]);
 		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye_id.get_inverse_projection_matrix()]);
@@ -223,7 +184,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		gpu_set_blendmode(bm_add);
 		surface_set_target(surface_out);
 		shader_set(shd_lighting_apply_shadow);
-		texture_set_stage(shader_get_sampler_index(shd_lighting_apply_shadow, "u_sShadow"), surface_get_texture(shadowbit_surface));
+		sampler_set("u_sShadow", surface_get_texture(shadowbit_surface));
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in)]);
 		draw_surface(surface_in, 0, 0);
 		shader_reset();

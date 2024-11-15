@@ -34,12 +34,12 @@ function surface_clear(surface, color, alpha=1.0){
 ///			applied shader. Used in materials, lights, and so-forth to allow
 ///			dynamically changing out shaders w/o having to worry about updating
 ///			uniform IDs.
-gml_pragma("forceinline");
+// gml_pragma("forceinline");
 function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 	static UNIFORM_CACHE = {};
 	var shader = shader_current();
 	if (shader < 0) // Skip if no shader set
-		return;
+		return false;
 		
 	var label = $"uniform_{name}_{shader}";
 	var uniform = UNIFORM_CACHE[$ label];
@@ -52,11 +52,38 @@ function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 	if (uniform >= 0){ // Uniform exists in the shader; set it
 		var array = array_concat([uniform], is_array(argv) ? argv : [argv]);
 		method_call(uniform_fnc, array);
+		return true;
 	}
+	
+	return false;
 }
 
-/// @stub	Add in a sampler version of uniform_set
-
+/// @desc	Sets a value for the specified uniform sampler name under the current
+///			shader.
+/// @param	{string}	name
+/// @param	{texture}	texture
+// gml_pragma("forceinline");
+function sampler_set(name, texture){
+	static UNIFORM_CACHE = {};
+	var shader = shader_current();
+	if (shader < 0) // Skip if no shader set
+		return false;
+		
+	var label = $"uniform_{name}_{shader}";
+	var uniform = UNIFORM_CACHE[$ label];
+	
+	if (is_undefined(uniform)){ // If we haven't checked this uniform + shader combo, look it up
+		uniform = shader_get_sampler_index(shader, name);
+		UNIFORM_CACHE[$ label] = uniform;
+	}
+	
+	if (uniform >= 0){ // Uniform exists in the shader; set it
+		texture_set_stage(uniform, texture);
+		return true;
+	}
+	
+	return false;
+}
 /// @desc	Returns the number of reference objects with the specified type
 ///			currently being watched by the system. This is slow and intended
 /// 		only for debugging use to catch potentially missed references.

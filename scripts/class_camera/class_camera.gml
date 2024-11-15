@@ -384,7 +384,7 @@ function Camera() : Body() constructor {
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.view]);
 		draw_clear(0);
 		shader_set(shd_view_buffer);
-		texture_set_stage(shader_get_sampler_index(shd_view_buffer, "u_sDepth"), gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+		sampler_set("u_sDepth", gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
 		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye.get_inverse_projection_matrix()]);
 		uniform_set("u_mInvView", shader_set_uniform_matrix_array, [eye.get_inverse_view_matrix()]);
 		uniform_set("u_vCamPosition", shader_set_uniform_f, [position.x, position.y, position.z]);
@@ -471,14 +471,10 @@ function Camera() : Body() constructor {
 			return;
 		
 		// Special render for emissive textures:
-		static uniform_emissive = -1;
-		if (uniform_emissive < 0)
-			uniform_emissive = shader_get_sampler_index(shd_lighting_emissive, "u_sEmissive");
-			
 		gpu_set_blendmode(bm_add);
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 		shader_set(shd_lighting_emissive);
-		texture_set_stage(uniform_emissive, gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
+		sampler_set("u_sEmissive", gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);
 		draw_vertex_texture(buffer_width, 0, 1, 0);
@@ -498,15 +494,6 @@ function Camera() : Body() constructor {
 			return;
 		
 		// Since we are performing final post-process, go ahead and merge layers together:
-		if (uniform_sampler_opaque < 0)
-			uniform_sampler_opaque = shader_get_sampler_index(shd_combine_stages, "u_sFinalOpaque");
-		if (uniform_sampler_translucent < 0)
-			uniform_sampler_translucent = shader_get_sampler_index(shd_combine_stages, "u_sFinalTranslucent");
-		if (uniform_sampler_dopaque < 0)
-			uniform_sampler_dopaque = shader_get_sampler_index(shd_combine_stages, "u_sDepthOpaque");
-		if (uniform_sampler_dtranslucent < 0)
-			uniform_sampler_dtranslucent = shader_get_sampler_index(shd_combine_stages, "u_sDepthTranslucent");
-
 		var	tex_o = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.light_opaque] : sprite_get_texture(spr_default_white, 0))
 		var	tex_do = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque] : sprite_get_texture(spr_default_white, 0))
 		var	tex_t = (render_stages & CAMERA_RENDER_STAGE.translucent ? gbuffer.textures[$ CAMERA_GBUFFER.light_translucent] : sprite_get_texture(spr_default_white, 0))
@@ -516,10 +503,10 @@ function Camera() : Body() constructor {
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		draw_clear_alpha(0, 0);
 		shader_set(shd_combine_stages);
-		texture_set_stage(uniform_sampler_opaque, tex_o);
-		texture_set_stage(uniform_sampler_translucent, tex_t);
-		texture_set_stage(uniform_sampler_dopaque, tex_do);
-		texture_set_stage(uniform_sampler_dtranslucent, tex_dt);
+		sampler_set("u_sFinalOpaque", tex_o);
+		sampler_set("u_sFinalTranslucent", tex_t);
+		sampler_set("u_sDepthOpaque", tex_do);
+		sampler_set("u_sDepthTranslucent", tex_dt);
 		uniform_set("u_iRenderStages", shader_set_uniform_i, render_stages);
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
@@ -550,7 +537,7 @@ function Camera() : Body() constructor {
 			if (not data.is_enabled)
 				continue;
 				
-			data.render(gbuffer.surfaces[$ CAMERA_GBUFFER.post_process], gbuffer.textures, buffer_width, buffer_height);
+			data.render(gbuffer.surfaces[$ CAMERA_GBUFFER.post_process]);
 
 			// Swap surfaces / textures since the modified data will have been
 			// applied to post_process
