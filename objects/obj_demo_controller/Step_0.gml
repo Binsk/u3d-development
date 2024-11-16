@@ -7,6 +7,19 @@ gmouse = {
 render_width = display_get_gui_width();
 render_height = display_get_gui_height();
 
+// Debug display:
+if (keyboard_check_pressed(vk_f1)){
+	display_debug = modwrap(display_debug + 1, 3);
+	show_debug_overlay(display_debug > 0);
+	visible = (display_debug != 1)
+	with (obj_menu_item)
+		visible = (other.display_debug != 1);
+	with (obj_tooltip)
+		visible = (other.display_debug != 1);
+	with (obj_bone_scroll)
+		visible = (other.display_debug != 1);
+}
+
 // Scroll bone attachment menu:
 if (not instance_exists(obj_bone_scroll)){
 	if (mouse_wheel_up())

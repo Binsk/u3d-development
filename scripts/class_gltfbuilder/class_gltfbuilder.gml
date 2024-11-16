@@ -590,6 +590,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		set_data(["model_data", "minimum"], min_vec);
 		set_data(["model_data", "maximum"], max_vec);
 		
+		// Cleanup to make GameMaker free memory:
+		missing_data = undefined;
+		
 		return primitive;
 	}
 	

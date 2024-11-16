@@ -122,7 +122,7 @@ function GLTFLoader() : U3DObject() constructor {
 			"KHR_draco_mesh_compression" :		false,		// Want to implement (requires research on complexity)
 			"KHR_materials_ior" :				false,		// Will likely implement (Requires in-shader IOR conversion)
 			"KHR_materials_specular" :			false,		// May implement (requires extra RGB buffer)
-			"KHR_materials_unlit" : 			false,		// Will likely implement
+			"KHR_materials_unlit" : 			false,		// Will not implement; export material as emissive instead
 		}
 		
 		return EXTENSIONS[$ name] ?? false;

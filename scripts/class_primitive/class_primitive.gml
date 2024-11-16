@@ -281,6 +281,10 @@ function Primitive(vformat) : U3DObject() constructor {
 		}
 		
 		// Remove temporary structure:
+		var keys = struct_get_names(definition_data);
+		for (var i = array_length(keys) - 1; i >= 0; --i)
+			definition_data[$ keys[i]] = undefined;
+		
 		struct_remove(self, "definition_data");
 	}
 	

@@ -15,6 +15,7 @@ gmouse = {
 	x : 0,
 	y : 0
 }
+display_debug = false;
 game_set_speed(9999, gamespeed_fps);
 display_reset(0, true);
 cursor = cr_arrow;	// Updated every step for button / hover sliders
