@@ -25,6 +25,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shadow_znear = 0.01;		// How close to the light things will render
 	shadow_zfar = 1024;			// How far away from the light things will render
 	shadow_bias = 0.0001;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
+	shadow_sample_bias = 0.0001;// Depth-sampling bias (larger causes shadow halos while smaller can cause acne & lack of smoothing; balance w/ view distanec)
 	shadow_viewprojection_matrix = matrix_build_identity();	// Will calculate if shadows are enabled
 	#endregion
 	
@@ -36,12 +37,13 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	/// @param	{real}	bias		sample depth offset; used to balance shadow acne / peter panning issues
 	/// @param	{real}	znear		near clipping distance for the shadow's camera
 	/// @param	{real}	zfar		far clipping distance for the shadow's camera
-	function set_shadow_properties(resolution=4096, units=64, bias=0.0001, znear=0.01, zfar=1024){
+	function set_shadow_properties(resolution=4096, units=64, bias=0.0001, znear=0.01, zfar=1024, sample_bias=0.0001){
 		shadow_resolution = resolution;
 		shadow_world_units = units;
 		shadow_bias = bias;
 		shadow_znear = znear;
 		shadow_zfar = zfar;
+		shadow_sample_bias = max(0, sample_bias);
 	}
 	
 	/// @desc	Sets the color of the light's albedo.
@@ -185,7 +187,9 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_set_target(surface_out);
 		shader_set(shd_lighting_apply_shadow);
 		sampler_set("u_sShadow", surface_get_texture(shadowbit_surface));
+		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in)]);
+		uniform_set("u_fSampleBias", shader_set_uniform_f, [shadow_sample_bias]);
 		draw_surface(surface_in, 0, 0);
 		shader_reset();
 		surface_reset_target();
