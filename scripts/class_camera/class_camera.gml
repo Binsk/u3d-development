@@ -492,6 +492,7 @@ function Camera() : Body() constructor {
 	function render_debug(eye){
 		var body_array = [];
 		if (debug_flags & CAMERA_DEBUG_FLAG.render_collisions == CAMERA_DEBUG_FLAG.render_collisions and instance_exists(obj_collision_controller)){
+			var matrix_model = matrix_get(matrix_world);
 			if (array_length(body_array) <= 0)
 				body_array = obj_collision_controller.get_body_array();
 				
@@ -520,6 +521,7 @@ function Camera() : Body() constructor {
 			
 			gpu_set_zwriteenable(true);
 			gpu_set_ztestenable(true);
+			matrix_set(matrix_world, matrix_model);
 		}
 	}
 	/// @desc	Renders all the PostProcessFX added to the camera in order of priority.
