@@ -47,7 +47,8 @@ enum CAMERA_TONEMAP {
 
 /// @desc	Bitwiseable flags to apply to a camera for debugging purposes.
 enum CAMERA_DEBUG_FLAG {
-	render_wireframe	=	0b1	// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
+	render_wireframe	=	0b1,	// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
+	render_collisions	=	0b10	// Renders collision shapes as wireframe
 }
 
 /// @desc	Bitwiseable flags to enable / disable specific rendering pipeline features for the specific camara
@@ -487,6 +488,40 @@ function Camera() : Body() constructor {
 		surface_reset_target();
 	}
 	
+	
+	function render_debug(eye){
+		var body_array = [];
+		if (debug_flags & CAMERA_DEBUG_FLAG.render_collisions == CAMERA_DEBUG_FLAG.render_collisions and instance_exists(obj_collision_controller)){
+			if (array_length(body_array) <= 0)
+				body_array = obj_collision_controller.get_body_array();
+				
+			gpu_set_zwriteenable(false);
+			gpu_set_ztestenable(false);
+			gpu_set_blendmode_ext(bm_one, bm_zero);
+			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
+			matrix_set(matrix_view, eye.get_view_matrix());
+			matrix_set(matrix_projection, eye.get_projection_matrix());
+			shader_set(shd_debug_lines);
+			
+			sampler_set("u_sDepth", gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+			uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]), texture_get_texel_height(gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque])])
+			
+			for (var i = array_length(body_array) - 1; i >= 0; --i){
+				var body = body_array[i];
+				var collidable = body.get_collidable();
+				if (is_undefined(collidable))
+					continue;
+				
+				collidable.render_debug(body);
+			}
+			shader_reset();
+			gpu_set_blendmode(bm_normal);
+			surface_reset_target();
+			
+			gpu_set_zwriteenable(true);
+			gpu_set_ztestenable(true);
+		}
+	}
 	/// @desc	Renders all the PostProcessFX added to the camera in order of priority.
 	///			Executes on the current GBuffer state.
 	function render_post_processing(){
@@ -565,6 +600,7 @@ function Camera() : Body() constructor {
 			throw new Exception("eye does not belong to rendering camera!");
 		
 		Camera.ACTIVE_INSTANCE = self;
+		Eye.ACTIVE_INSTANCE = eye;
 		// Make sure the GBuffer exists and is valid
 		generate_gbuffer();
 		
@@ -579,10 +615,15 @@ function Camera() : Body() constructor {
 		// Opaque pass:
 		render_gbuffer(eye, body_array, false);
 		render_lighting(eye, light_array, body_array, false);
-		
+
 		// Post-processing:
 		render_post_processing();
+		
+		// Debug render:
+		render_debug(eye);
+		
 		Camera.ACTIVE_INSTANCE = undefined;
+		Eye.ACTIVE_INSTANCE = undefined;
 	}
 	
 	/// @desc	Should execute a render_eye for every eye and combine results

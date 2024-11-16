@@ -4,7 +4,6 @@
 /// just shape definitions. The collision system can be given a node to represent
 /// a transform to a collidable when detecting collisions; this allows re-use of
 ///	collidable shapes over multiplie bodies.
-
 function Collidable() : U3DObject() constructor {
 	#region STATIC METHODS
 	/// @desc	Calculates if there is a collision between two collidables and, if so,
@@ -39,10 +38,56 @@ function Collidable() : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Sets an offset relative to a node's origin. The offset only applies when
+	///			this shape is compared alongside that node.
+	/// @param	{Node}	node
+	/// @param	{vec}	offset
+	function set_offset(node, offset){
+		if (not is_instanceof(node, Node)){
+			Exception.throw_conditional("invalid type, expected [Node]!");
+			return;
+		}
+		
+		if (not is_vec(offset)){
+			Exception.throw_conditional("invalid type, expected [vec]!");
+			return;
+		}
+		
+		node.clear_collision_data();
+		node.set_data("collision.offset", offset);
+	}
+	
+	/// @desc	Sets whether or not the collision shape should transform along with
+	///			scale and rotations. If static then only translational movement will
+	///			be updated. By default all shapes are dynamic.
+	function set_static(node, is_static){
+		node.clear_collision_data();
+		node.set_data("collision.static", bool(is_static));
+	}
+	
 	/// @desc	Given a node, calculates the transformed values relative to the 
 	///			collidable. The results should be stored in the node's 'generic data'
 	///			container for cache before a collision is checked.
 	/// @param	{Node}	node
-	function transform(node){}
+	function transform(node){
+		if (node.has_collision_data())
+			return false;
+			
+		var offset = node.get_data("collision.offset", undefined);
+		if (is_undefined(offset))
+			return true;
+		
+		if (node.get_data("collision.static", false))
+			node.set_data(["collision", "offset"], offset);
+		else{
+			offset = matrix_multiply_vec(node.get_model_matrix(), offset);	
+			node.set_data(["collision", "offset"], offset);
+		}
+		return true;
+	}
+	
+	/// @desc	Renders a debug line mesh of the shape, if applicable. Mesh is
+	///			generated on the fly and dynamic so it is slow to render.
+	function render_debug(node){}
 	#endregion
 }

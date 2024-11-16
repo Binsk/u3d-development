@@ -117,7 +117,7 @@ function U3DObject() constructor {
 	///			is freed.
 	/// @note	This function MUST be called before passing the instance into any
 	///			other instance functions.
-	function set_unique_hash(){
+	function generate_unique_hash(){
 		if (not is_undefined(hash))
 			throw new Exception("cannot assign hash to already hashed instance!");
 		

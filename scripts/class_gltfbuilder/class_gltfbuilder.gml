@@ -749,7 +749,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			if (not is_undefined(matrix) and not is_undefined(mesh.matrix_import))
 				matrix = matrix_multiply(matrix_inverse(mesh.matrix_import), matrix);
 			
-			mesh.set_unique_hash();
+			mesh.generate_unique_hash();
 			mesh.matrix_model = matrix;
 			model.add_mesh(mesh);
 		}
@@ -865,7 +865,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			else
 				throw new Exception($"invalid animation channel path, [{channel.target.path}]!");
 				
-			animation_channel.set_unique_hash();	// Make sure things are auto-cleaned w/ the AnimationTrack
+			animation_channel.generate_unique_hash();	// Make sure things are auto-cleaned w/ the AnimationTrack
 			channel_group.set_channel(animation_channel); // Auto-sorts into position, rotation, or scale
 			
 			var time_range = read_accessor(sampler.input);
@@ -882,7 +882,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var group_keys = struct_get_names(channelgroup_struct);
 		for (var i = array_length(group_keys) - 1; i >= 0; --i){
 			var group = channelgroup_struct[$ group_keys[i]];
-			group.set_unique_hash();
+			group.generate_unique_hash();
 			animation_track.add_channel_group(group, group_keys[i]);
 		}
 		
@@ -908,7 +908,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			}
 			
-			track.set_unique_hash();
+			track.generate_unique_hash();
 			animation_tree.add_animation_track(track);
 		}
 		

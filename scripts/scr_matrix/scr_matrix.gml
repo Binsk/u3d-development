@@ -92,6 +92,7 @@ function matrix_get_quat(matrix){
 }
 
 /// @desc	Given a scaling vector, builds a scaling matrix
+/// @param	{vec}	scale
 function matrix_build_scale(s){
 	var matrix = matrix_build_identity();
 	matrix[0] = s.x;
@@ -101,6 +102,7 @@ function matrix_build_scale(s){
 }
 
 /// @desc	Given a positional vector, builds a translation matrix.
+/// @param	{vec}	translation
 function matrix_build_translation(t){
 	var matrix = matrix_build_identity();
 	matrix[12] = t.x;
@@ -110,6 +112,7 @@ function matrix_build_translation(t){
 }
 
 /// @desc	Given a quaternion, generates a rotational matrix.
+/// @param	{quat}	rotation
 function matrix_build_quat(q){
 	q = quat_normalize(q);
 	

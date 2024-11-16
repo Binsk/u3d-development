@@ -228,5 +228,21 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	function get_render_layers(){
 		return render_layer_bits;
 	}
+	
+	/// @desc	Collision shapes store data in their calling node to help cache
+	///			calculations. This wipse the data to be re-calculated next collision check.
+	function clear_collision_data(){
+		set_data("collision", undefined);
+	}
+	
+	function has_collision_data(){
+		return not is_undefined((get_data("collision", undefined)));
+	}
+	#endregion
+	
+	#region INIT
+	signaler.add_signal("set_position", new Callable(self, clear_collision_data));
+	signaler.add_signal("set_scale", new Callable(self, clear_collision_data));
+	signaler.add_signal("set_rotation", new Callable(self, clear_collision_data));
 	#endregion
 }

@@ -140,6 +140,6 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 	
 	#region INIT
 	// Register the eye so it is cleaned up along with this instance:
-	add_child_ref(eye_id.set_unique_hash());
+	add_child_ref(eye_id.generate_unique_hash());
 	#endregion
 }

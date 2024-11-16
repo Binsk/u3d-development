@@ -74,6 +74,12 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp)); // Scale to fit in camera
 			body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 			obj_render_controller.add_body(body);
+			
+			var collidable = new AABB(vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5));
+			collidable.generate_unique_hash();
+			collidable.set_offset(body, vec_mul_scalar(vec(-body.position.x, -body.position.y, -body.position.z), max_comp / 10));
+			body.set_collidable(collidable);
+			obj_collision_controller.add_body(body);
 		}
 
 		// Free up the loader.

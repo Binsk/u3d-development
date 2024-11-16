@@ -38,6 +38,7 @@
     {"$GMFolder":"","%Name":"Shadows","folderPath":"folders/Upset 3D/Shaders/Screen Space/Lighting/Shadows.yy","name":"Shadows","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Post Processing","folderPath":"folders/Upset 3D/Shaders/Screen Space/Post Processing.yy","name":"Post Processing","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Spatial","folderPath":"folders/Upset 3D/Shaders/Spatial.yy","name":"Spatial","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Debug","folderPath":"folders/Upset 3D/Shaders/Spatial/Debug.yy","name":"Debug","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Sprites","folderPath":"folders/Upset 3D/Sprites.yy","name":"Sprites","resourceType":"GMFolder","resourceVersion":"2.0",},
   ],
   "IncludedFiles":[
@@ -154,6 +155,7 @@
     {"id":{"name":"scr_vector","path":"scripts/scr_vector/scr_vector.yy",},},
     {"id":{"name":"shd_build_gbuffer","path":"shaders/shd_build_gbuffer/shd_build_gbuffer.yy",},},
     {"id":{"name":"shd_combine_stages","path":"shaders/shd_combine_stages/shd_combine_stages.yy",},},
+    {"id":{"name":"shd_debug_lines","path":"shaders/shd_debug_lines/shd_debug_lines.yy",},},
     {"id":{"name":"shd_fxaa","path":"shaders/shd_fxaa/shd_fxaa.yy",},},
     {"id":{"name":"shd_gaussian_13","path":"shaders/shd_gaussian_13/shd_gaussian_13.yy",},},
     {"id":{"name":"shd_grayscale","path":"shaders/shd_grayscale/shd_grayscale.yy",},},

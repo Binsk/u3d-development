@@ -49,6 +49,11 @@ function has_body(body){
 	return not is_undefined(body_map[$ body.get_index()]);
 }
 
+/// @desc	Returns an array of all the connected bodies in no particular order.
+function get_body_array(){
+	return struct_get_values(body_map);
+}
+
 /// @desc	Processes the main event for this controller.
 function process(){};
 #endregion

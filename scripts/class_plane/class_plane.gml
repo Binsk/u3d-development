@@ -30,8 +30,15 @@ function Plane(normal=vec(0, 1, 0)) : Collidable() constructor {
 	}
 	
 	function transform(node){
+		if (not super.execute("transform", [node]))
+			return false;
+			
 		// Calculate rotation relative to the node
-		node.set_data(["collision", "orientation"], vec_normalize(matrix_multiply_vec(node.get_model_matrix(), self.normal)));
+		if (node.get_data("collision.static", false))
+			node.set_data(["collision", "orientation"], self.normal);
+		else
+			node.set_data(["collision", "orientation"], vec_normalize(matrix_multiply_vec(node.get_model_matrix(), self.normal)));
+		return true;
 	}
 	#endregion
 }

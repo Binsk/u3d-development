@@ -9,6 +9,7 @@
 
 function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor {
 	#region PROPERTIES
+	static ACTIVE_INSTANCE = undefined;
 	self.camera_id = camera_id;		// The camera we belong to
 	self.znear = znear;
 	self.zfar = zfar;
