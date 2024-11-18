@@ -23,17 +23,32 @@
 // u_sDepthOpaque		(sampler2D)		original depth buffer of opaque pass
 // u_sDepthTranslucent	(sampler2D)		original depth buffer of translucent pass
 // u_vTexelSize			(vec2)			texel size of all provided textures
+// u_iRenderStages		(int)			0 = none, 1 = opaque only, 2 = translucent only, 3 = both
+// u_vZClip				(vec2)			znear, zfar
 #endregion
 
-function PostProcessFX(shader) : U3DObject() constructor {
+/// @desc	Defines a full-screen post-processing effect that will occur after all 
+///			spatial rendering and lighting but before gamma correction and tonemapping.
+/// @param	{shader}	shader		id of the shader to use
+/// @param	{struct}	uniforms	optional series of keys where the key name is the uniform name and the 
+///									value is a key-pair of {value, set_func}
+/// @example	new PostProcessFX(shd_fog, {u_vColor : {value:[0, 0, 0], set_func:shader_set_uniform_f}})
+function PostProcessFX(shader, uniforms={}) : U3DObject() constructor {
 	#region PROPERTIES
 	self.shader = shader;
 	is_enabled = true;
+	self.uniforms = uniforms;
+	uniform_keys = struct_get_names(uniforms);
 	#endregion
 	
 	#region METHODS
 	function set_enabled(enabled){
 		is_enabled = bool(enabled);
+	}
+	
+	function set_custom_uniforms(uniforms){
+		self.uniforms = uniforms;
+		uniform_keys = struct_get_names(uniforms);
 	}
 	
 	/// @desc	The function that is called when processing the post-processing effect.
@@ -56,6 +71,13 @@ function PostProcessFX(shader) : U3DObject() constructor {
 		sampler_set("u_sDepthOpaque", gbuffer[$ CAMERA_GBUFFER.depth_opaque] ?? -1);
 		sampler_set("u_sDepthTranslucent", gbuffer[$ CAMERA_GBUFFER.depth_translucent] ?? -1);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(surface_get_texture(surface_out)), texture_get_texel_height(surface_get_texture(surface_out))]);
+		uniform_set("u_iRenderStages", shader_set_uniform_i, Camera.ACTIVE_INSTANCE.render_stages);
+		uniform_set("u_vZClip", shader_set_uniform_f, [Eye.ACTIVE_INSTANCE.znear, Eye.ACTIVE_INSTANCE.zfar]);
+
+		for (var i = array_length(uniform_keys) - 1; i >= 0; --i){
+			var data = uniforms[$ uniform_keys[i]];
+			uniform_set(uniform_keys[i], data.set_func, data.value);
+		}
 			
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);

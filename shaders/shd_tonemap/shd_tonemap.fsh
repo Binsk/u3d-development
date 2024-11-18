@@ -41,8 +41,8 @@ void main()
 	if (u_iGamma > 0)
 		vColor.rgb = pow(vColor.rgb, vec3(1.0 / 2.2));
 	
-	if (vColor.a > 0.0) // Fix issues w/ translucent combination but still allow stenciling out
-		vColor.a = 1.0;
+	// if (vColor.a > 0.0) // Fix issues w/ translucent combination but still allow stenciling out
+	// 	vColor.a = 1.0;
 		
 	gl_FragColor = vColor;
 }

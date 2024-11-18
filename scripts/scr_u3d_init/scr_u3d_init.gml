@@ -82,7 +82,8 @@ U3D = {
 			grayscale : new PostProcessFX(shd_grayscale),	// Converts the camera to grayscale
 			// Bloom does NOT work out-of-the-box and requires property tweaking. Set luminance threshold to 1.0 as a start and adjust from there
 			// to change when bloom activates. Everything else effects bloom quality and range.
-			bloom : new PPFXBloom(1.0, 0.35, 8, 1.25)
+			bloom : new PPFXBloom(1.0, 0.35, 8, 1.25),
+			fog : new PPFXFog()
 		},
 		ANIMATION : {
 			SKELETON : {
