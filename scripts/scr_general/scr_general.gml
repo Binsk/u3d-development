@@ -30,6 +30,15 @@ function surface_clear(surface, color, alpha=1.0){
 	surface_reset_target();
 }
 
+function surface_clear_depth(surface, depth=1.0){
+	if (not surface_exists(surface))
+		return;
+	
+	surface_set_target(surface);
+	draw_clear_depth(depth);
+	surface_reset_target();
+}
+
 /// @desc	Sets a value for the specified uniform name under the currently
 ///			applied shader. Used in materials, lights, and so-forth to allow
 ///			dynamically changing out shaders w/o having to worry about updating
@@ -40,13 +49,14 @@ function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 	var shader = shader_current();
 	if (shader < 0) // Skip if no shader set
 		return false;
-		
-	var label = $"uniform_{name}_{shader}";
-	var uniform = UNIFORM_CACHE[$ label];
+	
+	var data = (UNIFORM_CACHE[$ name] ?? {}); // Note: nested structs as it's marginally cheaper to look up than string concat. Somehow.
+	var uniform = data[$ shader];
 	
 	if (is_undefined(uniform)){ // If we haven't checked this uniform + shader combo, look it up
 		uniform = shader_get_uniform(shader, name);
-		UNIFORM_CACHE[$ label] = uniform;
+		data[$ shader] = uniform;
+		UNIFORM_CACHE[$ name] = data;
 	}
 	
 	if (uniform >= 0){ // Uniform exists in the shader; set it
@@ -69,12 +79,13 @@ function sampler_set(name, texture){
 	if (shader < 0) // Skip if no shader set
 		return false;
 		
-	var label = $"uniform_{name}_{shader}";
-	var uniform = UNIFORM_CACHE[$ label];
+	var data = (UNIFORM_CACHE[$ name] ?? {});
+	var uniform = data[$ shader];
 	
 	if (is_undefined(uniform)){ // If we haven't checked this uniform + shader combo, look it up
 		uniform = shader_get_sampler_index(shader, name);
-		UNIFORM_CACHE[$ label] = uniform;
+		data[$ shader] = uniform;
+		UNIFORM_CACHE[$ name] = data;
 	}
 	
 	if (uniform >= 0){ // Uniform exists in the shader; set it

@@ -227,38 +227,38 @@ function MaterialSpatial() : Material() constructor {
 			shader_set(shader_gbuffer);
 		
 		// Send textures
-		var sampler_toggles = [0, 0, 0, 0];
+		static sampler_toggles = [0, 0, 0, 0];
 		if (not is_undefined(texture[$ "albedo"])){
 			if (sampler_set("u_sAlbedo", texture.albedo.texture.get_texture()) and
-				uniform_set("u_vAlbedoUV", shader_set_uniform_f, [texture.albedo.uv[0], texture.albedo.uv[1], texture.albedo.uv[2], texture.albedo.uv[3]]))
+				uniform_set("u_vAlbedoUV", shader_set_uniform_f, texture.albedo.uv))
 				sampler_toggles[0] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "normal"])){
 			if (sampler_set("u_sNormal", texture.normal.texture.get_texture()) and
-				uniform_set("u_vNormalUV", shader_set_uniform_f, [texture.normal.uv[0], texture.normal.uv[1], texture.normal.uv[2], texture.normal.uv[3]]))
+				uniform_set("u_vNormalUV", shader_set_uniform_f, texture.normal.uv))
 				sampler_toggles[1] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "pbr"])){
 			if (sampler_set("u_sPBR", texture.pbr.texture.get_texture()) and
-				uniform_set("u_vPBRUV", shader_set_uniform_f, [texture.pbr.uv[0], texture.pbr.uv[1], texture.pbr.uv[2], texture.pbr.uv[3]]))
+				uniform_set("u_vPBRUV", shader_set_uniform_f, texture.pbr.uv))
 				sampler_toggles[2] = 1;
 		}
 		
 		if ( not is_undefined(texture[$ "emissive"])){
 			if (sampler_set("u_sEmissive", texture.emissive.texture.get_texture()) and
-				uniform_set("u_vEmissiveUV", shader_set_uniform_f, [texture.emissive.uv[0], texture.emissive.uv[1], texture.emissive.uv[2], texture.emissive.uv[3]]))
+				uniform_set("u_vEmissiveUV", shader_set_uniform_f, texture.emissive.uv))
 				sampler_toggles[3] = 1;
 		}
 
 		// Set samplers; if no texture then the values are used directly otherwise they are multiplied
-		uniform_set("u_iSamplerToggles", shader_set_uniform_i_array, [sampler_toggles]);
+		uniform_set("u_iSamplerToggles", shader_set_uniform_i, sampler_toggles);
 		
 		// Send texture scalars:
-		uniform_set("u_vAlbedo", shader_set_uniform_f, [scalar.albedo[0], scalar.albedo[1], scalar.albedo[2], scalar.albedo[3]]);
-		uniform_set("u_vPBR", shader_set_uniform_f, [scalar.pbr[PBR_COLOR_INDEX.specular], scalar.pbr[PBR_COLOR_INDEX.roughness], scalar.pbr[PBR_COLOR_INDEX.metalness]]);
-		uniform_set("u_vEmissive", shader_set_uniform_f, [scalar.emissive[0], scalar.emissive[1], scalar.emissive[2]]);
+		uniform_set("u_vAlbedo", shader_set_uniform_f, scalar.albedo);
+		uniform_set("u_vPBR", shader_set_uniform_f, scalar.pbr);
+		uniform_set("u_vEmissive", shader_set_uniform_f, scalar.emissive);
 		
 		uniform_set("u_fAlphaCutoff", shader_set_uniform_f, alpha_cutoff);
 		uniform_set("u_iTranslucent", shader_set_uniform_i, is_translucent);

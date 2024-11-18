@@ -630,7 +630,11 @@ function Camera() : Body() constructor {
 	
 	/// @desc	Should execute a render_eye for every eye and combine results
 	///			as necessary.
-	function render(body_array, light_array){};
+	function render(body_array, light_array){
+		var eye_array = get_eye_array();
+		for (var i = array_length(eye_array) - 1; i >= 0; --i)
+			render_eye(eye_array[i], body_array, light_array);
+	};
 	
 	/// @desc	Should push the final result to the final render destination; 
 	///			whether that be the monitor, a VR headset, or a custom textured

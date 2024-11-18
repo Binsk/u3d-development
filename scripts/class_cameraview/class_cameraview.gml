@@ -67,10 +67,6 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 		buffer_height = ndy;
 	}
 	
-	function render(body_array, light_array){
-		render_eye(eye_id, body_array, light_array);
-	}
-	
 	function render_out(){
 		if (render_stages <= 0)
 			return;

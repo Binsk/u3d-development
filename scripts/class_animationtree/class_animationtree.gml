@@ -454,6 +454,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	///			Generally used when mixing an automated track and a lerped track.
 /// @todo Implement actual bone value merging instead of just this form of 'stepping.
 /// 	  Should allow specifying merge method w/ layer creation.
+///		  Need a (s)lerp + animation weight; not sure how to define this via glTF?
 	function merge_trs_data(trs_data_a, trs_data_b){
 		var trs_data = {};
 		

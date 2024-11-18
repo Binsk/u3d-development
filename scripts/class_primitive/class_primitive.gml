@@ -166,10 +166,19 @@ function Primitive(vformat) : U3DObject() constructor {
 	///			exists if you know exactly what you are defining as it is faster than
 	///			using the regular add/set functions.
 	/// @note	This was primarily added for faster glTF loading.
+	/// @note2	This assumes the array is pre-allocated	!
 	function define_set_data_raw(index, type, data, set_index=false){
-		var array = definition_data[$ type];
-		array[index] = data;
-		definition_data[$ type] = array;
+		static LAST_TYPE = -1;	// We cache these because large models are enough to make the struct look-ups noticeably hiccup
+		static LAST_ARRAY = [];
+		var array = LAST_ARRAY;
+		if (type != LAST_TYPE){
+			array = definition_data[$ type];
+			LAST_TYPE = type;
+			LAST_ARRAY = array;
+		}
+		
+		array[@ index] = data; // @ not usually necessary; unless someone has old-school copy-on-write
+		
 		if (set_index)
 			definition_data[$ $"{type}_index"] = max(definition_data[$ $"{type}_index"] ?? 0, index + 1);
 	}
@@ -211,13 +220,19 @@ function Primitive(vformat) : U3DObject() constructor {
 			vbuffer_wireframe = undefined;
 		}
 		
+		// Construct data into arrays for quicker look-up:
 		var format_components = array_length(vformat.vformat_array);
+		var format_data = array_create(format_components);
+		for (var i = format_components - 1; i >= 0; --i)
+			format_data[i] = definition_data[$ vformat.vformat_array[i]];
+		
+		
 		vbuffer = vertex_create_buffer_ext(vformat.get_byte_count() * vertex_count);
 		vertex_begin(vbuffer, vformat.vformat);
 		for (var i = 0; i < vertex_count; ++i){
 			for (var j = 0; j < format_components; ++j){
 				var format = vformat.vformat_array[j];
-				var data = definition_data[$ format][i];
+				var data = format_data[j][i];
 				switch (format){
 					case VERTEX_DATA.position:
 						vertex_position_3d(vbuffer, data[0], data[1], data[2]);
@@ -252,7 +267,7 @@ function Primitive(vformat) : U3DObject() constructor {
 				for (var k = 0; k < 2; ++k){
 					for (var j = 0; j < format_components; ++j){
 						var format = vformat.vformat_array[j];
-						var data = definition_data[$ format][k == 0 ? i : (imod == 2 ? i - 2 : i + 1)];
+						var data = format_data[j][k == 0 ? i : (imod == 2 ? i - 2 : i + 1)];
 						switch (format){
 							case VERTEX_DATA.position:
 								vertex_position_3d(vbuffer_wireframe, data[0], data[1], data[2]);
@@ -281,6 +296,7 @@ function Primitive(vformat) : U3DObject() constructor {
 		}
 		
 		// Remove temporary structure:
+		format_data = undefined;
 		var keys = struct_get_names(definition_data);
 		for (var i = array_length(keys) - 1; i >= 0; --i)
 			definition_data[$ keys[i]] = undefined;

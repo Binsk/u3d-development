@@ -62,6 +62,7 @@
     {"$GMIncludedFile":"","%Name":"rubber_duck_toy_metal-rubber_duck_toy_rough.png","CopyToMask":-1,"filePath":"datafiles/test-models","name":"rubber_duck_toy_metal-rubber_duck_toy_rough.png","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"rubber_duck_toy_nor_gl.png","CopyToMask":-1,"filePath":"datafiles/test-models","name":"rubber_duck_toy_nor_gl.png","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"sophia.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"sophia.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"sponza.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"sponza.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"tower.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"tower.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"xbot-reexport.glb","CopyToMask":-1,"filePath":"datafiles/test-models","name":"xbot-reexport.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
   ],

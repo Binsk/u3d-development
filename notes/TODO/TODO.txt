@@ -52,3 +52,4 @@
 -	Add blend type for animation layers (replace, like what I'm currently doing, or merge)
 -	Implement morph targets for glTF loading: https://github.com/KhronosGroup/glTF-Tutorials/blob/main/gltfTutorial/gltfTutorial_017_SimpleMorphTarget.md
 	It is effectively vertex morphing animation.
+-	Add Static functionto GLTFLoader to pre-parse buffer before checking

@@ -430,7 +430,7 @@ function GLTFLoader() : U3DObject() constructor {
 			if (element_size == 1)		// Scalar
 				array[i] = data[index];
 			else if (element_size == 2)	// Vec2 (we just use an array)
-				array[i] = [data[index], data[index + 1]]; // We don't have vec2, so pass as array
+				array[i] = [data[index], data[index + 1]];
 			else if (element_size == 3) // Vec3
 				array[i] = vec(data[index], data[index + 1], data[index + 2]);
 			else if (element_size == 4) // Could also be a MAT2/VEC4, but we use a QUAT for storage

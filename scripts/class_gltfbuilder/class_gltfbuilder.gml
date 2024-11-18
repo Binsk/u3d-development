@@ -401,7 +401,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		check_unsupported_extensions(primitive_header);
 
 		if (not is_undefined(primitive_header[$ "targets"])){
-/// @stub	Implement! This requires a whole new style of animation.
+/// @stub	Implement! This requires a whole new style of animation; must be able to combine w/ skeletal as well
 			throw new Exception("unsupported primitive feature, [morph targets]!");
 		}
 
@@ -470,6 +470,16 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		var has_tangent_data = (format.get_has_data(VERTEX_DATA.position) and format.get_has_data(VERTEX_DATA.tangent) and format.get_has_data(VERTEX_DATA.texture)); // Used when auto-calculating tangents
 		var loop = array_length(format.vformat_array);
+		
+		#region ARRAY PRE-ALOTMENT
+		/// GameMaker has memory management issues w/ lots of arrays in a loop & arrays of this number
+		/// are surprisingly slow to create; we are optimizing by manually re-using them.
+		var vertex_array = array_create(3);
+		var uv_array = array_create(3);
+		var indices = array_create(3);
+		var tangent = array_create(3);
+		#endregion
+		
 		for (var i = 0; i < loop; ++i){
 			var format_label = VertexFormat.get_vertex_data_gltf_label(format.vformat_array[i]);
 			var array = primitive_map[$ format_label];
@@ -532,34 +542,26 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 						// Tangents need the whole triangle to calculate, so we fetch the triangle points:
 /// @todo	Lots of repeated calculations here, we could cache things so we only calculate this
 ///			once per face instead of once per vertex.
-						var indices = [
-							j - (j % 3),
-							j - (j % 3) + 1,
-							j - (j % 3) + 2
-						];
+						indices[0] = j - (j % 3);
+						indices[1] = j - (j % 3) + 1;
+						indices[2] = j - (j % 3) + 2;
 						
 						/// @note	VertexFormat guarantees that normals / UVs will be completely defined before tangents
-						var vertex_array = [
-							primitive.define_get_data(VERTEX_DATA.position, indices[0]),
-							primitive.define_get_data(VERTEX_DATA.position, indices[1]),
-							primitive.define_get_data(VERTEX_DATA.position, indices[2])
-						];
-						var uv_array = [
-							primitive.define_get_data(VERTEX_DATA.texture, indices[0]),
-							primitive.define_get_data(VERTEX_DATA.texture, indices[1]),
-							primitive.define_get_data(VERTEX_DATA.texture, indices[2])
-						];
+						vertex_array[0] = primitive.definition_data[$ VERTEX_DATA.position][indices[0]];
+						vertex_array[1] = primitive.definition_data[$ VERTEX_DATA.position][indices[1]];
+						vertex_array[2] = primitive.definition_data[$ VERTEX_DATA.position][indices[2]];
+						uv_array[0] = primitive.definition_data[$ VERTEX_DATA.texture][indices[0]];
+						uv_array[1] = primitive.definition_data[$ VERTEX_DATA.texture][indices[1]];
+						uv_array[2] = primitive.definition_data[$ VERTEX_DATA.texture][indices[2]];
 						// Calculate tangent:
 						var e1 = [vertex_array[1][0] - vertex_array[0][0], vertex_array[1][1] - vertex_array[0][1], vertex_array[1][2] - vertex_array[0][2]];
 						var e2 = [vertex_array[2][0] - vertex_array[0][0], vertex_array[2][1] - vertex_array[0][1], vertex_array[2][2] - vertex_array[0][2]];
 						var duv1 = [uv_array[1][0] - uv_array[0][0], uv_array[1][1] - uv_array[0][1]];
 						var duv2 = [uv_array[2][0] - uv_array[0][0], uv_array[2][1] - uv_array[0][1]];
 						var f = 1.0 / (duv1[0] * duv2[1] - duv2[0] * duv1[1]);
-						var tangent = [
-							f * (duv2[1] * e1[0] - duv1[1] * e2[0]),
-							f * (duv2[1] * e1[1] - duv1[1] * e2[1]),
-							f * (duv2[1] * e1[2] - duv1[1] * e2[2])
-						];
+						tangent[0] = f * (duv2[1] * e1[0] - duv1[1] * e2[0]);
+						tangent[1] = f * (duv2[1] * e1[1] - duv1[1] * e2[1]);
+						tangent[2] = f * (duv2[1] * e1[2] - duv1[1] * e2[2]);
 						
 						// if (vec_is_zero(tangent) or vec_is_nan(tangent))
 						// 	tangent = VertexFormat.get_vertex_data_default(VERTEX_DATA.tangent);
@@ -592,6 +594,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// Cleanup to make GameMaker free memory:
 		missing_data = undefined;
+		vertex_array = undefined;
+		uv_array = undefined;
+		indices = undefined;
 		
 		return primitive;
 	}

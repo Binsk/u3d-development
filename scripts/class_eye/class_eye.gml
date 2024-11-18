@@ -7,6 +7,10 @@
 /// instance and do not need to be managed manually unless you are designing a
 /// custom type of Camera() class.
 
+/// @param	{Camera}	camera		id of the camera this eye belongs to
+/// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
+/// @param	{real}		zfurthest	furthest point to the eye that can be rendered (in world coords)
+/// @param	{real}		fov			field of view for this eye
 function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;
@@ -114,6 +118,13 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		
 		matrix_inv_projection = matrix_inverse(get_projection_matrix());
 		return matrix_inv_projection;
+	}
+	
+	super.register("free");
+	function free(){
+		super.execute("free");
+		delete anchor;
+		anchor = undefined;
 	}
 	#endregion
 	
