@@ -1,6 +1,6 @@
 /// @about
-/// Calculates the luminocity for each pixel and only keeps the pixel if the
-/// luminocity is over a set threshold.
+/// Calculates the luminance for each pixel and only keeps the pixel if the
+/// luminance is over a set threshold.
 
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;

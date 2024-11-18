@@ -334,15 +334,15 @@ inst.text = "Bloom: disabled";
 inst.min_value = 0;
 inst.max_value = 2.0;
 inst.drag_value = 0;
-inst.text_tooltip = $"Adjusts the threshold at which bloom appears.\n\nFor this test, bloom properties are set to:\nPasses: {ppfx_bloom.passes}, Scale: {ppfx_bloom.scale}, Stride: {ppfx_bloom.stride}";
+inst.text_tooltip = $"Adjusts the threshold at which bloom appears.\n\nFor this test, bloom properties are set to:\nPasses: {U3D.RENDERING.PPFX.bloom.passes}, Scale: {U3D.RENDERING.PPFX.bloom.scale}, Stride: {U3D.RENDERING.PPFX.bloom.stride}";
 inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
 	if (lerpvalue <= 0)
-		obj_demo_controller.ppfx_bloom.set_enabled(false);
+		U3D.RENDERING.PPFX.bloom.set_enabled(false);
 	else
-		obj_demo_controller.ppfx_bloom.set_enabled(true);
+		U3D.RENDERING.PPFX.bloom.set_enabled(true);
 	
-	obj_demo_controller.ppfx_bloom.threshold = (2.0 - lerpvalue);
+	U3D.RENDERING.PPFX.bloom.set_luminance_threshold(2.0 - lerpvalue);
 	if (lerpvalue <= 0)
 		inst.text = $"Bloom: disabled";
 	else

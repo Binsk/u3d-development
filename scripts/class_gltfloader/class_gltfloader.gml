@@ -23,6 +23,10 @@
 
 function GLTFLoader() : U3DObject() constructor {
 	#region PROPERTIES
+	/// PREPROCESS_FUNCTION can be set to a function that takes a fixed buffer as an argument and
+	/// returns a fixed buffer as a return. If set, the file buffer will be passed into this function
+	/// and the returned buffer used for processing. This allows loading encrypted / specially formatted files
+	static PREPROCESS_FUNCTION = undefined;
 	gltf_version = undefined;
 	binary_buffer_array = [];	// Array of GLTF buffers
 	json_header = {};
@@ -195,6 +199,13 @@ function GLTFLoader() : U3DObject() constructor {
 		var buffer = undefined;
 		// Read in initial data:
 		buffer = buffer_load(directory + name);
+		
+		if (not is_undefined(PREPROCESS_FUNCTION)){
+			var b = buffer;
+			buffer = PREPROCESS_FUNCTION(b);
+			buffer_delete(b);
+		}
+		
 		buffer_seek(buffer, buffer_seek_start, 0);
 		
 		// Check magic bytes to determine if gltf instead of glb:

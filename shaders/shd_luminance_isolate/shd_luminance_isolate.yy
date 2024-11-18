@@ -1,7 +1,7 @@
 {
   "$GMShader":"",
-  "%Name":"shd_luminocity_isolate",
-  "name":"shd_luminocity_isolate",
+  "%Name":"shd_luminance_isolate",
+  "name":"shd_luminance_isolate",
   "parent":{
     "name":"Post Processing",
     "path":"folders/Upset 3D/Shaders/Screen Space/Post Processing.yy",

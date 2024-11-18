@@ -228,6 +228,10 @@ function MaterialSpatial() : Material() constructor {
 		
 		// Send textures
 		static sampler_toggles = [0, 0, 0, 0];
+		sampler_toggles[0] = 0;
+		sampler_toggles[1] = 0;
+		sampler_toggles[2] = 0;
+		sampler_toggles[3] = 0;
 		if (not is_undefined(texture[$ "albedo"])){
 			if (sampler_set("u_sAlbedo", texture.albedo.texture.get_texture()) and
 				uniform_set("u_vAlbedoUV", shader_set_uniform_f, texture.albedo.uv))

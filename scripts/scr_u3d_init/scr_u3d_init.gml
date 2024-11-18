@@ -34,6 +34,11 @@ foo = new AnimationChannelScale();
 foo.free();
 delete foo;
 
+// Define PREPROCESS_FUNCTION
+foo = new GLTFLoader();
+foo.free();
+delete foo;
+
 // Load necessary fallback textures:
 if (array_get_index(texturegroup_get_names(), "u3d_default") >= 0)
 	texturegroup_load("u3d_default", true);
@@ -47,11 +52,15 @@ if (array_get_index(texturegroup_get_names(), "u3d_default") >= 0)
 // A global structure that contains fallback defaults and system settings
 #macro U3D global.__u3d_global_data
 
-// Delta time, in seconds, with safety values.
+// Delta time, in seconds, with safety values [15..240]fps
 #macro frame_delta clamp(delta_time / 1000000, 0.004, 0.067)
 
-// A convenient "async" function that allows calling functions from the
-// async controller without having to worry about its existence.
+// Delta time, in percent, relative to a 60fps target. Useful for modifying in-
+// game units designed around a 60fps limit.
+#macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
+
+// A function to return the async controller (or create it if not defined).
+// Should be accessed through the macro U3D_ASYNC but is generally used internally.
 function __async_instance_id(){
 	with (obj_async_controller)
 		return id;
@@ -61,20 +70,19 @@ function __async_instance_id(){
 
 #macro U3D_ASYNC __async_instance_id()
 
-// Delta time, in percent, relative to a 60fps target. Helpful if the system was
-// designed around 60fps and needs later adjustment.
-#macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
-
 /// Define U3D structure
 U3D = {
 	RENDERING : {
 		MATERIAL : {
 			missing : new MaterialSpatial(),	// Default material for when a material is missing
-			blank : new MaterialSpatial()		// Default material for when no material is specified
+			blank : new MaterialSpatial()		// Default material for when material textures are undefined (e.g., color scalars only)
 		},
 		PPFX : { // Pre-made PostProcessingFX that can be attached to render cameras
-			fxaa : new PostProcessFX(shd_fxaa),				// FXAA anti-aliasing
-			grayscale : new PostProcessFX(shd_grayscale),	// Turns the output into grayscale
+			fxaa : new PostProcessFX(shd_fxaa),				// Fast approximate anti-aliasing
+			grayscale : new PostProcessFX(shd_grayscale),	// Converts the camera to grayscale
+			// Bloom does NOT work out-of-the-box and requires property tweaking. Set luminance threshold to 1.0 as a start and adjust from there
+			// to change when bloom activates. Everything else effects bloom quality and range.
+			bloom : new PPFXBloom(1.0, 0.35, 8, 1.25)
 		},
 		ANIMATION : {
 			SKELETON : {

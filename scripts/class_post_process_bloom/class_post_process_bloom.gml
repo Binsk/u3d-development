@@ -6,13 +6,13 @@
 ///			doesn't appear or appears to blow everything out make sure to try adjusting
 ///			the threshold first.
 
-/// @param	{real}	luminocity_threshold	The threshold at which bloom starts appearing
+/// @param	{real}	luminance_threshold	The threshold at which bloom starts appearing
 /// @param	{real}	resolution_scale		the scale relative to the camera's render resolution to render at
 /// @param	{real}	blur_passes				number of times to blur the bloom
 /// @param	{real}	blur_stride				how many texels to stride in a blur pass (more = wider bloom, possible checkered artifacts)
-function PPFXBloom(luminocity_threshold=1.0, resolution_scale=0.5, blur_passes=5, blur_stride=1.0) : PostProcessFX(shd_luminocity_isolate) constructor {
+function PPFXBloom(luminance_threshold=1.0, resolution_scale=0.5, blur_passes=5, blur_stride=1.0) : PostProcessFX(shd_luminance_isolate) constructor {
 	#region PROPERTIES
-	threshold = luminocity_threshold;
+	threshold = luminance_threshold;
 	scale = resolution_scale;
 	passes = max(2, blur_passes);
 	stride = max(1, blur_stride);
@@ -21,6 +21,33 @@ function PPFXBloom(luminocity_threshold=1.0, resolution_scale=0.5, blur_passes=5
 	#endregion
 	
 	#region METHODS
+	
+	/// @desc	The 'brightness' level of a pixel required before bloom starts taking effect.
+	///			Note: This is applied in linear space before tonemapping. Anything below the
+	///			specified level will be rendered normally, anything above will have bloom applied.
+	function set_luminance_threshold(threshold){
+		self.threshold = threshold;
+	}
+	
+	/// @desc	The scale of bloom pass relative to the camera's render resolution. Smaller is
+	///			faster and has a larger radius but will be lower quality.
+	function set_resolution_scale(scale){
+		self.scale = scale;
+	}
+	
+	/// @desc	The number of gaussian blur passes to process over the bloom. Passes are directional
+	///			so there need to be at least 2. More passes = smoother result and can help compensate
+	///			for low resolution scale. Cost greatly increases with render scale.
+	function set_blur_passes(passes){
+		self.passes = max(2, passes);
+	}
+	
+	/// @desc	The number of texels that should be walked per blur sample. More will result in a wider
+	///			blur but at the cost of quality.
+	function set_blur_stride(stride){
+		self.stride = max(1, stride);
+	}
+	
 	super.register("render");
 	function render(surface_out){
 		if (not is_enabled)
@@ -55,7 +82,7 @@ function PPFXBloom(luminocity_threshold=1.0, resolution_scale=0.5, blur_passes=5
 			shader_set(shader);
 		
 		sampler_set("u_sInput", gbuffer[$ CAMERA_GBUFFER.final] ?? -1);
-		uniform_set("u_fThreshold", shader_set_uniform_f, [threshold]);
+		uniform_set("u_fThreshold", shader_set_uniform_f, threshold);
 		
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);
