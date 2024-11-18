@@ -1,5 +1,3 @@
-event_inherited();
-
 if (instance_exists(obj_bone_scroll))
 	return;
 	
@@ -112,11 +110,19 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			slider_id = slider;
 	}
 	else { // Model already loaded, go ahead and free the data:
-		if (obj_demo_controller.primary_button != id)
-			cleanup_model();
+		if (obj_demo_controller.primary_button != id){
+			is_unloading = true;
+			is_disabled = true;
+		}
 		else { // We are the primary, free all other models in the scene as well
-			with (obj_button_model)
-				cleanup_model();
+			with (obj_button_model){
+				if (is_undefined(body))
+					continue;
+					
+				is_unloading = true;
+				is_disabled = true;
+				triangle_lerp -= 0.1;	// Make sure children models free first
+			}
 			
 			obj_demo_controller.primary_button = noone;
 		}
@@ -139,6 +145,28 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 	obj_demo_controller.body_floor_y = minimum_y;
 	if (not is_undefined(obj_demo_controller.body_floor))
 		obj_demo_controller.body_floor.set_position(vec(0, minimum_y, 0));
+}
+	
+	// Increment triangle 'load in' visual effect to test partial mesh rendering.
+if (not is_undefined(body) and ((not is_unloading and triangle_lerp < 1) or (is_unloading and triangle_lerp > 0))){
+	triangle_lerp += (is_unloading ? -frame_delta : frame_delta);
+	var mesh_array = body.get_model().get_mesh_array();
+	for (var i = array_length(mesh_array) - 1; i >= 0; --i){
+		var mesh = mesh_array[i];
+		var primitive_array = mesh.get_primitive_array();
+		for (var j = array_length(primitive_array) - 1; j >= 0; --j){
+			var primitive = primitive_array[j];
+			var triangles = ceil(primitive.get_triangle_count() * triangle_lerp);
+			mesh.set_primitive_triangle_limit(primitive, 0, triangles);
+		}
+	}
+	
+	triangle_lerp = clamp(triangle_lerp, 0, 1);
+	if (triangle_lerp <= 0 and is_unloading){
+		is_unloading = false;
+		cleanup_model();
+		is_disabled = false;
+	}
 }
 	
 event_inherited();

@@ -323,6 +323,24 @@ function Primitive(vformat) : U3DObject() constructor {
 		is_frozen = true;
 		return (vertex_freeze(vbuffer) >= 0);
 	}
+	
+	/// @desc	Submits the primitive to the GPU for rendering.
+	/// @param	{bool}	wireframe			whether or not to render wireframe (if not available, renders normal mesh as line mesh)
+	/// @param	{real}	start_triangle		which triangle to start rendering at (note; wireframe renders by triangle not vertex)
+	/// @param	{real}	triangle_count		number of triangles to render
+	function submit(wireframe=false, start_triangle=0, triangle_count=infinity){
+		if (is_undefined(vbuffer))
+			return;
+		
+		var buffer = (wireframe ? vbuffer_wireframe : vbuffer);
+		if (start_triangle > 0 or triangle_count < infinity){
+			var start_pos = (start_triangle * 3) * (wireframe + 1);
+			var count = (triangle_count * 3) * (wireframe + 1);
+			vertex_submit_ext(buffer ?? vbuffer, wireframe ? pr_linelist : pr_trianglelist, -1, start_pos, count);
+		}
+		else
+			vertex_submit(buffer ?? vbuffer, wireframe ? pr_linelist : pr_trianglelist, -1);
+	}
 
 	super.register("free");
 	function free(){

@@ -7,6 +7,8 @@ gltf = undefined;
 model = undefined;
 body = undefined;
 animation_tree = undefined;
+triangle_lerp = 0;	// Used to render part of the mesh as it 'loads in'
+is_unloading = false;	// If true, plays 'unload' animation effect
 
 slider_id = undefined;
 

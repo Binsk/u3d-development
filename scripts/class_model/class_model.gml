@@ -9,18 +9,6 @@ function Model() : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
-	/// @desc Add a new mesh into the model container, to render in-order.
-	/// @param	{Mesh}	mesh
-	function add_mesh(mesh){
-		if (not is_instanceof(mesh, Mesh)){
-			Exception.throw_conditional("invalid type, expected [Mesh]!");
-			return;
-		}
-		
-		add_child_ref(mesh);
-		array_push(mesh_array, mesh);
-	}
-	
 	/// @desc	Will assign a material to the specified index in the mesh.
 	/// @param	{Material}	material	material to assign
 	/// @param	{real}		index		slot index the material should be applied to
@@ -69,6 +57,38 @@ function Model() : U3DObject() constructor {
 			count += mesh_array[i].get_triangle_count();
 		
 		return count;
+	}
+
+	/// @desc	Returns the array of meshes to be rendered by this model.
+	function get_mesh_array(){
+		return mesh_array;
+	}
+
+	/// @desc	Retruns an array of primitives to be rendered by this model.
+	function get_primitive_array(){
+		var array = [];
+		for (var i = array_length(mesh_array) - 1 ; i >= 0; --i)
+			array = array_concat(array, mesh_array[i].get_primitive_array());
+		
+		return array;
+	}
+
+	/// @desc	Returns an array of all the materials attached to the model.
+	///	@note	Array indices do NOT correlate to material indices!
+	function get_material_array(){
+		return struct_get_values(material_data);
+	}
+
+	/// @desc Add a new mesh into the model container, to render in-order.
+	/// @param	{Mesh}	mesh
+	function add_mesh(mesh){
+		if (not is_instanceof(mesh, Mesh)){
+			Exception.throw_conditional("invalid type, expected [Mesh]!");
+			return;
+		}
+		
+		add_child_ref(mesh);
+		array_push(mesh_array, mesh);
 	}
 
 	/// @desc Renders the model out, applying materials as needed.

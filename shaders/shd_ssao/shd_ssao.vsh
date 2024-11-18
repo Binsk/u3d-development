@@ -1,3 +1,6 @@
+/// @about
+/// Screen-space ambient occlusion. This is a very naive and simple implementation.
+/// Look into: https://github.com/GameTechDev/XeGTAO as a potential replacement.
 attribute vec3 in_Position;
 attribute vec2 in_TextureCoord;
 

@@ -13,8 +13,6 @@
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
--	Add proper PBR simulation in ambient lighting (somewhat done)
--	Greatly speed up the GLTFLoader (may in-part be due to the RAM leak bug)
 -	System currently renders camera mirrored: to fix some issues;
 	this is bad if we want in-game camera rendering so find a way to fix the
 	projection matrix.
@@ -22,7 +20,6 @@
 	etc) so that in-game cameras can have modified renders apart from the actual
 	resources being rendered. Allows, e.g., dynamic cube-mapping that can ignore
 	certain things.
--	Add bloom PPFX via light threshold + gaussian blur
 -	Lots of file load stuff is async, so consider switching the GLTFBuilder to
 	that.
 -	Add model/mesh/primitve "optimizing" that attempts to combine primitives
@@ -30,10 +27,7 @@
 -	Add some kind of PrimitiveBuilder where you can define a single primitev along
 	with a number of copies and matrices and it generates a 'multi-primitive' version
 	to render lots of copies as one.
--	Add support for attaching bone indices to meshes.
--	Add support for attaching bodies to animation trees
--	Finish implementing animation layer merging & create an example track that makes
-	the character move her head up and down through code.
+-	Add support for attaching bone indices to meshes (not bodies) as some glTF models require this.
 -	Implement dual-quaternion skinning, both for better animation transforms and
 	less bandwidth to the GPU.
 	https://rodolphe-vaillant.fr/entry/29/dual-quaternions-skinning-tutorial-and-c-codes
@@ -44,12 +38,9 @@
 -	Add translucent shadow mapping
 -	Implement shadow sampling optimization (make it sample outer edges first, if
 	they are all dark assume the inside ones are and exit early)
--	Add support for GLTF spawning a full "scene" including light and camera nodes.
--	Add support to the GLTFBuilder to be provided a direct buffer; this allows
-	the programmer to manually load a file and then parse through the loader.
 -	Add proper animation forming w/ tracks that don't define all bones; may 
 	require default skeleton bones to be multiplied?
 -	Add blend type for animation layers (replace, like what I'm currently doing, or merge)
 -	Implement morph targets for glTF loading: https://github.com/KhronosGroup/glTF-Tutorials/blob/main/gltfTutorial/gltfTutorial_017_SimpleMorphTarget.md
 	It is effectively vertex morphing animation.
--	Add Static functionto GLTFLoader to pre-parse buffer before checking
+-	Look into Intel's improved (and faster) SSAO: https://github.com/GameTechDev/XeGTAO
