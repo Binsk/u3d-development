@@ -87,10 +87,10 @@ function Collidable() : U3DObject() constructor {
 			return true;
 		
 		if (node.get_data("collision.static", false))
-			node.set_data(["collision", "offset"], offset);
+			node.set_data("collision.offset", offset);
 		else{
 			offset = matrix_multiply_vec(node.get_model_matrix(), offset);	
-			node.set_data(["collision", "offset"], offset);
+			node.set_data("collision.offset", offset);
 		}
 		return true;
 	}

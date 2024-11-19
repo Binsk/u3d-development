@@ -76,52 +76,35 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 			return data;
 		}
 		
-		// Failed inside check so we calculate proper collision point:
 		var ray_orientation;
-		if (node_a.get_data("collision.static", false))
-			ray_orientation = ray_a.orientation;
-		else
+		if (not node_a.get_data("collision.static", false))
 			ray_orientation = node_a.get_data(["collision", "orientation"], ray_a.orientation);
+		else
+			ray_orientation = ray_a.orientation;
+		
+		ray_orientation = vec_normalize(ray_orientation);
 			
-		var ray_inv_orientation = vec_invert(ray_orientation);
-		var ray_sign = vec_sign(ray_inv_orientation);
+		var ray_inv = vec_invert(ray_orientation);
+		ray_inv.x = (ray_inv.x >= infinity ? 10000000 : ray_inv.x);
+		ray_inv.y = (ray_inv.y >= infinity ? 10000000 : ray_inv.y);
+		ray_inv.z = (ray_inv.z >= infinity ? 10000000 : ray_inv.z);
 		
-		ray_inv_orientation.x = (ray_inv_orientation.x >= infinity ? 10000000 : ray_inv_orientation.x); // Convert 'infinity' since (infinity * 0 == NaN in GM)
-		ray_inv_orientation.y = (ray_inv_orientation.y >= infinity ? 10000000 : ray_inv_orientation.y);
-		ray_inv_orientation.z = (ray_inv_orientation.z >= infinity ? 10000000 : ray_inv_orientation.z);
-
-		// Compare x / y axes first:
-		var tmin = (aabb_extends.x * -ray_sign.x - ray_position_adjusted.x) * ray_inv_orientation.x;
-		var tmax = (aabb_extends.x * ray_sign.x - ray_position_adjusted.x) * ray_inv_orientation.x;
-		var tymin = (aabb_extends.y * -ray_sign.y - ray_position_adjusted.y) * ray_inv_orientation.y;
-		var tymax = (aabb_extends.y * ray_sign.y - ray_position_adjusted.y) * ray_inv_orientation.y;
+		var t1 = (-aabb_extends.x - ray_position_adjusted.x) * ray_inv.x;
+		var t2 = (aabb_extends.x - ray_position_adjusted.x) * ray_inv.x;
+		var t3 = (-aabb_extends.y - ray_position_adjusted.y) * ray_inv.y;
+		var t4 = (aabb_extends.y - ray_position_adjusted.y) * ray_inv.y;
+		var t5 = (-aabb_extends.z - ray_position_adjusted.z) * ray_inv.z;
+		var t6 = (aabb_extends.z - ray_position_adjusted.z) * ray_inv.z;
 		
-		if (tmin >= infinity or tymin >= infinity)
+		var tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+		var tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+		
+		if (tmax < 0) // Wrong side of the ray
 			return undefined;
 		
-		if (tmin > tymax or tymin > tmax)
+		if (tmin > tmax) // Doesn't intersect
 			return undefined;
 		
-		// Potential collision; pick the best one:
-		if (tymin > tmin)
-			tmin = tymin;
-		
-		if (tymax < tmax)
-			tmax = tymax;
-		
-		// Compare result against z axis:
-		var tzmin = (aabb_extends.z * -ray_sign.z - ray_position_adjusted.z) * ray_inv_orientation.z;
-		var tzmax = (aabb_extends.z * ray_sign.z - ray_position_adjusted.z) * ray_inv_orientation.z;
-
-		if (tzmin >= infinity)
-			return undefined;
-		
-		if (tmin > tzmax or tzmin > tmax)
-			return undefined;
-			
-		if (tzmin > tmin)
-			tmin = tzmin;
-
 		var data = new CollidableData(Ray, AABB);
 		data.data = {
 			is_inside : false,
@@ -163,7 +146,7 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		
 		uniform_set("u_vColor", shader_set_uniform_f, r_color);
 		var matrix_model = matrix_get(matrix_world);
-		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data(["collision", "offset"], vec()))));
+		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data("collision.offset", vec()))));
 		vertex_submit(vbuffer, pr_linelist, -1);
 		vertex_delete_buffer(vbuffer);
 	}
