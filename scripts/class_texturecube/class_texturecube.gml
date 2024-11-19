@@ -19,6 +19,9 @@
 /// 'set_face'
 ///
 
+/// @note	Cube-map textures are currently assumed to be in LINEAR space! A toggle for
+///			this will be added later.
+
 enum TEXTURECUBE_FACE {
 	front,
 	back,

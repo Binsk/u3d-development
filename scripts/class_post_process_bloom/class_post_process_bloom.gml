@@ -51,7 +51,7 @@ function PPFXBloom(luminance_threshold=1.0, resolution_scale=0.5, blur_passes=5,
 	super.register("render");
 	function render(surface_out){
 		if (not is_enabled)
-			return;
+			return false;
 			
 		var buffer_width = Camera.ACTIVE_INSTANCE.buffer_width;
 		var buffer_height = Camera.ACTIVE_INSTANCE.buffer_height;
@@ -133,6 +133,7 @@ function PPFXBloom(luminance_threshold=1.0, resolution_scale=0.5, blur_passes=5,
 		
 		surface_reset_target();
 		gpu_set_blendmode(bm_normal);
+		return true;
 	}
 	
 	super.register("free");

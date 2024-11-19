@@ -84,7 +84,8 @@ obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display i
 
 // Create our camera:
 camera = new CameraView(0.01, 128);	// CameraView auto-renders to screen; defaults to full screen
-camera.add_post_process_effect(U3D.RENDERING.PPFX.fog, 2);
+camera.add_post_process_effect(U3D.RENDERING.PPFX.fog, 3);
+camera.add_post_process_effect(U3D.RENDERING.PPFX.skybox, 2);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.bloom, 1);
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);	// Add some post-processing effects to the camera
 camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
@@ -93,6 +94,7 @@ U3D.RENDERING.PPFX.grayscale.set_enabled(false);
 U3D.RENDERING.PPFX.bloom.set_enabled(false);
 U3D.RENDERING.PPFX.bloom.set_luminance_threshold(0.0);
 U3D.RENDERING.PPFX.fog.set_color(c_yellow, 0.0);	// As fog hits, blend to yellow but also fade out alpha into black
+U3D.RENDERING.PPFX.skybox.set_enabled(false);		// We enable along w/ environmental mapping
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pass by default; translucent can be enabled through the interface
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system

@@ -2,7 +2,7 @@
 /// A special texture container that can be used with Materials to specify 
 /// textures in more detail.
 
-function Texture2D(texture_id=undefined)  : U3DObject() constructor {
+function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	#region PROPERTIES
 	self.texture_id = texture_id;
 	texel_width = 0;

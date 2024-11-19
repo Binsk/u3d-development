@@ -216,12 +216,11 @@ subinst.text_tooltip = "Render environmental reflections with a pre-set dummy cu
 subinst.signaler.add_signal("checked", function(is_checked){
 	if (not is_checked)
 		obj_demo_controller.light_directional.set_environment_texture(undefined);
-	else{
-		if (is_undefined(obj_demo_controller.environment_map))
-			obj_demo_controller.environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
-		
+	else
 		obj_demo_controller.light_directional.set_environment_texture(obj_demo_controller.environment_map);
-	}
+	
+	U3D.RENDERING.PPFX.skybox.set_enabled(not is_undefined(obj_demo_controller.light_directional.texture_environment) or
+										  not is_undefined(obj_demo_controller.light_ambient.texture_environment));
 });
 array_push(inst.child_elements, subinst);
 
@@ -252,12 +251,11 @@ subinst.text_tooltip = "Render environmental reflections with a pre-set dummy cu
 subinst.signaler.add_signal("checked", function(is_checked){
 	if (not is_checked)
 		obj_demo_controller.light_ambient.set_environment_texture(undefined);
-	else{
-		if (is_undefined(obj_demo_controller.environment_map))
-			obj_demo_controller.environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
-		
+	else
 		obj_demo_controller.light_ambient.set_environment_texture(obj_demo_controller.environment_map);
-	}
+		
+	U3D.RENDERING.PPFX.skybox.set_enabled(not is_undefined(obj_demo_controller.light_directional.texture_environment) or
+										  not is_undefined(obj_demo_controller.light_ambient.texture_environment));
 });
 array_push(inst.child_elements, subinst);
 
@@ -382,3 +380,6 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 
 sprite_array = [];
 slider_ay = ay - 64; // Record so dynamic sliders know where to spawn
+
+environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
+U3D.RENDERING.PPFX.skybox.set_cubemap(new TextureCube(sprite_get_texture(spr_default_environment, 0)))
