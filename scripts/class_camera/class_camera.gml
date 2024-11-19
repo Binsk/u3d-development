@@ -261,8 +261,8 @@ function Camera() : Body() constructor {
 			textures[$ CAMERA_GBUFFER.normal] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.normal]);
 		}
 		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.view])){
-			surfaces[$ CAMERA_GBUFFER.view] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
+		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.view])){ // @note	tried as a u8 and the quality was just crap; 16 is SIGNIFICANTLY better
+			surfaces[$ CAMERA_GBUFFER.view] = surface_create(buffer_width, buffer_height, surface_rgba16float);
 			textures[$ CAMERA_GBUFFER.view] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.view]);
 		}
 		
