@@ -13,6 +13,8 @@ function Collidable() : U3DObject() constructor {
 	///	@note	If transform() has not been called on each collidable before-hand then
 	///			it must be done manually. If added to the collision system then it will
 	///			have been called automatically.
+	/// @note	The collision order is not always collidable_a -> collidable_b. You can check
+	///			the collision order through the returned CollidableData class.
 	/// @param	{Collidable}	collidable_a	the first collidable shape to use
 	/// @param	{Collidable}	collidable_b	the second collidable shape to use
 	/// @param	{Node}			node_a			the first node to use for transforms
@@ -24,6 +26,8 @@ function Collidable() : U3DObject() constructor {
 				return Ray.collide_ray(collidable_a, collidable_b, node_a, node_b);
 			if (is_instanceof(collidable_b, Plane))
 				return Ray.collide_plane(collidable_a, collidable_b, node_a, node_b);
+			if (is_instanceof(collidable_b, AABB))
+				return Ray.collide_aabb(collidable_a, collidable_b, node_a, node_b);
 		}
 		#endregion
 		#region PLANE CHECKS
@@ -32,7 +36,12 @@ function Collidable() : U3DObject() constructor {
 				return Plane.collide_ray(collidable_a, collidable_b, node_a, node_b);
 		}
 		#endregion
-			
+		#region AABB CHECKS
+		if (is_instanceof(collidable_a, AABB)){
+			if (is_instanceof(collidable_b, Ray))
+				return AABB.collide_ray(collidable_a, collidable_b, node_a, node_b);
+		}
+		#endregion
 		return undefined;
 	}
 	#endregion
@@ -88,6 +97,8 @@ function Collidable() : U3DObject() constructor {
 	
 	/// @desc	Renders a debug line mesh of the shape, if applicable. Mesh is
 	///			generated on the fly and dynamic so it is slow to render.
-	function render_debug(node){}
+	function render_debug(node){
+		draw_set_color(node.get_data("collision.debug_highlight", false) ? c_yellow : c_lime);
+	}
 	#endregion
 }

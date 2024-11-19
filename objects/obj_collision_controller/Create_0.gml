@@ -11,7 +11,15 @@ event_inherited();
 
 /// @stub	Add partitioning system
 
+debug_collision_highlights = false; // If enabled along w/ camera debug shapes, will highlight collisions yellow for a frame when a collision occurs.
+
 update_map = {};	// Updates queued this frame
+
+/// @desc	Requires a camera's collision debug render be enabled. This will color
+///			the shape lines yellow if a collision occurred instead of green.
+function enable_collision_highlights(enable=false){
+	debug_collision_highlights = bool(enable);
+}
 
 super.register("add_body");
 function add_body(body){
@@ -78,7 +86,14 @@ function process(){
 	var instance_array = struct_get_values(update_map);
 	update_map = {}; // Clear so any signals sent can re-queue for next frame
 
-	var scan_array = struct_get_values(body_map); /// @stub	this is just for testing ATM
+		// If debugging on AND at least 1 body moved, clear highlights (allows for pausing & viewing highlights)
+	if (debug_collision_highlights and array_length(instance_array) > 0){
+		var body_array = get_body_array();
+		for (var i = array_length(body_array) - 1; i >= 0; --i)
+			body_array[i].set_data("collision.debug_highlight", false);
+	}
+
+	var scan_array = get_body_array(); /// @stub	this is just for testing ATM
 	for (var i = array_length(instance_array) - 1; i >= 0; --i){
 		var body = instance_array[i];
 			// Check if the body was removed after the update trigger
@@ -88,7 +103,7 @@ function process(){
 		if (is_undefined(body.collidable_instance)) // No collidable 
 			continue;
 		
-		body.collidable_instance.transform(body);
+		body.collidable_instance.transform(body); // Update body (automatically skips if already up-to-date)
 		var data_array = [];
 
 		for (var j = array_length(scan_array) - 1; j >= 0; --j){
@@ -111,6 +126,11 @@ function process(){
 			data.body_a = body;
 			data.body_b = body2;
 			array_push(data_array, data);
+			
+			if (debug_collision_highlights){
+				data.body_a.set_data("collision.debug_highlight", true);
+				data.body_b.set_data("collision.debug_highlight", true);
+			}
 		}
 		
 		if (array_length(data_array) > 0) // If there were collisions then we signal them out

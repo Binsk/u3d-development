@@ -5,7 +5,7 @@
 /// @param	{vec}	normal		face normal defining plane orientation
 function Plane(normal=vec(0, 1, 0)) : Collidable() constructor {
 	#region PROPERTIES
-	self.normal = normal;
+	self.normal = vec_normalize(normal);
 	#endregion
 	
 	#region METHODS
@@ -39,6 +39,62 @@ function Plane(normal=vec(0, 1, 0)) : Collidable() constructor {
 		else
 			node.set_data(["collision", "orientation"], vec_normalize(matrix_multiply_vec(node.get_model_matrix(), self.normal)));
 		return true;
+	}
+	
+	super.register("render_debug");
+	function render_debug(node){
+		super.execute("render_debug", [node]);
+		var r_color = [color_get_red(draw_get_color()) / 255, color_get_green(draw_get_color()) / 255, color_get_blue(draw_get_color()) / 255];
+		transform(node);
+		
+		var normal = vec_normalize(node.get_data(["collision", "orientation"], self.normal));
+		var tangent = vec_normalize(vec_get_perpendicular(normal));
+		var bitangent = vec_normalize(vec_cross(normal, tangent));
+		tangent = vec_normalize(vec_cross(bitangent, normal));
+		var length = (Eye.ACTIVE_INSTANCE.zfar - Eye.ACTIVE_INSTANCE.znear) * 0.01; // Arbitrary size; we decided on 1% of viewing distance
+		
+		normal = vec_set_length(normal, length);
+		tangent = vec_set_length(tangent, length);
+		bitangent = vec_set_length(bitangent, length);
+		
+		var vformat = VertexFormat.get_format_instance([VERTEX_DATA.position]).get_format();
+		var vbuffer = vertex_create_buffer();
+		vertex_begin(vbuffer, vformat);
+		
+		// Axes:
+		vertex_position_3d(vbuffer, 0, 0, 0);
+		vertex_position_3d(vbuffer, normal.x, normal.y, normal.z);
+		vertex_position_3d(vbuffer, 0, 0, 0);
+		vertex_position_3d(vbuffer, tangent.x, tangent.y, tangent.z);
+		vertex_position_3d(vbuffer, 0, 0, 0);
+		vertex_position_3d(vbuffer, bitangent.x, bitangent.y, bitangent.z);
+		
+		// Rectangle:
+		length *= 3;
+		var p1 = vec_set_length(vec_add_vec(vec_reverse(tangent), vec_reverse(bitangent)), length);
+		var p2 = vec_set_length(vec_add_vec(tangent, vec_reverse(bitangent)), length);
+		var p3 = vec_set_length(vec_add_vec(tangent, bitangent), length);
+		var p4 = vec_set_length(vec_add_vec(vec_reverse(tangent), bitangent), length);
+		
+		vertex_position_3d(vbuffer, p1.x, p1.y, p1.z);
+		vertex_position_3d(vbuffer, p2.x, p2.y, p2.z);
+		
+		vertex_position_3d(vbuffer, p2.x, p2.y, p2.z);
+		vertex_position_3d(vbuffer, p3.x, p3.y, p3.z);
+		
+		vertex_position_3d(vbuffer, p3.x, p3.y, p3.z);
+		vertex_position_3d(vbuffer, p4.x, p4.y, p4.z);
+		
+		vertex_position_3d(vbuffer, p4.x, p4.y, p4.z);
+		vertex_position_3d(vbuffer, p1.x, p1.y, p1.z);
+		
+		vertex_end(vbuffer);
+		
+		uniform_set("u_vColor", shader_set_uniform_f, r_color);
+		var matrix_model = matrix_get(matrix_world);
+		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data(["collision", "offset"], vec()))));
+		vertex_submit(vbuffer, pr_linelist, -1);
+		vertex_delete_buffer(vbuffer);
 	}
 	#endregion
 }

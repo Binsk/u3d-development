@@ -81,19 +81,21 @@ instance_create_depth(0, 0, 0, obj_render_controller);		// Allow auto-handling r
 instance_create_depth(0, 0, 0, obj_collision_controller);	// Allow auto-handling collision updates
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
+obj_collision_controller.enable_collision_highlights(true);		// Let us see collisions for testing (namely w/ mouse hover)
 
 // Create our camera:
 camera = new CameraView(0.01, 128);	// CameraView auto-renders to screen; defaults to full screen
-camera.add_post_process_effect(U3D.RENDERING.PPFX.fog, 3);
-camera.add_post_process_effect(U3D.RENDERING.PPFX.skybox, 2);
-camera.add_post_process_effect(U3D.RENDERING.PPFX.bloom, 1);
-camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);	// Add some post-processing effects to the camera
-camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);
+	// Here we attach post-processing effects. The larger the number, the earlier the effect gets processed:
+camera.add_post_process_effect(U3D.RENDERING.PPFX.fog, 3);		// Adds fog to the clipping plane; we set up the fog to turn yellow the fade the alpha to 0
+camera.add_post_process_effect(U3D.RENDERING.PPFX.skybox, 2);	// Renders a sky-box 'under' the render so it peaks through any spots where alpha < 1
+camera.add_post_process_effect(U3D.RENDERING.PPFX.bloom, 1);	// Apply bloom on top of the render
+camera.add_post_process_effect(U3D.RENDERING.PPFX.fxaa);		// Add some post-processing effects on top of the bloom
+camera.add_post_process_effect(U3D.RENDERING.PPFX.grayscale);	// Set things to grayscale (just a way to test the simplest of PPFX)
 U3D.RENDERING.PPFX.fxaa.set_enabled(false);					// Disable the post-processing; it can be toggled through the interface
 U3D.RENDERING.PPFX.grayscale.set_enabled(false);
 U3D.RENDERING.PPFX.bloom.set_enabled(false);
 U3D.RENDERING.PPFX.bloom.set_luminance_threshold(0.0);
-U3D.RENDERING.PPFX.fog.set_color(c_yellow, 0.0);	// As fog hits, blend to yellow but also fade out alpha into black
+U3D.RENDERING.PPFX.fog.set_color(c_yellow, 0.0);	// As fog hits, blend to yellow but also fade out alpha into background. Yellow is just to let us know it is at the edge of the clipping plane.
 U3D.RENDERING.PPFX.skybox.set_enabled(false);		// We enable along w/ environmental mapping
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pass by default; translucent can be enabled through the interface
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));

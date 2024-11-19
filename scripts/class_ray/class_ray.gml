@@ -25,8 +25,8 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 	/// @param	{Node}	node_a		node defining spatial information for ray
 	/// @param	{Node}	node_b		node defining spatial information for plane
 	static collide_plane = function(ray_a, plane_b, node_a, node_b){
-		var plane_normal = node_b.get_data(["collision", "orientation"], vec(0, 1, 0));
-		var ray_normal = node_a.get_data(["collision", "orientation"], vec(1, 0, 0));
+		var plane_normal = node_b.get_data(["collision", "orientation"], plane_b.normal);
+		var ray_normal = node_a.get_data(["collision", "orientation"], ray_a.orientation);
 		var ray_position = vec_add_vec(node_a.position, node_a.get_data("collision.offset", vec()));
 		var plane_position = vec_add_vec(node_b.position, node_b.get_data("collision.offset", vec()));
 		
@@ -53,10 +53,82 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		};
 		return data;
 	}
-	
-	/// @desc	Returns collision data between a ray and an AABB
+
+	/// @desc	Returns collision data between a ray and an AABB.
 	static collide_aabb = function(ray_a, aabb_b, node_a, node_b){
-/// @stub	Implement
+		var ray_position = vec_add_vec(node_a.position, node_a.get_data("collision.offset", vec()));
+		var aabb_position = vec_add_vec(node_b.position, node_b.get_data("collision.offset", vec()));
+
+		var ray_position_adjusted = vec_sub_vec(ray_position, aabb_position); // Position relative to the aabb
+		var aabb_extends = node_b.get_data(["collision", "extends"], aabb_b.extends); // Get transformed extends
+		
+		// Check if the ray falls INSIDE the box; if so, the origin point is the point of intersection
+		/// @note We don't calculate the EDGE position of the ray as if the box is hollow.
+		if (abs(ray_position_adjusted.x) <= aabb_extends.x and
+			abs(ray_position_adjusted.y) <= aabb_extends.y and
+			abs(ray_position_adjusted.z) <= aabb_extends.z){
+			var data = new CollidableData(Ray, AABB);
+			data.data = {
+				is_inside : true,
+				intersection_point : ray_position
+			};
+			
+			return data;
+		}
+		
+		// Failed inside check so we calculate proper collision point:
+		var ray_orientation;
+		if (node_a.get_data("collision.static", false))
+			ray_orientation = ray_a.orientation;
+		else
+			ray_orientation = node_a.get_data(["collision", "orientation"], ray_a.orientation);
+			
+		var ray_inv_orientation = vec_invert(ray_orientation);
+		var ray_sign = vec_sign(ray_inv_orientation);
+		
+		ray_inv_orientation.x = (ray_inv_orientation.x >= infinity ? 10000000 : ray_inv_orientation.x); // Convert 'infinity' since (infinity * 0 == NaN in GM)
+		ray_inv_orientation.y = (ray_inv_orientation.y >= infinity ? 10000000 : ray_inv_orientation.y);
+		ray_inv_orientation.z = (ray_inv_orientation.z >= infinity ? 10000000 : ray_inv_orientation.z);
+
+		// Compare x / y axes first:
+		var tmin = (aabb_extends.x * -ray_sign.x - ray_position_adjusted.x) * ray_inv_orientation.x;
+		var tmax = (aabb_extends.x * ray_sign.x - ray_position_adjusted.x) * ray_inv_orientation.x;
+		var tymin = (aabb_extends.y * -ray_sign.y - ray_position_adjusted.y) * ray_inv_orientation.y;
+		var tymax = (aabb_extends.y * ray_sign.y - ray_position_adjusted.y) * ray_inv_orientation.y;
+		
+		if (tmin >= infinity or tymin >= infinity)
+			return undefined;
+		
+		if (tmin > tymax or tymin > tmax)
+			return undefined;
+		
+		// Potential collision; pick the best one:
+		if (tymin > tmin)
+			tmin = tymin;
+		
+		if (tymax < tmax)
+			tmax = tymax;
+		
+		// Compare result against z axis:
+		var tzmin = (aabb_extends.z * -ray_sign.z - ray_position_adjusted.z) * ray_inv_orientation.z;
+		var tzmax = (aabb_extends.z * ray_sign.z - ray_position_adjusted.z) * ray_inv_orientation.z;
+
+		if (tzmin >= infinity)
+			return undefined;
+		
+		if (tmin > tzmax or tzmin > tmax)
+			return undefined;
+			
+		if (tzmin > tmin)
+			tmin = tzmin;
+
+		var data = new CollidableData(Ray, AABB);
+		data.data = {
+			is_inside : false,
+			intersection_point : vec_add_vec(ray_position, vec_set_length(ray_orientation, tmin))
+		};
+		
+		return data;
 	}
 	#endregion
 	
@@ -73,8 +145,11 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		
 		return true;
 	}
-
+	
+	super.register("render_debug");
 	function render_debug(node){
+		super.execute("render_debug", [node]);
+		var r_color = [color_get_red(draw_get_color()) / 255, color_get_green(draw_get_color()) / 255, color_get_blue(draw_get_color()) / 255];
 		transform(node);
 		var length = Eye.ACTIVE_INSTANCE.zfar;
 		var rotation = node.get_data(["collision", "orientation"], vec(1, 0, 0)); 
@@ -86,7 +161,7 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		vertex_position_3d(vbuffer, rotation.x * length, rotation.y * length, rotation.z * length);
 		vertex_end(vbuffer);
 		
-		uniform_set("u_vColor", shader_set_uniform_f, [0, 1, 0]);
+		uniform_set("u_vColor", shader_set_uniform_f, r_color);
 		var matrix_model = matrix_get(matrix_world);
 		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data(["collision", "offset"], vec()))));
 		vertex_submit(vbuffer, pr_linelist, -1);

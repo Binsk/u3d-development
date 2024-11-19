@@ -225,9 +225,9 @@ function vec_angle_difference(vector1, vector2) {
 /// 		should generally be between [0..1]
 function vec_invert(vector){
 	return vec(
-		vector.x == 0 ? 0 : 1.0 / vector.x,
-		vector.y == 0 ? 0 : 1.0 / vector.y,
-		vector.z == 0 ? 0 : 1.0 / vector.z
+		vector.x == 0 ? infinity : 1.0 / vector.x,
+		vector.y == 0 ? infinity : 1.0 / vector.y,
+		vector.z == 0 ? infinity : 1.0 / vector.z
 	);
 }
 

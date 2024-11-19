@@ -111,7 +111,7 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 			return;
 			
 		// Convert to screen space [-1..1]:
-			/// @note	We inverte the axes due to the rendering canvas being flipped
+			/// @note	We invert the axes due to the rendering canvas being flipped
 		px = -((px / render_width) * 2.0 - 1.0);
 		py = -((1.0 - py / render_height) * 2.0 - 1.0);
 		if (get_is_directx_pipeline())

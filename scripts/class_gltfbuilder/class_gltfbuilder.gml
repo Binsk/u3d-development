@@ -962,7 +962,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var child_array = bone.child_id_array;
 			for (var j = array_length(child_array) - 1; j >= 0; --j){
 				var child_id = child_array[j];
-				skeleton[$ child_id].parent_id = i;
+				var data = skeleton[$ child_id];
+				if (is_undefined(data))
+					throw new Exception("unsupported skeletal binding; [bone to node]!"); // Not connecting to another bone
+					
+				data.parent_id = i;
 			}
 		}
 		

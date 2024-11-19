@@ -9,6 +9,8 @@ for (var i = array_length(cube_keys) - 1; i >= 0; --i){
 
 // Cache GPU state for any other systems that may render after this.
 var gpu_state = gpu_get_state();
+var gpu_alpha = draw_get_alpha(); // Two common attributes that would likely need resetting
+var gpu_color = draw_get_color();
 
 // Regenerate camera GBuffers as needed
 var camera_keys = struct_get_names(camera_map);
@@ -38,3 +40,5 @@ if (shader_current() >= 0)
 	shader_reset();
 
 gpu_set_state(gpu_state);
+draw_set_alpha(gpu_alpha);
+draw_set_color(gpu_color);
