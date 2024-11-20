@@ -23,12 +23,12 @@ for (var i = 0; i < loop; ++i){
 			button_id.animation_tree.attach_body(child_body, button_id.body, button_id.animation_tree.get_bone_id(bone_name_array[i]));
 			
 			// Calculate the scale relative to the primary body for editor rendering reasons:
-			var child_min_vec = child_body.model_instance.get_data("aabb_min", vec());
-			var child_max_vec = child_body.model_instance.get_data("aabb_max", vec());
+			var child_min_vec = child_body.model_instance.get_data(["import", "aabb_min"], vec());
+			var child_max_vec = child_body.model_instance.get_data(["import", "aabb_max"], vec());
 			var child_max_comp = vec_max_component(vec_sub_vec(child_max_vec, child_min_vec));
 			
-			var parent_min_vec = button_id.body.model_instance.get_data("aabb_min", vec());
-			var parent_max_vec = button_id.body.model_instance.get_data("aabb_max", vec());
+			var parent_min_vec = button_id.body.model_instance.get_data(["import", "aabb_min"], vec());
+			var parent_max_vec = button_id.body.model_instance.get_data(["import", "aabb_max"], vec());
 			var parent_max_comp = vec_max_component(vec_sub_vec(parent_max_vec, parent_min_vec));
 			
 			var sc = parent_max_comp / child_max_comp * 0.125;

@@ -759,8 +759,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			model.add_mesh(mesh);
 		}
 			
-		model.set_data(["aabb_min"], get_data(["model_data", "minimum"]));
-		model.set_data(["aabb_max"], get_data(["model_data", "maximum"]));
+		model.set_data(["import", "aabb_min"], get_data(["model_data", "minimum"]));
+		model.set_data(["import", "aabb_max"], get_data(["model_data", "maximum"]));
 		model.hash = model_hash;
 		add_child_ref(model);
 		

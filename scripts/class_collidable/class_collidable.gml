@@ -23,7 +23,7 @@ function Collidable() : U3DObject() constructor {
 		#region RAY CHECKS
 		if (is_instanceof(collidable_a, Ray)){
 			if (is_instanceof(collidable_b, Ray))
-				return Ray.collide_ray(collidable_a, collidable_b, node_a, node_b);
+				return undefined;	/// @stub	Implement!
 			if (is_instanceof(collidable_b, Plane))
 				return Ray.collide_plane(collidable_a, collidable_b, node_a, node_b);
 			if (is_instanceof(collidable_b, AABB))
@@ -34,14 +34,33 @@ function Collidable() : U3DObject() constructor {
 		if (is_instanceof(collidable_a, Plane)){
 			if (is_instanceof(collidable_b, Ray))
 				return Plane.collide_ray(collidable_a, collidable_b, node_a, node_b);
+			if (is_instanceof(collidable_b, Plane))
+				return undefined;	/// @stub	Implement!
+			if (is_instanceof(collidable_b, AABB))
+				return undefined;	/// @stub	Implement!
 		}
 		#endregion
 		#region AABB CHECKS
 		if (is_instanceof(collidable_a, AABB)){
 			if (is_instanceof(collidable_b, Ray))
 				return AABB.collide_ray(collidable_a, collidable_b, node_a, node_b);
+			if (is_instanceof(collidable_b, Plane))
+				return undefined;	/// @stub	Implement!
+			if (is_instanceof(collidable_b, AABB))
+				return undefined;	/// @stub	Implement!
 		}
 		#endregion
+		#region SPHERE CHECKS
+/// @stub	Implement!
+		#endregion
+		#region CAPSULE CHECKS
+/// @stub	Implement!
+		#endregion
+		#region CONVEX HULL CHECKS
+/// https://github.com/carolhmj/quickhull-3d/blob/main/Quickhull3D.js
+/// @stub	Implement!
+		#endregion
+		
 		return undefined;
 	}
 	#endregion

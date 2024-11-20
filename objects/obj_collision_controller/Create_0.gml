@@ -123,8 +123,6 @@ function process(){
 				continue;
 				
 			// Collision; store data
-			data.body_a = body;
-			data.body_b = body2;
 			array_push(data_array, data);
 			
 			if (debug_collision_highlights){

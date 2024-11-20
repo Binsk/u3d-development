@@ -65,8 +65,8 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			if (obj_demo_controller.primary_button == noone)
 				obj_demo_controller.primary_button = id;
 				
-			var min_vec = model.get_data("aabb_min", vec());
-			var max_vec = model.get_data("aabb_max", vec());
+			var min_vec = model.get_data(["import", "aabb_min"], vec());
+			var max_vec = model.get_data(["import", "aabb_max"], vec());
 			var max_comp = vec_max_component(vec_sub_vec(max_vec, min_vec));
 			
 			body.set_scale(vec(10 / max_comp, 10 / max_comp, 10 / max_comp)); // Scale to fit in camera
@@ -140,7 +140,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		if (sbody.get_index() == body_index)
 			continue;
 			
-		minimum_y = min(minimum_y, sbody.position.y + sbody.model_instance.get_data("aabb_min", vec()).y * sbody.scale.y);
+		minimum_y = min(minimum_y, sbody.position.y + sbody.model_instance.get_data(["import", "aabb_min"], vec()).y * sbody.scale.y);
 	}
 	obj_demo_controller.body_floor_y = minimum_y;
 	if (not is_undefined(obj_demo_controller.body_floor))

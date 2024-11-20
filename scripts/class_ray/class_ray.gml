@@ -9,16 +9,6 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 	#endregion
 	
 	#region STATIC METHODS
-	/// @desc	Returns collision data between two rays.
-	/// @param	{Ray}	ray_a
-	/// @param	{Ray}	ray_b
-	/// @param	{Node}	node_a		node defining spatial information for ray_a
-	/// @param	{Node}	node_b		node defining spatial information for ray_b
-	static collide_ray = function(ray_a, ray_b, node_a, node_b){
-/// @stub	implement 
-		return undefined;
-	}
-	
 	/// @desc	Returns collision data bteween a ray and a plane.
 	/// @param	{Ray}	ray
 	/// @param	{Plane}	plane
@@ -45,11 +35,12 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 			return undefined;
 		
 		var dx = vec_mul_scalar(ray_normal, d); // Offset from ray start the collision occurs
-		var data = new CollidableData(Ray, Plane);
+		var data = new CollidableDataRay(node_a, node_b, Plane);
 		
 		data.data = {
 			is_backface : is_back,	// Whether or not the ray is intersecting the backside of the plane
-			intersection_point : vec_add_vec(ray_position, dx)	// Intersection point in world space
+			intersection_point : vec_add_vec(ray_position, dx),	// Intersection point in world space
+			intersection_distance : dx
 		};
 		return data;
 	}
@@ -67,7 +58,7 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		if (abs(ray_position_adjusted.x) <= aabb_extends.x and
 			abs(ray_position_adjusted.y) <= aabb_extends.y and
 			abs(ray_position_adjusted.z) <= aabb_extends.z){
-			var data = new CollidableData(Ray, AABB);
+			var data = new CollidableDataRay(node_a, node_b, AABB);
 			data.data = {
 				is_inside : true,
 				intersection_point : ray_position
@@ -105,10 +96,11 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		if (tmin > tmax) // Doesn't intersect
 			return undefined;
 		
-		var data = new CollidableData(Ray, AABB);
+		var data = new CollidableDataRay(node_a, node_b, AABB);
 		data.data = {
 			is_inside : false,
-			intersection_point : vec_add_vec(ray_position, vec_set_length(ray_orientation, tmin))
+			intersection_point : vec_add_vec(ray_position, vec_set_length(ray_orientation, tmin)),
+			intersection_distance : tmin
 		};
 		
 		return data;
@@ -149,6 +141,30 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data("collision.offset", vec()))));
 		vertex_submit(vbuffer, pr_linelist, -1);
 		vertex_delete_buffer(vbuffer);
+	}
+	#endregion
+}
+
+function CollidableDataRay(body_a, body_b, type_b=Collidable) : CollidableData(Ray, type_b) constructor {
+	#region PROPERTIES
+	self.body_a = body_a;
+	self.body_b = body_b;
+	#endregion
+	
+	#region METHODS
+	/// @desc	Returns the exact point of intersection.
+	function get_intersection_point(){
+		return data.intersection_point;
+	}
+	
+	/// @desc	The distance from the origin that the collision occurred.
+	function get_intersection_distance(){
+		return data.intersection_distance;
+	}
+	
+	/// @desc	Returns if the ray intersection spawned inside the shape.
+	function get_is_inside(){
+		return data.is_inside;
 	}
 	#endregion
 }
