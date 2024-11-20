@@ -21,9 +21,22 @@
 function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	#region PROPERTIES
 	self.name = name;
+	material_class = MaterialSpatial; // The material class to use when generating materials
 	#endregion
 	
 	#region METHODS
+	/// @desc	Specify a material class to use when generating materials. It must be a 
+	///			child of MaterialSpatial. This can allow generating a model with a special
+	///			material that may have special processing requirements.
+	function set_material_class(class=MaterialSpatial){
+		if (not is_instanceof(class, MaterialSpatial)){
+			Exception.throw_conditional("invalid type, expected [MaterialSpatial]!");
+			return;
+		}
+		
+		material_class = class;
+	}
+	
 	/// @desc	Given a node index, returns the final transform of it, post-multiplied
 	///			against its parents all the way up to the root.
 	function get_node_transform(node_index){
@@ -331,7 +344,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					Exception.throw_conditional($"invalid alphaMode [{material_data[$ "alphaMode"]}]");
 			}
 			
-			material = new MaterialSpatial();
+			material = new material_class();
 			
 			if (not is_undefined(color_texture))
 				material.set_texture("albedo", color_texture);

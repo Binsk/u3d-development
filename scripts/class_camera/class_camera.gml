@@ -79,12 +79,6 @@ function Camera() : Body() constructor {
 	white_level = 1.0;
 	gamma_correction = true;
 	
-	#region SHADER UNIFORMS
-	uniform_sampler_opaque = -1;
-	uniform_sampler_translucent = -1;
-	uniform_sampler_dopaque = -1;
-	uniform_sampler_dtranslucent = -1;
-	#endregion
 	#endregion
 	
 	#region METHODS
