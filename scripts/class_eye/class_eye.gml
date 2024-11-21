@@ -9,15 +9,13 @@
 
 /// @param	{Camera}	camera		id of the camera this eye belongs to
 /// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
-/// @param	{real}		zfurthest	furthest point to the eye that can be rendered (in world coords)
-/// @param	{real}		fov			field of view for this eye
-function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor {
+/// @param	{real}		zfar		furthest point to the eye that can be rendered (in world coords)
+function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;
 	self.camera_id = camera_id;		// The camera we belong to
 	self.znear = znear;
 	self.zfar = zfar;
-	self.fov = fov;
 	
 	self.matrix_eye = undefined;	// Relative to the camera; if undefined treated is identity (and saves a matrix op)
 	self.matrix_projection = undefined;
@@ -38,12 +36,6 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		self.matrix_projection = undefined;
 		self.matrix_inv_projection = undefined;
 		self.zfar = zfar;
-	}
-	
-	function set_fov(fov){
-		self.matrix_projection = undefined;
-		self.matrix_inv_projection = undefined;
-		self.fov = fov;
 	}
 	
 	/// @desc	Sets the local eye matrix, relative to the camera. If set to undefined
@@ -85,30 +77,9 @@ function Eye(camera_id, znear=0.01, zfar=1024, fov=45) : U3DObject() constructor
 		return matrix_inv_view;
 	}
 	
-	/// @desc	Return / Build the projection matrix for this eye.
+	
 	function get_projection_matrix(){
-		if (not is_undefined(self.matrix_projection))
-			return self.matrix_projection;
-		
-		if (is_undefined(camera_id.buffer_width)) // Cannot determine render size
-			return matrix_build_identity();
-
-		var aspect = camera_id.buffer_width / camera_id.buffer_height;
-		var yfov = 2.0 * arctan(dtan(fov/2) * aspect);
-		
-		var h = 1 / tan(yfov * 0.5);
-		var w = h / aspect;
-		var a = zfar / (zfar - znear);
-		var b = (-znear * zfar) / (zfar - znear);
-		var matrix = [
-			w, 0, 0, 0,
-			0, get_is_directx_pipeline() ? h : -h, 0, 0,
-			0, 0, a, 1,
-			0, 0, b, 0
-		];
-		
-		self.matrix_projection = matrix;
-		return matrix;
+		throw new Exception("cannot call virtual function!");
 	}
 	
 	/// @desc	Return / Build the inverse projection matrix for this eye.

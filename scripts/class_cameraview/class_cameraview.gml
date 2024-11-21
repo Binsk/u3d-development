@@ -3,19 +3,18 @@
 /// displays it onto the screen. This is the most commonly used camera. Buffer size
 /// will be auto-calculated based on obj_render_controller's render mode and the anchor
 /// will specify where on the screen it will render.
-
-/// @param	{real}	znear		the closest to the camera a model can render
-/// @param	{real}	zfar		the furthest from the camera a model can render
-/// @param	{fov}	fov			the field of view of the camera
+///
+/// znear, zfar, and fov is controlled by the Eye attached to this camera. You can grab
+/// the eye instance with get_eye(). By default the eye is perspective.
 /// @param	{Anchor2D} anchor	the anchor used to specify where in the window the camera should render
-function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Camera() constructor {
+function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 	#region PROPERTIES
 	self.anchor = anchor;
 	supersample_multiplier = 1.0;
 	render_width = 1;	// Size of the canvas we render out on (not our actual render size)
 	render_height = 1;
 	render_tonemap = CAMERA_TONEMAP.linear;
-	eye_id = new Eye(self, znear, zfar, fov);
+	eye_id = new EyePerspective(self, 0.01, 1024, 45);
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_texture = -1;
@@ -27,6 +26,29 @@ function CameraView(znear=0.01, zfar=1024, fov=45, anchor=new Anchor2D()) : Came
 	/// @desc	How much to multiply the size of the render buffer by.
 	function set_supersample_multiplier(multiplier=1.0){
 		supersample_multiplier = max(0.01, multiplier);
+	}
+	
+	/// @desc	Assigns a new eye to this camera. The eye MUST have bene created
+	///			with this camera set as its parent!
+	function set_eye(eye){
+		if (not is_instanceof(eye, Eye)){
+			Exception.throw_conditional("invalid type, expected [Eye]!");
+			return;
+		}
+		
+		if (not U3DObject.are_equal(eye.camera_id, self)){
+			Exception.throw_conditional("cannot attach eye, invalid camera id!");
+			return;
+		}
+		
+		replace_child_ref(eye, eye_id);
+		eye_id = eye; 
+	}
+	
+	/// @desc	A function specific to this camera type; returns the eye attached
+	///			to this class.
+	function get_eye(){
+		return get_eye_array()[0];
 	}
 	
 	function get_eye_array(){

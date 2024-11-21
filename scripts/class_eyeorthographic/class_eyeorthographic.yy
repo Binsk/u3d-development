@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"class_eye",
+  "%Name":"class_eyeorthographic",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"class_eye",
+  "name":"class_eyeorthographic",
   "parent":{
     "name":"Eyes",
     "path":"folders/Upset 3D/Classes/Rendering/Cameras/Eyes.yy",

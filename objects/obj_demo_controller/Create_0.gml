@@ -84,7 +84,9 @@ obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display i
 obj_collision_controller.enable_collision_highlights(true);		// Let us see collisions for testing (namely w/ mouse hover)
 
 // Create our camera:
-camera = new CameraView(0.01, 128);	// CameraView auto-renders to screen; defaults to full screen
+camera = new CameraView();	// CameraView auto-renders to screen; defaults to full screen
+camera.get_eye().set_zfar(128);	// Change zfar since the default is a bit far out for this scene
+
 	// Here we attach post-processing effects. The larger the number, the earlier the effect gets processed:
 camera.add_post_process_effect(U3D.RENDERING.PPFX.fog, 3);		// Adds fog to the clipping plane; we set up the fog to turn yellow the fade the alpha to 0
 camera.add_post_process_effect(U3D.RENDERING.PPFX.skybox, 2);	// Renders a sky-box 'under' the render so it peaks through any spots where alpha < 1
@@ -100,6 +102,9 @@ U3D.RENDERING.PPFX.skybox.set_enabled(false);		// We enable along w/ environment
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pass by default; translucent can be enabled through the interface
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
+
+eye_ortho = new EyeOrthographic(camera, 0.01, 128, 32, 32 * (room_height / room_width));
+camera.set_eye(eye_ortho);
 
 camera_ray = new Ray();	// The ray to be used to detect mouse collisions
 camera_ray.set_static(camera, true); // Mark the ray not to follow camera's rotation (as it is auto-calculated
