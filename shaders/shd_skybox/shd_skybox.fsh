@@ -58,6 +58,9 @@ void main()
     vec3 vView = texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0;
     vec4 vCubeColor = texture2D(u_sEnvironment, cube_uv(vView));
     
+    /// @note   The color blending may cause the primary layer to go darker than
+    ///         expected due to the HDR value scaling. Need to figure out a way around
+    ///         this visual issue.
     if (vColor.a < 1.0)
         vColor = (vColor * vColor.a) + (vCubeColor * (1.0 - vColor.a));
     else

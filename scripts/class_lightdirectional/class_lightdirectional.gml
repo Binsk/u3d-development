@@ -197,7 +197,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_reset_target();
 		
 		// Process shadow buffer and apply to lighting:
-		gpu_set_blendmode(bm_add);
+		gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_one, bm_one, bm_zero);	// Don't blend alpha; all lights will have the same and the HDR textures will equate to > 1
 		surface_set_target(surface_out);
 		shader_set(shd_lighting_apply_shadow);
 		sampler_set("u_sShadow", surface_get_texture(shadowbit_surface));

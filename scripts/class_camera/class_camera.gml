@@ -427,7 +427,6 @@ function Camera() : Body() constructor {
 /// @todo	Batch light types together (a shader for each) and pass in multiple
 ///			lights into the shader
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent], c_black, 0.0);
-		// gpu_set_blendmode(bm_add);
 		for (var i = array_length(light_array) - 1; i >= 0; --i){
 			var light = light_array[i];
 			
@@ -458,7 +457,7 @@ function Camera() : Body() constructor {
 				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 			
 			if (not applied_shadows){
-				gpu_set_blendmode(bm_add);
+				gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_one, bm_one, bm_zero);
 				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 				draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 				surface_reset_target();
