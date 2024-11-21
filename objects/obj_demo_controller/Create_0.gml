@@ -103,9 +103,6 @@ camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pas
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
 
-eye_ortho = new EyeOrthographic(camera, 0.01, 128, 32, 32 * (room_height / room_width));
-camera.set_eye(eye_ortho);
-
 camera_ray = new Ray();	// The ray to be used to detect mouse collisions
 camera_ray.set_static(camera, true); // Mark the ray not to follow camera's rotation (as it is auto-calculated
 camera.set_collidable(camera_ray);

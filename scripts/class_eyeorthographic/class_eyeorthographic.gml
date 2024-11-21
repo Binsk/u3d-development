@@ -29,8 +29,11 @@ function EyeOrthographic(camera_id, znear=0.01, zfar=1024, width=1024, height=10
 			return matrix_build_identity();
 		
 		self.matrix_projection = matrix_build_projection_ortho(width, height, znear, zfar);
-		self.matrix_projection[5] = -self.matrix_projection[5];
-		self.matrix_projection[13] = -self.matrix_projection[13];
+		
+		if (not get_is_directx_pipeline()){
+			self.matrix_projection[5] = -self.matrix_projection[5];
+			self.matrix_projection[13] = -self.matrix_projection[13];
+		}
 		
 		return self.matrix_projection;
 	}
