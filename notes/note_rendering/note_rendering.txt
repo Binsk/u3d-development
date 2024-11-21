@@ -18,3 +18,78 @@ they can be hard to visualize. When specifying a direction you may
 find the functions `vec_to_quat` or `veca_to_quat` useful if you wish
 to specify a point direction or rotation around an axis and convert
 that into a quaternion.
+
+## Top-Level Objects
+Rendering something requires stitching together a lot of different objects
+and classes. The 'top level' objects are those that actually communicate
+with each-other.
+
+To get a very basic scene rendering you will need at least one of each of
+the following instantiated:
+
+1. obj_render_controller
+2. Camera
+3. Light
+4. Body
+
+`obj_render_controller` stitches the `Camera`, `Light`, and `Body` all into
+one scene for processing. It should have these last three instances attached to
+it through the appropriate local functions.
+
+The `Camera` generates the actual graphical buffers and projection properties.
+For basic setup the most common camera type is the `CameraView`.
+
+The `Light` processes the graphical buffers and turns the data into something
+visible. A good starting light type is the `LightAmbient` as it is the simplest.
+
+The `Body` stitches various renderable elements, such as a `Model` and
+`AnimationTree` together, while giving them a world position. The body will
+be submitted to the `Camera` by the `obj_render_controller` when building the
+graphical buffers. While you can manually build each component yourself, the
+simplest way to get started is to export a GLB model file from a separate
+editor and then instantiate a `GLTFBuilder` to let it construct the `Model`
+instance for you with all the necessary materials. You can then just add this
+generated model to a `Body` and you are good to go.
+
+## Renderer
+The current renderer uses a deferred pipeline. This means that models
+are rendered simply, all at once, and without any lighting detail into
+a number of color and data buffers. Then, these buffers are sent to each
+light and the lights are processed once each over screen-space buffers.
+
+### Positives
+This results in the ability to have lots of lights with significantly
+less cost. Models are rendered once and the lights multiple times instead
+of rendering a model over-and-over, once for each light. It also reduces
+a lot of wasted processing as it only lights up visible pixels and not
+hidden objects that may have been rendered only to be covered by something
+in front.
+
+### Negatives
+Because everything is rendered and lit in screen space we can only store
+one depth value, that being in the depth buffer. This means no translucency,
+or "partially see-through" models.
+
+In the case of this specific render we actually have two stages, one for 
+materials that are fully opaque or fully transparent and one for materials 
+that are translucent. The results are then merged together by comparing each
+stage's depth buffer. This gives us 1 layer of translucency support so that
+opaque instances can fully interact with translucent objects without any
+kind of object sorting. 1 layer is generally enough for most cases and the
+occasional requirement for 2+ layers, where you need to see translucent objects
+through other translucent objects, can usually be worked avoided through
+level / game design.
+
+**Note**: When exporting models through Blender, make sure translucent materials
+have the property `Material -> Settings -> Render Method` set to **Blended** 
+not **Dithered**, otherwise glTF will classify it as an opaque material.
+
+## Active Cameras
+Cameras act as the 'render system' in that they store the graphical buffer
+and execute the render stages / passes. When a model is rendered with a 
+material the class `Camera` and `Eye` will have current rendering info set
+into some of their static variables. This is done instead of passing the data
+through arguments.
+
+When writing custom materials or cameras the state should be accessed / set
+through these variables.
