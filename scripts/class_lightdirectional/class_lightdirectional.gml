@@ -140,7 +140,12 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_reset_target();
 	}
 	
+	/// @desc	Applies the shadows to the final result by first generating a quick
+	///			shadow bool sample target then multi-sampling to blend edges. 
+	///	@note	The translucent pass DOESN'T render shadows, but it DOES sample 
+	///			them from the opaque pass.
 	function apply_shadows(eye_id, surface_in, surface_out){
+		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
 		if (not casts_shadows){
 			if (surface_exists(shadowbit_surface)){
 				surface_free(shadowbit_surface);
@@ -148,15 +153,22 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			}
 			return false;
 		}
+		else if (is_translucent and not surface_exists(shadow_surface))
+			return false;
 		
-		var sw = surface_get_width(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
-		var sh = surface_get_height(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+		var sw = surface_get_width(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
+		var sh = surface_get_height(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
 		
 		if (surface_exists(shadowbit_surface) and surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
 			surface_free(shadowbit_surface);
 			
-		if (not surface_exists(shadowbit_surface))
+		if (not surface_exists(shadowbit_surface)){
+			if (is_translucent)
+				return false;
+				
 			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
+		}
+			
 
 		surface_clear(shadowbit_surface, c_black);
 		
@@ -166,7 +178,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_set_target(shadowbit_surface);
 		shader_set(shd_lighting_sample_shadow);
 		sampler_set("u_sShadow", shadow_depth_texture);
-		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
 		uniform_set("u_fShadowBias", shader_set_uniform_f, shadow_bias);
 		uniform_set("u_mShadow", shader_set_uniform_matrix_array, [shadow_viewprojection_matrix]);
 		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye_id.get_inverse_projection_matrix()]);
@@ -187,7 +199,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_set_target(surface_out);
 		shader_set(shd_lighting_apply_shadow);
 		sampler_set("u_sShadow", surface_get_texture(shadowbit_surface));
-		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in)]);
 		uniform_set("u_fSampleBias", shader_set_uniform_f, [shadow_sample_bias]);
 		draw_surface(surface_in, 0, 0);

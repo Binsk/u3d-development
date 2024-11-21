@@ -14,9 +14,29 @@ function Material() : U3DObject() constructor {
 	#region PROPERTIES
 	render_keys = {};
 	render_stage = CAMERA_RENDER_STAGE.none;	// Which stage(es) this material renders in
+	casts_shadows = true;						// Whether or not this material is rendered w/ the shadow pass
 	#endregion
 	
 	#region METHODS
+	/// @desc	Some render situations might provide special data and this data
+	///			will be provided through a structure of keys. Keys will be set
+	///			before ANY other material processing and can be used at any stage
+	///			of the rendering pipeline.
+	function set_render_keys(keys={}){
+		render_keys = keys;
+	}
+	
+	/// @desc	Sets which render stage the material should render in. Usually this
+	///			should be opaque whenever possible, translucent if having a partially-
+	///			transparent material is absolutely necessary.
+	function set_render_stage(stage=CAMERA_RENDER_STAGE.none){
+		self.render_stage = clamp(floor(stage), 0, 3);
+	}
+	
+	function set_casts_shadows(casts=true){
+		casts_shadows = bool(casts);
+	}
+	
 	/// @desc	Returns if this material is the default "Missing" material. Useful to check
 	///			if a material was correctly loaded.
 	function get_is_missing_material(){
@@ -43,19 +63,8 @@ function Material() : U3DObject() constructor {
 		throw new Exception("cannot call virtual function!");
 	}
 	
-	/// @desc	Some render situations might provide special data and this data
-	///			will be provided through a structure of keys. Keys will be set
-	///			before ANY other material processing and can be used at any stage
-	///			of the rendering pipeline.
-	function set_render_keys(keys={}){
-		render_keys = keys;
-	}
-	
-	/// @desc	Sets which render stage the material should render in. Usually this
-	///			should be opaque whenever possible, translucent if having a partially-
-	///			transparent material is absolutely necessary.
-	function set_render_stage(stage=CAMERA_RENDER_STAGE.none){
-		self.render_stage = clamp(floor(stage), 0, 3);
+	function get_casts_shadows(){
+		return casts_shadows;
 	}
 	#endregion
 	

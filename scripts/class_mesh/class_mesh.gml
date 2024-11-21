@@ -142,6 +142,9 @@ function Mesh() : U3DObject() constructor {
 				
 			if (material.render_stage & CAMERA_RENDER_STAGE.opaque != CAMERA_RENDER_STAGE.opaque)
 				continue;
+			
+			if (not material.get_casts_shadows())
+				continue;
 				
 			material.apply_shadow();
 

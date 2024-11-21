@@ -62,6 +62,7 @@ enum CAMERA_RENDER_FLAG {
 function Camera() : Body() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance; not usually used for clarity but available if necessary
+	static ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
 	
 	buffer_width = undefined;	// Render resolution
 	buffer_height = undefined;
@@ -78,7 +79,6 @@ function Camera() : Body() constructor {
 	exposure_level = 1.0;
 	white_level = 1.0;
 	gamma_correction = true;
-	
 	#endregion
 	
 	#region METHODS
@@ -450,8 +450,8 @@ function Camera() : Body() constructor {
 			surface_reset_target();
 			
 			var applied_shadows = false;
-			if (not is_translucent and render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows)
-				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque]);
+			if (render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows)
+				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 			
 			if (not applied_shadows){
 				gpu_set_blendmode(bm_add);
@@ -600,19 +600,18 @@ function Camera() : Body() constructor {
 		Eye.ACTIVE_INSTANCE = eye;
 		// Make sure the GBuffer exists and is valid
 		generate_gbuffer();
-		
-		/// @note	Translucent is done first so the left-over shared buffers (such
-		///			as normals) contain the opaque pass for post-processing. This is
-		///			done because opaque is significantly more common and this avoids
-		///			having to have numerous extra separate buffers.
-		// Translucent pass:
-		render_gbuffer(eye, body_array, true);
-		render_lighting(eye, light_array, body_array, true);
-		
+
 		// Opaque pass:
+		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
 		render_gbuffer(eye, body_array, false);
 		render_lighting(eye, light_array, body_array, false);
 
+		// Translucent pass:
+		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
+		render_gbuffer(eye, body_array, true);
+		render_lighting(eye, light_array, body_array, true);
+
+		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
 		// Post-processing:
 		render_post_processing();
 		
