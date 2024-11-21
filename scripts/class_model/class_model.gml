@@ -92,14 +92,12 @@ function Model() : U3DObject() constructor {
 	}
 
 	/// @desc Renders the model out, applying materials as needed.
-	/// @param	{Camera}	camera_id		id of the camera that is currently rendering
-	/// @param	{CAMERA_RENDER_STAGE}	render_stage	currently rendering stage
 	/// @param	{struct}	data	arbitrary data calculated by the renderer
-	function render(camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, data={}){
+	function render(data={}){
 		var matrix = matrix_get(matrix_world); // Meshs can modify, so reset after each mesh
 		for (var i = array_length(mesh_array) - 1; i >= 0; --i){
 			mesh_array[i].apply_matrix();
-			mesh_array[i].render(material_data, camera_id, render_stage, data);
+			mesh_array[i].render(material_data, data);
 			matrix_set(matrix_world, matrix);
 		}
 	}

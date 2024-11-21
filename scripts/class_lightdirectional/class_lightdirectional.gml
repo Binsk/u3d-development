@@ -68,7 +68,9 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		texture_environment = texture;
 	}
 	
-	function apply_gbuffer(camera_id, is_translucent=false){
+	function apply_gbuffer(){
+		var camera_id = Camera.ACTIVE_INSTANCE;
+		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
 		sampler_set("u_sAlbedo", camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		sampler_set("u_sNormal", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		sampler_set("u_sPBR", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);

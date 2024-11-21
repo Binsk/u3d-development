@@ -370,7 +370,7 @@ function Camera() : Body() constructor {
 				data.skeleton_bone_count = struct_names_count(body.animation_instance.skeleton);
 			}
 				
-			body.model_instance.render(self, is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque, data);
+			body.model_instance.render(data);
 		}
 		matrix_set(matrix_world, world_matrix);
 		surface_reset_target();
@@ -438,7 +438,7 @@ function Camera() : Body() constructor {
 			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 			surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
 /// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
-			light.apply_gbuffer(self, is_translucent);
+			light.apply_gbuffer();
 			light.apply();
 			draw_primitive_begin_texture(pr_trianglestrip, -1);
 			draw_vertex_texture(0, 0, 0, 0);

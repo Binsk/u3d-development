@@ -105,10 +105,9 @@ function Mesh() : U3DObject() constructor {
 	/// @desc	Renders out each primitive, applying the specified materials
 	///			according to primitive IDs
 	/// @param	{struct}	material_data	a struct containing material index -> Material() pairs
-	/// @param	{Camera}	camera_id		id of the camera that is currently rendering
-	/// @param	{CAMERA_RENDER_STAGE} render_stage	the currently executing render stage
 	/// @param	{struct}	data			arbitrary data calculated by the renderer; things like skeletal animation
-	function render(material_data={}, camera_id=undefined, render_stage=CAMERA_RENDER_STAGE.opaque, data={}){
+	function render(material_data={}, data={}){
+		var render_stage = Camera.ACTIVE_STAGE;
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
@@ -118,7 +117,7 @@ function Mesh() : U3DObject() constructor {
 			if (material.render_stage & render_stage <= 0) // Don't render, wrong stage
 				return;
 				
-			material.apply(camera_id, render_stage==CAMERA_RENDER_STAGE.translucent);
+			material.apply();
 
 /// @stub	Optimize it prevent re-sending data
 			if (primitive_array[i].has_bones){

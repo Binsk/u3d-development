@@ -30,9 +30,9 @@ function Light() : Node() constructor {
 	/// @desc	Apply the gbuffer samplers that will be required for the light. These
 	///			should be uniforms / textures that could be shared across multiple lights
 	///			of the same type.
-	/// @param	{Camera}	camera_id		id of the currently rendering camera containing the GBuffer
-	/// @param	{bool}		is_translucent	whether or not this is the translucent pass or not
-	function apply_gbuffer(camera_id, is_translucent=false){
+	/// @note	Current camera and render state can be fetched through the Camera static
+	///			class variables.
+	function apply_gbuffer(){
 		throw new Exception("cannot call virtual function!");
 	}
 	

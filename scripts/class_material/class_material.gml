@@ -45,9 +45,9 @@ function Material() : U3DObject() constructor {
 	
 	/// @desc	Should apply the necessary shader, uniforms, and textures necessary to build
 	///			the GBuffer.
-	/// @param	{Camera}		camera_id				id of the camera currently rendering the material
-	///	@param	{bool}			is_translucent=false	whether or not this is the translucent pass
-	function apply(camera_id, is_translucent=false){
+	/// @note	Current rendering camera and pass can be accessed through the Camera static 
+	///			member variables.
+	function apply(){
 		throw new Exception("cannot call virtual function!");
 	}
 	

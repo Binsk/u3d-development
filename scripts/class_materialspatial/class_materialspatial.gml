@@ -222,9 +222,12 @@ function MaterialSpatial() : Material() constructor {
 		return shader_gbuffer;
 	}
 	
-	function apply(camera_id, is_translucent=false){
+	function apply(){
 		if (shader_current() != shader_gbuffer)
 			shader_set(shader_gbuffer);
+		
+		var camera_id = Camera.ACTIVE_INSTANCE;
+		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
 		
 		// Send textures
 		static sampler_toggles = [0, 0, 0, 0];
