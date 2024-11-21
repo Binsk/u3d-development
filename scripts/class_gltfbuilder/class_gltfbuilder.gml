@@ -29,11 +29,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			child of MaterialSpatial. This can allow generating a model with a special
 	///			material that may have special processing requirements.
 	function set_material_class(class=MaterialSpatial){
-		if (not is_instanceof(class, MaterialSpatial)){
-			Exception.throw_conditional("invalid type, expected [MaterialSpatial]!");
-			return;
-		}
-		
 		material_class = class;
 	}
 	
