@@ -315,6 +315,10 @@ function Camera() : Body() constructor {
 		surface_depth_disable(false);
 	}
 	
+	function render_prepass(){
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.view], 0, 0);
+	}
+	
 	/// @desc	Given an array of renderable bodies, the camera will render all the
 	///			texture data into the GBuffer to later be passed into the lighting
 	///			stage.
@@ -377,9 +381,9 @@ function Camera() : Body() constructor {
 		
 		// Render view vector buffer for use with lighting
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.view]);
-		draw_clear(0);
 		shader_set(shd_view_buffer);
 		sampler_set("u_sDepth", gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+		sampler_set("u_sDepthOpaque", (render_stages & CAMERA_RENDER_STAGE.opaque == 0) ? gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent] : gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
 		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye.get_inverse_projection_matrix()]);
 		uniform_set("u_mInvView", shader_set_uniform_matrix_array, [eye.get_inverse_view_matrix()]);
 		uniform_set("u_vCamPosition", shader_set_uniform_f, [position.x, position.y, position.z]);
@@ -600,6 +604,7 @@ function Camera() : Body() constructor {
 		Eye.ACTIVE_INSTANCE = eye;
 		// Make sure the GBuffer exists and is valid
 		generate_gbuffer();
+		render_prepass();
 
 		// Opaque pass:
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
