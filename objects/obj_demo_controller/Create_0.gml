@@ -122,6 +122,7 @@ light_directional = new LightDirectional(quat(), vec(50 * 0.25, 60 * 0.25, 70 * 
 light_directional.look_at(vec()); // Specify to look at the center point where the model will spawn
 light_directional.shadow_world_units = 24;
 light_directional.shadow_sample_bias = 0.000001;	// Depends on view distance; but discards samples based on depth difference (helps remove haloing)
+light_directional.shadow_bias = 0.00001;
 light_directional.set_intensity(2.0);
 
 // Define render size (will be auto-updated w/ the GUI)

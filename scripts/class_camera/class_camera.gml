@@ -167,7 +167,7 @@ function Camera() : Body() constructor {
 			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque albedo + depth
 			(render_stages & CAMERA_RENDER_STAGE.translucent ? 8 : 0) +	// translucent albedo + depth
 			4 +	// Normal
-			4 + // View
+			8 + // View
 			(get_has_render_flag(CAMERA_RENDER_FLAG.emission) ? 4 : 0) + // Emission
 			4 + // PBR
 			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque output (16f)
