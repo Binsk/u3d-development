@@ -82,7 +82,7 @@ function PostProcessFX(shader, uniforms={}, samplers={}) : U3DObject() construct
 		sampler_set("u_sDepthTranslucent", gbuffer[$ CAMERA_GBUFFER.depth_translucent] ?? -1);
 		sampler_set("u_sView", gbuffer[$ CAMERA_GBUFFER.view] ?? -1);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(surface_get_texture(surface_out)), texture_get_texel_height(surface_get_texture(surface_out))]);
-		uniform_set("u_iRenderStages", shader_set_uniform_i, Camera.ACTIVE_INSTANCE.render_stages);
+		uniform_set("u_iRenderStages", shader_set_uniform_i, Camera.get_is_opaque_stage(Camera.ACTIVE_INSTANCE.render_stages) | (Camera.get_is_translucent_stage(Camera.ACTIVE_INSTANCE.render_stages) * 2));
 		uniform_set("u_vZClip", shader_set_uniform_f, [Eye.ACTIVE_INSTANCE.znear, Eye.ACTIVE_INSTANCE.zfar]);
 
 		for (var i = array_length(uniform_keys) - 1; i >= 0; --i){

@@ -101,6 +101,7 @@ U3D.RENDERING.PPFX.fog.set_color(c_yellow, 0.0);	// As fog hits, blend to yellow
 U3D.RENDERING.PPFX.skybox.set_enabled(false);		// We enable along w/ environmental mapping
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pass by default; translucent can be enabled through the interface
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
+// camera.set_render_stages(CAMERA_RENDER_STAGE.mixed);
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
 
 camera_ray = new Ray();	// The ray to be used to detect mouse collisions

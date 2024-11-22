@@ -44,7 +44,7 @@
 -	Implement morph targets for glTF loading: https://github.com/KhronosGroup/glTF-Tutorials/blob/main/gltfTutorial/gltfTutorial_017_SimpleMorphTarget.md
 	It is effectively vertex morphing animation.
 -	Look into Intel's improved (and faster) SSAO: https://github.com/GameTechDev/XeGTAO
--`	Add support for Linear / sRGB space toggling in textures! Needed for things like cube-mapping
+-	Add support for Linear / sRGB space toggling in textures! Needed for things like cube-mapping
 	and sky-boxes since they are blended at different stages of the pipeline.
 -	Add support for 'hooks' w/ custom properties when loading glTF; this will allow
 	changing generation w/ game-specific properties defined in blender.

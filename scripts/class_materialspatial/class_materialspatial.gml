@@ -227,7 +227,7 @@ function MaterialSpatial() : Material() constructor {
 			shader_set(shader_gbuffer);
 		
 		var camera_id = Camera.ACTIVE_INSTANCE;
-		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
+		var is_translucent = Camera.get_is_translucent_stage();
 		
 		// Send textures
 		static sampler_toggles = [0, 0, 0, 0];

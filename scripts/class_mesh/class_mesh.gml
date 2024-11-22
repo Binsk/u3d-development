@@ -107,14 +107,13 @@ function Mesh() : U3DObject() constructor {
 	/// @param	{struct}	material_data	a struct containing material index -> Material() pairs
 	/// @param	{struct}	data			arbitrary data calculated by the renderer; things like skeletal animation
 	function render(material_data={}, data={}){
-		var render_stage = Camera.ACTIVE_STAGE;
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
 			if (is_undefined(material))
 				material = material_index < 0 ? U3D.RENDERING.MATERIAL.blank : U3D.RENDERING.MATERIAL.missing;
 				
-			if (material.render_stage & render_stage <= 0) // Don't render, wrong stage
+			if (material.render_stage & Camera.ACTIVE_STAGE <= 0) // Don't render, wrong stage
 				return;
 				
 			material.apply();

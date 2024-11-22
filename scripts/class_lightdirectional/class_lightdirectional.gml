@@ -70,7 +70,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	
 	function apply_gbuffer(){
 		var camera_id = Camera.ACTIVE_INSTANCE;
-		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
+		var is_translucent = Camera.get_is_translucent_stage();
 		sampler_set("u_sAlbedo", camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
 		sampler_set("u_sNormal", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		sampler_set("u_sPBR", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
@@ -147,7 +147,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	///	@note	The translucent pass DOESN'T render shadows, but it DOES sample 
 	///			them from the opaque pass.
 	function apply_shadows(eye_id, surface_in, surface_out){
-		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
+		var is_translucent = Camera.get_is_translucent_stage();
 		if (not casts_shadows){
 			if (surface_exists(shadowbit_surface)){
 				surface_free(shadowbit_surface);

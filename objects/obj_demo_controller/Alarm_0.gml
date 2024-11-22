@@ -265,20 +265,52 @@ inst.text ="Opaque Pass";
 inst.text_tooltip = "Whether or not opaque materials should be rendered.";
 inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
-	if (is_checked)
-		obj_demo_controller.camera.render_stages |= CAMERA_RENDER_STAGE.opaque;
-	else
-		obj_demo_controller.camera.render_stages &= ~CAMERA_RENDER_STAGE.opaque;
+	var is_opaque = is_checked;
+	var is_translucent = false;
+	with (obj_checkbox){
+		if (text == "Translucent Pass"){
+			is_translucent = self.is_checked;
+			break;
+		}
+	}
+	
+	obj_demo_controller.camera.set_render_stages(is_opaque | (is_translucent * 2));
 });
 
 inst = instance_create_depth(ax + 256, ay, 0, obj_checkbox);
 inst.text ="Translucent Pass";
 inst.text_tooltip = "Whether or not translucent materials should be rendered.";
 inst.signaler.add_signal("checked", function(is_checked){
-	if (is_checked)
-		obj_demo_controller.camera.render_stages |= CAMERA_RENDER_STAGE.translucent;
-	else
-		obj_demo_controller.camera.render_stages &= ~CAMERA_RENDER_STAGE.translucent;
+	var is_opaque = false;
+	var is_translucent = is_checked;
+	with (obj_checkbox){
+		if (text == "Opaque Pass"){
+			is_opaque = self.is_checked;
+			break;
+		}
+	}
+	
+	obj_demo_controller.camera.set_render_stages(is_opaque | (is_translucent * 2));
+});
+
+inst = instance_create_depth(ax + 512, ay, 0, obj_checkbox);
+inst.text ="Force Mixed Pass";
+inst.text_tooltip = "Forces both translucent and opaque passes to be mixed in one pass.\n\nThis can cause blending and alpha issues but makes for a good fall-back or special camera rendering situations.";
+inst.signaler.add_signal("checked", function(is_checked){
+	var is_opaque = false;
+	var is_translucent = false;
+	with (obj_checkbox){
+		if (text == "Opaque Pass"){
+			is_opaque = self.is_checked;
+			is_disabled = is_checked;
+		}
+		if (text == "Translucent Pass"){
+			is_translucent = self.is_checked;
+			is_disabled = is_checked;
+		}
+	}
+	
+	obj_demo_controller.camera.set_render_stages(is_checked ? CAMERA_RENDER_STAGE.mixed : (is_opaque | (is_translucent * 2)));
 });
 
 ay -= 36

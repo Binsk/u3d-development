@@ -32,10 +32,14 @@ enum CAMERA_GBUFFER {
 
 /// @desc	Used by materials to specify which render stage they should appear in.
 enum CAMERA_RENDER_STAGE {
-	none = 0,			// Does not render at all
-	opaque = 1,			// Renders in the opaque pass (all alphas are 0 or 1)
-	translucent = 2,	// Renders in the translucent pass (alpha can be [0..1])
-	both = 3			// Renders in both stages (not usually desired)
+	none = 0,			// (camera/material) Does not render at all
+	opaque = 1,			// (camera/material) Renders in the opaque pass (all alphas are 0 or 1)
+	translucent = 2,	// (camera/material) Renders in the translucent pass (alpha can be [0..1])
+	both = 3,			// (camera/material) Renders in both stages (not usually desired)
+	
+	mixed = 7			// (camera) Renders everything under one stage (generally only used for special camera effects)
+						// Translucent elements will be rendered as opaque based off of the material's alpha cutoff 
+						// (which defaults to 0.5).
 }
 
 /// @desc	Defines the tonemap to apply when rendering out.
@@ -85,19 +89,33 @@ function Camera() : Body() constructor {
 	gamma_correction = true;
 	#endregion
 	
-	#region METHODS
-	/// @desc	Return an array of all attached Eye() instances.
-	function get_eye_array(){
-		return [];
+	#region STATIC METHODS
+	/// @desc	Returns if the current render stage is opaque. This will return for
+	///			the opaque stage AND the mixed stage (as mixed renders to opaque).
+	static get_is_opaque_stage = function(stage=Camera.ACTIVE_STAGE){
+		return (stage & CAMERA_RENDER_STAGE.opaque);
 	}
 	
+	/// @desc	Returns if the current render stage is translucent. This will only
+	///			return if explicitly the translucent stage.
+	static get_is_translucent_stage = function(stage=Camera.ACTIVE_STAGE){
+		return (stage & CAMERA_RENDER_STAGE.translucent > 0 and stage != CAMERA_RENDER_STAGE.mixed);
+	}
+	
+	/// @desc	Retruns if the current render stage is mixed.
+	static get_is_mixed_stage = function(stage=Camera.ACTIVE_STAGE){
+		return stage == CAMERA_RENDER_STAGE.mixed;
+	}
+	#endregion
+	
+	#region METHODS
 	/// @desc	Set which render stages should be rendered. Even when no instances
 	///			exist in a render stage, that stage still takes up processing time
 	///			and vRAM. E.g., if you KNOW you will never have translucent materials
 	///			then disabling the translucent stage will free up vRAM and give you
 	///			some extra FPS.
 	function set_render_stages(stages=CAMERA_RENDER_STAGE.both){
-		render_stages = clamp(floor(stages), 0, 3);
+		render_stages = clamp(floor(stages), 0, 7);
 	}
 	
 	/// @desc	Sets the render size for the camera, in pixels. This size will
@@ -152,6 +170,11 @@ function Camera() : Body() constructor {
 		gamma_correction = bool(enabled);
 	}
 	
+	/// @desc	Return an array of all attached Eye() instances.
+	function get_eye_array(){
+		return [];
+	}
+	
 	/// @desc	Returns the estimated amount of vRAM used by the gbuffer, in bytes, for this camera.
 	///			Does NOT account for body materials or light buffers.
 	function get_vram_usage(){
@@ -161,13 +184,13 @@ function Camera() : Body() constructor {
 		var bytes = 0;
 		bytes += (buffer_width * buffer_height) * (
 			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque albedo + depth
-			(render_stages & CAMERA_RENDER_STAGE.translucent ? 8 : 0) +	// translucent albedo + depth
+			(get_is_translucent_stage(render_stages) ? 8 : 0) +	// translucent albedo + depth
 			4 +	// Normal
 			8 + // View
 			(get_has_render_flag(CAMERA_RENDER_FLAG.emission) ? 4 : 0) + // Emission
 			4 + // PBR
 			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque output (16f)
-			(render_stages & CAMERA_RENDER_STAGE.translucent ? 8 : 0) +	// translucent output (16f)
+			(get_is_translucent_stage(render_stages) ? 8 : 0) +	// translucent output (16f)
 			(get_has_render_flag(CAMERA_RENDER_FLAG.ppfx) ? 8 : 0) + // Post process
 			8		// Final
 		);
@@ -235,14 +258,14 @@ function Camera() : Body() constructor {
 			surface_free(surfaces[$ CAMERA_GBUFFER.albedo_opaque])
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.albedo_translucent])){
-			if (render_stages & CAMERA_RENDER_STAGE.translucent){
+			if (get_is_translucent_stage(render_stages)){
 				surface_depth_disable(false);
 				surfaces[$ CAMERA_GBUFFER.albedo_translucent] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
 				textures[$ CAMERA_GBUFFER.albedo_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
 				textures[$ CAMERA_GBUFFER.depth_translucent] = surface_get_texture_depth(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
 			}
 		}
-		else if (render_stages & CAMERA_RENDER_STAGE.translucent <= 0)
+		else if (not get_is_translucent_stage(render_stages))
 			surface_free(surfaces[$ CAMERA_GBUFFER.albedo_translucent])
 		
 		surface_depth_disable(true);
@@ -283,12 +306,12 @@ function Camera() : Body() constructor {
 			surface_free(surfaces[$ CAMERA_GBUFFER.light_opaque])
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.light_translucent])){
-			if (render_stages & CAMERA_RENDER_STAGE.translucent){
+			if (get_is_translucent_stage(render_stages)){
 				surfaces[$ CAMERA_GBUFFER.light_translucent] = surface_create(buffer_width, buffer_height, surface_rgba16float);
 				textures[$ CAMERA_GBUFFER.light_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.light_translucent]);
 			}
 		}
-		else if (render_stages & CAMERA_RENDER_STAGE.translucent <= 0)
+		else if (not get_is_translucent_stage(render_stages))
 			surface_free(surfaces[$ CAMERA_GBUFFER.light_translucent])
 		
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.final])){
@@ -328,7 +351,7 @@ function Camera() : Body() constructor {
 	/// @param	{array}	body_array		array of Body instances to render
 	/// @param	{bool}	is_translucent	whether or not this is the translucent pass
 	function render_gbuffer(eye, body_array=[]){
-		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
+		var is_translucent = Camera.get_is_translucent_stage();
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
 		
@@ -401,7 +424,7 @@ function Camera() : Body() constructor {
 	/// @param	{array}	body_array		array of Body instances to render
 	/// @param	{bool}	is_translucent	whether or not this is the translucent pass
 	function render_lighting(eye, light_array=[], body_array=[]){
-		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
+		var is_translucent = Camera.get_is_translucent_stage();
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
 		
@@ -519,8 +542,8 @@ function Camera() : Body() constructor {
 		// Since we are performing final post-process, go ahead and merge layers together:
 		var	tex_o = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.light_opaque] : sprite_get_texture(spr_default_white, 0))
 		var	tex_do = (render_stages & CAMERA_RENDER_STAGE.opaque ? gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque] : sprite_get_texture(spr_default_white, 0))
-		var	tex_t = (render_stages & CAMERA_RENDER_STAGE.translucent ? gbuffer.textures[$ CAMERA_GBUFFER.light_translucent] : sprite_get_texture(spr_default_white, 0))
-		var	tex_dt = (render_stages & CAMERA_RENDER_STAGE.translucent ? gbuffer.textures[$ CAMERA_GBUFFER.depth_translucent] : sprite_get_texture(spr_default_white, 0))
+		var	tex_t = (render_stages & CAMERA_RENDER_STAGE.translucent and render_stages != CAMERA_RENDER_STAGE.mixed ? gbuffer.textures[$ CAMERA_GBUFFER.light_translucent] : sprite_get_texture(spr_default_white, 0))
+		var	tex_dt = (render_stages & CAMERA_RENDER_STAGE.translucent and render_stages != CAMERA_RENDER_STAGE.mixed  ? gbuffer.textures[$ CAMERA_GBUFFER.depth_translucent] : sprite_get_texture(spr_default_white, 0))
 
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
@@ -589,17 +612,25 @@ function Camera() : Body() constructor {
 		generate_gbuffer();
 		render_prepass();
 
-		// Opaque pass:
-		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
-		render_gbuffer(eye, body_array);
-		render_lighting(eye, light_array, body_array);
-
-		// Translucent pass:
-		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
-		render_gbuffer(eye, body_array);
-		render_lighting(eye, light_array, body_array);
-
+		if (render_stages == CAMERA_RENDER_STAGE.mixed){
+			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed;
+			render_gbuffer(eye, body_array);
+			render_lighting(eye, light_array, body_array);
+		}
+		else {
+			// Opaque pass:
+			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
+			render_gbuffer(eye, body_array);
+			render_lighting(eye, light_array, body_array);
+	
+			// Translucent pass:
+			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
+			render_gbuffer(eye, body_array);
+			render_lighting(eye, light_array, body_array);
+		}
+		
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
+		
 		// Post-processing:
 		render_post_processing();
 		
