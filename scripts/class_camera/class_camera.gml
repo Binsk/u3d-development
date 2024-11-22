@@ -520,6 +520,8 @@ function Camera() : Body() constructor {
 			gpu_set_zwriteenable(true);
 			gpu_set_ztestenable(true);
 			matrix_set(matrix_world, matrix_model);
+			draw_set_color(c_white);
+			draw_set_alpha(1);
 		}
 	}
 	/// @desc	Renders all the PostProcessFX added to the camera in order of priority.
