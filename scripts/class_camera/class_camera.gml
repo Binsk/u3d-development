@@ -400,7 +400,8 @@ function Camera() : Body() constructor {
 	/// @param	{array}	light_array		array of Light instances to render
 	/// @param	{array}	body_array		array of Body instances to render
 	/// @param	{bool}	is_translucent	whether or not this is the translucent pass
-	function render_lighting(eye, light_array=[], body_array=[], is_translucent=false){
+	function render_lighting(eye, light_array=[], body_array=[]){
+		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
 		
@@ -591,12 +592,12 @@ function Camera() : Body() constructor {
 		// Opaque pass:
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
 		render_gbuffer(eye, body_array);
-		render_lighting(eye, light_array, body_array, false);
+		render_lighting(eye, light_array, body_array);
 
 		// Translucent pass:
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
 		render_gbuffer(eye, body_array);
-		render_lighting(eye, light_array, body_array, true);
+		render_lighting(eye, light_array, body_array);
 
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
 		// Post-processing:
