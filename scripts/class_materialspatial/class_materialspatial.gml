@@ -55,6 +55,7 @@
 // u_fAlphaCutoff		(float)			opaque render sets alpha=0 if < cutoff and 1 if >=
 // u_iTranslucent		(int)			whether or not it is a translucent pass
 // u_mBone				(mat4[80])		array of bone transform matrices (up to 80); NOTE: uniform set by mesh, not material!
+// u_iTime				(int)			GameMaker's current_time value
 #endregion
 
 /// @note	The PBR color index for roughness and metalness are defined as part
@@ -269,6 +270,8 @@ function MaterialSpatial() : Material() constructor {
 		
 		uniform_set("u_fAlphaCutoff", shader_set_uniform_f, alpha_cutoff);
 		uniform_set("u_iTranslucent", shader_set_uniform_i, is_translucent);
+		
+		uniform_set("u_iTime", shader_set_uniform_i, current_time);
 		
 		gpu_set_cullmode(cull_mode);
 	}

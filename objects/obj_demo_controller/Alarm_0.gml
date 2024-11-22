@@ -295,7 +295,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 
 inst = instance_create_depth(ax + 512, ay, 0, obj_checkbox);
 inst.text ="Force Mixed Pass";
-inst.text_tooltip = "Forces both translucent and opaque passes to be mixed in one pass.\n\nThis can cause blending and alpha issues but makes for a good fall-back or special camera rendering situations.";
+inst.text_tooltip = "Forces both translucent and opaque passes to be mixed in one pass.\n\nThis forces translucent materials to render opaque and is generally used as a fall-back or for special camera setups.";
 inst.signaler.add_signal("checked", function(is_checked){
 	var is_opaque = false;
 	var is_translucent = false;
