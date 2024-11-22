@@ -253,7 +253,7 @@ function MaterialSpatial() : Material() constructor {
 				sampler_toggles[2] = 1;
 		}
 		
-		if ( not is_undefined(texture[$ "emissive"])){
+		if (not is_undefined(texture[$ "emissive"])){
 			if (sampler_set("u_sEmissive", texture.emissive.texture.get_texture()) and
 				uniform_set("u_vEmissiveUV", shader_set_uniform_f, texture.emissive.uv))
 				sampler_toggles[3] = 1;

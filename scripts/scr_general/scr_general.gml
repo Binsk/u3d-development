@@ -122,3 +122,27 @@ function struct_get_values(struct){
 	
 	return array;
 }
+
+/// @desc	Renders a textured quad at the specified coordinates. Similar to
+///			draw_sprite or draw_surface but it takes a generic texture.
+function draw_quad(x1, y1, x2, y2, texture=-1){
+	var uvs = (texture < 0 ? [0, 0, 1, 1] : texture_get_uvs(texture));
+	draw_primitive_begin_texture(pr_trianglestrip, texture);
+	draw_vertex_texture(x1, y1, uvs[0], uvs[1]);
+	draw_vertex_texture(x2, y1, uvs[2], uvs[1]);
+	draw_vertex_texture(x1, y2, uvs[0], uvs[3]);
+	draw_vertex_texture(x2, y2, uvs[2], uvs[3]);
+	draw_primitive_end();
+}
+
+/// @desc	Renders a textured quad at the specified coordinates. Similar to
+///			draw_sprite or draw_surface but it takes a generic texture.
+function draw_quad_color(x1, y1, x2, y2, texture=-1, color=c_white, alpha=1.0){
+	var uvs = (texture < 0 ? [0, 0, 1, 1] : texture_get_uvs(texture));
+	draw_primitive_begin_texture(pr_trianglestrip, texture);
+	draw_vertex_texture_color(x1, y1, uvs[0], uvs[1], color, alpha);
+	draw_vertex_texture_color(x2, y1, uvs[2], uvs[1], color, alpha);
+	draw_vertex_texture_color(x1, y2, uvs[0], uvs[3], color, alpha);
+	draw_vertex_texture_color(x2, y2, uvs[2], uvs[3], color, alpha);
+	draw_primitive_end();
+}

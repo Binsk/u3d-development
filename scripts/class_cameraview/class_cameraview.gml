@@ -96,6 +96,16 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		var rw = render_width;
 		var rh = render_height;
 		
+		var tonemap = render_tonemap;
+		var exposure = exposure_level;
+		var gamma = gamma_correction;
+		
+		if (debug_flags & (CAMERA_DEBUG_FLAG.render_normals | CAMERA_DEBUG_FLAG.render_pbr | CAMERA_DEBUG_FLAG.render_depth_opaque | CAMERA_DEBUG_FLAG.render_depth_translucent)){ // If overriding w/ debugging, remove tonemapping
+			tonemap = CAMERA_TONEMAP.linear;
+			exposure = 1.0;
+			gamma = false;
+		}
+		
 		gpu_set_blendmode(bm_normal);
 		shader_set(shd_tonemap);
 		sampler_set("u_sTexture", gbuffer.textures[$ CAMERA_GBUFFER.final]);

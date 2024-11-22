@@ -23,10 +23,8 @@ void main()
 	
 	vColor.rgb *= u_fExposure;
 	
-	if (u_iTonemap == 1){// Reinhard
-		// vColor.rgb /= vColor.rgb + vec3(1.0);
+	if (u_iTonemap == 1)// Reinhard
 		vColor.rgb = vColor.rgb * (1.0 + vColor.rgb / (u_fWhite * u_fWhite)) / (1.0 + vColor.rgb);
-	}
 	else if (u_iTonemap == 2){ // ACES
 		float fA = 2.51;
 		float fB = 0.03;
@@ -40,9 +38,6 @@ void main()
 	// Gamma correction:
 	if (u_iGamma > 0)
 		vColor.rgb = pow(vColor.rgb, vec3(1.0 / 2.2));
-	
-	// if (vColor.a > 0.0) // Fix issues w/ translucent combination but still allow stenciling out
-	// 	vColor.a = 1.0;
 		
 	gl_FragColor = vColor;
 }

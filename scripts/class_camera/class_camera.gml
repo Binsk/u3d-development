@@ -47,8 +47,12 @@ enum CAMERA_TONEMAP {
 
 /// @desc	Bitwiseable flags to apply to a camera for debugging purposes.
 enum CAMERA_DEBUG_FLAG {
-	render_wireframe	=	0b1,	// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
-	render_collisions	=	0b10	// Renders collision shapes as wireframe
+	render_wireframe	=	0b1,		// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
+	render_collisions	=	0b10,		// Renders collision shapes as wireframe
+	render_normals		=	0b100,		// Renders normals instead of the final output
+	render_pbr			=	0b1000,		// Renders PBR data instead of final output
+	render_depth_opaque	=	0b10000,	// Renders the opaque depth buffer
+	render_depth_translucent=0b100000,	// Renders the translucent depth buffer
 }
 
 /// @desc	Bitwiseable flags to enable / disable specific rendering pipeline features for the specific camara
@@ -139,6 +143,16 @@ function Camera() : Body() constructor {
 			render_flags |= flag;
 		else
 			render_flags &= ~flag;
+	}
+	
+	/// @desc	Enables or disables a debug flag effect.
+	/// @param	{CAMERA_DEBUG_FLAG}	flag	flag (or bitwised flags) to enable or disable
+	/// @param	{bool}				enabled	if true, adds the flag otherwise removes it
+	function set_debug_flag(flag, enabled=true){
+		if (enabled)
+			debug_flags |= flag;
+		else
+			debug_flags &= ~flag;
 	}
 	
 	/// @desc	Camera exposure to apply before tonemapping.
@@ -316,7 +330,11 @@ function Camera() : Body() constructor {
 	}
 	
 	function render_prepass(){
+		// The following buffers are SHARED between stages. Note that there may NOT
+		// be proper depth-checks when combining!
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.view], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
 	}
 	
 	/// @desc	Given an array of renderable bodies, the camera will render all the
@@ -341,8 +359,6 @@ function Camera() : Body() constructor {
 		
 		// Render models w/ materials to primary buffer channels:
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
 		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
 			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
 		
@@ -388,12 +404,7 @@ function Camera() : Body() constructor {
 		uniform_set("u_mInvView", shader_set_uniform_matrix_array, [eye.get_inverse_view_matrix()]);
 		uniform_set("u_vCamPosition", shader_set_uniform_f, [position.x, position.y, position.z]);
 		
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(buffer_width, 0, 1, 0);
-		draw_vertex_texture(0, buffer_height, 0, 1);
-		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
-		draw_primitive_end();
+		draw_quad(0, 0, buffer_width, buffer_height);
 		shader_reset();
 		surface_reset_target();
 	}
@@ -443,12 +454,7 @@ function Camera() : Body() constructor {
 /// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
 			light.apply_gbuffer();
 			light.apply();
-			draw_primitive_begin_texture(pr_trianglestrip, -1);
-			draw_vertex_texture(0, 0, 0, 0);
-			draw_vertex_texture(buffer_width, 0, 1, 0);
-			draw_vertex_texture(0, buffer_height, 0, 1);
-			draw_vertex_texture(buffer_width, buffer_height, 1, 1);
-			draw_primitive_end();
+			draw_quad(0, 0, buffer_width, buffer_height);
 			shader_reset();
 			surface_reset_target();
 			
@@ -473,12 +479,7 @@ function Camera() : Body() constructor {
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
 		shader_set(shd_lighting_emissive);
 		sampler_set("u_sEmissive", gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(buffer_width, 0, 1, 0);
-		draw_vertex_texture(0, buffer_height, 0, 1);
-		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
-		draw_primitive_end();
+		draw_quad(0, 0, buffer_width, buffer_height);
 		shader_reset();
 		
 		gpu_set_blendmode(bm_normal);
@@ -543,12 +544,7 @@ function Camera() : Body() constructor {
 		sampler_set("u_sDepthTranslucent", tex_dt);
 		uniform_set("u_iRenderStages", shader_set_uniform_i, render_stages);
 		
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(buffer_width, 0, 1, 0);
-		draw_vertex_texture(0, buffer_height, 0, 1);
-		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
-		draw_primitive_end();
+		draw_quad(0, 0, buffer_width, buffer_height);
 		
 		gpu_set_blendmode(bm_normal);
 		shader_reset();
@@ -630,8 +626,30 @@ function Camera() : Body() constructor {
 	///			as necessary.
 	function render(body_array, light_array){
 		var eye_array = get_eye_array();
-		for (var i = array_length(eye_array) - 1; i >= 0; --i)
+		for (var i = array_length(eye_array) - 1; i >= 0; --i){
 			render_eye(eye_array[i], body_array, light_array);
+					
+			if (debug_flags & (CAMERA_DEBUG_FLAG.render_normals | CAMERA_DEBUG_FLAG.render_pbr | CAMERA_DEBUG_FLAG.render_depth_opaque | CAMERA_DEBUG_FLAG.render_depth_translucent)){
+				gpu_set_blendmode_ext(bm_one, bm_zero);
+				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
+				if (debug_flags & CAMERA_DEBUG_FLAG.render_normals and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.normal]))
+					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.normal]);
+				if (debug_flags & CAMERA_DEBUG_FLAG.render_pbr and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]))
+					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
+				if (debug_flags & CAMERA_DEBUG_FLAG.render_depth_opaque and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque])){
+					shader_set(shd_depth_to_grayscale);
+					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+					shader_reset();
+				}
+				if (debug_flags & CAMERA_DEBUG_FLAG.render_depth_translucent and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_translucent])){
+					shader_set(shd_depth_to_grayscale);
+					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth_translucent]);
+					shader_reset();
+				}
+					
+				surface_reset_target();
+			}
+		}
 	};
 	
 	/// @desc	Should push the final result to the final render destination; 
