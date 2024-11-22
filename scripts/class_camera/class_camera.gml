@@ -317,6 +317,8 @@ function Camera() : Body() constructor {
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.view], 0, 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_translucent], 0, 0);
 	}
 	
 	/// @desc	Given an array of renderable bodies, the camera will render all the
@@ -325,7 +327,8 @@ function Camera() : Body() constructor {
 	/// @param	{Eye}	eye				the eye we should use for the view and projection
 	/// @param	{array}	body_array		array of Body instances to render
 	/// @param	{bool}	is_translucent	whether or not this is the translucent pass
-	function render_gbuffer(eye, body_array=[], is_translucent=false){
+	function render_gbuffer(eye, body_array=[]){
+		var is_translucent = (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.translucent);
 		if (not is_translucent and (render_stages & CAMERA_RENDER_STAGE.opaque) <= 0)
 			return;
 		
@@ -340,7 +343,7 @@ function Camera() : Body() constructor {
 		gpu_set_texrepeat(true);
 		
 		// Render models w/ materials to primary buffer channels:
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], 0, 0);
+		
 		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
 			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
 		
@@ -587,12 +590,12 @@ function Camera() : Body() constructor {
 
 		// Opaque pass:
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
-		render_gbuffer(eye, body_array, false);
+		render_gbuffer(eye, body_array);
 		render_lighting(eye, light_array, body_array, false);
 
 		// Translucent pass:
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
-		render_gbuffer(eye, body_array, true);
+		render_gbuffer(eye, body_array);
 		render_lighting(eye, light_array, body_array, true);
 
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
