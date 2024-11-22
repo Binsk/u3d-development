@@ -100,24 +100,6 @@ function Camera() : Body() constructor {
 		render_stages = clamp(floor(stages), 0, 3);
 	}
 	
-	function set_znear(znear){
-		var eye_array = get_eye_array();
-		for (var i = array_length(eye_array) - 1; i >= 0; --i)
-			eye_array[i].set_znear(znear);
-	}
-	
-	function set_zfar(zfar){
-		var eye_array = get_eye_array();
-		for (var i = array_length(eye_array) - 1; i >= 0; --i)
-			eye_array[i].set_zfar(zfar);
-	}
-	
-	function set_fov(fov){
-		var eye_array = get_eye_array();
-		for (var i = array_length(eye_array) - 1; i >= 0; --i)
-			eye_array[i].set_fov(fov);
-	}
-	
 	/// @desc	Sets the render size for the camera, in pixels. This size will
 	///			be used by each eye maintained by the camera.
 	function set_render_size(width, height){
