@@ -6,6 +6,7 @@ event_inherited();
 gltf = undefined;
 model = undefined;
 body = undefined;
+light_array = [];
 animation_tree = undefined;
 triangle_lerp = 0;	// Used to render part of the mesh as it 'loads in'
 is_unloading = false;	// If true, plays 'unload' animation effect
@@ -31,5 +32,11 @@ function cleanup_model(){
 			instance_destroy(slider);
 			break;
 		}
+	}
+	
+	for (var i = array_length(light_array) - 1; i >= 0; i--){
+		light_array[i].free();
+		delete light_array[i];
+		light_array = [];
 	}
 }

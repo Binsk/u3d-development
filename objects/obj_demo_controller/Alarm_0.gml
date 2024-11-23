@@ -11,9 +11,10 @@ instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has
 var file = file_find_first("test-models/*.glb", fa_none);
 var inst;
 var ax = display_get_gui_width() - 12 - 256;
+var max_files = 17;
 var is_maxed = false;
 while (file != "" and not is_maxed){
-	if (instance_number(obj_button_model) >= 18){
+	if (instance_number(obj_button_model) >= max_files){
 		is_maxed = true;
 		break;
 	}
@@ -26,7 +27,7 @@ file_find_close();
 
 file = file_find_first("test-models/*.gltf", fa_none);
 while (file != "" and not is_maxed){
-	if (instance_number(obj_button_model) >= 18){
+	if (instance_number(obj_button_model) >= max_files){
 		is_maxed = true;
 		break;
 	}
@@ -38,7 +39,7 @@ while (file != "" and not is_maxed){
 file_find_close();
  
 if (is_maxed) // Only used to prevent GUI overlap, really.
-	push_error("too many model files, stopping at 18...");
+	push_error($"too many model files, stopping at {max_files}...");
 
 // Exit button:
 inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44, 0, obj_button);
@@ -89,6 +90,17 @@ inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
 	with (obj_demo_controller){
 		import_textures = is_checked;
+	}
+});
+
+ay -= 32;
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.text = "Import Lights";
+inst.text_tooltip = "Whether or not the included glTF light definitions should be imported along with the model.";
+inst.is_checked = false;
+inst.signaler.add_signal("checked", function(is_checked){
+	with (obj_demo_controller){
+		import_lights = is_checked;
 	}
 });
 
@@ -364,7 +376,7 @@ inst.text = "Bloom: disabled";
 inst.min_value = 0;
 inst.max_value = 2.0;
 inst.drag_value = 0;
-inst.text_tooltip = $"Adjusts the threshold at which bloom appears.\n\nFor this test, bloom properties are set to:\nPasses: {U3D.RENDERING.PPFX.bloom.passes}, Scale: {U3D.RENDERING.PPFX.bloom.scale}, Stride: {U3D.RENDERING.PPFX.bloom.stride}";
+inst.text_tooltip = $"Adjusts the threshold at which bloom appears.\n\n Bloom properties are set to:\nPasses: {U3D.RENDERING.PPFX.bloom.passes}, Scale: {U3D.RENDERING.PPFX.bloom.scale}, Stride: {U3D.RENDERING.PPFX.bloom.stride}";
 inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
 	if (lerpvalue <= 0)
@@ -414,4 +426,4 @@ sprite_array = [];
 slider_ay = ay - 64; // Record so dynamic sliders know where to spawn
 
 environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
-U3D.RENDERING.PPFX.skybox.set_cubemap(new TextureCube(sprite_get_texture(spr_default_environment, 0)))
+U3D.RENDERING.PPFX.skybox.set_cubemap(new TextureCube(sprite_get_texture(spr_default_environment, 0)));

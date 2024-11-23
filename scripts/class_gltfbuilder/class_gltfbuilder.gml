@@ -986,6 +986,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @note	Lights ARE NOT RESOURCE MANAGED meaning that the array of lights returned MUST be
 	///			manually freed!
 	/// @param	{real}	scene		scene to spawn lights from or -1 for all lights in the model
+	/// @return {array}	of Light instances
 	function generate_lights(scene=0){
 		if (not get_has_extension("KHR_lights_punctual"))
 			return [];
@@ -1016,24 +1017,37 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			
 			var light = light_array[light_id];
-			if (light.type != "directional"){
-				print_traced("WARNING", $"unsupported light type [{light.type}], skipping...");
+			var light_instance;
+			switch (light.type){
+				case "directional":
+					var transform = get_node_transform(node_array[i]);
+					var rotation = quat_reverse(quat_normalize(matrix_get_quat(transform)));
+					rotation = quat_rotate_vec(rotation, vec(0, 0, -1));	// glTF specifies lights point down -Z, not +X like in U3D, so we rotate
+					
+					var translation = matrix_get_translation(transform); // Technically should be ignored, but including for shadow mapping
+					light_instance = new LightDirectional(vec_to_quat(rotation), translation);
+					light_instance.set_intensity((light[$ "intensity"] ?? 683) / 683);
+				break;
+				
+				case "point":
+					var transform = get_node_transform(node_array[i]);
+					var translation = matrix_get_translation(transform);
+					light_instance = new LightPoint(translation);
+/// @fixme	Figure out correct lighting conversion; ATM this looks good enough
+					light_instance.set_intensity((light[$ "intensity"] ?? 683) / 683);
+					light_instance.set_range(light[$ "range"] ?? infinity);
+				break;
+				
+				default:
+					print_traced("WARNING", $"unsupported light type [{light.type}], skipping...");
 				continue;
 			}
-			
-			var transform = get_node_transform(node_array[i]);
-			var rotation = quat_reverse(quat_normalize(matrix_get_quat(transform)));
-			rotation = quat_rotate_vec(rotation, vec(0, 0, -1));	// glTF specifies lights point down -Z, not +X like in U3D, so we rotate
-			
-			var translation = matrix_get_translation(transform); // Technically should be ignored, but including for shadow mapping
-			var light_instance = new LightDirectional(vec_to_quat(rotation), translation);
-			light_instance.set_intensity((light[$ "intensity"] ?? 683) / 683);
 			
 			if (not is_undefined(light[$ "color"]))
 				light_instance.set_color(make_color_rgb(255 * light[$ "color"][0], 255 * light[$ "color"][1], 255 * light[$ "color"][2]));
 
 			array_push(array, light_instance);
-/// @stub	Implement spot and point lights
+/// @stub	Implement spot lights
 		}
 		
 		return array;

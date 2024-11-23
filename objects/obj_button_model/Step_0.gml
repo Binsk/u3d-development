@@ -46,6 +46,12 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			obj_animation_controller.add_body(body);
 		}
 		
+		if (obj_demo_controller.import_lights){
+			light_array = gltf.generate_lights();
+			for (var i = array_length(light_array) - 1; i >= 0; --i)
+				obj_render_controller.add_light(light_array[i]);
+		}
+		
 		var generate_as_primary = true;
 			// If a model is already loaded w/ a skeleton, we show the bone selection tree to attach
 			// this body to:

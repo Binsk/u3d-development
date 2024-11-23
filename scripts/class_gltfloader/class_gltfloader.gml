@@ -10,7 +10,7 @@
 ///
 /// The following KHR extensions are PARTIALLY supported:
 /// -	KHR_lights_punctual
-///			Only directional lights are supported
+///			Only directional / point lights are supported
 ///
 /// The following KHR extensions are IGNORED:
 ///	-	KHR_materials_*
@@ -19,14 +19,17 @@
 ///			Unsupported extensions will throw an exception.
 
 /// @todo	Look into supporting KHR_draco_mesh_compression, but it seems to be a
-///			complex Google library. Used fairly frequently with models, however.
+///			complex Google library. Used fairly frequently with models, however,
+///			and greatly reduces model file size.
 
 function GLTFLoader() : U3DObject() constructor {
 	#region PROPERTIES
 	/// PREPROCESS_FUNCTION can be set to a function that takes a fixed buffer as an argument and
 	/// returns a fixed buffer as a return. If set, the file buffer will be passed into this function
 	/// and the returned buffer used for processing. This allows loading encrypted / specially formatted files
+	/// as the function can handle converting from the special format back into glTF.
 	static PREPROCESS_FUNCTION = undefined;
+	
 	gltf_version = undefined;
 	binary_buffer_array = [];	// Array of GLTF buffers
 	json_header = {};
@@ -126,7 +129,10 @@ function GLTFLoader() : U3DObject() constructor {
 			"KHR_draco_mesh_compression" :		false,		// Want to implement (requires research on complexity)
 			"KHR_materials_ior" :				false,		// Will likely implement (Requires in-shader IOR conversion)
 			"KHR_materials_specular" :			false,		// May implement (requires extra RGB buffer)
-			"KHR_materials_unlit" : 			false,		// Will not implement; export material as emissive instead
+			"KHR_materials_unlit" : 			false,		// Will NOT implement; export material as emissive instead
+			"KHR_materials_transmission" :		false,		// Want to implement (would handle proper reflections on translucent materials)
+			"KHR_materials_emissive_strength" :	false,		// Will implement
+			"KHR_collision_shapes" :			false,		// Want to implement (requires research on complexity; it is still under review by Khronos-)
 		}
 		
 		return EXTENSIONS[$ name] ?? false;
@@ -135,7 +141,7 @@ function GLTFLoader() : U3DObject() constructor {
 	/// @desc	Returns if the specified extension can be ignored by this loader and still
 	///			load successfully.
 	function get_is_extension_ignoreable(name){
-		return string_starts_with(name, "KHR_materials_"); // Materials can be ignored, they just render off
+		return string_starts_with(name, "KHR_materials_"); // Materials can be ignored, they render incorrectly but otherwise still load
 	}
 	
 	/// @desc	Returns if the specified extenion is specified in the model.

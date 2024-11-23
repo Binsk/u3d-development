@@ -40,6 +40,7 @@ animation_smooth = true;
 animation_speed = 1.0;
 animation_freq = 0.033;
 import_textures = true;
+import_lights = false;
 apply_transforms = true;
 
 error_array = [];			// Used to catch several model loading errors w/ incompatible models; displays these on-screen
