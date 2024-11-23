@@ -334,6 +334,8 @@ function Camera() : Body() constructor {
 		surface_depth_disable(false);
 	}
 	
+	/// @desc	A function that gets called after the graphic buffer is allocated
+	///			but before any rendering occurs.
 	function render_prepass(){
 		// The following buffers are SHARED between stages. Note that there may NOT
 		// be proper depth-checks when combining!
@@ -343,6 +345,14 @@ function Camera() : Body() constructor {
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque], 0, 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_translucent], 0, 0);
 	}
+	
+	/// @desc	A function that gets called after the grahpci buffer is rendered to
+	///			but before any lighting passes happen.
+	function render_midpass(){}
+	
+	/// @desc	A function that gets called after all lighting has occurred but before
+	///			the PPFX pass has occurred.
+	function render_postpass(){}
 	
 	/// @desc	Given an array of renderable bodies, the camera will render all the
 	///			texture data into the GBuffer to later be passed into the lighting
@@ -615,21 +625,26 @@ function Camera() : Body() constructor {
 		if (render_stages == CAMERA_RENDER_STAGE.mixed){
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed;
 			render_gbuffer(eye, body_array);
+			render_midpass();
 			render_lighting(eye, light_array, body_array);
 		}
 		else {
 			// Opaque pass:
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
 			render_gbuffer(eye, body_array);
+			render_midpass();
 			render_lighting(eye, light_array, body_array);
 	
 			// Translucent pass:
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
 			render_gbuffer(eye, body_array);
+			render_midpass();
 			render_lighting(eye, light_array, body_array);
 		}
 		
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
+		
+		render_postpass();
 		
 		// Post-processing:
 		render_post_processing();

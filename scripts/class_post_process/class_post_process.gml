@@ -26,6 +26,7 @@
 // u_vTexelSize			(vec2)			texel size of all provided textures
 // u_iRenderStages		(int)			0 = none, 1 = opaque only, 2 = translucent only, 3 = both
 // u_vZClip				(vec2)			znear, zfar
+// u_iTime				(int)			GameMaker's current_time value
 #endregion
 
 /// @desc	Defines a full-screen post-processing effect that will occur after all 
@@ -84,6 +85,7 @@ function PostProcessFX(shader, uniforms={}, samplers={}) : U3DObject() construct
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(surface_get_texture(surface_out)), texture_get_texel_height(surface_get_texture(surface_out))]);
 		uniform_set("u_iRenderStages", shader_set_uniform_i, Camera.get_is_opaque_stage(Camera.ACTIVE_INSTANCE.render_stages) | (Camera.get_is_translucent_stage(Camera.ACTIVE_INSTANCE.render_stages) * 2));
 		uniform_set("u_vZClip", shader_set_uniform_f, [Eye.ACTIVE_INSTANCE.znear, Eye.ACTIVE_INSTANCE.zfar]);
+		uniform_set("u_iTime", shader_set_uniform_i, current_time);
 
 		for (var i = array_length(uniform_keys) - 1; i >= 0; --i){
 			var data = uniforms[$ uniform_keys[i]];
@@ -95,12 +97,7 @@ function PostProcessFX(shader, uniforms={}, samplers={}) : U3DObject() construct
 			sampler_set(sampler_keys[i], data.get_texture());
 		}
 			
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(buffer_width, 0, 1, 0);
-		draw_vertex_texture(0, buffer_height, 0, 1);
-		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
-		draw_primitive_end();
+		draw_quad(0, 0, buffer_width, buffer_height);
 			
 		shader_reset();
 		surface_reset_target();
