@@ -1,7 +1,3 @@
-/// @stub for testing; make a collision menu:
-camera.debug_flags |= CAMERA_DEBUG_FLAG.render_collisions;
-camera.calculate_world_ray(gmouse.x, gmouse.y, camera_ray); // Update the ray to match the mouse
-
 // Update mouse coordinate:
 gmouse = {
 	x : device_mouse_x_to_gui(0),

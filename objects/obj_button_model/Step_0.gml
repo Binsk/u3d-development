@@ -4,7 +4,7 @@ if (instance_exists(obj_bone_scroll))
 if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_undefined(body)){ // Don't have our model loaded, so we can load now
 		try{
-			gltf = new GLTFBuilder(text, "test-models"); // Loads in the model data 
+			gltf = new GLTFBuilder(text, "render-test"); // Loads in the model data 
 			animation_tree = gltf.generate_animation_tree();	// Constructs an animation tree (if one exists)
 			model = gltf.generate_model(0, obj_demo_controller.import_textures, obj_demo_controller.apply_transforms); // Constructs scene 0 of the model (usually all we need)
 			model.freeze(); // Freeze the model into vRAM so we don't have to re-send all the vertex data every frame

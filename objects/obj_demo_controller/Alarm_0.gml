@@ -7,8 +7,8 @@
 instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has set text
 
 // Generate GUI:
-	// Scane model files:
-var file = file_find_first("test-models/*.glb", fa_none);
+	// Scan model files:
+var file = file_find_first("render-test/*.glb", fa_none);
 var inst;
 var ax = display_get_gui_width() - 12 - 256;
 var max_files = 17;
@@ -25,7 +25,7 @@ while (file != "" and not is_maxed){
 }
 file_find_close();
 
-file = file_find_first("test-models/*.gltf", fa_none);
+file = file_find_first("render-test/*.gltf", fa_none);
 while (file != "" and not is_maxed){
 	if (instance_number(obj_button_model) >= max_files){
 		is_maxed = true;

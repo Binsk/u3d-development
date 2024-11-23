@@ -339,11 +339,14 @@ function Camera() : Body() constructor {
 	function render_prepass(){
 		// The following buffers are SHARED between stages. Note that there may NOT
 		// be proper depth-checks when combining!
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_translucent], 0, 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.view], 0, 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
 		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_translucent], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.post_process], 0, 0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 	}
 	
 	/// @desc	A function that gets called after the grahpci buffer is rendered to
@@ -376,10 +379,6 @@ function Camera() : Body() constructor {
 		gpu_set_texrepeat(true);
 		
 		// Render models w/ materials to primary buffer channels:
-		
-		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
-			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
-		
 		surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
 		surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 		surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
