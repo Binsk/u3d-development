@@ -36,11 +36,17 @@ function get_anchor(){
 // will auto-update w/ GUI changes. This was added later so it is a bit of a 
 // hacky way of adapting things as we don't actually use the anchors to define
 // the element shape.
+controller_id = noone;
+with (obj_render_demo)
+	other.controller_id = id;
 
+with (obj_collision_demo)
+	other.controller_id = id;
+	
 	// X-Axis
-if (x > obj_demo_controller.render_width * 0.5){
+if (x > controller_id.render_width * 0.5){
 	anchor.anchor.x1 = 1.0;
-	anchor.margin.x1 = x - obj_demo_controller.render_width;
+	anchor.margin.x1 = x - controller_id.render_width;
 }
 else {
 	anchor.anchor.x1 = 0.0;
@@ -48,9 +54,9 @@ else {
 }
 
 	// Y-Axis
-if (y > obj_demo_controller.render_height * 0.5){
+if (y > controller_id.render_height * 0.5){
 	anchor.anchor.y1 = 1.0;
-	anchor.margin.y1 = y - obj_demo_controller.render_height;
+	anchor.margin.y1 = y - controller_id.render_height;
 }
 else {
 	anchor.anchor.y1 = 0.0;

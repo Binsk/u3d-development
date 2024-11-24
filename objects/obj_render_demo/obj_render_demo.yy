@@ -1,6 +1,6 @@
 {
   "$GMObject":"",
-  "%Name":"obj_demo_controller",
+  "%Name":"obj_render_demo",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":2,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
@@ -11,11 +11,11 @@
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":65,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_demo_controller",
+  "name":"obj_render_demo",
   "overriddenProperties":[],
   "parent":{
-    "name":"Model Loader Demo",
-    "path":"folders/Model Loader Demo.yy",
+    "name":"Render Demo",
+    "path":"folders/Render Demo.yy",
   },
   "parentObjectId":null,
   "persistent":false,

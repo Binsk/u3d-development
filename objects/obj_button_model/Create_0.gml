@@ -23,12 +23,12 @@ function cleanup_model(){
 	delete body;
 	
 	animation_tree = undefined;
-	obj_demo_controller.update_data_count();
+	obj_render_demo.update_data_count();
 	
-	for (var i = 0; i < array_length(obj_demo_controller.model_scale_slider_array); ++i){
-		var slider = obj_demo_controller.model_scale_slider_array[i];
+	for (var i = 0; i < array_length(obj_render_demo.model_scale_slider_array); ++i){
+		var slider = obj_render_demo.model_scale_slider_array[i];
 		if (slider.button_id == id){
-			array_delete(obj_demo_controller.model_scale_slider_array, i, 1);
+			array_delete(obj_render_demo.model_scale_slider_array, i, 1);
 			instance_destroy(slider);
 			break;
 		}

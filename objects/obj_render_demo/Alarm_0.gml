@@ -46,8 +46,17 @@ inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44, 0, obj_butt
 inst.text = "Exit";
 inst.signaler.add_signal("pressed", new Callable(id, game_end));
 
+inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44 - 44, 0, obj_button);
+inst.text = "Collision Test";
+inst.signaler.add_signal("pressed", new Callable(id, function(){
+	instance_destroy(obj_menu_item);
+	instance_destroy();
+	
+	instance_create_depth(0, 0, 0, obj_collision_demo);
+}));
+
 	// Global properties:
-var ay = display_get_gui_height() - 12 - 44 - 32;
+var ay = display_get_gui_height() - 12 - 44 - 32 - 44;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.text = "Render Floor";
 inst.text_tooltip = "Renders a wooden floor at the base of the model.";
@@ -64,11 +73,11 @@ inst.signaler.add_signal("checked", function(is_checked){
 			delete gltf;
 		}
 		
-		obj_render_controller.add_body(obj_demo_controller.body_floor);
-		obj_demo_controller.body_floor.set_position(vec(0, obj_demo_controller.body_floor_y, 0));
+		obj_render_controller.add_body(obj_render_demo.body_floor);
+		obj_render_demo.body_floor.set_position(vec(0, obj_render_demo.body_floor_y, 0));
 	}
 	else
-		obj_render_controller.remove_body(obj_demo_controller.body_floor);
+		obj_render_controller.remove_body(obj_render_demo.body_floor);
 	
 	update_data_count();
 });
@@ -79,7 +88,7 @@ inst.text = "Render Wireframe";
 inst.text_tooltip = "Whether or not the model should render as a wireframe.\n\nNote: Wireframes are for debugging only as they are slow to render and require a separate vertex buffer to be generated upon model load.";
 inst.is_checked = false;
 inst.signaler.add_signal("checked", function(is_checked){
-	obj_demo_controller.camera.debug_flags = is_checked;
+	obj_render_demo.camera.debug_flags = is_checked;
 });
 
 ay -= 32;
@@ -88,7 +97,7 @@ inst.text = "Import Textures";
 inst.text_tooltip = "Whether or not the included glTF textures should be imported along with the model.";
 inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
-	with (obj_demo_controller){
+	with (obj_render_demo){
 		import_textures = is_checked;
 	}
 });
@@ -99,7 +108,7 @@ inst.text = "Import Lights";
 inst.text_tooltip = "Whether or not the included glTF light definitions should be imported along with the model.";
 inst.is_checked = false;
 inst.signaler.add_signal("checked", function(is_checked){
-	with (obj_demo_controller){
+	with (obj_render_demo){
 		import_lights = is_checked;
 	}
 });
@@ -110,7 +119,7 @@ inst.text = "Apply Transforms";
 inst.text_tooltip = "Whether or not node transforms should be applied directly to the vertex buffers upon load.\n\nThis can reduce CPU-side matrix multiplications but can also break models that re-use primitives across meshes.";
 inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
-	with (obj_demo_controller){
+	with (obj_render_demo){
 		apply_transforms = is_checked;
 	}
 });
@@ -121,7 +130,7 @@ inst.text = "Rotate Camera";
 inst.text_tooltip = "Set the camera to automatically rotate around the model.";
 inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
-	with (obj_demo_controller){
+	with (obj_render_demo){
 		camera_is_rotating = is_checked;
 		if (is_checked)
 			camera_rotation_offset += current_time - camera_rotation_last;
@@ -146,7 +155,7 @@ inst.is_checked = true;
 inst.text = "Loop Animations";
 inst.text_tooltip = "Whether animation channels should loop or pause at the end of the track.";
 inst.signaler.add_signal("checked", function(is_checked){
-	obj_demo_controller.animation_loop = is_checked;
+	obj_render_demo.animation_loop = is_checked;
 	with (obj_button_model){
 		if (is_undefined(animation_tree))
 			continue;
@@ -160,7 +169,7 @@ inst.is_checked = true;
 inst.text = "Smooth Transitions";
 inst.text_tooltip = "Whether or not changing animation tracks should interpolate between each other smoothly.";
 inst.signaler.add_signal("checked", function(is_checked){
-	obj_demo_controller.animation_smooth = is_checked;
+	obj_render_demo.animation_smooth = is_checked;
 });
 
 inst = instance_create_depth(ax, 12 + 32 + 80, 0, obj_slider);
@@ -172,7 +181,7 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
 	lerpvalue = floor(lerpvalue * 100) / 100;
 	inst.text = $"Animation Speed: {lerpvalue}x";
-	obj_demo_controller.animation_speed = lerpvalue
+	obj_render_demo.animation_speed = lerpvalue
 	with (obj_button_model){
 		if (is_undefined(animation_tree))
 			continue;
@@ -191,12 +200,12 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
 	lerpvalue = floor(lerpvalue * 100) / 100;
 	inst.text = $"Update Frequency: {lerpvalue}s";
-	obj_demo_controller.animation_freq = lerpvalue
+	obj_render_demo.animation_freq = lerpvalue
 	with (obj_button_model){
 		if (is_undefined(animation_tree))
 			continue;
 		
-		animation_tree.set_update_freq(obj_demo_controller.animation_freq);
+		animation_tree.set_update_freq(obj_render_demo.animation_freq);
 	}
 },  [undefined, inst]));
 
@@ -209,16 +218,16 @@ inst.text = "Directional Light";
 inst.text_tooltip = "Render a directional light in the scene.";
 inst.signaler.add_signal("checked", function(is_checked){
 	if (not is_checked)
-		obj_render_controller.remove_light(obj_demo_controller.light_directional);
+		obj_render_controller.remove_light(obj_render_demo.light_directional);
 	else
-		obj_render_controller.add_light(obj_demo_controller.light_directional);
+		obj_render_controller.add_light(obj_render_demo.light_directional);
 });
 
 subinst = instance_create_depth(ax + 256, ay, 0, obj_checkbox);
 subinst.text = "Shadows";
 subinst.text_tooltip = "Render directional shadows onto the scene.";
 subinst.signaler.add_signal("checked", function(is_checked){
-	obj_demo_controller.light_directional.set_casts_shadows(is_checked);
+	obj_render_demo.light_directional.set_casts_shadows(is_checked);
 });
 array_push(inst.child_elements, subinst);
 
@@ -227,12 +236,12 @@ subinst.text = "Environment";
 subinst.text_tooltip = "Render environmental reflections with a pre-set dummy cube-map for the directional light.";
 subinst.signaler.add_signal("checked", function(is_checked){
 	if (not is_checked)
-		obj_demo_controller.light_directional.set_environment_texture(undefined);
+		obj_render_demo.light_directional.set_environment_texture(undefined);
 	else
-		obj_demo_controller.light_directional.set_environment_texture(obj_demo_controller.environment_map);
+		obj_render_demo.light_directional.set_environment_texture(obj_render_demo.environment_map);
 	
-	U3D.RENDERING.PPFX.skybox.set_enabled(not is_undefined(obj_demo_controller.light_directional.texture_environment) or
-										  not is_undefined(obj_demo_controller.light_ambient.texture_environment));
+	U3D.RENDERING.PPFX.skybox.set_enabled(not is_undefined(obj_render_demo.light_directional.texture_environment) or
+										  not is_undefined(obj_render_demo.light_ambient.texture_environment));
 });
 array_push(inst.child_elements, subinst);
 
@@ -245,15 +254,15 @@ inst.text_tooltip = "Render a simple ambient light in the scene.";
 inst.is_checked = true;
 inst.signaler.add_signal("checked", function(is_checked){
 	if (not is_checked)
-		obj_render_controller.remove_light(obj_demo_controller.light_ambient);
+		obj_render_controller.remove_light(obj_render_demo.light_ambient);
 	else
-		obj_render_controller.add_light(obj_demo_controller.light_ambient);
+		obj_render_controller.add_light(obj_render_demo.light_ambient);
 });
 subinst = instance_create_depth(ax + 256, ay, 0, obj_checkbox);
 subinst.text = "Shadows (SSAO)";
 subinst.text_tooltip = "Render screen-space ambient occlusion for the ambient light.";
 subinst.signaler.add_signal("checked", function(is_checked){
-	obj_demo_controller.light_ambient.set_casts_shadows(is_checked);
+	obj_render_demo.light_ambient.set_casts_shadows(is_checked);
 });
 array_push(inst.child_elements, subinst);
 
@@ -262,12 +271,12 @@ subinst.text = "Environment";
 subinst.text_tooltip = "Render environmental reflections with a pre-set dummy cube-map for the ambient light.";
 subinst.signaler.add_signal("checked", function(is_checked){
 	if (not is_checked)
-		obj_demo_controller.light_ambient.set_environment_texture(undefined);
+		obj_render_demo.light_ambient.set_environment_texture(undefined);
 	else
-		obj_demo_controller.light_ambient.set_environment_texture(obj_demo_controller.environment_map);
+		obj_render_demo.light_ambient.set_environment_texture(obj_render_demo.environment_map);
 		
-	U3D.RENDERING.PPFX.skybox.set_enabled(not is_undefined(obj_demo_controller.light_directional.texture_environment) or
-										  not is_undefined(obj_demo_controller.light_ambient.texture_environment));
+	U3D.RENDERING.PPFX.skybox.set_enabled(not is_undefined(obj_render_demo.light_directional.texture_environment) or
+										  not is_undefined(obj_render_demo.light_ambient.texture_environment));
 });
 array_push(inst.child_elements, subinst);
 
@@ -286,7 +295,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 		}
 	}
 	
-	obj_demo_controller.camera.set_render_stages(is_opaque | (is_translucent * 2));
+	obj_render_demo.camera.set_render_stages(is_opaque | (is_translucent * 2));
 });
 
 inst = instance_create_depth(ax + 256, ay, 0, obj_checkbox);
@@ -302,7 +311,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 		}
 	}
 	
-	obj_demo_controller.camera.set_render_stages(is_opaque | (is_translucent * 2));
+	obj_render_demo.camera.set_render_stages(is_opaque | (is_translucent * 2));
 });
 
 inst = instance_create_depth(ax + 512, ay, 0, obj_checkbox);
@@ -322,7 +331,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 		}
 	}
 	
-	obj_demo_controller.camera.set_render_stages(is_checked ? CAMERA_RENDER_STAGE.mixed : (is_opaque | (is_translucent * 2)));
+	obj_render_demo.camera.set_render_stages(is_checked ? CAMERA_RENDER_STAGE.mixed : (is_opaque | (is_translucent * 2)));
 });
 
 ay -= 36
@@ -354,7 +363,7 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
 	lerpvalue = floor(lerpvalue * 100) / 100;
 	inst.text = $"White Level: {lerpvalue}x";
-	obj_demo_controller.camera.set_white(lerpvalue)
+	obj_render_demo.camera.set_white(lerpvalue)
 },  [undefined, inst]));
 
 inst = instance_create_depth(ax + 256 + 24, ay, 0, obj_slider);
@@ -367,7 +376,7 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
 	lerpvalue = floor(lerpvalue * 100) / 100;
 	inst.text = $"Exposure: {lerpvalue}x";
-	obj_demo_controller.camera.set_exposure(lerpvalue)
+	obj_render_demo.camera.set_exposure(lerpvalue)
 },  [undefined, inst]));
 
 ay -= 64;
@@ -396,7 +405,7 @@ inst.text = "Tonemap: Linear";
 inst.tonemap = 0;
 inst.signaler.add_signal("pressed", new Callable(inst, function(){
 	tonemap = modwrap(++tonemap, 3);
-	obj_demo_controller.camera.set_tonemap(tonemap);
+	obj_render_demo.camera.set_tonemap(tonemap);
 	var labels = [
 		"Tonemap: Linear",
 		"Tonemap: Reinhard",
@@ -419,7 +428,7 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
 	lerpvalue = floor(lerpvalue * 100) / 100;
 	inst.text = $"Supersampling: {lerpvalue}x";
-	obj_demo_controller.camera.set_supersample_multiplier(lerpvalue)
+	obj_render_demo.camera.set_supersample_multiplier(lerpvalue)
 },  [undefined, inst]));
 
 sprite_array = [];

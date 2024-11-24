@@ -1,2 +1,2 @@
-x = anchor.get_x(obj_demo_controller.render_width);
-y = anchor.get_y(obj_demo_controller.render_height);
+x = anchor.get_x(controller_id.render_width);
+y = anchor.get_y(controller_id.render_height);

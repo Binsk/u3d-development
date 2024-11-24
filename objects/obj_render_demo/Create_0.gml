@@ -79,10 +79,8 @@ Primitive.GENERATE_WIREFRAMES = true;
 // Spawn necessary controllers:
 instance_create_depth(0, 0, 0, obj_animation_controller);	// Allow auto-handling animation updates
 instance_create_depth(0, 0, 0, obj_render_controller);		// Allow auto-handling rendering updates
-instance_create_depth(0, 0, 0, obj_collision_controller);	// Allow auto-handling collision updates
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
-obj_collision_controller.enable_collision_highlights(true);		// Let us see collisions for testing (namely w/ mouse hover)
 
 // Create our camera:
 camera = new CameraView();	// CameraView auto-renders to screen; defaults to full screen
@@ -104,11 +102,6 @@ camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pas
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
 // camera.set_render_stages(CAMERA_RENDER_STAGE.mixed);
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
-
-camera_ray = new Ray();	// The ray to be used to detect mouse collisions
-camera_ray.set_static(camera, true); // Mark the ray not to follow camera's rotation (as it is auto-calculated
-camera.set_collidable(camera_ray);
-obj_collision_controller.add_body(camera);
 
 // Create our ambient light:
 light_ambient = new LightAmbient();
@@ -146,5 +139,8 @@ ds_map_destroy(map);
 
 // GameMaker's gui adjustment isn't immediate; just delay GUI element spawn for a bit.
 // Had issues w/ length of time in the VM so 60 frames is enough to give it setup time.
-alarm[0] = 60;
+if (current_time < 2000)
+	alarm[0] = 60;
+else
+	alarm[0] = 1;
 #endregion

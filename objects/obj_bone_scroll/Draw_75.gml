@@ -14,7 +14,7 @@ for (var i = 0; i < loop; ++i){
 		is_hovered = true;
 		
 		if (mouse_check_button_pressed(mb_left)){
-			var button_id = obj_demo_controller.primary_button;
+			var button_id = obj_render_demo.primary_button;
 				// Perform the body attachment
 				/// @note	Attachments only update the model matrix, not the individual position, scale, or rotation values!
 				///			This means the body will render in the right spot but collisions will NOT!
@@ -40,7 +40,7 @@ for (var i = 0; i < loop; ++i){
 			
 			// Since we are now attached, go ahead and add into the rendering system:
 			obj_render_controller.add_body(child_body);
-			obj_demo_controller.update_data_count();	// Update debug data monitoring display
+			obj_render_demo.update_data_count();	// Update debug data monitoring display
 			instance_destroy();
 			io_clear();
 			return;
