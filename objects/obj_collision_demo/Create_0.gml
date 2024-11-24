@@ -27,6 +27,49 @@ model_floor = undefined;
 #endregion
 
 #region METHODS
+
+function mouse_collision_left(data_array){
+	if (array_length(data_array) > 1)	// If only 1, we hit the plane. If > 1 we are hitting other boxes
+		return;
+	
+	// Spawn a new box model:
+	var model = gltf_box.generate_model();
+	var body = new Body();
+	body.set_model(model);
+	var bounds = model.get_data("import"); // Grab any saved import data from the model
+	var aabb_center = vec_add_vec(bounds.aabb_max, bounds.aabb_min);
+	var aabb_size = vec_sub_vec(bounds.aabb_max, bounds.aabb_min);
+	aabb_size = vec_mul_scalar(aabb_size, 0.5);
+	
+	var collidable = new AABB(aabb_size);
+	body.set_collidable(collidable);
+	collidable.set_offset(body, vec_mul_scalar(aabb_center, 0.5));
+	
+	var data = data_array[0]; // Collision data
+	// Set the body up onto the plane (Boxes are 0.5 in scale, centered, so offset up by half a box)
+	body.set_position(vec_add_vec(data.get_intersection_point(), vec(0, 0.25, 0)));
+	
+	array_push(body_array, body);
+	
+	obj_render_controller.add_body(body);
+	obj_collision_controller.add_body(body);
+}
+
+function mouse_collision_right(data_array){
+	// Delete right-clicked bodies:
+	for (var i = 0; i < array_length(data_array); ++i){
+		var data = data_array[i];
+		
+		if (data.get_affected_class() == Plane) // Don't allow deleting the plane
+			continue;
+		
+		var body = data.get_affected_body();
+		array_delete(body_array, array_get_index(body_array, body), 1);
+		body.free();
+		delete body;
+	}
+}
+
 #endregion
 
 #region INIT
@@ -53,7 +96,7 @@ U3D.RENDERING.PPFX.fog.set_color(make_color_rgb(99, 99, 99), 1.0, false);
 light_ambient.set_intensity(0.1);
 light_directional.set_intensity(2);
 light_directional.set_casts_shadows(true);
-light_directional.set_shadow_properties(2048, 24, 0.0005, 0.01, 18);
+light_directional.set_shadow_properties(4096, 24, 0.0005, 0.01, 18);
 
 var gltf = new GLTFBuilder("demo-collision-floor.glb");
 model_floor = gltf.generate_model();
@@ -97,41 +140,36 @@ ay = display_get_gui_height() - 12 - 44;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.is_checked = true;
 inst.text = "Render Collisions";
+inst.text_tooltip = "Render collision shape outlines. Color codes will relate to collision detection THAT FRAME.\n\nColor-code:\nRed: Not scanned\nGreen: Scanned, no collision\nYellow: Scanned, collision";
 inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
 	camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions, is_checked);
+}));
+
+ay -= 36;
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.is_checked = true;
+inst.text = "Render Shadows";
+inst.text_tooltip = "Whether or not to render shadows in this scene.";
+inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
+	light_directional.set_casts_shadows(is_checked);
 }));
 #endregion
 
 #region MOUSE INTERACTION
 	// Collision ray detection w/ mouse:
 obj_collision_controller.add_signal(camera, new Callable(id, function(data_array){
-	if (not mouse_check_button_pressed(mb_left))
-		return;
-	
 	if (cursor != cr_arrow) // We are hovering a menu item; skip
 		return;
 	
-	if (array_length(data_array) > 1)	// If only 1, we hit the plane. If > 1 we are hitting other boxes
+	if (mouse_check_button_pressed(mb_left)){
+		mouse_collision_left(data_array);
 		return;
-
-	// Spawn a new box model:
-	var model = gltf_box.generate_model();
-	var body = new Body();
-	body.set_model(model);
-	var bounds = model.get_data("import");
-	var aabb_size = vec_sub_vec(bounds.aabb_max, bounds.aabb_min);
-	aabb_size = vec_mul_scalar(aabb_size, 0.5);
-	var collidable = new AABB(aabb_size);
-	body.set_collidable(collidable);
+	}
 	
-	var data = data_array[0]; // Collision data
-	// Set the body up onto the plane (Boxes are 0.5 in scale, centered, so offset up by half a box)
-	body.set_position(vec_add_vec(data.get_intersection_point(), vec(0, 0.25, 0)));
-	
-	array_push(body_array, body);
-	
-	obj_render_controller.add_body(body);
-	obj_collision_controller.add_body(body);
+	if (mouse_check_button(mb_right)){
+		mouse_collision_right(data_array);
+		return;
+	}
 }));
 #endregion
 

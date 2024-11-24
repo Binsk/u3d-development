@@ -51,7 +51,8 @@ function Plane(normal=vec(0, 1, 0)) : Collidable() constructor {
 		var tangent = vec_normalize(vec_get_perpendicular(normal));
 		var bitangent = vec_normalize(vec_cross(normal, tangent));
 		tangent = vec_normalize(vec_cross(bitangent, normal));
-		var length = (Eye.ACTIVE_INSTANCE.zfar - Eye.ACTIVE_INSTANCE.znear) * 0.01; // Arbitrary size; we decided on 1% of viewing distance
+		var length = (Eye.ACTIVE_INSTANCE.zfar - Eye.ACTIVE_INSTANCE.znear) * 0.01; // Arbitrary size; we decided on 1% of viewing distance-
+		length = clamp(length, 1.0, 24.0);	// Limit in case someone just has weird z-values
 		
 		normal = vec_set_length(normal, length);
 		tangent = vec_set_length(tangent, length);
