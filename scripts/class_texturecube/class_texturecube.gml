@@ -1,8 +1,8 @@
 /// @about
 /// A specially formated texture that is intended to be used as a cube map.
-/// GameMaker does not provide access to built-in cube-mapping shader functions
-/// nor mipmapping functions (required for PBR). This structure will build a 
-/// special sprite to be used in-shader so these features can be added.
+/// GameMaker does not provide access to built-in cube-mapping shader functions. 
+/// This structure will build a special sprite to be used in-shader so that 
+///	a special look-up can be done in-shader.
 ///
 /// Cube map textures should be laid out in 4x3 ratio with the following faces:
 ///	[  ] [+Y] [  ] [  ]

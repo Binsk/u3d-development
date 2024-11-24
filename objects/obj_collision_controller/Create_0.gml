@@ -12,6 +12,8 @@ event_inherited();
 /// @stub	Add partitioning system
 #region PROPERTIES
 debug_collision_highlights = false; // If enabled along w/ camera debug shapes, will highlight collisions yellow for a frame when a collision occurs.
+debug_scan_count = 0;				// Number of bodies scanned from the last tic
+
 update_map = {};	// Updates queued this frame
 update_delay = 0;	// Number of ms beteewn collision scan updates
 update_last = 0;	// Last time there was an update (in ms)
@@ -20,8 +22,14 @@ partition_system = new Unsorted();
 
 #region METHODS
 
+/// @desc	Set the amount of delay, in ms, between collision scans.
 function set_update_delay(ms=0){
 	update_delay = max(ms, 0);
+}
+
+/// @desc	Return the number of bodies scanned last tic
+function get_scan_count(){
+	return debug_scan_count;
 }
 
 /// @desc	Requires a camera's collision debug render be enabled. This will color
@@ -114,6 +122,7 @@ function process(){
 			body_array[i].set_data("collision.debug_highlight", 0);
 	}
 
+	debug_scan_count = 0;
 	var scan_array;
 	for (var i = array_length(instance_array) - 1; i >= 0; --i){
 		var body = instance_array[i];
@@ -141,6 +150,8 @@ function process(){
 			
 			if (body.collidable_scan_bits & body2.collidable_mask_bits == 0) // No common layers
 				continue;
+			
+			debug_scan_count++;
 			
 			body2.get_collidable().transform(body2);
 			var data = Collidable.calculate_collision(body.get_collidable(), body2.get_collidable(), body, body2);

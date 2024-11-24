@@ -8,6 +8,9 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	texel_width = 0;
 	texel_height = 0;
 	texture_uvs = [0, 0, 0, 0];
+	
+	is_mipmapping = false;
+	mipmap_mode = tf_point;
 	#endregion
 	
 	#region STATIC METHODS
@@ -19,19 +22,26 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
-	/// @desc	Returns the GameMaker texture stored by this texture.
-	function get_texture(){
-		if (is_undefined(self.texture_id))
-			return Texture2D.get_missing_texture();
-			
-		return self.texture_id;
-	}
-	
 	/// @desc	Sets the GameMaker texture to use when rendering.
 	function set_texture(texture_id){
 		self.texture_id = texture_id;
 		if (not is_undefined(texture_id))
 			cache_properties();
+	}
+	
+	/// @desc	Assigns whether this texture should have mipmapping or not and, if so,
+	///			the filtering mode to use.
+	function set_mipmapping(enabled, mode=tf_point){
+		is_mipmapping = enabled;
+		mipmap_mode = mode;
+	}
+	
+		/// @desc	Returns the GameMaker texture stored by this texture.
+	function get_texture(){
+		if (is_undefined(self.texture_id))
+			return Texture2D.get_missing_texture();
+			
+		return self.texture_id;
 	}
 	
 	/// @desc	Returns if the texture is on its own texture page. This is usually
@@ -73,6 +83,41 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	/// @desc	Return the texel height for the texture
 	function get_txh(){
 		return texel_height;
+	}
+	
+	/// @desc	Applies the mipmap settings of the texture to the specified sampler id.
+	function apply_mip(sampler_id){
+		gpu_set_tex_mip_enable_ext(sampler_id, is_mipmapping ? mip_on : mip_off);
+		gpu_set_tex_filter_ext(sampler_id, is_mipmapping);
+	}
+	
+	/// @desc	Sets the texture to the specified sampler; similar to sampler_set(), but
+	///			this also applies the texture settings.
+	function set(name){
+		static UNIFORM_CACHE = {};
+		if (is_undefined(texture_id))
+			return false;
+		
+		var shader = shader_current();
+		if (shader < 0) // Skip if no shader set
+			return false;
+		
+		var data = (UNIFORM_CACHE[$ name] ?? {});
+		var uniform = data[$ shader];
+		
+		if (is_undefined(uniform)){ // If we haven't checked this uniform + shader combo, look it up
+			uniform = shader_get_sampler_index(shader, name);
+			data[$ shader] = uniform;
+			UNIFORM_CACHE[$ name] = data;
+		}
+		
+		if (uniform >= 0){ // Uniform exists in the shader; set it
+			apply_mip(uniform);
+			texture_set_stage(uniform, texture_id);
+			return true;
+		}
+		
+		return false;
 	}
 	
 	function cache_properties(){

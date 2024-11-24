@@ -1,4 +1,4 @@
-display_reset(0, false);
+display_reset(0, true);
 
 #region PROPERTIES
 // Define render size (will be auto-updated w/ the GUI)
@@ -34,6 +34,7 @@ function mouse_collision_left(data_array){
 	
 	// Spawn a new box model:
 	var model = gltf_box.generate_model();
+	model.freeze();
 	var body = new Body();
 	body.set_model(model);
 	var bounds = model.get_data("import"); // Grab any saved import data from the model
@@ -102,6 +103,8 @@ var gltf = new GLTFBuilder("demo-collision-floor.glb");
 model_floor = gltf.generate_model();
 body_floor.set_model(model_floor);
 obj_render_controller.add_body(body_floor);
+gltf.free();
+delete gltf;
 
 // COLLISIONS
 obj_collision_controller.add_body(plane_body);
@@ -133,6 +136,15 @@ inst.signaler.add_signal("pressed", new Callable(id, function(){
 	
 	instance_create_depth(0, 0, 0, obj_render_demo);
 }));
+
+ay -= 32;
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.text = "V-Sync";
+inst.text_tooltip = "Enable full-screen V-Sync";
+inst.is_checked = true;
+inst.signaler.add_signal("checked", function(is_checked){
+	display_reset(0, is_checked);
+});
 
 // Left-side options:
 ax = 12;

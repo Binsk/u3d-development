@@ -12,17 +12,10 @@ attribute vec4 in_TextureCoord3;    // Bone weights
 const int c_iMaxBones = 80;
 const int c_iBoneInfluence = 4; // Number of bones that can influence a vertex
 
-uniform vec4 u_vAlbedoUV;
-uniform vec4 u_vNormalUV;
-uniform vec4 u_vPBRUV;
-uniform vec4 u_vEmissiveUV;
 uniform mat4 u_mBone[c_iMaxBones];  // Matrix transforms for each bone
 uniform int u_iBoneNoScale;         // Whether or not bones have scaling; modifies how data is read
 
-varying vec2 v_vTexcoordAlbedo;
-varying vec2 v_vTexcoordNormal;
-varying vec2 v_vTexcoordPBR;
-varying vec2 v_vTexcoordEmissive;
+varying vec2 v_vTexcoord;
 varying vec4 v_vColor;
 varying vec4 v_vPosition;
 varying mat3 v_mRotation;
@@ -117,10 +110,5 @@ void main()
     
     v_mRotation = mat3(vTangent, vBiTangent, vNormal);
     v_vColor = in_Colour;
-/// @todo	Remove these custom texcoord aspects; they aren't working correctly and aren't likely
-///			to be needed in the end after all due to how glTF loading is being handled.
-    v_vTexcoordAlbedo = mix(u_vAlbedoUV.xy, u_vAlbedoUV.zw, in_TextureCoord0);
-    v_vTexcoordNormal = mix(u_vNormalUV.xy, u_vNormalUV.zw, in_TextureCoord0);
-    v_vTexcoordPBR = mix(u_vPBRUV.xy, u_vPBRUV.zw, in_TextureCoord0);
-    v_vTexcoordEmissive = mix(u_vEmissiveUV.xy, u_vEmissiveUV.zw, in_TextureCoord0);
+    v_vTexcoord = in_TextureCoord0;
 }

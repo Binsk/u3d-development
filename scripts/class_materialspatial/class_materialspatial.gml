@@ -237,26 +237,22 @@ function MaterialSpatial() : Material() constructor {
 		sampler_toggles[2] = 0;
 		sampler_toggles[3] = 0;
 		if (not is_undefined(texture[$ "albedo"])){
-			if (sampler_set("u_sAlbedo", texture.albedo.texture.get_texture()) and
-				uniform_set("u_vAlbedoUV", shader_set_uniform_f, texture.albedo.uv))
+			if (texture.albedo.texture.set("u_sAlbedo"))
 				sampler_toggles[0] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "normal"])){
-			if (sampler_set("u_sNormal", texture.normal.texture.get_texture()) and
-				uniform_set("u_vNormalUV", shader_set_uniform_f, texture.normal.uv))
+			if (texture.normal.texture.set("u_sNormal"))
 				sampler_toggles[1] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "pbr"])){
-			if (sampler_set("u_sPBR", texture.pbr.texture.get_texture()) and
-				uniform_set("u_vPBRUV", shader_set_uniform_f, texture.pbr.uv))
+			if (texture.pbr.texture.set("u_sPBR"))
 				sampler_toggles[2] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "emissive"])){
-			if (sampler_set("u_sEmissive", texture.emissive.texture.get_texture()) and
-				uniform_set("u_vEmissiveUV", shader_set_uniform_f, texture.emissive.uv))
+			if (texture.emissive.texture.set("u_sEmissive"))
 				sampler_toggles[3] = 1;
 		}
 

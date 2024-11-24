@@ -617,6 +617,17 @@ function Camera() : Body() constructor {
 		
 		Camera.ACTIVE_INSTANCE = self;
 		Eye.ACTIVE_INSTANCE = eye;
+		
+		var is_mip = gpu_get_tex_mip_enable();
+		var mip_filter = gpu_get_tex_mip_filter();
+		var mip_bias = gpu_get_tex_mip_bias();
+		
+		function reset_mip(mip, filter, bias){
+			gpu_set_tex_mip_enable(mip);
+			gpu_set_tex_mip_filter(filter);
+			gpu_set_tex_mip_bias(bias);
+		}
+		
 		// Make sure the GBuffer exists and is valid
 		generate_gbuffer();
 		render_prepass();
@@ -624,6 +635,8 @@ function Camera() : Body() constructor {
 		if (render_stages == CAMERA_RENDER_STAGE.mixed){
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed;
 			render_gbuffer(eye, body_array);
+			reset_mip(is_mip, mip_filter, mip_bias);
+			
 			render_midpass();
 			render_lighting(eye, light_array, body_array);
 		}
@@ -631,12 +644,16 @@ function Camera() : Body() constructor {
 			// Opaque pass:
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
 			render_gbuffer(eye, body_array);
+			reset_mip(is_mip, mip_filter, mip_bias);
+			
 			render_midpass();
 			render_lighting(eye, light_array, body_array);
 	
 			// Translucent pass:
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
 			render_gbuffer(eye, body_array);
+			reset_mip(is_mip, mip_filter, mip_bias);
+			
 			render_midpass();
 			render_lighting(eye, light_array, body_array);
 		}

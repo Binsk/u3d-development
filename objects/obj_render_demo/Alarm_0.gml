@@ -106,7 +106,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 ay -= 32;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.text = "Import Lights";
-inst.text_tooltip = "Whether or not the included glTF light definitions should be imported along with the model.";
+inst.text_tooltip = "Whether or not the included glTF light definitions should be imported along with the model.\n\nThe model must have been exported with the KHR_lights_punctual extension enabled.";
 inst.is_checked = false;
 inst.signaler.add_signal("checked", function(is_checked){
 	with (obj_render_demo){

@@ -13,4 +13,8 @@ delete body_floor;
 
 plane_body.free();
 delete plane_body;
+
+gltf_box.free();
+delete gltf_box;
+
 instance_destroy(obj_u3d_controller);
