@@ -10,10 +10,18 @@ event_inherited();
 ///										'data' is an array of CollidableData structs for all collisions with that body.
 
 /// @stub	Add partitioning system
-
+#region PROPERTIES
 debug_collision_highlights = false; // If enabled along w/ camera debug shapes, will highlight collisions yellow for a frame when a collision occurs.
-
 update_map = {};	// Updates queued this frame
+update_delay = 0;	// Number of ms beteewn collision scan updates
+update_last = 0;	// Last time there was an update (in ms)
+#endregion
+
+#region METHODS
+
+function set_update_delay(ms=0){
+	update_delay = max(ms, 0);
+}
 
 /// @desc	Requires a camera's collision debug render be enabled. This will color
 ///			the shape based off the collision state where:
@@ -161,3 +169,4 @@ function _signal_queue_update(_from, _to, body){
 function _signal_free_signal(label, callable){
 	signaler.remove_signal(label, callable);
 }
+#endregion

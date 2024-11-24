@@ -153,6 +153,19 @@ inst.text_tooltip = "Whether or not to render shadows in this scene.";
 inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
 	light_directional.set_casts_shadows(is_checked);
 }));
+
+ay -= 36;
+inst = instance_create_depth(ax, ay, 0, obj_slider);
+inst.text = "Collision Update Delay: 0ms";
+inst.min_value = 0;
+inst.max_value = 100;
+inst.drag_value = 0;
+inst.text_tooltip = "How many milliseconds between collision check updates.\n\nMax update is soft-limited to the current frametime due to single-threading.";
+inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
+	var lerpvalue = lerp(inst.min_value, inst.max_value, drag_value);
+	inst.text = $"Collision Update Delay: {lerpvalue}ms";
+	obj_collision_controller.set_update_delay(lerpvalue);
+},  [undefined, inst]));
 #endregion
 
 #region MOUSE INTERACTION
