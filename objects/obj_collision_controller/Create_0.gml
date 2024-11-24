@@ -15,6 +15,7 @@ debug_collision_highlights = false; // If enabled along w/ camera debug shapes, 
 update_map = {};	// Updates queued this frame
 update_delay = 0;	// Number of ms beteewn collision scan updates
 update_last = 0;	// Last time there was an update (in ms)
+partition_system = new Unsorted();
 #endregion
 
 #region METHODS
@@ -41,6 +42,10 @@ function add_body(body){
 	body.signaler.add_signal("set_position", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	body.signaler.add_signal("set_rotation", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	body.signaler.add_signal("set_scale", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
+	
+	var data = new PartitionData(body);
+	partition_system.add_data(data);
+	body.set_data($"collision.world.{id}", data);
 	return true;
 }
 
@@ -52,6 +57,11 @@ function remove_body(body){
 	body.signaler.remove_signal("set_position", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	body.signaler.remove_signal("set_rotation", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	body.signaler.remove_signal("set_scale", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
+	
+	partition_system.remove_data(body.get_data(["collision.world", real(id)]));
+	body.set_data($"collision.world.{id}", undefined);
+	
+	return true;
 }
 
 /// @desc	Attaches a body to the signaling system and returns the signal label that will be used.
@@ -104,32 +114,36 @@ function process(){
 			body_array[i].set_data("collision.debug_highlight", 0);
 	}
 
-	var scan_array = get_body_array(); /// @stub	this is just for testing ATM
+	var scan_array;
 	for (var i = array_length(instance_array) - 1; i >= 0; --i){
 		var body = instance_array[i];
+		scan_array = partition_system.scan_collisions(body.get_data($"collision.world.{id}"));
 			// Check if the body was removed after the update trigger
 		if (not U3DObject.get_is_valid_object(body) or is_undefined(body_map[$ body.get_index()]))
 			continue;
 		
-		if (is_undefined(body.collidable_instance)) // No collidable 
+		if (is_undefined(body.get_collidable())) // No collidable 
 			continue;
 		
-		body.collidable_instance.transform(body); // Update body (automatically skips if already up-to-date)
+		body.get_collidable().transform(body); // Update body (automatically skips if already up-to-date)
 		var data_array = [];
 
 		for (var j = array_length(scan_array) - 1; j >= 0; --j){
-			var body2 = scan_array[j];
+			var body2 = scan_array[j].get_data();
+			if (not is_instanceof(body2, Body))
+				continue;
+				
 			if (U3DObject.are_equal(body, body2)) // Same body, skip
 				continue;
 			
-			if (is_undefined(body2.collidable_instance)) // Scanned body had collidable instance removed
+			if (is_undefined(body2.get_collidable())) // Scanned body had collidable instance removed
 				continue;
 			
 			if (body.collidable_scan_bits & body2.collidable_mask_bits == 0) // No common layers
 				continue;
 			
-			body2.collidable_instance.transform(body2);
-			var data = Collidable.calculate_collision(body.collidable_instance, body2.collidable_instance, body, body2);
+			body2.get_collidable().transform(body2);
+			var data = Collidable.calculate_collision(body.get_collidable(), body2.get_collidable(), body, body2);
 			if (is_undefined(data)){ // No collision
 				if (debug_collision_highlights)
 					body2.set_data("collision.debug_highlight", max(1, body2.get_data("collision.debug_highlights", 0)));

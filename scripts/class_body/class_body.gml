@@ -4,6 +4,10 @@
 /// and collisions and a number of systems, such as the Camera, is based off
 /// of the Body class.
 
+/// @signals
+///		"set_collidable"	(from, to)		-	thrown when a new collidable is assigned
+///		"set_model"			(from, to)		-	thrown when a new model is assigned
+
 function Body() : Node() constructor {
 	#region PROPERTIES
 	model_instance = undefined;			// Renderable 3D Model()
@@ -20,8 +24,10 @@ function Body() : Node() constructor {
 			return;
 		}
 		
+		var m_old = model_instance;
 		replace_child_ref(model, model_instance);
 		model_instance = model;
+		signaler.signal("set_model", [m_old, model]);
 	}
 	
 	/// @desc	Assigns an AnimationTree() to apply to the Model() attached to
@@ -45,9 +51,11 @@ function Body() : Node() constructor {
 			return;
 		}
 		
+		var c_old = collidable_instance;
 		replace_child_ref(collidable, collidable_instance);
 		collidable_instance = collidable;
 		set_data("collision", undefined);	// Remove cached collidable data
+		signaler.signal("set_collidable", [c_old, collidable]);
 	}
 	
 	/// @desc	Returns the currently attached Model.

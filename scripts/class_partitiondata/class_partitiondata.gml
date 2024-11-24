@@ -6,8 +6,10 @@
 
 function PartitionData(data) constructor {
 	#region PROPERTIES
+	static INDEX_COUNTER = 0;
 	static TYPE_METHODS = {};
 	
+	self.index = INDEX_COUNTER++;
 	self.data = data;
 	self.position = vec();
 	self.extends = vec();
@@ -26,11 +28,19 @@ function PartitionData(data) constructor {
 		self.extends = extends;
 	}
 	
+	function get_index(){
+		return index;
+	}
+	
+	function get_data(){
+		return data;
+	}
+	
 	function calculate_properties(){
 		// Attempt to auto-calculate position and extends, based on the data
 		if (is_instanceof(data, Body)){
 			// If no collision instance, we have no size so just use position directly
-			if (is_undefined(data.collision_instance))
+			if (is_undefined(data.get_collidable()))
 				self.position = vec_duplicate(data.position);
 			else {
 /// @stub	Account for collision shape, offset, scale, etc.
@@ -46,8 +56,13 @@ function PartitionData(data) constructor {
 		data.signaler.remove_signal("set_position", new Callable(self, calculate_properties));
 		data.signaler.remove_signal("set_rotation", new Callable(self, calculate_properties));
 		data.signaler.remove_signal("set_scale", new Callable(self, calculate_properties));
+		data.signaler.remove_signal("set_collidable", new Callable(self, calculate_properties));
 		data.signaler.remove_signal("free", new Callable(self, _detach_signals));
 /// @stub	Make this update the partitioning system so it gets removed
+	}
+	
+	function toString(){
+		return $"{index}";
 	}
 	#endregion
 	
@@ -57,6 +72,7 @@ function PartitionData(data) constructor {
 		data.signaler.add_signal("set_position", new Callable(self, calculate_properties));
 		data.signaler.add_signal("set_rotation", new Callable(self, calculate_properties));
 		data.signaler.add_signal("set_scale", new Callable(self, calculate_properties));
+		data.signaler.add_signal("set_collidable", new Callable(self, calculate_properties));
 		data.signaler.add_signal("free", new Callable(self, _detach_signals));
 	}
 	calculate_properties();

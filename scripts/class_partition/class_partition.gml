@@ -9,5 +9,41 @@
 ///			a user can wrap a generic piece of data and have it handled properly.
 
 function Partition() : U3DObject() constructor {
+	#region PROPERTIES
+	#endregion
 	
+	#region METHODS
+	function add_data(data){
+		if (is_undefined(data))
+			return false;
+			
+		if (not is_instanceof(data, PartitionData)){
+			Exception.throw_conditional("invalid type, expected [PartitionData]!");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	function remove_data(data){
+		if (is_undefined(data))
+			return false;
+			
+		if (not is_instanceof(data, PartitionData)){
+			Exception.throw_conditional("invalid type, expected [PartitionData]!");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/// @desc	Scan the structure for node intersections and returns an array of all
+	///			data that is contained within the intersecting nodes.
+	function scan_collisions(data){
+		return [];
+	}
+	#endregion
+	
+	#region INIT
+	#endregion
 }
