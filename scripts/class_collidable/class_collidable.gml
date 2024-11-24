@@ -117,7 +117,12 @@ function Collidable() : U3DObject() constructor {
 	/// @desc	Renders a debug line mesh of the shape, if applicable. Mesh is
 	///			generated on the fly and dynamic so it is slow to render.
 	function render_debug(node){
-		draw_set_color(node.get_data("collision.debug_highlight", false) ? c_yellow : c_lime);
+		static COLORS = [
+			c_red,		// No scan
+			c_green,	// Scanned + miss
+			c_yellow	// Scanned + hit
+		]
+		draw_set_color(COLORS[node.get_data("collision.debug_highlight", 0)]);
 	}
 	#endregion
 }

@@ -48,6 +48,7 @@ inst.signaler.add_signal("pressed", new Callable(id, game_end));
 
 inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44 - 44, 0, obj_button);
 inst.text = "Collision Test";
+inst.text_tooltip = "Switch to a scene focused on testing collisions.";
 inst.signaler.add_signal("pressed", new Callable(id, function(){
 	instance_destroy(obj_menu_item);
 	instance_destroy();
@@ -435,4 +436,4 @@ sprite_array = [];
 slider_ay = ay - 64; // Record so dynamic sliders know where to spawn
 
 environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
-U3D.RENDERING.PPFX.skybox.set_cubemap(new TextureCube(sprite_get_texture(spr_default_environment, 0)));
+U3D.RENDERING.PPFX.skybox.set_environment_texture(new TextureCube(sprite_get_texture(spr_default_environment, 0)));

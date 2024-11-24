@@ -16,7 +16,10 @@ debug_collision_highlights = false; // If enabled along w/ camera debug shapes, 
 update_map = {};	// Updates queued this frame
 
 /// @desc	Requires a camera's collision debug render be enabled. This will color
-///			the shape lines yellow if a collision occurred instead of green.
+///			the shape based off the collision state where:
+///			red = wasn't scanned or updated
+///			green = was scanned or updated, no collision
+//			yellow = was scanned or updated, collision occurred
 function enable_collision_highlights(enable=false){
 	debug_collision_highlights = bool(enable);
 }
@@ -90,7 +93,7 @@ function process(){
 	if (debug_collision_highlights and array_length(instance_array) > 0){
 		var body_array = get_body_array();
 		for (var i = array_length(body_array) - 1; i >= 0; --i)
-			body_array[i].set_data("collision.debug_highlight", false);
+			body_array[i].set_data("collision.debug_highlight", 0);
 	}
 
 	var scan_array = get_body_array(); /// @stub	this is just for testing ATM
@@ -119,20 +122,29 @@ function process(){
 			
 			body2.collidable_instance.transform(body2);
 			var data = Collidable.calculate_collision(body.collidable_instance, body2.collidable_instance, body, body2);
-			if (is_undefined(data)) // No collision
+			if (is_undefined(data)){ // No collision
+				if (debug_collision_highlights)
+					body2.set_data("collision.debug_highlight", max(1, body2.get_data("collision.debug_highlights", 0)));
 				continue;
+			}
 				
 			// Collision; store data
 			array_push(data_array, data);
 			
 			if (debug_collision_highlights){
-				data.body_a.set_data("collision.debug_highlight", true);
-				data.body_b.set_data("collision.debug_highlight", true);
+				data.body_a.set_data("collision.debug_highlight", 2);
+				data.body_b.set_data("collision.debug_highlight", 2);
 			}
 		}
 		
-		if (array_length(data_array) > 0) // If there were collisions then we signal them out
+		if (array_length(data_array) > 0){ // If there were collisions then we signal them out
 			signaler.signal($"collision_{body.get_index()}", [data_array]);
+			
+			if (debug_collision_highlights)
+				body.set_data("collision.debug_highlight", max(1, body.get_data("collision.debug_highlights", 2)));
+		}
+		else if (debug_collision_highlights)
+			body.set_data("collision.debug_highlight", max(1, body.get_data("collision.debug_highlights", 1)));
 	}
 }
 

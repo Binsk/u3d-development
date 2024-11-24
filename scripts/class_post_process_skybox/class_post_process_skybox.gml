@@ -4,7 +4,7 @@
 /// @param	{TextureCube}	cubemap		cube map texture to use for the skybox
 function PPFXSkybox(cubemap=undefined) : PostProcessFX(shd_skybox) constructor {
 	#region METHODS
-	function set_cubemap(cubemap){
+	function set_environment_texture(cubemap){
 		if (not is_instanceof(cubemap, TextureCube) and not is_undefined(cubemap))
 			throw new Exception("invalid type, expected [TextureCube]!");
 		

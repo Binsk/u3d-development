@@ -125,6 +125,9 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 	/// @desc	Given 2D point on the canvas, projects the location into 3D space and
 	///			updates the provided ray to contain projection direction. Origin point
 	///			can be assumed to be the camera's position.
+	/// @warning	This does NOT trigger collision system updates! You will need to clear the
+	///				collision data for the attached body and also manually queue a body update in
+	///				the collision system if the body doesn't move on its own!
 	/// @param	{real}	px	relative x-coordinate on the camera's canvas w/o supersample modifications
 	/// @param	{real}	py	relative y-coordinate on the camera's canvas w/o supersample modifications
 	/// @param	{Ray}	ray	collidable ray to update w/ the mouse projection

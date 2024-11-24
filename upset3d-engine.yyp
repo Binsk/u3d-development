@@ -45,6 +45,8 @@
     {"$GMFolder":"","%Name":"Sprites","folderPath":"folders/Upset 3D/Sprites.yy","name":"Sprites","resourceType":"GMFolder","resourceVersion":"2.0",},
   ],
   "IncludedFiles":[
+    {"$GMIncludedFile":"","%Name":"demo-box.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-box.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"demo-collision-floor.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-collision-floor.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"demo-floor.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-floor.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"boom-box.glb","CopyToMask":-1,"filePath":"datafiles/render-test","name":"boom-box.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"chess.glb","CopyToMask":-1,"filePath":"datafiles/render-test","name":"chess.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
@@ -186,6 +188,7 @@
     {"id":{"name":"spr_default_missing","path":"sprites/spr_default_missing/spr_default_missing.yy",},},
     {"id":{"name":"spr_default_ssao_noise","path":"sprites/spr_default_ssao_noise/spr_default_ssao_noise.yy",},},
     {"id":{"name":"spr_default_white","path":"sprites/spr_default_white/spr_default_white.yy",},},
+    {"id":{"name":"spr_white_environment_demo","path":"sprites/spr_white_environment_demo/spr_white_environment_demo.yy",},},
   ],
   "resourceType":"GMProject",
   "resourceVersion":"2.0",

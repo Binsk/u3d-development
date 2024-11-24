@@ -49,3 +49,5 @@
 -	Add support for 'hooks' w/ custom properties when loading glTF; this will allow
 	changing generation w/ game-specific properties defined in blender.
 -	Add dithered translucency to opaque pass.
+-	Add async controller handling of reference freeing so it only does so at frame end,
+	this allows passing things around in a script w/o accidental immediate freeing.

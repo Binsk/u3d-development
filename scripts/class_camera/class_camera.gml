@@ -208,7 +208,7 @@ function Camera() : Body() constructor {
 	///			Does NOT check for duplicates.
 	/// @param	{PostProcessFX}	effect
 	/// @param	{real}			priority
-	function add_post_process_effect(effect, priority=0){
+	function add_ppfx(effect, priority=0){
 		if (not is_instanceof(effect, PostProcessFX))
 			throw new Exception("invalid type, expected [PostProcessFX]!");
 			
@@ -572,7 +572,7 @@ function Camera() : Body() constructor {
 		
 		if (struct_names_count(post_process_effects) <= 0 or render_flags & CAMERA_RENDER_FLAG.ppfx != CAMERA_RENDER_FLAG.ppfx)
 			return;
-		
+
 		var priority = ds_priority_create();
 		var keys = struct_get_names(post_process_effects);
 		for (var i = array_length(keys) - 1; i >= 0; --i){

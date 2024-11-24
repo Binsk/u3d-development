@@ -22,7 +22,7 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		
 		var dot_direction = vec_dot(ray_normal, plane_normal);
 		var dot_location = -vec_dot(plane_normal, vec_sub_vec(ray_position, plane_position));
-		
+
 		if (abs(dot_direction) <= 0.001) // Close to perpendicular
 			return undefined;
 		

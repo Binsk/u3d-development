@@ -171,7 +171,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
 		}
 			
-
+		var rep = gpu_get_texrepeat();
+		gpu_set_texrepeat(false);
 		surface_clear(shadowbit_surface, c_black);
 		
 		/// Render to shadow buffer
@@ -207,6 +208,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		draw_surface(surface_in, 0, 0);
 		shader_reset();
 		surface_reset_target();
+		
+		gpu_set_texrepeat(rep);
 		
 		return true;
 	}
