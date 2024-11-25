@@ -305,7 +305,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				
 					// Doesn't support reverse-wrap so we just allow wrapping for any value except clamp
 				var texwrap = false;
-				if ((source[$ "wrapS"] ?? 33071) != 33071 or (source[$ "wrapT"] ?? 33071) != 33071)
+				if ((source[$ "wrapS"] ?? 10497) != 33071 or (source[$ "wrapT"] ?? 10497) != 33071)
 					texwrap = true;
 				
 				texture_struct.tex_repeat = texwrap;

@@ -193,6 +193,30 @@ function MaterialSpatial() : Material() constructor {
 		shader_gbuffer = shader;
 	}
 	
+	function get_texture(label){
+		var data = self.texture[$ label];
+		if (is_undefined(data))
+			return undefined;
+		
+		return data.texture; 
+	}
+	
+	function get_albedo_texture(){
+		return get_texture("albedo");
+	}
+	
+	function get_normal_texture(){
+		return get_texture("normal");
+	}
+	
+	function get_pbr_texture(){
+		return get_texture("pbr");
+	}
+	
+	function get_emissive_texture(){
+		return get_texture("emissive");
+	}
+	
 	/// @desc	Returns the color component of the albedo factor.
 	function get_albedo_color_factor(){
 		return make_color_rgb(scalar.albedo[0] * 255, scalar.albedo[1] * 255, scalar.albedo[2] * 255);
@@ -237,22 +261,22 @@ function MaterialSpatial() : Material() constructor {
 		sampler_toggles[2] = 0;
 		sampler_toggles[3] = 0;
 		if (not is_undefined(texture[$ "albedo"])){
-			if (texture.albedo.texture.set("u_sAlbedo"))
+			if (texture.albedo.texture.apply("u_sAlbedo"))
 				sampler_toggles[0] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "normal"])){
-			if (texture.normal.texture.set("u_sNormal"))
+			if (texture.normal.texture.apply("u_sNormal"))
 				sampler_toggles[1] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "pbr"])){
-			if (texture.pbr.texture.set("u_sPBR"))
+			if (texture.pbr.texture.apply("u_sPBR"))
 				sampler_toggles[2] = 1;
 		}
 		
 		if (not is_undefined(texture[$ "emissive"])){
-			if (texture.emissive.texture.set("u_sEmissive"))
+			if (texture.emissive.texture.apply("u_sEmissive"))
 				sampler_toggles[3] = 1;
 		}
 
@@ -278,7 +302,7 @@ function MaterialSpatial() : Material() constructor {
 			return;
 
 		if (is_undefined(texture[$ "albedo"]))
-			U3D.RENDERING.MATERIAL.blank.set("u_sAlbedo");
+			U3D.RENDERING.MATERIAL.blank.get_albedo_texture().apply("u_sAlbedo");
 		else
 			texture.albedo.texture.set("u_sAlbedo");
 		

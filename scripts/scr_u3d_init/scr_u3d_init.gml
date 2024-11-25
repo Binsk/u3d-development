@@ -98,7 +98,7 @@ U3D = {
 }
 
 // Define 'missing material' texture:
-U3D.RENDERING.MATERIAL.missing.set_texture("albedo", new Texture2D(sprite_get_texture(spr_default_missing, 0)));
+U3D.RENDERING.MATERIAL.missing.set_albedo_texture(new Texture2D(sprite_get_texture(spr_default_missing, 0)));
 U3D.RENDERING.MATERIAL.missing.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
-U3D.RENDERING.MATERIAL.blank.set_texture("albedo", new Texture2D(sprite_get_texture(spr_default_white, 0)));
+U3D.RENDERING.MATERIAL.blank.set_albedo_texture(new Texture2D(sprite_get_texture(spr_default_white, 0)));
 U3D.RENDERING.MATERIAL.blank.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;

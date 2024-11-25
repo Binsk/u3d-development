@@ -102,14 +102,13 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 				gpu_set_tex_filter_ext(sampler_id, tex_filter);
 		}
 
-/// @fixme	Texwrap seems to be breaking things for some reason.
-		// if (gpu_get_tex_repeat_ext(sampler_id) != tex_repeat)
-		// 	gpu_set_tex_repeat_ext(sampler_id, tex_repeat);
+		if (gpu_get_tex_repeat_ext(sampler_id) != tex_repeat)
+			gpu_set_tex_repeat_ext(sampler_id, tex_repeat);
 	}
 	
-	/// @desc	Sets the texture to the specified sampler; similar to sampler_set(), but
-	///			this also applies the texture settings.
-	function set(name){
+	/// @desc	Sends this texture to the specified sampler name. This will also
+	///			apply texture settings, such as mipmapping, filtering, and repeat.
+	function apply(name){
 		static UNIFORM_CACHE = {};
 		if (is_undefined(texture_id))
 			return false;
