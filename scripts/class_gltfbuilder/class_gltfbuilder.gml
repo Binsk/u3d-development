@@ -144,7 +144,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		return struct_get_names(state);
 	}
 	
-	/// @desc	Returns an array of all the nodes in a specific scene. If the scene
+	/// @desc	Returns an array of all the node indices in a specific scene. If the scene
 	///			specified is -1 then all nodes in the model are returned
 	function get_scene_nodes(scene=-1){
 		var node_array;
@@ -160,6 +160,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 		}
 		else{
+			node_array = json_header[$ "nodes"];
 			var array = array_create(array_length(node_array));
 			for (var i = array_length(node_array) - 1; i >= 0; --i)
 				array[i] = i;
@@ -710,10 +711,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	
 	/// @desc	This will generate a Model that contains all the Mesh and Primitives
 	///			defined in the file, along with their respective materials. 
-	/// @note	Materials and primitives generated will be auto-reused across models and cleaned up
-	///			once all generated Model() instances are freed. 
 	///	@note	If possible, make sure your models are exported with all transforms applied!
 	///			Manually applying them upon load is slow but may be necessary for duplicated meshes.
+	/// @note	Models ARE NOT RESOURCE MANAGED, meaning that the model returned MUST be manually freed!
+	///			The resources auto-generated and attached to the model itself, however, will be auto-managed
+	///			by the system.
 	/// @note	If an invalid scene is defined then EVERY MESH will be added to the model!
 	///	@param	{real}			scene				Which scene from the model to generate a model from (-1 all meshes, regardless of scene)
 	/// @param	{bool}			materials			Whether or not to generate materials for the model (Material indices will still be set)
@@ -1017,11 +1019,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	
 	/// @desc	Generates an array of lights included in the scene data. This requires that
 	///			the model has the KHR_lights_punctual extension specified. 
-	/// @note	Lights ARE NOT RESOURCE MANAGED meaning that the array of lights returned MUST be
+	/// @note	Lights ARE NOT RESOURCE MANAGED, meaning that the array of lights returned MUST be
 	///			manually freed!
 	/// @param	{real}	scene		scene to spawn lights from or -1 for all lights in the model
 	/// @return {array}	of Light instances
-	function generate_lights(scene=0){
+	function generate_lights(scene=-1){
 		if (not get_has_extension("KHR_lights_punctual"))
 			return [];
 
@@ -1082,6 +1084,78 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 
 			array_push(array, light_instance);
 /// @stub	Implement spot lights
+		}
+		
+		return array;
+	}
+	
+	/// @desc	Generates an array of cameras included in the scene data. The cameras generated
+	///			will be CameraView types that cover the whole screen as glTF doesn't include
+	///			viewport data.
+	/// @note	Cameras ARE NOT RESOURCE MANAGED, meaning that the array of cameras returned MUST be
+	///			manually freed!
+	function generate_cameras(scene=-1){
+		var node_array = get_scene_nodes(scene);
+		var array = [];
+		for (var i = array_length(node_array) - 1; i >= 0; --i){
+			var node = json_header[$ "nodes"][node_array[i]];
+			if (is_undefined(node[$ "camera"]))
+				continue;
+			
+			var camera_id = node[$ "camera"];
+			var camera_header = get_structure(camera_id, "cameras");
+			if (is_undefined(camera_header))
+				continue;
+			
+			var camera = new CameraView();
+			if (camera_header[$ "type"] == "perspective"){
+				var eye_header = camera_header[$ "perspective"];
+				var eye = camera.get_eye();
+				eye.set_znear(eye_header[$ "znear"]);
+				eye.set_zfar(eye_header[$ "zfar"] ?? (eye_header[$ "znear"] + 1024));	// glTF says to specify infinity; not doing that
+				
+				/// @note	We work in xfov which auto-calculates the yfov. If we're given
+				///			an aspect ratio then we attempt to reverse-calculate the xfov. If not,
+				///			we just leave the xfov at the default.
+				if (not is_undefined(eye_header[$ "aspectRatio"])){
+					var aspect = eye_header[$ "aspectRatio"];
+					var yfov = eye_header[$ "yfov"];
+
+					var xfov = radtodeg(arctan(tan(yfov * 0.5) / aspect)) * 2.0;
+					eye.set_fov(xfov);
+				}
+			}
+			else if (camera_header[$ "type"] == "orthographic"){
+				var eye_header = camera_header[$ "orthographic"];
+				var eye = new EyeOrthographic(camera);
+				eye.set_znear(eye_header[$ "znear"]);
+				eye.set_zfar(eye_header[$ "zfar"] ?? (eye_header[$ "znear"] + 1024));	// glTF says to specify infinity; not doing that
+				eye.set_size(
+					eye_header[$ "xmag"] * 2.0,
+					eye_header[$ "ymag"] * 2.0
+				);
+				camera.set_eye(eye);	// Replace the default eye with the new orthographic version
+			}
+			
+			/// @note	We DON'T support the camera being transformed by other nodes! The camera
+			///			only uses it's local rotation / translation values.
+			var pos = node[$ "translation"];
+			var rotation = node[$ "rotation"];
+			if (is_undefined(pos) or is_undefined(rotation)){
+				Exception.throw_conditional("unsupported camera node transform type, [Matrix]!");
+				continue;
+			}
+			
+			rotation = quat(rotation[0], rotation[1], rotation[2], rotation[3]);
+			
+			camera.set_position(vec(pos[0], pos[1], pos[2]));
+			camera.set_rotation(rotation);
+			
+			// Due to our camera looking down +X instead of -Z, we rotate to match the difference
+			var up = camera.get_up_vector();
+			var left = vec_reverse(camera.get_right_vector());
+			camera.look_at_up(vec_add_vec(camera.get_position(), left), up);
+			array_push(array, camera);
 		}
 		
 		return array;

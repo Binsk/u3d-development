@@ -22,6 +22,9 @@
 ///			complex Google library. Used fairly frequently with models, however,
 ///			and greatly reduces model file size.
 
+/// @todo	Support `texCoord` property from Texture Info section to pull correct TEXCOORD_*
+///			instead of assuming it is index 0.
+
 function GLTFLoader() : U3DObject() constructor {
 	#region PROPERTIES
 	/// PREPROCESS_FUNCTION can be set to a function that takes a fixed buffer as an argument and
@@ -132,7 +135,8 @@ function GLTFLoader() : U3DObject() constructor {
 			"KHR_materials_unlit" : 			false,		// Will NOT implement; export material as emissive instead
 			"KHR_materials_transmission" :		false,		// Want to implement (would handle proper reflections on translucent materials)
 			"KHR_materials_emissive_strength" :	false,		// Will implement
-			"KHR_collision_shapes" :			false,		// Want to implement (requires research on complexity; it is still under review by Khronos-)
+			"KHR_collision_shapes" :			false,		// Want to implement (requires research on complexity; it is still under review by Khronos)
+			"KHR_texture_transform" :			false,		// Want to implement (requires in-house texture atlas system)
 		}
 		
 		return EXTENSIONS[$ name] ?? false;

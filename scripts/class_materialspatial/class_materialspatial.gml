@@ -304,7 +304,7 @@ function MaterialSpatial() : Material() constructor {
 		if (is_undefined(texture[$ "albedo"]))
 			U3D.RENDERING.MATERIAL.blank.get_albedo_texture().apply("u_sAlbedo");
 		else
-			texture.albedo.texture.set("u_sAlbedo");
+			texture.albedo.texture.apply("u_sAlbedo");
 		
 		uniform_set("u_sAlphaCutoff", shader_set_uniform_f, alpha_cutoff);
 		
