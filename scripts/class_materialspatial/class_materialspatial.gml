@@ -276,9 +276,12 @@ function MaterialSpatial() : Material() constructor {
 		var shader = shader_current();
 		if (shader < 0)
 			return;
-	
-		var albedo_texture = (is_undefined(texture[$ "albedo"]) ? sprite_get_texture(spr_default_white, 0) : texture.albedo.texture.get_texture());
-		sampler_set("u_sAlbedo", albedo_texture);
+
+		if (is_undefined(texture[$ "albedo"]))
+			U3D.RENDERING.MATERIAL.blank.set("u_sAlbedo");
+		else
+			texture.albedo.texture.set("u_sAlbedo");
+		
 		uniform_set("u_sAlphaCutoff", shader_set_uniform_f, alpha_cutoff);
 		
 		gpu_set_cullmode(shadow_cull_mode);

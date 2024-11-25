@@ -1,4 +1,0 @@
-# CHANGE LOG
-The following are significant features / bugs changed for the next release.
-
-* Async texture loading for glTF model imports

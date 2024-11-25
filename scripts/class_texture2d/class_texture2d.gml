@@ -9,8 +9,10 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	texel_height = 0;
 	texture_uvs = [0, 0, 0, 0];
 	
-	is_mipmapping = false;
-	mipmap_mode = tf_point;
+	tex_mipmap_enabled = false;
+	tex_filter = tf_point;
+	tex_repeat = true;
+	
 	#endregion
 	
 	#region STATIC METHODS
@@ -31,9 +33,9 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	
 	/// @desc	Assigns whether this texture should have mipmapping or not and, if so,
 	///			the filtering mode to use.
-	function set_mipmapping(enabled, mode=tf_point){
-		is_mipmapping = enabled;
-		mipmap_mode = mode;
+	function set_mipmapping(enabled, filter=tf_point){
+		tex_mipmap_enabled = enabled;
+		tex_filter = filter;
 	}
 	
 		/// @desc	Returns the GameMaker texture stored by this texture.
@@ -86,9 +88,23 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	}
 	
 	/// @desc	Applies the mipmap settings of the texture to the specified sampler id.
-	function apply_mip(sampler_id){
-		gpu_set_tex_mip_enable_ext(sampler_id, is_mipmapping ? mip_on : mip_off);
-		gpu_set_tex_filter_ext(sampler_id, is_mipmapping);
+	function apply_properties(sampler_id){
+		var rep = tex_mipmap_enabled ? mip_on : mip_off;
+		if (gpu_get_tex_mip_enable_ext(sampler_id) != rep)
+			gpu_set_tex_mip_enable_ext(sampler_id, tex_mipmap_enabled ? mip_on : mip_off);
+			
+		if (rep){
+			if (gpu_get_tex_mip_filter_ext(sampler_id) != tex_filter)
+				gpu_set_tex_mip_filter_ext(sampler_id, tex_filter);
+		}
+		else {
+			if (gpu_get_tex_filter_ext(sampler_id) != tex_filter)
+				gpu_set_tex_filter_ext(sampler_id, tex_filter);
+		}
+
+/// @fixme	Texwrap seems to be breaking things for some reason.
+		// if (gpu_get_tex_repeat_ext(sampler_id) != tex_repeat)
+		// 	gpu_set_tex_repeat_ext(sampler_id, tex_repeat);
 	}
 	
 	/// @desc	Sets the texture to the specified sampler; similar to sampler_set(), but
@@ -112,7 +128,7 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 		}
 		
 		if (uniform >= 0){ // Uniform exists in the shader; set it
-			apply_mip(uniform);
+			apply_properties(uniform);
 			texture_set_stage(uniform, texture_id);
 			return true;
 		}

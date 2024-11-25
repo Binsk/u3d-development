@@ -199,7 +199,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					Exception.throw_conditional(string_ext("failed to find image [{0}].", [load_directory + data.uri]));
 					continue;
 				}
-					
+				
 				texture = new Texture2D();
 				texture.hash = texture_hash;	// Mark that this is a dynamic resource
 				
@@ -281,6 +281,36 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			}
 			
+			function apply_texture_data(texture_id, texture_struct){
+				var texture_data = get_structure(texture_id, "textures");
+				if (is_undefined(texture_data[$ "sampler"]))
+					return;
+
+				var source = get_structure(texture_data[$ "sampler"], "samplers");
+				if (is_undefined(source))
+					return;
+				
+				// We don't have precise control here in GameMaker, so we choose some
+				// 'close enough' values. Magic numbers come from glTF spec.
+				var min_filter = source[$ "minFilter"];
+				if (not is_undefined(min_filter)){
+					if (min_filter == 9729) // Magic bytes for 'linear'
+						texture_struct.tex_filter = tf_linear;
+					else if (min_filter >= 9984){
+						texture_struct.tex_mipmap_enabled = true;
+						texture_struct.tex_filter = (min_filter >= 9985 ? tf_linear : tf_point);
+						/// @note	glTF doesn't support anisotropic filtering; if desired it must be set manually.
+					}
+				}
+				
+					// Doesn't support reverse-wrap so we just allow wrapping for any value except clamp
+				var texwrap = false;
+				if ((source[$ "wrapS"] ?? 33071) != 33071 or (source[$ "wrapT"] ?? 33071) != 33071)
+					texwrap = true;
+				
+				texture_struct.tex_repeat = texwrap;
+			}
+			
 			// Defaults:
 			var color_base = [1, 1, 1, 1];
 			var color_texture = undefined;
@@ -301,11 +331,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				if (not is_undefined(pbr_data[$ "baseColorTexture"])){
 					var texture_index = get_structure(pbr_data[$ "baseColorTexture"].index, "textures").source;
 					color_texture = texture_array[texture_index];
+					apply_texture_data(pbr_data[$ "baseColorTexture"].index, color_texture);
 				}
 				// PBR Texture
 				if (not is_undefined(pbr_data[$ "metallicRoughnessTexture"])){
 					var texture_index = get_structure(pbr_data[$ "metallicRoughnessTexture"].index, "textures").source;
 					pbr_texture = texture_array[texture_index];
+					apply_texture_data(pbr_data[$ "metallicRoughnessTexture"].index, pbr_texture);
 				}
 				// PBR Factors (note, specular is always 1):
 				if (not is_undefined(pbr_data[$ "roughnessFactor"]))
@@ -318,12 +350,14 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			if (not is_undefined(material_data[$ "normalTexture"])){
 				var texture_index = get_structure(material_data[$ "normalTexture"].index, "textures").source;
 				normal_texture = texture_array[texture_index];
+				apply_texture_data(material_data[$ "normalTexture"].index, normal_texture);
 			}
 			
 			if (not is_undefined(material_data[$ "emissiveTexture"])){
 				var texture_index = get_structure(material_data[$ "emissiveTexture"].index, "textures").source;
 				emissive_texture = texture_array[texture_index];
 				emissive_base = (material_data[$ "emissiveFactor"] ?? [1, 1, 1]);
+				apply_texture_data(material_data[$ "emissiveTexture"].index, emissive_texture);
 			}
 			
 			switch (material_data[$ "alphaMode"] ?? "OPAQUE"){

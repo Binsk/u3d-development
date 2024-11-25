@@ -409,6 +409,7 @@ function Camera() : Body() constructor {
 				
 			body.model_instance.render(data);
 		}
+
 		matrix_set(matrix_world, world_matrix);
 		surface_reset_target();
 		
