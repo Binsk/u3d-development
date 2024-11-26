@@ -31,13 +31,15 @@ function Exception(message=undefined, index=0) constructor {
 		var exception = new Exception(message, index);
 		exception._update_message(2); // Pop throw_conditional() off of the stack trace for cleaner reporting
 		
-		// If silent, just print to console
+		// Print out to console:
+		var marker = "";
+		repeat (3) // Because it starts getting ugly having massive strings in the code
+			marker += "################################"; // 32 symbols
+			
+		show_debug_message(string_ext("{1}\n{0}\n{1}", [exception.longMessage, marker]));
+		
+		// If silent, now need to throw an actual exception:
 		if (SILENT_THROW){
-			var marker = "";
-			repeat (3) // Because it starts getting ugly having massive strings in the code
-				marker += "################################"; // 32 symbols
-				
-			show_debug_message(string_ext("{1}\n{0}\n{1}", [exception.longMessage, marker]));
 			delete exception;
 			return;
 		}
