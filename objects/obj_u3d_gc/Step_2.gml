@@ -1,1 +1,2 @@
-process();
+if (enabled)
+	process();

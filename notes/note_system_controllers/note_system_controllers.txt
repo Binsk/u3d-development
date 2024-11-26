@@ -1,0 +1,36 @@
+# System Controllers
+## About
+System controllers are controller objects necessary for the U3D system
+to function. The U3D system will automatically manage and interface with
+these objects.
+
+You should be careful when using deactivation or generic instance freeing
+to avoid destroying these instances but, in the case that you do, they
+should automatically recover, albeit perhaps with a small frame hiccup.
+
+## Async Controller
+This is a generic controller to manage catching async events used by the
+U3D system. For example, generating a GLTF model generates empty Texture2D
+structures and attaches them to the model, but the actual textures being
+read off disk are loading asynchronously. 
+
+When the textures are loaded in this controller will signal the event and
+the generated Texture2D instances will be updated with the new data.
+
+This is also why you may see textures flicker in the first time you load
+in a model if you render that model immediately after load.
+
+## GC Controller
+This is a garbage collection controller to help manage U3DObject cleanup.
+It was added to allow a delay between dereferencing and actual instance
+cleanup so that instances could be de-referenced fully from one owner
+and then re-referenced into another in the same script without the data
+being freed in-between.
+
+Garbage collection occurs at the end of the frame and, by default, attempts
+to take up a max of 1ms per frame (unless the system is flooded with references).
+These properties can be changed in the object and/or a manual cleanup can be
+triggered by calling `U3D_GC.process()` or `U3D_GC.process_full()`. 
+
+Garbage collection can also be enabled/disabled in a similar manner but it
+is enabled by default.

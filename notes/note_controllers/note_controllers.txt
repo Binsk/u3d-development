@@ -51,3 +51,4 @@ performing manual updates (still yet to be implemented).
 
 If you wish not to use this controller you can still animate your meshes
 by calling the `process()` function in each `AnimationTree` instance.
+

@@ -52,6 +52,9 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 				obj_render_controller.add_light(light_array[i]);
 		}
 		
+		gltf.free();
+		delete gltf;
+		
 		var generate_as_primary = true;
 			// If a model is already loaded w/ a skeleton, we show the bone selection tree to attach
 			// this body to:
@@ -79,15 +82,6 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			body.set_position(vec_mul_scalar(vec_lerp(min_vec, max_vec, 0.5), -10 / max_comp)); // Reorient to center
 			obj_render_controller.add_body(body);
 		}
-
-		// Free up the loader.
-		/// @note	The loader has a reference to all the generated model data. This means if 
-		///			you free this BEFORE adding it to a body, it will be freed from RAM before you can
-		///			add it since all references are removed! Alternatively, if you destroy the loader AFTER
-		///			assigning the model to a body, re-generating a new model will be instantaneous because
-		///			a reference of the data still exists in the body.
-		gltf.free();
-		delete gltf;
 		
 		// Generate scaling slider:
 		var slider = instance_create_depth(12, 0, 0, obj_slider);

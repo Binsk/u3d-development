@@ -10,8 +10,8 @@
   "name":"obj_u3d_gc",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Upset 3D/Objects.yy",
+    "name":"System",
+    "path":"folders/Upset 3D/Objects/System.yy",
   },
   "parentObjectId":null,
   "persistent":true,

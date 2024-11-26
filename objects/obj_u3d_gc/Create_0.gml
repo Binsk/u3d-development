@@ -18,11 +18,17 @@ reference_tracker = {};		// Contains all pending references
 reference_array = [];		// Contains last generated array of references (must be cleaned before a new one is added)
 max_process_time = 1;		// Maximum time spent (in ms) per frame cleaning up references (must be >= 1)
 max_reference_count = 512;	// Maximum number of references allowed before the system bulk-frees to catch up
+enabled = true;				// Whether or not garbage collection should occur automatically (manual calls will still clean up regardless)
 signaler = new Signaler();
 
 /// @desc	Adds a reference to be checked for GC
 function add_ref(instance){
 	reference_tracker[$ instance.hash] = instance;
+}
+
+/// @desc	Toggle garbage collection on or off
+function enable(enabled){
+	self.enabled = enabled;
 }
 
 /// @desc	Process a batch of reference cleanups. Can be manually called without issue.
