@@ -97,7 +97,7 @@ U3D.RENDERING.PPFX.fog.set_color(make_color_rgb(99, 99, 99), 1.0, false);
 light_ambient.set_intensity(0.1);
 light_directional.set_intensity(2);
 light_directional.set_casts_shadows(true);
-light_directional.set_shadow_properties(4096, 24, 0.0005, 0.01, 18);
+light_directional.set_shadow_properties(4096, 30, 0.0005, 0.01, 20);
 
 var gltf = new GLTFBuilder("demo-collision-floor.glb");
 model_floor = gltf.generate_model();
