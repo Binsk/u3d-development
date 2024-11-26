@@ -292,6 +292,7 @@ function MaterialSpatial() : Material() constructor {
 		uniform_set("u_iTranslucent", shader_set_uniform_i, is_translucent);
 		
 		uniform_set("u_iTime", shader_set_uniform_i, current_time);
+		uniform_set("u_iCompatability", shader_set_uniform_i, Camera.ACTIVE_COMPATABILITY_STAGE);
 		
 		gpu_set_cullmode(cull_mode);
 	}

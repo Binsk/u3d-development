@@ -44,6 +44,24 @@ if (array_get_index(texturegroup_get_names(), "u3d_default") >= 0)
 	texturegroup_load("u3d_default", true);
 #endregion
 
+#region MACROED SCRIPTS
+// A function to return the async controller (or create it if not defined).
+// Should be accessed through the macro U3D_ASYNC but is generally used internally.
+function __async_instance_id(){
+	with (obj_async_controller)
+		return id;
+	
+	return instance_create_depth(0, 0, 0, obj_async_controller);
+}
+
+function __u3dgc_instance_id(){
+	with (obj_u3d_gc)
+		return id;
+	
+	return instance_create_depth(0, 0, 0, obj_u3d_gc);
+}
+#endregion
+
 /// Maximum number of full-data bones we can safely support (this matches w/ the spatial
 /// shader bone counts). 
 /// We can render twice as many partial-data bones (so long as scale is uniform).
@@ -59,26 +77,14 @@ if (array_get_index(texturegroup_get_names(), "u3d_default") >= 0)
 // game units designed around a 60fps limit.
 #macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
 
-// A function to return the async controller (or create it if not defined).
-// Should be accessed through the macro U3D_ASYNC but is generally used internally.
-function __async_instance_id(){
-	with (obj_async_controller)
-		return id;
-	
-	return instance_create_depth(0, 0, 0, obj_async_controller);
-}
-
 #macro U3D_ASYNC __async_instance_id()
 
-
-function __u3dgc_instance_id(){
-	with (obj_u3d_gc)
-		return id;
-	
-	return instance_create_depth(0, 0, 0, obj_u3d_gc);
-}
-
 #macro U3D_GC __u3dgc_instance_id()
+
+/// If set to true, renders without using MRTs so simpler compile targets can
+/// still render. This is MUCH slower to render!
+#macro U3D_RENDER_COMPATIBILITY false
+
 /// Define U3D structure
 U3D = {
 	RENDERING : {

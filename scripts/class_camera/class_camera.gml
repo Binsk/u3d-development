@@ -71,6 +71,7 @@ function Camera() : Body() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance; not usually used for clarity but available if necessary
 	static ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
+	static ACTIVE_COMPATABILITY_STAGE = -1;
 	
 	buffer_width = undefined;	// Render resolution
 	buffer_height = undefined;
@@ -379,39 +380,63 @@ function Camera() : Body() constructor {
 		gpu_set_texrepeat(true);
 		
 		// Render models w/ materials to primary buffer channels:
-		surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
-		surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
-		surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
-		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
-			surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.emissive]);
-		
-		var world_matrix = matrix_get(matrix_world); // Cache so we can reset for later stages
-		matrix_set(matrix_view, eye.get_view_matrix());
-		matrix_set(matrix_projection, eye.get_projection_matrix());
-		for (var i = array_length(body_array) - 1; i >= 0; --i){
-			var body = body_array[i];
-			if (body.get_render_layers() & get_render_layers() == 0) // This camera doesn't render this body
-				continue;
+		for (var r = 0; r < (U3D_RENDER_COMPATIBILITY ? 4 : 1); ++r){
+			if (U3D_RENDER_COMPATIBILITY){
+				var index_array = [
+					CAMERA_GBUFFER.albedo_opaque + is_translucent,
+					CAMERA_GBUFFER.normal,
+					CAMERA_GBUFFER.pbr,
+					CAMERA_GBUFFER.emissive
+				];
 				
-			// Make sure model is renderable for this camera
-			if (is_undefined(body.model_instance))
-				continue;
+				if (not surface_exists(gbuffer.surfaces[$ index_array[r]]))
+					continue;
+				
+				surface_set_target(gbuffer.surfaces[$ index_array[r]], gbuffer.surfaces[$ index_array[0]]);
+				Camera.ACTIVE_COMPATABILITY_STAGE = r;
+				if (r > 0)
+					gpu_set_zwriteenable(false);
+			}
+			else{
+				surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
+				surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
+				surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
+				if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
+					surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.emissive]);
+				
+				Camera.ACTIVE_COMPATABILITY_STAGE = -1;
+			}
 			
-			matrix_set(matrix_world, body.get_model_matrix());
-			var data = {
-				skeleton : U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos,
-				skeleton_bone_count : U3D_MAXIMUM_BONES * 2 // Only defines that we are using quatpos pairs
-			}
-			if (not is_undefined(body.animation_instance)){
-				data.skeleton = body.animation_instance.get_transform_array();
-				data.skeleton_bone_count = struct_names_count(body.animation_instance.skeleton);
-			}
+			var world_matrix = matrix_get(matrix_world); // Cache so we can reset for later stages
+			matrix_set(matrix_view, eye.get_view_matrix());
+			matrix_set(matrix_projection, eye.get_projection_matrix());
+			for (var i = array_length(body_array) - 1; i >= 0; --i){
+				var body = body_array[i];
+				if (body.get_render_layers() & get_render_layers() == 0) // This camera doesn't render this body
+					continue;
+					
+				// Make sure model is renderable for this camera
+				if (is_undefined(body.model_instance))
+					continue;
 				
-			body.model_instance.render(data);
+				matrix_set(matrix_world, body.get_model_matrix());
+				var data = {
+					skeleton : U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos,
+					skeleton_bone_count : U3D_MAXIMUM_BONES * 2 // Only defines that we are using quatpos pairs
+				}
+				if (not is_undefined(body.animation_instance)){
+					data.skeleton = body.animation_instance.get_transform_array();
+					data.skeleton_bone_count = struct_names_count(body.animation_instance.skeleton);
+				}
+					
+				body.model_instance.render(data);
+			}
+	
+			matrix_set(matrix_world, world_matrix);
+			surface_reset_target();
 		}
-
-		matrix_set(matrix_world, world_matrix);
-		surface_reset_target();
+		
+		gpu_set_zwriteenable(true);
 		
 		// Render view vector buffer for use with lighting
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.view]);
