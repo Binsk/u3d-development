@@ -1,3 +1,4 @@
+precision highp float;
 // https://learn.microsoft.com/en-us/windows/win32/dxtecharts/common-techniques-to-improve-shadow-depth-maps?redirectedfrom=MSDN
 
 uniform sampler2D u_sDepth;     // Regular depth

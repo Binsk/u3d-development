@@ -1,3 +1,5 @@
+precision highp float;
+
 uniform sampler2D u_sDepth;			// Current pass's depth
 uniform sampler2D u_sDepthOpaque;	// Depth of opaque to compare against (we discard if behind)
 

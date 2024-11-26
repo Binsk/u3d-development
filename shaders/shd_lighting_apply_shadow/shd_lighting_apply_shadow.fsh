@@ -1,3 +1,5 @@
+precision highp float;
+
 uniform sampler2D u_sShadow;    // Shadow values (either 0 or 1)
 uniform sampler2D u_sDepth;
 uniform vec2 u_vTexelSize;
