@@ -88,7 +88,6 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		///			a reference of the data still exists in the body.
 		gltf.free();
 		delete gltf;
-		obj_render_demo.update_data_count();
 		
 		// Generate scaling slider:
 		var slider = instance_create_depth(12, 0, 0, obj_slider);

@@ -70,6 +70,15 @@ function __async_instance_id(){
 
 #macro U3D_ASYNC __async_instance_id()
 
+
+function __u3dgc_instance_id(){
+	with (obj_u3d_gc)
+		return id;
+	
+	return instance_create_depth(0, 0, 0, obj_u3d_gc);
+}
+
+#macro U3D_GC __u3dgc_instance_id()
 /// Define U3D structure
 U3D = {
 	RENDERING : {

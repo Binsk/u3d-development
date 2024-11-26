@@ -1,3 +1,7 @@
+/// @note	This texture auto-sets the following uniforms when applied:
+///		"u_iMipCount"		(int)		The number of faked mip-maps the texture uses
+///		"u_iEnvironment"	(int)		always 1. A flag specifying an environment map was passed in
+
 /// @desc	A (fake) mip-mapped TextureCube. Only really implemented to allow an irradiance
 ///			map sample for roughness sampling w/ environment maps. This class is jank as beans
 /// 		and will need heavy adjustment.

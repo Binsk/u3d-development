@@ -138,6 +138,9 @@ if (string_pos("(", gpu_string) > 0)
 
 ds_map_destroy(map);
 
+// Track texture memory freeing and such:
+U3D_GC.signaler.add_signal("cleaned_ref", new Callable(id, update_data_count));
+
 // GameMaker's gui adjustment isn't immediate; just delay GUI element spawn for a bit.
 // Had issues w/ length of time in the VM so 60 frames is enough to give it setup time.
 if (current_time < 2000)

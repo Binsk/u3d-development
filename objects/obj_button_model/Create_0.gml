@@ -23,7 +23,6 @@ function cleanup_model(){
 	delete body;
 	
 	animation_tree = undefined;
-	obj_render_demo.update_data_count();
 	
 	for (var i = 0; i < array_length(obj_render_demo.model_scale_slider_array); ++i){
 		var slider = obj_render_demo.model_scale_slider_array[i];

@@ -26,30 +26,6 @@ function U3DObject() constructor {
 	#endregion
 	
 	#region STATIC METHODS
-	/// @desc	Cleans up the data for the specified hash. Note that the hash MUST be valid,
-	///			and all references removed!
-	/// @param	{string}	hash
-	static clean_ref = function(hash){
-		if (is_undefined(hash))
-			throw new Exception("cannot cleanup static resource!");
-		
-		if (is_undefined(U3D.MEMORY[$ hash])) // Invalid hash
-			return;
-		
-		if (U3D.MEMORY[$ hash].count != 0)
-			throw new Exception($"cannot cleanup reference, [{U3D.MEMORY[$ hash].count}] occurrences still exist!");
-		
-		var data = U3D.MEMORY[$ hash].data;
-		struct_remove(U3D.MEMORY, hash);
-		
-		if (not U3DObject.get_is_valid_object(data))
-			return;
-			
-		data.signaler.signal("cleanup"); // Throw a signal for any cleanup that may be needed
-		data.hash = undefined;			 // Unset the hash to prevent re-triggering cleanup
-		data.free();					 // Free the resource; it has no more references
-	}
-	
 	/// @desc	Returns the data (aka., U3DObject instance) monitored w/ the specified
 	///			hash value, or undefined if none exists.
 	/// @param	{string}	hash
@@ -122,6 +98,8 @@ function U3DObject() constructor {
 			throw new Exception("cannot assign hash to already hashed instance!");
 		
 		hash = md5_string_utf8($"u3dobject_{get_index()}");
+		U3D_GC.add_ref(self); // Add for clean-up in case this instances isn't ever actually passed into a ref
+		
 		return self; // Return self for function chaining
 	}
 	
@@ -217,10 +195,8 @@ function U3DObject() constructor {
 			return;
 			
 		U3D.MEMORY[$ hash].count -= 1;
-		if (U3D.MEMORY[$ hash].count == 0){
-			U3DObject.clean_ref(hash);
-			hash = undefined;
-		}
+		if (U3D.MEMORY[$ hash].count == 0)
+			U3D_GC.add_ref(U3D.MEMORY[$ hash].data);
 	}
 
 	/// @desc	Attempts to add a U3DObject as an owned reference so that it will be

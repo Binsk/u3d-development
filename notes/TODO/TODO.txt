@@ -51,5 +51,3 @@
 -	Add dithered translucency to opaque pass.
 -	Add async controller handling of reference freeing so it only does so at frame end,
 	this allows passing things around in a script w/o accidental immediate freeing.
--	Add support for mipmapping (it does wonders) and supporting these kinds of properties
-	for textures from glTF. Also include texture wrap sampling settings.

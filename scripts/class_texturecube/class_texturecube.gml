@@ -21,6 +21,10 @@
 
 /// @note	Cube-map textures are currently assumed to be in LINEAR space! A toggle for
 ///			this will be added later.
+///
+/// @note	This texture auto-sets the following uniforms when applied:
+///		"u_iMipCount"		(int)		always 0. The number of faked mip-maps the texture uses
+///		"u_iEnvironment"	(int)		always 1. A flag specifying an environment map was passed in
 
 enum TEXTURECUBE_FACE {
 	front,
