@@ -21,6 +21,7 @@ while (file != "" and not is_maxed){
 	
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
+	inst.directory = "render-test";
 	file = file_find_next();
 }
 file_find_close();
@@ -34,9 +35,16 @@ while (file != "" and not is_maxed){
 	
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
+	inst.directory = "render-test";
 	file = file_find_next();
 }
 file_find_close();
+
+if (instance_number(obj_button_model) == 0){ // Mostly for GX so there is something to test
+	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
+	inst.text = "demo-box.glb";
+	inst.directory = "";
+}
  
 if (is_maxed) // Only used to prevent GUI overlap, really.
 	push_error($"too many model files, stopping at {max_files}...");

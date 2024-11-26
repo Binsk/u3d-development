@@ -44,6 +44,9 @@ void main()
 {
     vec4 vPosition = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);
     
+    #ifndef _YY_GLSLES_
+/// @stub   Figure out how to get skeletal animation working in web browser.
+///         mMatrix = u_mBone[ivBoneID[i]]; seems to be the issue due to the array access
     // Calculate bone transforms:
     vec4 vPositionFinal = vec4(0.0);
     ivec4 ivBoneID = ivec4(in_TextureCoord2);
@@ -85,6 +88,7 @@ void main()
     if (iLoopCount > 0 && abs(fDivisor) > 0.0001) // Only apply if we actually had bones sent over
         vPosition = vPositionFinal / fDivisor;
     
+    #endif
     vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     gl_Position = vPosition;
 

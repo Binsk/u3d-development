@@ -51,6 +51,9 @@ void main()
     vec3 vTangent = in_TextureCoord1;
     
     // Calculate bone transforms:
+    #ifndef _YY_GLSLES_
+/// @stub   Figure out how to get skeletal animation working in web browser.
+///         mMatrix = u_mBone[ivBoneID[i]]; seems to be the issue due to the array access
     vec4 vPositionFinal = vec4(0.0);
     vec3 vNormalFinal = vec3(0.0);
     vec3 vTangentFinal = vec3(0.0);
@@ -101,6 +104,7 @@ void main()
         vNormal = normalize(vNormalFinal);
         vTangent = normalize(vTangentFinal);
     }
+    #endif
     
     v_vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     gl_Position = v_vPosition;

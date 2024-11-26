@@ -71,6 +71,7 @@ function Camera() : Body() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance; not usually used for clarity but available if necessary
 	static ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
+		// Used in compatability mode; -1 = no compatability, [0..3] indicate albedo, normal, pbr, and emissive pass
 	static ACTIVE_COMPATABILITY_STAGE = -1;
 	
 	buffer_width = undefined;	// Render resolution
@@ -380,8 +381,9 @@ function Camera() : Body() constructor {
 		gpu_set_texrepeat(true);
 		
 		// Render models w/ materials to primary buffer channels:
-		for (var r = 0; r < (U3D_RENDER_COMPATIBILITY ? 4 : 1); ++r){
-			if (U3D_RENDER_COMPATIBILITY){
+		for (var r = 0; r < (U3D_RENDER_COMPATIBILITY_MODE ? 4 : 1); ++r){
+				// If in compatability; we render each pass separately (significantly more expensive, but renders well)
+			if (U3D_RENDER_COMPATIBILITY_MODE){
 				var index_array = [
 					CAMERA_GBUFFER.albedo_opaque + is_translucent,
 					CAMERA_GBUFFER.normal,
@@ -397,6 +399,7 @@ function Camera() : Body() constructor {
 				if (r > 0)
 					gpu_set_zwriteenable(false);
 			}
+				// If not compatability, render all at once as an MRT
 			else{
 				surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
 				surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
@@ -436,6 +439,7 @@ function Camera() : Body() constructor {
 			surface_reset_target();
 		}
 		
+		Camera.ACTIVE_COMPATABILITY_STAGE = -1;
 		gpu_set_zwriteenable(true);
 		
 		// Render view vector buffer for use with lighting
@@ -494,7 +498,7 @@ function Camera() : Body() constructor {
 			shader_set(light.get_shader());
 			gpu_set_blendmode_ext(bm_one, bm_zero);
 			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
-			surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
+			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
 /// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
 			light.apply_gbuffer();
 			light.apply();

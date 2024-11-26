@@ -91,7 +91,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	function render_shadows(eye_id=undefined, body_array=[]){
 		surface_depth_disable(false);
 		if (not surface_exists(shadow_surface))
-			shadow_surface = surface_create(shadow_resolution, shadow_resolution, surface_r8unorm);
+			shadow_surface = surface_create(shadow_resolution, shadow_resolution, U3D_RENDER_COMPATIBILITY_MODE ? surface_rgba8unorm : surface_r8unorm);
 		
 		if (surface_get_width(shadow_surface) != shadow_resolution)
 			surface_resize(shadow_surface, shadow_resolution, shadow_resolution);
@@ -165,7 +165,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			if (is_translucent)
 				return false;
 				
-			shadowbit_surface = surface_create(sw, sh, surface_r8unorm);
+			shadowbit_surface = surface_create(sw, sh, U3D_RENDER_COMPATIBILITY_MODE ? surface_rgba8unorm : surface_r8unorm);
 		}
 			
 		var rep = gpu_get_texrepeat();

@@ -64,6 +64,7 @@ vec2 cube_uv(vec3 vNormal){
     return vUV;
 }
 
+#ifndef _YY_GLSLES_
 float sample_ssao(int iRadius){
     float fDx = u_vTexelSize.x * u_fBlurStride;
     float fDy = u_vTexelSize.y * u_fBlurStride;
@@ -83,6 +84,7 @@ float sample_ssao(int iRadius){
     
     return fValue / fWeight;
 }
+#endif
 
 // Returns a fake mip sample given an absolute mip level between [0..u_iMipCount]
 vec4 texture2DMip(sampler2D sTexture, vec2 vUV, float fMip){
@@ -121,8 +123,10 @@ void main()
 {
     vec4 vAlbedo = texture2D(u_sAlbedo, v_vTexcoord);
     float fSSAO = 1.0;
+    #ifndef _YY_GLSLES_
     if (u_iSSAO > 0)
         fSSAO = sample_ssao(u_iBlurSamples);
+    #endif
  
     if (u_iEnvironment > 0){
         vec3 vView = normalize(texture2D(u_sView, v_vTexcoord).rgb * 2.0 - 1.0);

@@ -14,6 +14,12 @@ uniform float u_fIntensity;
 
 varying vec2 v_vTexcoord;
 
+#ifdef _YY_GLSLES_
+// SSAO won't work in browser and is too slow for targets that force GLSES
+void main(){
+	gl_FragColor.r = 1.0;
+}
+#else
 vec3 depth_to_view(float fDepth, vec2 vUV){
 	#ifdef _YY_HLSL11_
     float fZ = fDepth;
@@ -49,13 +55,12 @@ void main() {
 		
 		vec2 vCoord1 = reflect(vC, vRand) * fSampleRadius;
 		vec2 vCoord2 = vec2(vCoord1.x * 0.707 - vCoord1.y * 0.707, vCoord1.x * 0.707 + vCoord1.y * 0.707);
+		// @note	Used to do 4 quarter samples; looks much better but WAY too costly.
 		fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.25, vPosition, vNormal);
-/// @note	Having the 4 samples looks cleaner but it is just way too costly
-		// fAO += calculate_ao(v_vTexcoord, vCoord2 * 0.5, vPosition, vNormal);
-		// fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.75, vPosition, vNormal);
 		fAO += calculate_ao(v_vTexcoord, vCoord2, vPosition, vNormal);
 	}
 		
 	fAO = clamp(fAO / float(u_iSamples * 2), 0.0, 1.0);
 	gl_FragColor.r = 1.0 - fAO;
 }
+#endif

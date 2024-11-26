@@ -60,6 +60,14 @@ function __u3dgc_instance_id(){
 	
 	return instance_create_depth(0, 0, 0, obj_u3d_gc);
 }
+
+// Determine if things must run in compatability mode due to requiring GLSL ES.
+// Note that shaders are designed around simplifying for GLSL ES so if you decide
+// to modify which platforms are 'compatability' you must ALSO adjust the shaders!
+function __compatability_mode(){
+	static RESULT = (not shader_is_compiled(shd_detect_glsles));
+	return RESULT;
+}
 #endregion
 
 /// Maximum number of full-data bones we can safely support (this matches w/ the spatial
@@ -76,14 +84,9 @@ function __u3dgc_instance_id(){
 // Delta time, in percent, relative to a 60fps target. Useful for modifying in-
 // game units designed around a 60fps limit.
 #macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
-
-#macro U3D_ASYNC __async_instance_id()
-
-#macro U3D_GC __u3dgc_instance_id()
-
-/// If set to true, renders without using MRTs so simpler compile targets can
-/// still render. This is MUCH slower to render!
-#macro U3D_RENDER_COMPATIBILITY false
+#macro U3D_ASYNC __async_instance_id()	// The ID for the ASYNC controller
+#macro U3D_GC __u3dgc_instance_id()		// The ID for the garbage collection controller
+#macro U3D_RENDER_COMPATIBILITY_MODE __compatability_mode()	// Whether or not the system is in compatability rendering mode
 
 /// Define U3D structure
 U3D = {

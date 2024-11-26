@@ -3,6 +3,7 @@
 ///	Models are NOT cached so removing the model will require a fresh load.
 
 event_inherited();
+directory = "";
 gltf = undefined;
 model = undefined;
 body = undefined;

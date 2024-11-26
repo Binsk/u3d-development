@@ -56,6 +56,7 @@
 // u_iTranslucent		(int)			whether or not it is a translucent pass
 // u_mBone				(mat4[80])		array of bone transform matrices (up to 80); NOTE: uniform set by mesh, not material!
 // u_iTime				(int)			GameMaker's current_time value
+// u_iCompatability		(int)			Compatability pass in compatability mode (-1 = no compat, [0..3] = albedo, normal, pbr, emissive)
 #endregion
 
 /// @note	The PBR color index for roughness and metalness are defined as part
@@ -260,23 +261,25 @@ function MaterialSpatial() : Material() constructor {
 		sampler_toggles[1] = 0;
 		sampler_toggles[2] = 0;
 		sampler_toggles[3] = 0;
-		if (not is_undefined(texture[$ "albedo"])){
-			if (texture.albedo.texture.apply("u_sAlbedo"))
+		var is_compatability = U3D_RENDER_COMPATIBILITY_MODE;
+		
+		if (not is_undefined(texture[$ "albedo"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0)){
+			if (texture.albedo.texture.apply(is_compatability ? "u_sInput" : "u_sAlbedo"))
 				sampler_toggles[0] = 1;
 		}
 		
-		if (not is_undefined(texture[$ "normal"])){
-			if (texture.normal.texture.apply("u_sNormal"))
+		if (not is_undefined(texture[$ "normal"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 1)){
+			if (texture.normal.texture.apply(is_compatability ? "u_sInput" : "u_sNormal"))
 				sampler_toggles[1] = 1;
 		}
 		
-		if (not is_undefined(texture[$ "pbr"])){
-			if (texture.pbr.texture.apply("u_sPBR"))
+		if (not is_undefined(texture[$ "pbr"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 2)){
+			if (texture.pbr.texture.apply(is_compatability ? "u_sInput" : "u_sPBR"))
 				sampler_toggles[2] = 1;
 		}
 		
-		if (not is_undefined(texture[$ "emissive"])){
-			if (texture.emissive.texture.apply("u_sEmissive"))
+		if (not is_undefined(texture[$ "emissive"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 3)){
+			if (texture.emissive.texture.apply(is_compatability ? "u_sInput" : "u_sEmissive"))
 				sampler_toggles[3] = 1;
 		}
 
