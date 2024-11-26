@@ -48,11 +48,8 @@ function LightPoint(position=vec()) : Light() constructor {
 		sampler_set("u_sPBR", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 		sampler_set("u_sView", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
 		
-		if (not is_undefined(texture_environment) and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.environment)){
-			sampler_set("u_sEnvironment", texture_environment.get_texture());
-			uniform_set("u_iEnvironment", shader_set_uniform_i, true);
-			uniform_set("u_iMipCount", shader_set_uniform_i, [not is_instanceof(texture_environment, TextureCubeMip) ? 0 : texture_environment.mip_count]);
-		}
+		if (not is_undefined(texture_environment) and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.environment))
+			texture_environment.apply("u_sEnvironment");
 		else
 			uniform_set("u_iEnvironment", shader_set_uniform_i, false);
 

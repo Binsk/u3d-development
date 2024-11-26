@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"class_texturecubemip",
+  "%Name":"class_texturecubepbr",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"class_texturecubemip",
+  "name":"class_texturecubepbr",
   "parent":{
     "name":"Textures",
     "path":"folders/Upset 3D/Classes/Rendering/Textures.yy",

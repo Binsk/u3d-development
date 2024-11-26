@@ -4,7 +4,6 @@ if (instance_exists(obj_bone_scroll))
 if (is_hovered and mouse_check_button_pressed(mb_left)){
 	if (is_undefined(body)){ // Don't have our model loaded, so we can load now
 		try{
-			// Texture2D.ANISOTROPIC_OVERRIDE_LINEAR = true; // Improve filtering for loaded models
 			gltf = new GLTFBuilder(text, "render-test"); // Loads in the model data 
 			animation_tree = gltf.generate_animation_tree();	// Constructs an animation tree (if one exists)
 			model = gltf.generate_model(0, obj_render_demo.import_textures, obj_render_demo.apply_transforms); // Constructs scene 0 of the model (usually all we need)
@@ -35,9 +34,6 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			}
 			
 			return;
-		}
-		finally {
-			Texture2D.ANISOTROPIC_OVERRIDE_LINEAR = false;
 		}
 		
 		body = new Body();		// Generate a body to hold the model

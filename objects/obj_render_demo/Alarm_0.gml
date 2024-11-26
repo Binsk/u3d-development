@@ -435,5 +435,5 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 sprite_array = [];
 slider_ay = ay - 64; // Record so dynamic sliders know where to spawn
 
-environment_map = new TextureCubeMip(sprite_get_texture(spr_default_environment, 0), 1024, 2, true);
+environment_map = new TextureCubePBR(sprite_get_texture(spr_default_environment, 0), 1024, 2);
 U3D.RENDERING.PPFX.skybox.set_environment_texture(new TextureCube(sprite_get_texture(spr_default_environment, 0)));

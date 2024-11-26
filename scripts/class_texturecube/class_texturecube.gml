@@ -182,6 +182,14 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		struct_remove(TextureCube.BUILD_MAP, get_index());
 	}
 	
+	super.register("apply");
+	function apply(name){
+		super.execute("apply", [name]);
+
+		uniform_set("u_iMipCount", shader_set_uniform_i, 0); // Used when both TextureCube & TextureCubePBR are acceptable for a shader
+		uniform_set("u_iEnvironment", shader_set_uniform_i, true);
+	}
+	
 	super.register("free");
 	function free(){
 		if (sprite_exists(self.sprite_index)){

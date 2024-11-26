@@ -148,7 +148,7 @@
     {"id":{"name":"class_super","path":"scripts/class_super/class_super.yy",},},
     {"id":{"name":"class_texture2d","path":"scripts/class_texture2d/class_texture2d.yy",},},
     {"id":{"name":"class_texturecube","path":"scripts/class_texturecube/class_texturecube.yy",},},
-    {"id":{"name":"class_texturecubemip","path":"scripts/class_texturecubemip/class_texturecubemip.yy",},},
+    {"id":{"name":"class_texturecubepbr","path":"scripts/class_texturecubepbr/class_texturecubepbr.yy",},},
     {"id":{"name":"class_u3dobject","path":"scripts/class_u3dobject/class_u3dobject.yy",},},
     {"id":{"name":"class_unsorted","path":"scripts/class_unsorted/class_unsorted.yy",},},
     {"id":{"name":"class_vertexformat","path":"scripts/class_vertexformat/class_vertexformat.yy",},},

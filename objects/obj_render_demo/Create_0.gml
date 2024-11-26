@@ -97,6 +97,8 @@ U3D.RENDERING.PPFX.bloom.set_enabled(false);
 U3D.RENDERING.PPFX.bloom.set_luminance_threshold(0.0);
 U3D.RENDERING.PPFX.fog.set_color(c_yellow, 0.0);	// As fog hits, blend to yellow but also fade out alpha into background. Yellow is just to let us know it is at the edge of the clipping plane.
 U3D.RENDERING.PPFX.skybox.set_enabled(false);		// We enable along w/ environmental mapping
+Texture2D.ANISOTROPIC_OVERRIDE_LINEAR = true;		// Switch any imported linear filtering texture settings to anisotropic (glTF doesn't support it in the spec)
+
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pass by default; translucent can be enabled through the interface
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
 // camera.set_render_stages(CAMERA_RENDER_STAGE.mixed);

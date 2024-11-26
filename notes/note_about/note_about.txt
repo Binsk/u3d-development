@@ -20,6 +20,36 @@ of NOT cleaning up the structure.
 The legacy 'copy-on-write' functionality for arrays should be **disabled**. Arrays
 are directly written to through functions throughout this system.
 
+## Setters / Getters
+Setter and getter functions are defined for a reason and they should be used when available.
+If a class has a setter it is either because some extra processing is necessary when
+changing a value or it is expected to in the future. Setting variables directly when
+they have an explicit setter can result in crashes and/or undefined behavior.
+
+Getters are similar in that they will generally return a **copy** of the value you are
+looking for. This is to prevent accidentally modifying the value in
+the class without going through a setter. Getters can often be overlooked if you treat the 
+variable as static and do not change it outside of a setter. This is NOT always the
+case, however, as a number of elements are 'calculated when accessed' instead of
+'calculated when set'. When in doubt, use the getter.
+
+As an example, with modifying the position of a `Node`, executing something as simple as 
+`node.position.x = 10;` would cause a number of issues as it would not tell the system
+to update the rendering matrix, any attached nodes that the node moved, or any animation 
+systems to update bone attachments. Instead, either of the following would be acceptable:
+
+Example A:
+```
+node.set_position(vec(10, node.position.y, node.position.z)); // Access position directly, but without changing it
+```
+
+Example B:
+```
+var position_new = node.get_position(); // Fetch a copy of the position to modify
+position_new.x = 10; // Modify the copy
+node.set_position(position_new); // Assign the new updated position
+```
+
 ## Initializing the Systems
 There are multiple controller systems that can be generated in order to provide specific
 functionality. Each system is stand-alone and, while they work together, they
@@ -73,7 +103,7 @@ references are destroyed. The above function must be called before attaching
 the instance to anything else and it **must** be attached to at least one other
 instance before tracking will begin.
 
-# Macros / Globals
+## Macros / Globals
 There are a number of macros and global properties that can be referenced
 throughout the system. A number of them, specifically the `U3D` global
 struct, can be found in `scr_u3d_init`.

@@ -3,12 +3,10 @@
 /// 		and will need heavy adjustment.
 /// @param	{texture}	texture_id	if set, uses this texture for the cube map
 /// @param	{real}		resolution	resolution of the cube map to generate
-/// @param	{real}		mip_count	number of mips to generate (0=single original texture)
-/// @param	{bool}		is_pbr		if true, the mips will be blurred for use w/ pbr reflections
-function TextureCubeMip(texture_id=undefined, resolution=1024, mip_count=0, is_pbr=false) : TextureCube(texture_id, resolution) constructor {
+/// @param	{real}		mip_count	number of 'mips' to generate between [1..5]
+function TextureCubePBR(texture_id=undefined, resolution=1024, mip_count=1) : TextureCube(texture_id, resolution) constructor {
 	#region INIT
 	self.mip_count = clamp(mip_count, 1, 5);
-	self.is_pbr = is_pbr;
 	#endregion
 	
 	#region METHODS
@@ -77,28 +75,27 @@ function TextureCubeMip(texture_id=undefined, resolution=1024, mip_count=0, is_p
 			var surf1 = surface_swap2;
 			var surf2 = surface_swap1;
 			
-			if (is_pbr){
-				var iterations = (i == 0 ? 0 : min(16 * i, 64));
-				shader_set(shd_gaussian_13);
-				shader_set_uniform_f(shader_get_uniform(shd_gaussian_13, "u_vTexelSize"), 1 / 1024, 1 / 1024);
-				
-				for (var j = 0; j < iterations; ++j){
-					var dx = cos(pi * 2 / iterations * j) * (iterations - j - 1);
-					var dy = sin(pi * 2 / iterations * j) * (iterations - j - 1);
-					surface_set_target(surf2);
-					shader_set_uniform_f(shader_get_uniform(shd_gaussian_13, "u_vDirection"), dx, dy);
-					draw_primitive_begin_texture(pr_trianglestrip, surface_get_texture(surf1));
-					draw_vertex_texture_color(0, 0, 0, 0, c_white, 1.0);
-					draw_vertex_texture_color(resolution, 0, 1, 0, c_white, 1.0);
-					draw_vertex_texture_color(0, resolution, 0, 1, c_white, 1.0);
-					draw_vertex_texture_color(resolution, resolution, 1, 1, c_white, 1.0);
-					draw_primitive_end();
-					surface_reset_target();
-					surf1 = (j % 2 ? surface_swap1 : surface_swap2);
-					surf2 = (j % 2 ? surface_swap2 : surface_swap1);
-				}
-				shader_reset();
+			// Calculate blur
+			var iterations = (i == 0 ? 0 : min(16 * i, 64));
+			shader_set(shd_gaussian_13);
+			shader_set_uniform_f(shader_get_uniform(shd_gaussian_13, "u_vTexelSize"), 1 / 1024, 1 / 1024);
+			
+			for (var j = 0; j < iterations; ++j){
+				var dx = cos(pi * 2 / iterations * j) * (iterations - j - 1);
+				var dy = sin(pi * 2 / iterations * j) * (iterations - j - 1);
+				surface_set_target(surf2);
+				shader_set_uniform_f(shader_get_uniform(shd_gaussian_13, "u_vDirection"), dx, dy);
+				draw_primitive_begin_texture(pr_trianglestrip, surface_get_texture(surf1));
+				draw_vertex_texture_color(0, 0, 0, 0, c_white, 1.0);
+				draw_vertex_texture_color(resolution, 0, 1, 0, c_white, 1.0);
+				draw_vertex_texture_color(0, resolution, 0, 1, c_white, 1.0);
+				draw_vertex_texture_color(resolution, resolution, 1, 1, c_white, 1.0);
+				draw_primitive_end();
+				surface_reset_target();
+				surf1 = (j % 2 ? surface_swap1 : surface_swap2);
+				surf2 = (j % 2 ? surface_swap2 : surface_swap1);
 			}
+			shader_reset();
 			
 			draw_primitive_begin_texture(pr_trianglestrip, surface_get_texture(surf1));
 			draw_vertex_texture_color(mip_x, mip_y, 0, 0, c_white, 1.0);
@@ -133,6 +130,17 @@ function TextureCubeMip(texture_id=undefined, resolution=1024, mip_count=0, is_p
 		build_data = {};
 		cache_properties(); // Re-cache UVs and the like for quick look-ups
 		struct_remove(TextureCube.BUILD_MAP, get_index());
+	}
+	
+	super.register("apply");
+	function apply(name){
+		// Fakes its own mips for roughness; do NOT want to use actual mipmapping!
+		// P.s., please, Yoyo, let us have access to actual mip functions in the shader... bloody beans.
+		tex_mipmap_enabled = false;
+		super.execute("apply", [name]);
+
+/// @stub	Redesign a bit so we aren't sending these values twice (once for TextureCube and once for TextureCubePBR)
+		uniform_set("u_iMipCount", shader_set_uniform_i, mip_count);
 	}
 	#endregion
 }
