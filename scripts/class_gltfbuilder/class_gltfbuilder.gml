@@ -282,6 +282,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			}
 			
+				// Define a lambda function to auto-handle applying mipmap and filter settings
 			function apply_texture_data(texture_id, texture_struct){
 				var texture_data = get_structure(texture_id, "textures");
 				if (is_undefined(texture_data[$ "sampler"]))
@@ -296,11 +297,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				var min_filter = source[$ "minFilter"];
 				if (not is_undefined(min_filter)){
 					if (min_filter == 9729) // Magic bytes for 'linear'
-						texture_struct.tex_filter = tf_linear;
+						texture_struct.set_tex_filter(tf_linear);
 					else if (min_filter >= 9984){
-						texture_struct.tex_mipmap_enabled = true;
-						texture_struct.tex_filter = (min_filter >= 9985 ? tf_linear : tf_point);
-						/// @note	glTF doesn't support anisotropic filtering; if desired it must be set manually.
+						texture_struct.set_tex_mip_enable(true);
+						texture_struct.set_tex_filter(min_filter >= 9985 ? tf_linear : tf_point);
+						/// @note	glTF doesn't support anisotropic filtering; if desired it must be set manually
+						///			or through the Texture2D.ANISOTROPIC_OVERRIDE_* values
 					}
 				}
 				
@@ -309,7 +311,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				if ((source[$ "wrapS"] ?? 10497) != 33071 or (source[$ "wrapT"] ?? 10497) != 33071)
 					texwrap = true;
 				
-				texture_struct.tex_repeat = texwrap;
+				texture_struct.set_tex_repeat(texwrap);
 			}
 			
 			// Defaults:

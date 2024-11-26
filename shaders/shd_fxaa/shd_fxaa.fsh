@@ -5,7 +5,7 @@ varying vec2 v_vTexcoord;
 
 void main( void ) {
     float FXAA_SPAN_MAX = 8.0;
-    float FXAA_REDUCE_MUL = 1.0 / 16.0;
+    float FXAA_REDUCE_MUL = 1.0 / 8.0;
     float FXAA_REDUCE_MIN = 1.0 / 128.0;
 
     vec3 rgbNW=texture2D(u_sInput,v_vTexcoord+(vec2(-1.0,-1.0) * u_vTexelSize)).xyz;

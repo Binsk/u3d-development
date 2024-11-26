@@ -8,7 +8,7 @@
 var foo = new Exception();
 delete foo;
 
-// Define BUILD_MAP
+// Define BUILD_MAP, ANISOTROPIC_* settings
 foo = new TextureCube();
 foo.free();
 delete foo;

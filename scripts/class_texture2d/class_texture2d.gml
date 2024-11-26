@@ -4,15 +4,21 @@
 
 function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	#region PROPERTIES
+	// Whether or not to convert Point / Linear filtering for generated textures.
+	// This does NOT affect already-generated textures and is intended to be set
+	// before model loading since glTF doesn't support an anisotropic filter setting.
+	static ANISOTROPIC_OVERRIDE_POINT = false;
+	static ANISOTROPIC_OVERRIDE_LINEAR = false;
+	static ANISOTROPIC_OVERRIDE_MAX = undefined;
 	self.texture_id = texture_id;
 	texel_width = 0;
 	texel_height = 0;
 	texture_uvs = [0, 0, 0, 0];
-	
+
 	tex_mipmap_enabled = false;
 	tex_filter = tf_point;
 	tex_repeat = true;
-	
+	tex_anis_level = 16;
 	#endregion
 	
 	#region STATIC METHODS
@@ -30,12 +36,39 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 		if (not is_undefined(texture_id))
 			cache_properties();
 	}
+	/// @desc	Sets whether the texture should render with mipmapping.
+	function set_tex_mip_enable(enabled){
+		tex_mipmap_enabled = bool(enabled);
+	}
 	
-	/// @desc	Assigns whether this texture should have mipmapping or not and, if so,
-	///			the filtering mode to use.
-	function set_mipmapping(enabled, filter=tf_point){
-		tex_mipmap_enabled = enabled;
+	/// @desc	Sets the texture filtering method for this texture. The setting may
+	///			be overridden by ANISOTROPIC_OVERRIDE_* values.
+	function set_tex_filter(filter=tf_point, ignore_override=false){
+		if (not ignore_override){
+			if (filter == tf_point and Texture2D.ANISOTROPIC_OVERRIDE_POINT)
+				filter = tf_anisotropic;
+			else if (filter == tf_linear and Texture2D.ANISOTROPIC_OVERRIDE_LINEAR)
+				filter = tf_anisotropic;
+		}
+			
 		tex_filter = filter;
+	}
+	
+	/// @desc	Sets the anisotropic level to use when anisotropic filtering is enabled.
+	///			The setting may be overridden by ANISOTROPIC_OVERRIDE_* values.
+	function set_tex_anis_level(level=16, ignore_override=false){
+		if (not ignore_override){
+			if (not is_undefined(Texture2D.ANISOTROPIC_OVERRIDE_MAX))
+				level = Texture2D.ANISOTROPIC_OVERRIDE_MAX;
+		}
+			
+		tex_anis_level = clamp(level, 1, 16);
+	}
+	
+	/// @desc	Sets whether or not sampling past the edge of this texture should wrap
+	///			around to the other side or simply re-sample the closest texel.
+	function set_tex_repeat(enabled){
+		tex_repeat = bool(enabled);
 	}
 	
 		/// @desc	Returns the GameMaker texture stored by this texture.
@@ -96,6 +129,11 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 		if (rep){
 			if (gpu_get_tex_mip_filter_ext(sampler_id) != tex_filter)
 				gpu_set_tex_mip_filter_ext(sampler_id, tex_filter);
+			
+			if (tex_filter == tf_anisotropic){
+				if (gpu_get_tex_max_aniso_ext(sampler_id) != tex_anis_level)
+					gpu_set_tex_max_aniso_ext(sampler_id, tex_anis_level);
+			}
 		}
 		else {
 			if (gpu_get_tex_filter_ext(sampler_id) != tex_filter)
