@@ -23,6 +23,8 @@ void main()
 			vColor = vColorOpaque;
 		else
 			vColor = (vColorTranslucent * vColorTranslucent.a) + (vColorOpaque * (1.0 - vColorTranslucent.a));
+		
+		vColor.a = max(vColorTranslucent.a, vColorOpaque.a);
 	}
 	
 	gl_FragColor = vColor;

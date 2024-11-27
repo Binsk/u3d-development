@@ -1,3 +1,5 @@
+precision highp float;
+
 uniform sampler2D u_sInput; // Input color
 uniform sampler2D u_sEnvironment;   // Cube-map to sample
 uniform sampler2D u_sView;          // Vie vectors in world-space

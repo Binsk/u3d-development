@@ -7,19 +7,24 @@ uniform sampler2D u_sNormal;
 uniform sampler2D u_sPBR;
 uniform sampler2D u_sEmissive;
 #endif
+uniform sampler2D u_sDither;	// Used to fake translucency in mixed mode
 
 uniform ivec4 u_iSamplerToggles;
 uniform vec4 u_vAlbedo;
 uniform vec3 u_vPBR;
 uniform vec3 u_vEmissive;
 uniform float u_fAlphaCutoff;
-uniform int u_iTranslucent;
+uniform int u_iTranslucent;	// 0 = false, 1 = true, 2 = mixed (required dithered)
 
 varying vec2 v_vTexcoord;
 varying vec4 v_vColor;
 varying vec3 v_vNormal;
 varying vec4 v_vPosition;
 varying mat3 v_mRotation;
+
+float modulo(float fV, float fM){
+    return fract(fV / fM) * fM;
+}
 
 vec3 to_rgb(vec3 vColor){
 	bvec3 bCutoff = lessThan(vColor, vec3(0.04045));
@@ -30,6 +35,16 @@ vec3 to_rgb(vec3 vColor){
 
 vec4 to_rgb(vec4 vColor){
 	return vec4(to_rgb(vColor.rgb), vColor.a);
+}
+
+void check_dither(float fAlpha){
+	if (u_iTranslucent != 2)
+		return;
+		
+	float fX = modulo(gl_FragCoord.x + gl_FragCoord.y, 8.0) / 8.0; // @note: The texture is 8px wide; this is hard-coded.
+	float fD = texture2D(u_sDither, vec2(fX, fAlpha)).r;
+	if (fD >= 0.5)
+		discard;
 }
 
 vec4 calculate_albedo(){
@@ -43,12 +58,17 @@ vec4 calculate_albedo(){
     else
         vColor = v_vColor * u_vAlbedo;
        
-    if (u_iTranslucent <= 0) {
+   	check_dither(vColor.a); // Discard if in dithered mode
+       
+    if (u_iTranslucent == 0) { // Opaque
     	if (vColor.a < u_fAlphaCutoff)
     		discard;
     	else
     		vColor.a = 1.0;
     }
+    else if (u_iTranslucent == 2) // Dithered
+    	vColor.a = 1.0;
+    // In other cases, translucent
     
     return vColor;
 }
@@ -109,6 +129,8 @@ void main()
 #else
 // Simplified GLSL ES render
 void main(){
+/// @note	could potentially be some conflicts in this case w/ dither mode due to
+///			normal,pbr,emission not having access to the albedo's alpha for discard.
 	if (u_iCompatability == 0)
 		gl_FragColor = calculate_albedo();
 	else if (u_iCompatability == 1)

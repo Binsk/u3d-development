@@ -53,7 +53,7 @@
 // u_vEmissive			(vec3)			Emission multiplier (when texture exists)
 // u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
 // u_fAlphaCutoff		(float)			opaque render sets alpha=0 if < cutoff and 1 if >=
-// u_iTranslucent		(int)			whether or not it is a translucent pass
+// u_iTranslucent		(int)			0 = opaque pass, 1 = translucent pass, 2 = mixed
 // u_mBone				(mat4[80])		array of bone transform matrices (up to 80); NOTE: uniform set by mesh, not material!
 // u_iTime				(int)			GameMaker's current_time value
 // u_iCompatability		(int)			Compatability pass in compatability mode (-1 = no compat, [0..3] = albedo, normal, pbr, emissive)
@@ -282,6 +282,10 @@ function MaterialSpatial() : Material() constructor {
 			if (texture.emissive.texture.apply(is_compatability ? "u_sInput" : "u_sEmissive"))
 				sampler_toggles[3] = 1;
 		}
+		
+		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed)
+			sampler_set("u_sDither", sprite_get_texture(spr_default_dither, 0));
+			
 
 		// Set samplers; if no texture then the values are used directly otherwise they are multiplied
 		uniform_set("u_iSamplerToggles", shader_set_uniform_i, sampler_toggles);
@@ -292,7 +296,7 @@ function MaterialSpatial() : Material() constructor {
 		uniform_set("u_vEmissive", shader_set_uniform_f, scalar.emissive);
 		
 		uniform_set("u_fAlphaCutoff", shader_set_uniform_f, alpha_cutoff);
-		uniform_set("u_iTranslucent", shader_set_uniform_i, is_translucent);
+		uniform_set("u_iTranslucent", shader_set_uniform_i, (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed and render_stage & CAMERA_RENDER_STAGE.translucent ? 2 : is_translucent));
 		
 		uniform_set("u_iTime", shader_set_uniform_i, current_time);
 		uniform_set("u_iCompatability", shader_set_uniform_i, Camera.ACTIVE_COMPATABILITY_STAGE);

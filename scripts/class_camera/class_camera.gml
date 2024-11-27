@@ -37,9 +37,8 @@ enum CAMERA_RENDER_STAGE {
 	translucent = 2,	// (camera/material) Renders in the translucent pass (alpha can be [0..1])
 	both = 3,			// (camera/material) Renders in both stages (not usually desired)
 	
-	mixed = 7			// (camera) Renders everything under one stage (generally only used for special camera effects)
-						// Translucent elements will be rendered as opaque based off of the material's alpha cutoff 
-						// (which defaults to 0.5).
+	mixed = 7			// (camera) Renders everything under one stage (used for low-performance devices / special camera effects).
+						// Translucent materials will render opaque but w/ a dithering effect to fake translucency.
 }
 
 /// @desc	Defines the tonemap to apply when rendering out.
@@ -51,12 +50,12 @@ enum CAMERA_TONEMAP {
 
 /// @desc	Bitwiseable flags to apply to a camera for debugging purposes.
 enum CAMERA_DEBUG_FLAG {
-	render_wireframe	=	0b1,		// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
-	render_collisions	=	0b10,		// Renders collision shapes as wireframe
-	render_normals		=	0b100,		// Renders normals instead of the final output
-	render_pbr			=	0b1000,		// Renders PBR data instead of final output
-	render_depth_opaque	=	0b10000,	// Renders the opaque depth buffer
-	render_depth_translucent=0b100000,	// Renders the translucent depth buffer
+	render_wireframe			=	0b1,		// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
+	render_collisions			=	0b10,		// Renders collision shapes as wireframe
+	render_normals				=	0b100,		// Renders normals instead of the final output
+	render_pbr					=	0b1000,		// Renders PBR data instead of final output
+	render_depth_opaque			=	0b10000,	// Renders the opaque depth buffer
+	render_depth_translucent	=	0b100000,	// Renders the translucent depth buffer
 }
 
 /// @desc	Bitwiseable flags to enable / disable specific rendering pipeline features for the specific camara
