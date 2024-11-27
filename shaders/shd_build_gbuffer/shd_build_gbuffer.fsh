@@ -41,7 +41,7 @@ void check_dither(float fAlpha){
 	if (u_iTranslucent != 2)
 		return;
 		
-	float fX = modulo(gl_FragCoord.x + gl_FragCoord.y, 8.0) / 8.0; // @note: The texture is 8px wide; this is hard-coded.
+	float fX = modulo(gl_FragCoord.x + gl_FragCoord.y, 32.0) / 32.0; // @note: Hard-coded to match sprite
 	float fD = texture2D(u_sDither, vec2(fX, fAlpha)).r;
 	if (fD >= 0.5)
 		discard;
