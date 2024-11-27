@@ -66,6 +66,10 @@ vec2 cube_uv(vec3 vNormal){
 
 #ifndef _YY_GLSLES_
 float sample_ssao(int iRadius){
+#else
+float sample_ssao(){
+    const int iRadius = 1;
+#endif
     float fDx = u_vTexelSize.x * u_fBlurStride;
     float fDy = u_vTexelSize.y * u_fBlurStride;
     
@@ -84,7 +88,6 @@ float sample_ssao(int iRadius){
     
     return fValue / fWeight;
 }
-#endif
 
 // Returns a fake mip sample given an absolute mip level between [0..u_iMipCount]
 vec4 texture2DMip(sampler2D sTexture, vec2 vUV, float fMip){

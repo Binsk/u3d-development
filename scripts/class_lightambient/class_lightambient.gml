@@ -55,11 +55,6 @@ function LightAmbient() : Light() constructor {
 	/// @desc	Enables / Disables ambient occlusion for this light. Same as enabling shadows 
 	///			since AO is an ambient light's 'shadow'. Simply here for naming convenience.
 	function set_ambient_occlusion(enabled=false){
-		if (U3D_RENDER_COMPATIBILITY_MODE){
-			if (enabled)
-				print_traced("ERROR", "failed to enable SSAO! Not supported in compatability mode!");
-			return;
-		}
 		set_casts_shadows(enabled);
 	}
 	
@@ -86,10 +81,8 @@ function LightAmbient() : Light() constructor {
 	}
 	
 	function render_shadows(eye_id=undefined, body_array=[]){
-		if (ssao_strength <= 0 or U3D_RENDER_COMPATIBILITY_MODE){
-			ssao_strength = 0;
+		if (ssao_strength <= 0)
 			return;
-		}
 			
 		var camera_id = eye_id.get_camera();
 
@@ -97,7 +90,7 @@ function LightAmbient() : Light() constructor {
 			surface_free(surface_ssao);
 			
 		if (not surface_exists(surface_ssao))
-			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, surface_r8unorm);
+			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, U3D_RENDER_COMPATIBILITY_MODE ? surface_rgba8unorm : surface_r8unorm);
 		
 		// Render SSAO intensity:
 		shader_set(shader_ssao);

@@ -6,20 +6,23 @@ uniform mat4 u_mInvProj;
 uniform mat3 u_mView;		// View matrix, required for normal sampling
 uniform vec2 u_vTexelSize;
 uniform vec2 u_vaSampleDirections[64]; // Maximum of 64 samples
-uniform int u_iSamples;
 uniform float u_fSampleRadius;
 uniform float u_fScale;
 uniform float u_fBias;
 uniform float u_fIntensity;
 
+#ifndef _YY_GLSLES_
+uniform int u_iSamples;
+#endif
+
 varying vec2 v_vTexcoord;
 
-#ifdef _YY_GLSLES_
-// SSAO won't work in browser and is too slow for targets that force GLSES
-void main(){
-	gl_FragColor.r = 1.0;
-}
-#else
+// #ifdef _YY_GLSLES_
+// // SSAO won't work in browser and is too slow for targets that force GLSES
+// void main(){
+// 	gl_FragColor.r = 1.0;
+// }
+// #else
 vec3 depth_to_view(float fDepth, vec2 vUV){
 	#ifdef _YY_HLSL11_
     float fZ = fDepth;
@@ -50,7 +53,11 @@ void main() {
 	float fAO = 0.0;
 	float fSampleRadius = u_fSampleRadius / vPosition.z;
 	
+	#ifndef _YY_GLSLES_
 	for (int i = 0; i < u_iSamples; ++i){
+	#else
+	for (int i = 0; i < 8; ++i){
+	#endif
 		vec2 vC = u_vaSampleDirections[i];
 		
 		vec2 vCoord1 = reflect(vC, vRand) * fSampleRadius;
@@ -59,8 +66,12 @@ void main() {
 		fAO += calculate_ao(v_vTexcoord, vCoord1 * 0.25, vPosition, vNormal);
 		fAO += calculate_ao(v_vTexcoord, vCoord2, vPosition, vNormal);
 	}
-		
+	
+	#ifndef _YY_GLSLES_
 	fAO = clamp(fAO / float(u_iSamples * 2), 0.0, 1.0);
+	#else
+	fAO = clamp(fAO / 16.0, 0.0, 1.0);
+	#endif
 	gl_FragColor.r = 1.0 - fAO;
 }
-#endif
+// #endif
