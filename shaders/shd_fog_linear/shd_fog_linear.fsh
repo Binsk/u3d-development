@@ -1,3 +1,5 @@
+precision highp float;
+
 uniform sampler2D u_sInput; // Final color
 uniform sampler2D u_sDepthOpaque;
 uniform sampler2D u_sDepthTranslucent;

@@ -89,6 +89,7 @@ function Camera() : Body() constructor {
 	exposure_level = 1.0;
 	white_level = 1.0;
 	gamma_correction = true;
+	update_counter = int64(0);	// Used on compatability platforms to reduce surface-resizes as it can break things when done too often
 	#endregion
 	
 	#region STATIC METHODS
@@ -246,7 +247,7 @@ function Camera() : Body() constructor {
 			surface_free(surface);
 			struct_remove(surfaces, surface_keys[i]);
 		}
-		
+	
 		// Check for existence:
 		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.albedo_opaque])){
 			if (render_stages & CAMERA_RENDER_STAGE.opaque){
@@ -442,6 +443,9 @@ function Camera() : Body() constructor {
 		Camera.ACTIVE_COMPATABILITY_STAGE = -1;
 		gpu_set_zwriteenable(true);
 		
+		if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.view]))
+			return;
+			
 		// Render view vector buffer for use with lighting
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.view]);
 		shader_set(shd_view_buffer);
@@ -705,6 +709,8 @@ function Camera() : Body() constructor {
 	/// @desc	Should execute a render_eye for every eye and combine results
 	///			as necessary.
 	function render(body_array, light_array){
+		++update_counter;
+		
 		var eye_array = get_eye_array();
 		for (var i = array_length(eye_array) - 1; i >= 0; --i){
 			render_eye(eye_array[i], body_array, light_array);

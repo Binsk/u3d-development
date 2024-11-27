@@ -42,7 +42,8 @@ file_find_close();
 
 if (instance_number(obj_button_model) == 0){ // Mostly for GX so there is something to test
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
-	inst.text = "demo-box.glb";
+	// inst.text = "demo-box.glb";
+	inst.text = "sophia.glb";
 	inst.directory = "";
 }
  

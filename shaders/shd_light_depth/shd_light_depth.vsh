@@ -44,7 +44,6 @@ void main()
 {
     vec4 vPosition = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);
     
-    #ifndef _YY_GLSLES_
 /// @stub   Figure out how to get skeletal animation working in web browser.
 ///         mMatrix = u_mBone[ivBoneID[i]]; seems to be the issue due to the array access
     // Calculate bone transforms:
@@ -72,12 +71,32 @@ void main()
         mat4 mMatrix;
         if (u_iBoneNoScale == 0) // Regular matrix morph
             mMatrix = u_mBone[ivBoneID[i]];
+		#ifndef _YY_GLSLES_
         else{ // Quat + translation pair
             int iIndex = int(float(ivBoneID[i]) * 0.5);
             int iOffset = int(ceil(fract(float(ivBoneID[i]) * 0.5))) * 2;
             mMatrix = u_mBone[iIndex];
             mMatrix = build_matrix(mMatrix[iOffset], mMatrix[iOffset + 1].xyz);
         }
+        #else
+        else{ // Quat + translation pair
+            int iIndex = int(float(ivBoneID[i]) * 0.5);
+            int iOffset = int(ceil(fract(float(ivBoneID[i]) * 0.5))) * 2;
+            mMatrix = u_mBone[iIndex];
+            
+            vec4 vV1;
+            vec4 vV2;
+            if (iOffset < 2){
+                vV1 = mMatrix[0];
+                vV2 = mMatrix[1];
+            }
+            else {
+                vV1 = mMatrix[2];
+                vV2 = mMatrix[3];
+            }
+            mMatrix = build_matrix(vV1, vV2.xyz);
+        }
+        #endif
         
         vec4 vPositionLocal = mMatrix * vPosition;
         vPositionFinal += vPositionLocal * vBoneWeight[i];
@@ -88,7 +107,6 @@ void main()
     if (iLoopCount > 0 && abs(fDivisor) > 0.0001) // Only apply if we actually had bones sent over
         vPosition = vPositionFinal / fDivisor;
     
-    #endif
     vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     gl_Position = vPosition;
 

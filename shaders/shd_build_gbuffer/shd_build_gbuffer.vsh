@@ -1,3 +1,4 @@
+precision highp float;
 /// @about
 /// The default shader used by spatial materials to build the GBuffer. This shader
 /// writes out all the necessary GBuffer textures and calculates skeletal animation.
@@ -51,7 +52,6 @@ void main()
     vec3 vTangent = in_TextureCoord1;
     
     // Calculate bone transforms:
-    #ifndef _YY_GLSLES_
 /// @stub   Figure out how to get skeletal animation working in web browser.
 ///         mMatrix = u_mBone[ivBoneID[i]]; seems to be the issue due to the array access
     vec4 vPositionFinal = vec4(0.0);
@@ -79,12 +79,32 @@ void main()
         mat4 mMatrix;
         if (u_iBoneNoScale == 0) // Regular matrix morph
             mMatrix = u_mBone[ivBoneID[i]];
+        #ifndef _YY_GLSLES_
         else{ // Quat + translation pair
             int iIndex = int(float(ivBoneID[i]) * 0.5);
             int iOffset = int(ceil(fract(float(ivBoneID[i]) * 0.5))) * 2;
             mMatrix = u_mBone[iIndex];
             mMatrix = build_matrix(mMatrix[iOffset], mMatrix[iOffset + 1].xyz);
         }
+        #else
+        else{ // Quat + translation pair
+            int iIndex = int(float(ivBoneID[i]) * 0.5);
+            int iOffset = int(ceil(fract(float(ivBoneID[i]) * 0.5))) * 2;
+            mMatrix = u_mBone[iIndex];
+            
+            vec4 vV1;
+            vec4 vV2;
+            if (iOffset < 2){
+                vV1 = mMatrix[0];
+                vV2 = mMatrix[1];
+            }
+            else {
+                vV1 = mMatrix[2];
+                vV2 = mMatrix[3];
+            }
+            mMatrix = build_matrix(vV1, vV2.xyz);
+        }
+        #endif
         
         vec4 vPositionLocal = mMatrix * vPosition;
         vPositionFinal += vPositionLocal * vBoneWeight[i];
@@ -104,7 +124,6 @@ void main()
         vNormal = normalize(vNormalFinal);
         vTangent = normalize(vTangentFinal);
     }
-    #endif
     
     v_vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     gl_Position = v_vPosition;
