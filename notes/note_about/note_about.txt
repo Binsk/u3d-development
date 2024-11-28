@@ -132,6 +132,8 @@ passes still render the same as before.
 A number of platforms seem to also have issues sampling from a texture pulled from
 the depth buffer which means a number of effects (like SSAO) will not be available.
 As such, you cannot expect all features to be available when in compatability mode.
+This ALSO means translucency blending (even w/ dithered) and many screen-space effects
+DO NOT WORK CORRECTLY.
 
 ### Rendering Buffers
 Some platforms that use compatability mode, such as the GX export, require surfaces

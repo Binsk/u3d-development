@@ -180,6 +180,24 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		py = -((1.0 - py / render_height) * 2.0 - 1.0);
 		if (get_is_directx_pipeline())
 			py = -py;
+
+		if (U3D.OS.is_browser) {
+			/// @note	Because browsers crop/scale rendering output due to the 2^n requirement
+			///			we need to compensate for it here to make sure the ray points correctly.
+			var r1 = render_width / render_height;	// Aspect ratio 1
+			var r2 = buffer_width / buffer_height;	// Aspect ratio 2
+			if (r1 < r2){
+				var sc = buffer_height / render_height;
+				var sw = render_width * sc;
+				px *= 1.0 - ((buffer_width - sw) / buffer_width);
+			}
+			else {
+				var sc = buffer_width / render_width;
+				var sh = render_height * sc;
+				
+				py *= 1.0 - ((buffer_height - sh) / buffer_height);
+			}
+		}
 		
 		// Reverse-project the point into view space:
 		var point_far = matrix_transform_vertex(eye_id.get_inverse_projection_matrix(), px, py, 1, 1);	// Location at far-clip

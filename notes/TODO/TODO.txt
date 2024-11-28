@@ -12,8 +12,6 @@
 	and even shrunk and it still doesn't work right.
 -	Depth textures aren't working correctly in GX so SSAO, FOG, and the like don't
 	work.
--	Browser rendering requires power-of-2 textures, so mouse -> 3D detection is off
-	since it is cropped.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
