@@ -232,6 +232,11 @@ function Camera() : Body() constructor {
 		var surfaces = gbuffer.surfaces;
 		var textures = gbuffer.textures;
 		
+		if (U3D.OS.is_browser){
+			buffer_width = power(2, ceil(log2(buffer_width)));
+			buffer_height = power(2, ceil(log2(buffer_height)));
+		}
+		
 		// Clear surfaces that had size changes; we clear instead of resize as the
 		// resize doesn't seem to keep the surface format correctly.
 		var surface_keys = struct_get_names(surfaces);
@@ -334,6 +339,7 @@ function Camera() : Body() constructor {
 		}
 		
 		surface_depth_disable(false);
+		return true;
 	}
 	
 	/// @desc	A function that gets called after the graphic buffer is allocated
@@ -662,7 +668,9 @@ function Camera() : Body() constructor {
 		}
 		
 		// Make sure the GBuffer exists and is valid
-		generate_gbuffer();
+		if (not generate_gbuffer())
+			return;
+			
 		render_prepass();
 
 		if (render_stages == CAMERA_RENDER_STAGE.mixed){

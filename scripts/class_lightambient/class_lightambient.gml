@@ -90,7 +90,7 @@ function LightAmbient() : Light() constructor {
 			surface_free(surface_ssao);
 			
 		if (not surface_exists(surface_ssao))
-			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, U3D_RENDER_COMPATIBILITY_MODE ? surface_rgba8unorm : surface_r8unorm);
+			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
 		
 		// Render SSAO intensity:
 		shader_set(shader_ssao);

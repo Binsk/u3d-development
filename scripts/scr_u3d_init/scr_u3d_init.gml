@@ -112,7 +112,11 @@ U3D = {
 			}
 		}
 	},
-	MEMORY : {}	// Used to hold data caches and garbage-collect dynamically generated resources
+	MEMORY : {},	// Used to hold data caches and garbage-collect dynamically generated resources
+	OS : {
+		is_browser : (os_type == os_gxgames or os_browser != browser_not_a_browser),
+		is_compatability : __compatability_mode()
+	}
 }
 
 // Define 'missing material' texture:

@@ -113,12 +113,44 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		uniform_set("u_fExposure", shader_set_uniform_f, exposure_level);
 		uniform_set("u_fWhite", shader_set_uniform_f, white_level);
 		uniform_set("u_iGamma", shader_set_uniform_i, gamma_correction);
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh), 1, 0);
-		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh), 0, 0);
-		draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh) + anchor.get_dx(rh), 1, 1);
-		draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh) + anchor.get_dy(rh), 0, 1);
-		draw_primitive_end(); 
+		
+		if (not U3D.OS.is_browser)
+			draw_quad(anchor.get_x(rw), anchor.get_y(rh), anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh) + anchor.get_dy(rh), -1);
+		else {
+			/// @note	Browsers are forced to use 2^n dimension surfaces so we render that size
+			///			but crop it for the render size. Not a perfect solution but gets the job done.
+			/// @note2	Support for odd-dimensions IS THERE for browsers, but we get lots of surface failures
+			///			if we don't use 2^n.
+			var u1 = 0, 
+				v1 = 0, 
+				u2 = 1, 
+				v2 = 1;
+			var r1 = render_width / render_height;	// Aspect ratio 1
+			var r2 = buffer_width / buffer_height;	// Aspect ratio 2
+			if (r1 < r2){
+				var sc = buffer_height / render_height;
+				var sw = render_width * sc;
+				u2 = (buffer_width - sw) / buffer_width * 0.5;
+				u1 = 1.0 - u1;
+			}
+			else {
+				var sc = buffer_width / render_width;
+				var sh = render_height * sc;
+				
+				v1 = (buffer_height - sh) / buffer_height * 0.5;
+				v2 = 1.0 - v1;
+				u2 = 0.0;
+				u1 = 1.0;
+			}
+			
+			draw_primitive_begin_texture(pr_trianglestrip, -1);
+			draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh), u2, v1);
+			draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh), u1, v1);
+			draw_vertex_texture(anchor.get_x(rw), anchor.get_y(rh) + anchor.get_dx(rh), u2, v2);
+			draw_vertex_texture(anchor.get_x(rw) + anchor.get_dx(rw), anchor.get_y(rh) + anchor.get_dy(rh), u1, v2);
+			draw_primitive_end(); 
+		}
+
 		shader_reset();
 	}
 	
@@ -151,6 +183,8 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		py = -((1.0 - py / render_height) * 2.0 - 1.0);
 		if (get_is_directx_pipeline())
 			py = -py;
+		else if (U3D.OS.is_browser)	// Although it's OpenGL, it is still swapped horizontally; oddly
+			px = -px;
 		
 		// Reverse-project the point into view space:
 		var point_far = matrix_transform_vertex(eye_id.get_inverse_projection_matrix(), px, py, 1, 1);	// Location at far-clip

@@ -1,5 +1,6 @@
 #ifdef _YY_GLSLES_
-uniform sampler2D u_sInput;
+uniform sampler2D u_sInput;		// Input texture (changes per pass type)
+uniform sampler2D u_sAlbedo;	// Albedo specifically, only used in non-albedo pass + dithering
 uniform int u_iCompatability;	// Which compatability pass we're on
 #else
 uniform sampler2D u_sAlbedo;
@@ -135,6 +136,12 @@ void main()
 #else
 // Simplified GLSL ES render
 void main(){
+	
+	if (u_iTranslucent != 2 && u_iCompatability != 0){
+		vec4 vColor = v_vColor * u_vAlbedo * to_rgb(texture2D(u_sAlbedo, v_vTexcoord));
+		check_dither(vColor.a);
+	}
+		
 /// @note	could potentially be some conflicts in this case w/ dither mode due to
 ///			normal,pbr,emission not having access to the albedo's alpha for discard.
 	if (u_iCompatability == 0)

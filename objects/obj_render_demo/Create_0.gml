@@ -14,9 +14,13 @@ gmouse = {
 	x : 0,
 	y : 0
 }
+
+if (not U3D_RENDER_COMPATIBILITY_MODE){
+	game_set_speed(9999, gamespeed_fps);
+	display_reset(0, true);
+}
+
 display_debug = false;
-game_set_speed(9999, gamespeed_fps);
-display_reset(0, true);
 cursor = cr_arrow;	// Updated every step for button / hover sliders
 
 camera_orbit_distance = 12; 	// How far away from the model to orbit
@@ -68,7 +72,9 @@ function push_error(message){
 
 #region INIT
 // Init basic window / game settings:
-window_set_fullscreen(true);
+if (not U3D_RENDER_COMPATIBILITY_MODE and current_time < 1000)
+	window_set_fullscreen(true);
+	
 display_set_gui_maximise();
 game_set_speed(9999, gamespeed_fps);
 

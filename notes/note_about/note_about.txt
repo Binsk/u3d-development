@@ -116,3 +116,47 @@ via `Primitive.GENERATE_WIREFRAMES=true`.
 If a class has a static global property such as above, you can safely assume
 that it will be automatically initialized for you at game start; you do not need
 to instantiate a version of the class first.
+
+## Compatability Mode
+
+**Note:** Compatability mode is experimental fallback and NOT guaranteed to work!
+
+### Rendering Pipeline
+Some platforms do not support rendering to multiple textures at the same time so,
+in these cases, the renderer is switched into 'compatability mode'. This means that
+each texture has to be rendered to separately which also means that every model now
+has to render multiple times. This is slower, especially with skeletal models, however
+the fragment aspect is still culled with the previous depth-buffer and all lighting
+passes still render the same as before.
+
+A number of platforms seem to also have issues sampling from a texture pulled from
+the depth buffer which means a number of effects (like SSAO) will not be available.
+As such, you cannot expect all features to be available when in compatability mode.
+
+### Rendering Buffers
+Some platforms that use compatability mode, such as the GX export, require surfaces
+to be in the dimension of 2^n. However, the rendering 'window' in the browser may not
+be an appropriate size. The renderer will automatically scale the buffers to a proper
+2^n resolution that is equal to or larger than your rendering output and then crop the
+final result down to the nearest edge. Note, this is only true for the CameraView class.
+
+For example, if you are rendering at 1280x720 in the web browser, the rendering buffers
+will need to scale up to 2048x1024. Because of this, your FOV may NOT appear the same as
+when rendering on regular targets and may need to be adjusted in these cases.
+
+If you design around these limitations then you shouldn't have an issue.
+
+### Shaders
+Effectively any platform that requires 'compatability mode' will compile down to GLSES
+rather than HLSL or GLSL. The included shaders accomodate some special syntax requirements
+for GLSES though GameMaker's compile-time defines. If you write your own custom shaders
+you will need to handle compatability mode yourself by checking if the shader was compiled
+as GLSLES.
+
+### Mixed Rendering
+Because compatability mode requires re-rendering a lot of data, moreso than the regular
+render mode, it is suggested that, for performance reasons, the translucent pass is
+**not** used unless absolutely necessary. It is best that you don't use translucent materials
+but, if this is absolutely necessary, the "mixed" rendering mode can be used instead and
+translucent materials will be rendered with a dither which gives the illusion of 
+translucency at the cost of quality.

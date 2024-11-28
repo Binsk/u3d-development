@@ -44,17 +44,25 @@ if (instance_number(obj_button_model) == 0){ // Mostly for GX so there is someth
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = "demo-box.glb";
 	inst.directory = "";
+	
+	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
+	inst.text = "alpha-test.glb";
+	inst.directory = "";
 }
  
 if (is_maxed) // Only used to prevent GUI overlap, really.
 	push_error($"too many model files, stopping at {max_files}...");
 
 // Exit button:
-inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44, 0, obj_button);
-inst.text = "Exit";
-inst.signaler.add_signal("pressed", new Callable(id, game_end));
+var ay = display_get_gui_height() - 12 - 44;
+if (not U3D_RENDER_COMPATIBILITY_MODE){
+	inst = instance_create_depth(ax, ay, 0, obj_button);
+	inst.text = "Exit";
+	inst.signaler.add_signal("pressed", new Callable(id, game_end));
+	ay -= 44;
+}
 
-inst = instance_create_depth(ax, display_get_gui_height() - 12 - 44 - 44, 0, obj_button);
+inst = instance_create_depth(ax, ay, 0, obj_button);
 inst.text = "Collision Test";
 inst.text_tooltip = "Switch to a scene focused on testing collisions.";
 inst.signaler.add_signal("pressed", new Callable(id, function(){
@@ -65,7 +73,7 @@ inst.signaler.add_signal("pressed", new Callable(id, function(){
 }));
 
 	// Global properties:
-var ay = display_get_gui_height() - 12 - 44 - 32 - 44;
+ay -= 32;
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.text = "Render Floor";
 inst.text_tooltip = "Renders a wooden floor at the base of the model.";
@@ -148,14 +156,16 @@ inst.signaler.add_signal("checked", function(is_checked){
 	}
 });
 
-ay -= 32;
-inst = instance_create_depth(ax, ay, 0, obj_checkbox);
-inst.text = "V-Sync";
-inst.text_tooltip = "Enable full-screen V-Sync";
-inst.is_checked = true;
-inst.signaler.add_signal("checked", function(is_checked){
-	display_reset(0, is_checked);
-});
+if (not U3D_RENDER_COMPATIBILITY_MODE){
+	ay -= 32;
+	inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+	inst.text = "V-Sync";
+	inst.text_tooltip = "Enable full-screen V-Sync";
+	inst.is_checked = true;
+	inst.signaler.add_signal("checked", function(is_checked){
+		display_reset(0, is_checked);
+	});
+}
 
 // Animation properties:
 ax -= 256 + 12;

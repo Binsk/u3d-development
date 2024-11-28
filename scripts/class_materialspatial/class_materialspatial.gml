@@ -283,6 +283,9 @@ function MaterialSpatial() : Material() constructor {
 				sampler_toggles[3] = 1;
 		}
 		
+		if (is_compatability and Camera.ACTIVE_COMPATABILITY_STAGE != 0 and not is_undefined(texture[$ "albedo"]))
+			texture.albedo.texture.apply("u_sAlbedo");
+		
 		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed)
 			sampler_set("u_sDither", sprite_get_texture(spr_default_dither, 0));
 			
