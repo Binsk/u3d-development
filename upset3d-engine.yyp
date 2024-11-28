@@ -50,6 +50,7 @@
     {"$GMIncludedFile":"","%Name":"demo-box.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-box.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"demo-collision-floor.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-collision-floor.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"demo-floor.glb","CopyToMask":-1,"filePath":"datafiles","name":"demo-floor.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
+    {"$GMIncludedFile":"","%Name":"helmet.glb","CopyToMask":-1,"filePath":"datafiles","name":"helmet.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"alpha-test.glb","CopyToMask":-1,"filePath":"datafiles/render-test","name":"alpha-test.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"boom-box.glb","CopyToMask":-1,"filePath":"datafiles/render-test","name":"boom-box.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"chess.glb","CopyToMask":-1,"filePath":"datafiles/render-test","name":"chess.glb","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
