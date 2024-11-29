@@ -18,9 +18,9 @@ enum CAMERA_GBUFFER {
 	depth,					// Depth map; texture taken from albedo
 	
 	normal,					// Normal map (rgba8unorm)
-	view,					// View vector map (rgba8unorm) in world-space
 	emissive,				// Emissive map (rgba8unorm)
 	pbr,					// PBR properties (rgba8unorm); G: roughness, B: metal
+	view,					// View vector map (rgba16float) in world-space
 	
 	light_opaque,			// Out surface (rgba16float) of lighting passes
 	light_translucent,
@@ -182,20 +182,40 @@ function Camera() : Body() constructor {
 			return 0;
 			
 		var bytes = 0;
-		bytes += (buffer_width * buffer_height) * (
-			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque albedo + depth
-			(get_is_translucent_stage(render_stages) ? 8 : 0) +	// translucent albedo + depth
-			4 +	// Normal
-			8 + // View
-			(get_has_render_flag(CAMERA_RENDER_FLAG.emission) ? 4 : 0) + // Emission
-			4 + // PBR
-			(render_stages & CAMERA_RENDER_STAGE.opaque ? 8 : 0) +		// opaque output (16f)
-			(get_is_translucent_stage(render_stages) ? 8 : 0) +	// translucent output (16f)
-			(get_has_render_flag(CAMERA_RENDER_FLAG.ppfx) ? 8 : 0) + // Post process
-			8		// Final
-		);
+		var array = struct_get_values(gbuffer.surfaces);
+		for (var i = array_length(array) - 1; i >= 0; --i){
+			if (not surface_exists(array[i]))	
+				continue;
+			
+			bytes += (surface_get_format(array[i]) == surface_rgba16float ? 8 : 4);
+		}
+		return bytes * buffer_width * buffer_height;
+	}
+	
+	/// @desc	Given a buffer index from the GBuffer, returns if it is necessary for
+	///			the current render given the camera's current properties.
+	function get_requires_buffer(buffer_index){
+		if (buffer_index == CAMERA_GBUFFER.albedo_opaque or buffer_index == CAMERA_GBUFFER.light_opaque)
+			return render_stages & CAMERA_RENDER_STAGE.opaque;
 		
-		return bytes;
+		if (buffer_index == CAMERA_GBUFFER.albedo_translucent or buffer_index == CAMERA_GBUFFER.light_translucent) // Albedo translucent
+			return render_stages & CAMERA_RENDER_STAGE.translucent and render_stages != CAMERA_RENDER_STAGE.mixed;
+		
+		if (buffer_index == CAMERA_GBUFFER.normal or 
+			buffer_index == CAMERA_GBUFFER.pbr or 
+			buffer_index == CAMERA_GBUFFER.view)
+			return render_stages & 3;
+		
+		if (buffer_index == CAMERA_GBUFFER.emissive)
+			return (render_stages & 3) and get_has_render_flag(CAMERA_RENDER_FLAG.emission);
+		
+		if (buffer_index == CAMERA_GBUFFER.final)
+			return render_stages & 3;
+		
+		if (buffer_index == CAMERA_GBUFFER.post_process)
+			return (render_stages & 3) and get_has_render_flag(CAMERA_RENDER_FLAG.ppfx);
+		
+		return false;
 	}
 	
 	/// @desc	Returns whether or noth ALL the specified flags are enabled
@@ -252,105 +272,43 @@ function Camera() : Body() constructor {
 	
 		// Check for existence:
 		surface_depth_disable(false);
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.albedo_opaque])){
-			if (render_stages & CAMERA_RENDER_STAGE.opaque){
-				surfaces[$ CAMERA_GBUFFER.albedo_opaque] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
-				textures[$ CAMERA_GBUFFER.albedo_opaque] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+		for (var i = 0; i <= CAMERA_GBUFFER.post_process; ++i){
+			if (i == CAMERA_GBUFFER.depth)	// Skip depth, as it is taken from albedo
+				continue;
+			
+			var format = (i >= CAMERA_GBUFFER.view ? surface_rgba16float : surface_rgba8unorm);
+			var surface = surfaces[$ i];
+				// Don't need the buffer; free if it is allocated:
+			if (not get_requires_buffer(i)){
+				if (surface_exists(surface))
+					surface_free(surface);
+				
+				surfaces[$ i] = undefined;
+				textures[$ i] = undefined;
+				continue;
 			}
 			
-			// If opaque exists; we get the depth buffer from that:
-			surfaces[$ CAMERA_GBUFFER.depth] = surfaces[$ CAMERA_GBUFFER.albedo_opaque];
-			textures[$ CAMERA_GBUFFER.depth] = surface_get_texture_depth(surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
+			// Buffer required; generate it:
+				// If it exists; check resizing needs
+			if (surface_exists(surface)){
+				if (surface_get_width(surface) != buffer_width or surface_get_height(surface) != buffer_height)
+					surface_free(surface);
+			}
+			
+			if (not surface_exists(surface))
+				surface = surface_create(buffer_width, buffer_height, format);
+			
+			surfaces[$ i] = surface;
+			textures[$ i] = surface_get_texture(surface);
+			// If there is a depth buffer, set the depth cache to it:
+			if (not surface_get_depth_disable()){
+				surfaces[$ CAMERA_GBUFFER.depth] = surface;
+				textures[$ CAMERA_GBUFFER.depth] = surface_get_texture_depth(surface);
+			}
 			
 			surface_depth_disable(true);
 		}
-		else if (render_stages & CAMERA_RENDER_STAGE.opaque <= 0)
-			surface_free(surfaces[$ CAMERA_GBUFFER.albedo_opaque]);
-		else
-			surface_depth_disable(true);
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.albedo_translucent])){
-			var is_opaque_buffer = surface_get_depth_disable();
-			if (get_is_translucent_stage(render_stages)){
-				if (not is_opaque_buffer)
-					surface_depth_disable(false);
-					
-				surfaces[$ CAMERA_GBUFFER.albedo_translucent] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
-				textures[$ CAMERA_GBUFFER.albedo_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
-			}
-			
-			if (not is_opaque_buffer){
-				surfaces[$ CAMERA_GBUFFER.depth] = surfaces[$ CAMERA_GBUFFER.albedo_translucent];
-				textures[$ CAMERA_GBUFFER.depth] = surface_get_texture_depth(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
-			}
-		}
-		else if (not get_is_translucent_stage(render_stages))
-			surface_free(surfaces[$ CAMERA_GBUFFER.albedo_translucent]);
-			
-		surface_depth_disable(true);
-			
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.normal])){
-			surfaces[$ CAMERA_GBUFFER.normal] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
-			textures[$ CAMERA_GBUFFER.normal] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.normal]);
-		}
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.view])){ // @note	tried as a u8 and the quality was just crap; 16 is SIGNIFICANTLY better
-			surfaces[$ CAMERA_GBUFFER.view] = surface_create(buffer_width, buffer_height, surface_rgba16float);
-			textures[$ CAMERA_GBUFFER.view] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.view]);
-		}
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.pbr])){
-			surfaces[$ CAMERA_GBUFFER.pbr] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
-			textures[$ CAMERA_GBUFFER.pbr] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.pbr]);
-		}
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.emissive])){
-			if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)){
-				surfaces[$ CAMERA_GBUFFER.emissive] = surface_create(buffer_width, buffer_height, surface_rgba8unorm);
-				textures[$ CAMERA_GBUFFER.emissive] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.emissive]);
-			}
-		}
-		else if (not get_has_render_flag(CAMERA_RENDER_FLAG.emission)) {
-			surface_free(surfaces[$ CAMERA_GBUFFER.emissive])
-			surfaces[$ CAMERA_GBUFFER.emissive] = undefined;
-			textures[$ CAMERA_GBUFFER.emissive] = undefined;
-		}
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.light_opaque])){
-			if (render_stages & CAMERA_RENDER_STAGE.opaque){
-				surfaces[$ CAMERA_GBUFFER.light_opaque] = surface_create(buffer_width, buffer_height, surface_rgba16float);
-				textures[$ CAMERA_GBUFFER.light_opaque] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.light_opaque]);
-			}
-		}
-		else if (render_stages & CAMERA_RENDER_STAGE.opaque <= 0)
-			surface_free(surfaces[$ CAMERA_GBUFFER.light_opaque])
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.light_translucent])){
-			if (get_is_translucent_stage(render_stages)){
-				surfaces[$ CAMERA_GBUFFER.light_translucent] = surface_create(buffer_width, buffer_height, surface_rgba16float);
-				textures[$ CAMERA_GBUFFER.light_translucent] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.light_translucent]);
-			}
-		}
-		else if (not get_is_translucent_stage(render_stages))
-			surface_free(surfaces[$ CAMERA_GBUFFER.light_translucent])
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.final])){
-			surfaces[$ CAMERA_GBUFFER.final] = surface_create(buffer_width, buffer_height, surface_rgba16float);
-			textures[$ CAMERA_GBUFFER.final] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.final])
-		}
-		
-		if (not surface_exists(surfaces[$ CAMERA_GBUFFER.post_process])){
-			if (struct_names_count(post_process_effects) > 0 and get_has_render_flag(CAMERA_RENDER_FLAG.ppfx)){
-				surfaces[$ CAMERA_GBUFFER.post_process] = surface_create(buffer_width, buffer_height, surface_rgba16float);
-				textures[$ CAMERA_GBUFFER.post_process] = surface_get_texture(surfaces[$ CAMERA_GBUFFER.post_process]);
-			}
-		}
-		else if (struct_names_count(post_process_effects) <= 0 or not get_has_render_flag(CAMERA_RENDER_FLAG.ppfx)){
-			surface_free(surfaces[$ CAMERA_GBUFFER.post_process])
-			surfaces[$ CAMERA_GBUFFER.post_process] = undefined;
-			textures[$ CAMERA_GBUFFER.post_process] = undefined;
-		}
-		
+
 		surface_depth_disable(false);
 		return true;
 	}
@@ -360,14 +318,9 @@ function Camera() : Body() constructor {
 	function render_prepass(){
 		// The following buffers are SHARED between stages. Note that there may NOT
 		// be proper depth-checks when combining!
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_translucent], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.view], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.normal], 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.post_process], 0, 0);
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
+		var array = struct_get_values(gbuffer.surfaces);
+		for (var i = array_length(array) -1; i >= 0; --i)
+			surface_clear(array[i], 0, 0);
 	}
 	
 	/// @desc	A function that gets called after the grahpci buffer is rendered to
@@ -420,7 +373,9 @@ function Camera() : Body() constructor {
 			}
 				// If not compatability, render all at once as an MRT
 			else{
-				// surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
+				if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth]))
+					return false;
+					
 				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], gbuffer.surfaces[$ CAMERA_GBUFFER.depth]);
 				surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 				surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
