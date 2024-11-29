@@ -100,7 +100,7 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		var exposure = exposure_level;
 		var gamma = gamma_correction;
 		
-		if (debug_flags & (CAMERA_DEBUG_FLAG.render_normals | CAMERA_DEBUG_FLAG.render_pbr | CAMERA_DEBUG_FLAG.render_depth_opaque | CAMERA_DEBUG_FLAG.render_depth_translucent)){ // If overriding w/ debugging, remove tonemapping
+		if (debug_flags & (CAMERA_DEBUG_FLAG.render_normals | CAMERA_DEBUG_FLAG.render_pbr | CAMERA_DEBUG_FLAG.render_depth)){ // If overriding w/ debugging, remove tonemapping
 			tonemap = CAMERA_TONEMAP.linear;
 			exposure = 1.0;
 			gamma = false;

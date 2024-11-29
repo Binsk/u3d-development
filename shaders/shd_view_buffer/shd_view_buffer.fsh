@@ -1,7 +1,6 @@
 precision highp float;
 
 uniform sampler2D u_sDepth;			// Current pass's depth
-uniform sampler2D u_sDepthOpaque;	// Depth of opaque to compare against (we discard if behind)
 
 uniform mat4 u_mInvProj;
 uniform mat4 u_mInvView;
@@ -27,9 +26,6 @@ vec3 depth_to_world(float fDepth, vec2 vUV){
 void main()
 {
     float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
-    float fDepthO = texture2D(u_sDepthOpaque, v_vTexcoord).r;
-    if (fDepthO < fDepth) // Opaque is covering this pixel; discard so we use the opaque pass's vector
-    	discard;
     
     vec3 vView = normalize(depth_to_world(fDepth, v_vTexcoord) - u_vCamPosition);
     gl_FragColor = vec4(vView * 0.5 + 0.5, 1.0);

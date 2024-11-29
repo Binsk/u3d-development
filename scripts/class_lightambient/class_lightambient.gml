@@ -96,7 +96,7 @@ function LightAmbient() : Light() constructor {
 		shader_set(shader_ssao);
 		surface_set_target(surface_ssao);
 		
-		sampler_set("u_sDepth", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque]);
+		sampler_set("u_sDepth", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 		sampler_set("u_sNormal", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		sampler_set("u_sNoise", sprite_get_texture(spr_default_ssao_noise, 0));
 		

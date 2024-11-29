@@ -43,7 +43,7 @@ function LightPoint(position=vec()) : Light() constructor {
 		var camera_id = Camera.ACTIVE_INSTANCE;
 		var is_translucent = Camera.get_is_translucent_stage();
 		sampler_set("u_sAlbedo", camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
-		sampler_set("u_sDepth", camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.depth_translucent : CAMERA_GBUFFER.depth_opaque]);
+		sampler_set("u_sDepth", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 		sampler_set("u_sNormal", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		sampler_set("u_sPBR", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 		sampler_set("u_sView", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);

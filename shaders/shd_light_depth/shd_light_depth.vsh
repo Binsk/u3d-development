@@ -1,3 +1,5 @@
+precision highp float;
+
 /// @about
 /// Renders a simplified version of the gbuffer shader specifically for a light and is
 /// intended for generating a directional shadow map.

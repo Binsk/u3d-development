@@ -20,8 +20,7 @@
 // u_sInput				(sampler2D)		final combined render of all passes including PPFX up to this point
 // u_sFinalOpaque		(sampler2D)		final output of opaque pass 
 // u_sFinalTranslucent	(sampler2D)		final output of translucent pass 
-// u_sDepthOpaque		(sampler2D)		original depth buffer of opaque pass
-// u_sDepthTranslucent	(sampler2D)		original depth buffer of translucent pass
+// u_sDepth				(sampler2D)		combined depth buffer of all passes
 // u_sView				(sampler2D)		view vectors for each fragment in world-space
 // u_vTexelSize			(vec2)			texel size of all provided textures
 // u_iRenderStages		(int)			0 = none, 1 = opaque only, 2 = translucent only, 3 = both
@@ -79,8 +78,7 @@ function PostProcessFX(shader, uniforms={}, samplers={}) : U3DObject() construct
 		sampler_set("u_sInput", gbuffer[$ CAMERA_GBUFFER.final] ?? -1);
 		sampler_set("u_sFinalOpaque", gbuffer[$ CAMERA_GBUFFER.light_opaque] ?? -1);
 		sampler_set("u_sFinalTranslucent", gbuffer[$ CAMERA_GBUFFER.light_translucent] ?? -1);
-		sampler_set("u_sDepthOpaque", gbuffer[$ CAMERA_GBUFFER.depth_opaque] ?? -1);
-		sampler_set("u_sDepthTranslucent", gbuffer[$ CAMERA_GBUFFER.depth_translucent] ?? -1);
+		sampler_set("u_sDepth", gbuffer[$ CAMERA_GBUFFER.depth] ?? -1);
 		sampler_set("u_sView", gbuffer[$ CAMERA_GBUFFER.view] ?? -1);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(surface_get_texture(surface_out)), texture_get_texel_height(surface_get_texture(surface_out))]);
 		uniform_set("u_iRenderStages", shader_set_uniform_i, Camera.get_is_opaque_stage(Camera.ACTIVE_INSTANCE.render_stages) | (Camera.get_is_translucent_stage(Camera.ACTIVE_INSTANCE.render_stages) * 2));

@@ -1,3 +1,4 @@
+precision highp float;
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sSSAO;
 uniform sampler2D u_sPBR;

@@ -1,3 +1,5 @@
+precision highp float;
+
 uniform sampler2D u_sTexture;
 uniform int u_iTonemap; // Tonemap style (see enum CAMERA_TONEMAP)
 uniform int u_iGamma;	// Whether or not to apply gamma correction

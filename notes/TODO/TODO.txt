@@ -1,7 +1,5 @@
 # FIXME
--	Textures not on 'own texture page' not rendering right
--	Cube-mapping seams, especially noticeable w/ the mips
--	Shadow multi-samples are causing halos around objects (?)
+-	Cube-mapping seams, especially noticeable w/ the fake mips
 -	Framerate drops drastically in cycles. It comes and goes and depends on
 	what I was doing, but I was getting drops from 200 to 40 where then it would
 	inch up to drop again. Seems it may be animation related. Increasing the
@@ -12,6 +10,9 @@
 	and even shrunk and it still doesn't work right.
 -	Depth textures aren't working correctly in GX so SSAO, FOG, and the like don't
 	work.
+-	Mip-mapping can cause SEVERE lag. Switching render modes has sometimes fixed it?
+	Good test: Use "Force Mixed" render, Load ferarri, floor, castle; dismiss castle, ferarri; load helmet.
+	This causes severe lag; switching render mode fixed it.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -53,3 +54,4 @@
 -	Add dithered translucency to opaque pass.
 -	Add async controller handling of reference freeing so it only does so at frame end,
 	this allows passing things around in a script w/o accidental immediate freeing.
+-	Add dynamic number of 'translucent' render layers; user defined

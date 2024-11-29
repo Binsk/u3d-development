@@ -46,7 +46,7 @@ if (instance_number(obj_button_model) == 0){ // Mostly for GX so there is someth
 	inst.directory = "";
 	
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
-	inst.text = "helmet.glb";
+	inst.text = "alpha-test.glb";
 	inst.directory = "";
 }
 

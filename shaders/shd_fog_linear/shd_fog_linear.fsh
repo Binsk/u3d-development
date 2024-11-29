@@ -1,8 +1,7 @@
 precision highp float;
 
 uniform sampler2D u_sInput; // Final color
-uniform sampler2D u_sDepthOpaque;
-uniform sampler2D u_sDepthTranslucent;
+uniform sampler2D u_sDepth;
 uniform int u_iRenderStages;
 
 uniform vec4 u_vColor;
@@ -25,11 +24,7 @@ float linearize_depth(float fDepth)
 void main()
 {
     float fDepth = 1.0;
-    if (u_iRenderStages == 1 || u_iRenderStages == 3)
-        fDepth = min(fDepth, texture2D(u_sDepthOpaque, v_vTexcoord).r);
-    
-    if (u_iRenderStages >= 2)
-        fDepth = min(fDepth, texture2D(u_sDepthTranslucent, v_vTexcoord).r);
+    fDepth = min(fDepth, texture2D(u_sDepth, v_vTexcoord).r);
     
     fDepth = linearize_depth(fDepth);
     

@@ -1,3 +1,4 @@
+precision highp float;
 uniform sampler2D u_sDepth;
 uniform sampler2D u_sNormal;
 uniform sampler2D u_sNoise;
@@ -17,12 +18,6 @@ uniform int u_iSamples;
 
 varying vec2 v_vTexcoord;
 
-// #ifdef _YY_GLSLES_
-// // SSAO won't work in browser and is too slow for targets that force GLSES
-// void main(){
-// 	gl_FragColor.r = 1.0;
-// }
-// #else
 vec3 depth_to_view(float fDepth, vec2 vUV){
 	#ifdef _YY_HLSL11_
     float fZ = fDepth;
@@ -74,4 +69,3 @@ void main() {
 	#endif
 	gl_FragColor.r = 1.0 - fAO;
 }
-// #endif

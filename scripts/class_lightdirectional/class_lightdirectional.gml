@@ -179,7 +179,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_set_target(shadowbit_surface);
 		shader_set(shd_lighting_sample_shadow);
 		sampler_set("u_sShadow", shadow_depth_texture);
-		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 		uniform_set("u_fShadowBias", shader_set_uniform_f, shadow_bias);
 		uniform_set("u_mShadow", shader_set_uniform_matrix_array, [shadow_viewprojection_matrix]);
 		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye_id.get_inverse_projection_matrix()]);
@@ -200,7 +200,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		surface_set_target(surface_out);
 		shader_set(shd_lighting_apply_shadow);
 		sampler_set("u_sShadow", surface_get_texture(shadowbit_surface));
-		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth_opaque + is_translucent]);
+		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in)]);
 		uniform_set("u_fSampleBias", shader_set_uniform_f, [shadow_sample_bias]);
 		draw_surface(surface_in, 0, 0);
