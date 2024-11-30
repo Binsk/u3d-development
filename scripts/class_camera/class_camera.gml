@@ -334,9 +334,7 @@ function Camera() : Body() constructor {
 		gpu_set_zwriteenable(true);
 		gpu_set_ztestenable(true);
 		gpu_set_cullmode(cull_noculling);
-		gpu_set_tex_filter(false);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
-		gpu_set_texrepeat(true);
 		
 		// Clear the albedo surface while keeping the depth from the last pass:
 		if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth])) // Shared w/ albedo surface
@@ -352,7 +350,6 @@ function Camera() : Body() constructor {
 		
 		// Render models w/ materials to primary buffer channels:
 		for (var r = 0; r < (U3D.OS.is_compatability ? 4 : 1); ++r){
-			
 			#region ATTACH RENDER TARGETS
 			// Compatability mode check; must render one texture at a time:
 			if (U3D.OS.is_compatability){
@@ -471,8 +468,8 @@ function Camera() : Body() constructor {
 
 			shader_set(light.get_shader());
 			gpu_set_blendmode_ext(bm_one, bm_zero);
-			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
+			draw_clear_alpha(0, 0);
 /// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
 			light.apply_gbuffer();
 			light.apply();

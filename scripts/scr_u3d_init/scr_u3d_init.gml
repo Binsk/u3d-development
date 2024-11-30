@@ -89,6 +89,9 @@ U3D = {
 			missing : new MaterialSpatial(),	// Default material for when a material is missing
 			blank : new MaterialSpatial()		// Default material for when material textures are undefined (e.g., color scalars only)
 		},
+		TEXTURE : {
+			dither : new Texture2D(sprite_get_texture(spr_default_dither, 0))	
+		},
 		PPFX : { // Pre-made PostProcessingFX that can be attached to render cameras
 			fxaa : new PostProcessFX(shd_fxaa),				// Fast approximate anti-aliasing
 			grayscale : new PostProcessFX(shd_grayscale),	// Converts the camera to grayscale

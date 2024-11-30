@@ -165,8 +165,8 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 		}
 		
 		if (uniform >= 0){ // Uniform exists in the shader; set it
-			apply_properties(uniform);
 			texture_set_stage(uniform, texture_id);
+			apply_properties(uniform);
 			return true;
 		}
 		

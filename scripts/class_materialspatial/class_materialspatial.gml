@@ -263,31 +263,45 @@ function MaterialSpatial() : Material() constructor {
 		sampler_toggles[3] = 0;
 		var is_compatability = U3D.OS.is_compatability;
 		
-		if (not is_undefined(texture[$ "albedo"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0)){
-			if (texture.albedo.texture.apply(is_compatability ? "u_sInput" : "u_sAlbedo"))
+		if (not is_undefined(texture[$ "albedo"])){
+			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0) and 
+				texture.albedo.texture.apply(is_compatability ? "u_sInput" : "u_sAlbedo"))
 				sampler_toggles[0] = 1;
 		}
+		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0)
+			sampler_set(is_compatability ? "u_sInput" : "u_sAlbedo", -1);
 		
-		if (not is_undefined(texture[$ "normal"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 1)){
-			if (texture.normal.texture.apply(is_compatability ? "u_sInput" : "u_sNormal"))
+		if (not is_undefined(texture[$ "normal"])){
+			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 1) and 
+				texture.normal.texture.apply(is_compatability ? "u_sInput" : "u_sNormal"))
 				sampler_toggles[1] = 1;
 		}
+		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 1)
+			sampler_set(is_compatability ? "u_sInput" : "u_sNormal", -1);
 		
-		if (not is_undefined(texture[$ "pbr"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 2)){
-			if (texture.pbr.texture.apply(is_compatability ? "u_sInput" : "u_sPBR"))
+		if (not is_undefined(texture[$ "pbr"])){
+			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 2) and 
+				texture.pbr.texture.apply(is_compatability ? "u_sInput" : "u_sPBR"))
 				sampler_toggles[2] = 1;
 		}
+		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 2)
+			sampler_set(is_compatability ? "u_sInput" : "u_sPBR", -1);
 		
-		if (not is_undefined(texture[$ "emissive"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 3)){
-			if (texture.emissive.texture.apply(is_compatability ? "u_sInput" : "u_sEmissive"))
+		if (not is_undefined(texture[$ "emissive"])){
+			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 3) and 
+				texture.emissive.texture.apply(is_compatability ? "u_sInput" : "u_sEmissive"))
 				sampler_toggles[3] = 1;
 		}
+		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 3)
+			sampler_set(is_compatability ? "u_sInput" : "u_sEmissive", -1);
 		
 		if (is_compatability and Camera.ACTIVE_COMPATABILITY_STAGE != 0 and not is_undefined(texture[$ "albedo"]))
 			texture.albedo.texture.apply("u_sAlbedo");
 		
 		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed)
-			sampler_set("u_sDither", sprite_get_texture(spr_default_dither, 0));
+			U3D.RENDERING.TEXTURE.dither.apply("u_sDither");
+		else
+			sampler_set("u_sDither", -1);	// Required or we get framebuffer issues in browsers
 			
 
 		// Set samplers; if no texture then the values are used directly otherwise they are multiplied

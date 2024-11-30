@@ -13,6 +13,8 @@
 -	Mip-mapping can cause SEVERE lag. Switching render modes has sometimes fixed it?
 	Good test: Use "Force Mixed" render, Load ferarri, floor, castle; dismiss castle, ferarri; load helmet.
 	This causes severe lag; switching render mode fixed it.
+-	Fix "framebuffer" error in browser when loading new textures in (if rendering is off
+	while loading the issue goes away).
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -55,3 +57,5 @@
 -	Add async controller handling of reference freeing so it only does so at frame end,
 	this allows passing things around in a script w/o accidental immediate freeing.
 -	Add dynamic number of 'translucent' render layers; user defined
+-	Add optimized culling of buffers in compatability mode (e.g., if no emissive materials
+	drop that pass entirely).
