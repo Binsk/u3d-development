@@ -123,7 +123,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 	function build(){
 		if (not is_undefined(texture_id)) // Already built; we can exit early
 			return;
-			
+		
 		if (event_type != ev_draw)
 			throw new Exception(string_ext("cannot build TextureCube in event [{0}]!", [event_type]));
 		
@@ -157,12 +157,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		gpu_set_tex_filter(true);
 		gpu_set_cullmode(cull_noculling);
-		draw_primitive_begin_texture(pr_trianglestrip, texture_cube);
-		draw_vertex_texture_color(0, 0, 0, 0, c_white, 1.0);
-		draw_vertex_texture_color(resolution, 0, 1, 0, c_white, 1.0);
-		draw_vertex_texture_color(0, resolution, 0, 1, c_white, 1.0);
-		draw_vertex_texture_color(resolution, resolution, 1, 1, c_white, 1.0);
-		draw_primitive_end();
+		draw_quad_color(0, 0, resolution, resolution, texture_cube);
 		gpu_set_blendmode(bm_normal);
 		surface_reset_target();
 		

@@ -61,14 +61,6 @@ function __u3dgc_instance_id(){
 	
 	return instance_create_depth(0, 0, 0, obj_u3d_gc);
 }
-
-// Determine if things must run in compatability mode due to requiring GLSL ES.
-// Note that shaders are designed around simplifying for GLSL ES so if you decide
-// to modify which platforms are 'compatability' you must ALSO adjust the shaders!
-function __compatability_mode(){
-	static RESULT = (not shader_is_compiled(shd_detect_glsles));
-	return RESULT;
-}
 #endregion
 
 /// Maximum number of full-data bones we can safely support (this matches w/ the spatial
@@ -85,11 +77,13 @@ function __compatability_mode(){
 // Delta time, in percent, relative to a 60fps target. Useful for modifying in-
 // game units designed around a 60fps limit.
 #macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
+
 #macro U3D_ASYNC __async_instance_id()	// The ID for the ASYNC controller
 #macro U3D_GC __u3dgc_instance_id()		// The ID for the garbage collection controller
 
-/// Define U3D structure
+// Define U3D structure
 U3D = {
+	// Defaults and pre-build rendering properties:
 	RENDERING : {
 		MATERIAL : {
 			missing : new MaterialSpatial(),	// Default material for when a material is missing
@@ -110,12 +104,18 @@ U3D = {
 				missing_matrices : array_flatten(array_create(U3D_MAXIMUM_BONES, matrix_build_identity())),	// Default skeleton for full-data bones
 				missing_quatpos : array_flatten(array_create(U3D_MAXIMUM_BONES * 2, [0, 0, 0, 1, 0, 0, 0, 0]))	// Default skeleton for partial-data bones
 			}
-		}
+		},
+		
+		force_2n_textures : false	// If set, rendering buffers will be forced to dimensions of 2^n
 	},
-	MEMORY : {},	// Used to hold data caches and garbage-collect dynamically generated resources
+	
+	// Dynamic memory system used for tracking references:
+	MEMORY : {},
+	
+	// Static values that return specific details about the platform relevant to U3D	
 	OS : {
-		is_browser : (os_type == os_gxgames or os_browser != browser_not_a_browser),
-		is_compatability : __compatability_mode()	// Whether or not the system requires compatability mode
+		is_browser : (os_type == os_gxgames or os_browser != browser_not_a_browser),	// Whether or not we are running in a browser
+		is_compatability : (not shader_is_compiled(shd_detect_glsles))	// Whether or not the system requires compatability mode
 	}
 }
 
@@ -124,3 +124,5 @@ U3D.RENDERING.MATERIAL.missing.set_albedo_texture(new Texture2D(sprite_get_textu
 U3D.RENDERING.MATERIAL.missing.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
 U3D.RENDERING.MATERIAL.blank.set_albedo_texture(new Texture2D(sprite_get_texture(spr_default_white, 0)));
 U3D.RENDERING.MATERIAL.blank.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
+
+U3D.RENDERING.force_2n_textures = U3D.OS.is_browser; // Browsers have issues w/ surfaces that aren't 2^n despite saying otherwise
