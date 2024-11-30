@@ -338,6 +338,18 @@ function Camera() : Body() constructor {
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		gpu_set_texrepeat(true);
 		
+		// Clear the albedo surface while keeping the depth from the last pass:
+		if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth])) // Shared w/ albedo surface
+			return false;
+			
+		if (is_translucent){
+			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
+			draw_clear_ext(0, 0);
+			surface_reset_target();
+			if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)) // Clear emission; albeit it shouldn't ever exist for translucent pass
+				surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
+		}
+		
 		// Render models w/ materials to primary buffer channels:
 		for (var r = 0; r < (U3D.OS.is_compatability ? 4 : 1); ++r){
 			
@@ -361,14 +373,6 @@ function Camera() : Body() constructor {
 			}
 			// Regular render mode; attach all render targets:
 			else{
-				if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth]))
-					return false;
-					
-				// Clear the albedo surface while keeping the depth from the last pass:
-				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
-				draw_clear_ext(0, 0);
-				surface_reset_target();
-					
 				surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
 				surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 				surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
