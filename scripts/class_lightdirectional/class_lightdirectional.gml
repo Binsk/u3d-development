@@ -168,11 +168,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			shadowbit_surface = surface_create(sw, sh, not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
 		}
 			
-		var rep = gpu_get_texrepeat();
-		gpu_set_texrepeat(false);
 		surface_clear(shadowbit_surface, c_black);
-		gpu_set_tex_mip_enable(mip_off);
-		gpu_set_tex_mip_filter(tf_point);
 		/// Render to shadow buffer
 		/// @note	This was done as an MRT in the lighting pass, but the Windows platform
 		///			was failing to write out for some reason so we switched to a separate pass.
@@ -206,8 +202,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		draw_surface(surface_in, 0, 0);
 		shader_reset();
 		surface_reset_target();
-		
-		gpu_set_texrepeat(rep);
 		
 		return true;
 	}

@@ -73,7 +73,7 @@ function uniform_set(name, uniform_fnc=shader_set_uniform_f, argv=[]){
 /// @param	{string}	name
 /// @param	{texture}	texture
 // gml_pragma("forceinline");
-function sampler_set(name, texture){
+function sampler_set(name, texture, texrepeat=false, mip_enabled=false, mip_filter=tf_point){
 	static UNIFORM_CACHE = {};
 	var shader = shader_current();
 	if (shader < 0) // Skip if no shader set
@@ -90,6 +90,17 @@ function sampler_set(name, texture){
 	
 	if (uniform >= 0){ // Uniform exists in the shader; set it
 		texture_set_stage(uniform, texture);
+			// Make sure to set mips and repeat for the specific sampler as GameMaker's non *_ext
+			// versions only apply the main texture. This can cause texture errors in the browser.
+		if (gpu_get_texrepeat_ext(uniform) != texrepeat)
+			gpu_set_tex_repeat_ext(uniform, texrepeat);
+			
+		if (gpu_get_tex_mip_enable_ext(uniform) != mip_enabled)
+			gpu_set_tex_mip_enable_ext(uniform, mip_enabled);
+			
+		if (mip_enabled and gpu_get_tex_mip_filter_ext(uniform) != mip_filter)
+			gpu_set_tex_mip_filter_ext(uniform, mip_filter)
+			
 		return true;
 	}
 	

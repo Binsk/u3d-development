@@ -641,20 +641,20 @@ function Camera() : Body() constructor {
 		}
 		else {
 			// Opaque pass:
-			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
-			render_gbuffer(eye, body_array);
-			reset_mip(is_mip, mip_filter, mip_bias);
+			// Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
+			// render_gbuffer(eye, body_array);
+			// reset_mip(is_mip, mip_filter, mip_bias);
 			
-			render_midpass();
-			render_lighting(eye, light_array, body_array);
+			// render_midpass();
+			// render_lighting(eye, light_array, body_array);
 	
-			// Translucent pass:
-			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
-			render_gbuffer(eye, body_array);
-			reset_mip(is_mip, mip_filter, mip_bias);
+			// // Translucent pass:
+			// Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
+			// render_gbuffer(eye, body_array);
+			// reset_mip(is_mip, mip_filter, mip_bias);
 			
-			render_midpass();
-			render_lighting(eye, light_array, body_array);
+			// render_midpass();
+			// render_lighting(eye, light_array, body_array);
 		}
 		
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
@@ -665,7 +665,7 @@ function Camera() : Body() constructor {
 		render_ppfx();
 		
 		// Debug render:
-		render_debug(eye);
+		// render_debug(eye);
 		
 		Camera.ACTIVE_INSTANCE = undefined;
 		Eye.ACTIVE_INSTANCE = undefined;

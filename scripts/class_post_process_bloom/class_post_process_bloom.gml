@@ -74,7 +74,6 @@ function PPFXBloom(luminance_threshold=1.0, resolution_scale=0.5, blur_passes=5,
 		
 		surface_clear(surface_a, c_black, 0.0);
 		surface_clear(surface_b, c_black, 0.0);
-		gpu_set_texrepeat(false);
 		
 		// Copy the "illuminated" parts to the surface:
 		surface_set_target(surface_a);
@@ -84,12 +83,7 @@ function PPFXBloom(luminance_threshold=1.0, resolution_scale=0.5, blur_passes=5,
 		sampler_set("u_sInput", gbuffer[$ CAMERA_GBUFFER.final] ?? -1);
 		uniform_set("u_fThreshold", shader_set_uniform_f, threshold);
 		
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(pass_width, 0, 1, 0);
-		draw_vertex_texture(0, pass_height, 0, 1);
-		draw_vertex_texture(pass_width, pass_height, 1, 1);
-		draw_primitive_end();
+		draw_quad(0, 0, pass_width, pass_height);
 		
 		shader_reset();
 		surface_reset_target();
@@ -115,21 +109,11 @@ function PPFXBloom(luminance_threshold=1.0, resolution_scale=0.5, blur_passes=5,
 		
 		surface_set_target(surface_out); 
 		// Draw current swap to surface:
-		draw_primitive_begin_texture(pr_trianglestrip, gbuffer[$ CAMERA_GBUFFER.final]);
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(buffer_width, 0, 1, 0);
-		draw_vertex_texture(0, buffer_height, 0, 1);
-		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
-		draw_primitive_end();
+		draw_quad(0, 0, buffer_width, buffer_height, gbuffer[$ CAMERA_GBUFFER.final]);
 		
 		gpu_set_blendmode(bm_add);
 		// Add bloom on top:
-		draw_primitive_begin_texture(pr_trianglestrip, surface_get_texture(active_index ? surface_a : surface_b));
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(buffer_width, 0, 1, 0);
-		draw_vertex_texture(0, buffer_height, 0, 1);
-		draw_vertex_texture(buffer_width, buffer_height, 1, 1);
-		draw_primitive_end();
+		draw_quad(0, 0, buffer_width, buffer_height, surface_get_texture(active_index ? surface_a : surface_b));
 		
 		surface_reset_target();
 		gpu_set_blendmode(bm_normal);

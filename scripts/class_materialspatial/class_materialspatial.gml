@@ -263,6 +263,9 @@ function MaterialSpatial() : Material() constructor {
 		sampler_toggles[3] = 0;
 		var is_compatability = U3D.OS.is_compatability;
 		
+		/// @note	We must set samplers to -1 if not-in-use, otherwise we get framebuffer
+		///			errors in browsers since the texture will still be attached from the previous render.
+		
 		if (not is_undefined(texture[$ "albedo"])){
 			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0) and 
 				texture.albedo.texture.apply(is_compatability ? "u_sInput" : "u_sAlbedo"))
@@ -295,8 +298,12 @@ function MaterialSpatial() : Material() constructor {
 		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 3)
 			sampler_set(is_compatability ? "u_sInput" : "u_sEmissive", -1);
 		
-		if (is_compatability and Camera.ACTIVE_COMPATABILITY_STAGE != 0 and not is_undefined(texture[$ "albedo"]))
-			texture.albedo.texture.apply("u_sAlbedo");
+		if (is_compatability){
+			if (Camera.ACTIVE_COMPATABILITY_STAGE != 0 and not is_undefined(texture[$ "albedo"]))
+				texture.albedo.texture.apply("u_sAlbedo");
+			else if (Camera.ACTIVE_COMPATABILITY_STAGE == 0)
+				sampler_set("u_sAlbedo", -1);
+		}
 		
 		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed)
 			U3D.RENDERING.TEXTURE.dither.apply("u_sDither");
