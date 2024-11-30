@@ -8,13 +8,9 @@
 	script and not the child.
 -	Duck normal texture not loading correctly; have tried re-exporting via gimp
 	and even shrunk and it still doesn't work right.
--	Depth textures aren't working correctly in GX so SSAO, FOG, and the like don't
-	work.
--	Mip-mapping can cause SEVERE lag. Switching render modes has sometimes fixed it?
-	Good test: Use "Force Mixed" render, Load ferarri, floor, castle; dismiss castle, ferarri; load helmet.
-	This causes severe lag; switching render mode fixed it.
 -	Fix "framebuffer" error in browser when loading new textures in (if rendering is off
 	while loading the issue goes away).
+-	Fix; depth buffer seemingly not working w/ multi-passes? (Working with all else, though)
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

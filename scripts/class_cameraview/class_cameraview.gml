@@ -119,7 +119,7 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		u2 = 1, 
 		v2 = 1;
 		
-		if (U3D.OS.is_browser) {
+		if (U3D.RENDERING.force_2n_textures) {
 			/// @note	Browsers are forced to use 2^n dimension surfaces so we render that size
 			///			but crop it for the render size. Not a perfect solution but gets the job done.
 			/// @note2	Support for odd-dimensions IS THERE for browsers, but we get lots of surface failures
@@ -181,7 +181,7 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		if (get_is_directx_pipeline())
 			py = -py;
 
-		if (U3D.OS.is_browser) {
+		if (U3D.RENDERING.force_2n_textures) {
 			/// @note	Because browsers crop/scale rendering output due to the 2^n requirement
 			///			we need to compensate for it here to make sure the ray points correctly.
 			var r1 = render_width / render_height;	// Aspect ratio 1

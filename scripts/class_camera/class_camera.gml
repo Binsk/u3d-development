@@ -251,7 +251,7 @@ function Camera() : Body() constructor {
 		var surfaces = gbuffer.surfaces;
 		var textures = gbuffer.textures;
 		
-		if (U3D.OS.is_browser){
+		if (U3D.RENDERING.force_2n_textures){
 			buffer_width = power(2, ceil(log2(buffer_width)));
 			buffer_height = power(2, ceil(log2(buffer_height)));
 		}
@@ -614,17 +614,7 @@ function Camera() : Body() constructor {
 		
 		Camera.ACTIVE_INSTANCE = self;
 		Eye.ACTIVE_INSTANCE = eye;
-		
-		var is_mip = gpu_get_tex_mip_enable();
-		var mip_filter = gpu_get_tex_mip_filter();
-		var mip_bias = gpu_get_tex_mip_bias();
-		
-		function reset_mip(mip, filter, bias){
-			gpu_set_tex_mip_enable(mip);
-			gpu_set_tex_mip_filter(filter);
-			gpu_set_tex_mip_bias(bias);
-		}
-		
+
 		// Make sure the GBuffer exists and is valid
 		if (not generate_gbuffer())
 			return;
@@ -634,27 +624,24 @@ function Camera() : Body() constructor {
 		if (render_stages == CAMERA_RENDER_STAGE.mixed){
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed;
 			render_gbuffer(eye, body_array);
-			reset_mip(is_mip, mip_filter, mip_bias);
 			
 			render_midpass();
 			render_lighting(eye, light_array, body_array);
 		}
 		else {
 			// Opaque pass:
-			// Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
-			// render_gbuffer(eye, body_array);
-			// reset_mip(is_mip, mip_filter, mip_bias);
+			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
+			render_gbuffer(eye, body_array);
 			
-			// render_midpass();
-			// render_lighting(eye, light_array, body_array);
+			render_midpass();
+			render_lighting(eye, light_array, body_array);
 	
-			// // Translucent pass:
-			// Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
-			// render_gbuffer(eye, body_array);
-			// reset_mip(is_mip, mip_filter, mip_bias);
+			// Translucent pass:
+			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
+			render_gbuffer(eye, body_array);
 			
-			// render_midpass();
-			// render_lighting(eye, light_array, body_array);
+			render_midpass();
+			render_lighting(eye, light_array, body_array);
 		}
 		
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
@@ -665,7 +652,7 @@ function Camera() : Body() constructor {
 		render_ppfx();
 		
 		// Debug render:
-		// render_debug(eye);
+		render_debug(eye);
 		
 		Camera.ACTIVE_INSTANCE = undefined;
 		Eye.ACTIVE_INSTANCE = undefined;

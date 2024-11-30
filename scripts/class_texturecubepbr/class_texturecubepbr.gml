@@ -57,7 +57,6 @@ function TextureCubePBR(texture_id=undefined, resolution=1024, mip_count=1) : Te
 		surface_set_target(mip_surface);
 		draw_clear(c_black);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
-		gpu_set_tex_filter(true);
 		gpu_set_cullmode(cull_noculling);
 // /// @stub	Implement PROPER conversion; this gaussian blur is a really hacky 'good enough for now' implementation
 // 		// https://learnopengl.com/PBR/IBL/Specular-IBL

@@ -155,7 +155,6 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		surface_set_target(final_surface);
 		draw_clear(c_black);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
-		gpu_set_tex_filter(true);
 		gpu_set_cullmode(cull_noculling);
 		draw_quad_color(0, 0, resolution, resolution, texture_cube);
 		gpu_set_blendmode(bm_normal);
