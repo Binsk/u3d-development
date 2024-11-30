@@ -100,7 +100,7 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		var exposure = exposure_level;
 		var gamma = gamma_correction;
 		
-		if (debug_flags & ~3){ // If overriding w/ debugging, remove tonemapping
+		if ((debug_flags & ~3) != 0){ // If overriding w/ debugging, remove tonemapping
 			tonemap = CAMERA_TONEMAP.linear;
 			exposure = 1.0;
 			gamma = false;
@@ -120,10 +120,6 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		v2 = 1;
 		
 		if (U3D.RENDERING.force_2n_textures) {
-			/// @note	Browsers are forced to use 2^n dimension surfaces so we render that size
-			///			but crop it for the render size. Not a perfect solution but gets the job done.
-			/// @note2	Support for odd-dimensions IS THERE for browsers, but we get lots of surface failures
-			///			if we don't use 2^n.
 			var r1 = render_width / render_height;	// Aspect ratio 1
 			var r2 = buffer_width / buffer_height;	// Aspect ratio 2
 			if (r1 < r2){

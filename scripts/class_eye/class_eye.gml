@@ -52,6 +52,14 @@ function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 		return camera_id;
 	}
 	
+	function get_znear(){
+		return self.znear;
+	}
+	
+	function get_zfar(){
+		return self.zfar;
+	}
+	
 	/// @desc	Return / Build the view matrix for this eye.
 	function get_view_matrix(){
 		if (not is_undefined(self.matrix_view))

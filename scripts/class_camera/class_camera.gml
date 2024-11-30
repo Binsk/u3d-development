@@ -677,6 +677,7 @@ function Camera() : Body() constructor {
 					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 				if (debug_flags & CAMERA_DEBUG_FLAG.render_depth and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth])){
 					shader_set(shd_depth_to_grayscale);
+					uniform_set("u_vZClip", shader_set_uniform_f, [get_eye().get_znear(), get_eye().get_zfar()]);
 					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 					shader_reset();
 				}

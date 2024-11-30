@@ -107,6 +107,7 @@ Texture2D.ANISOTROPIC_OVERRIDE_LINEAR = true;		// Switch any imported linear fil
 
 camera.set_render_stages(CAMERA_RENDER_STAGE.opaque);		// Only render opaque pass by default; translucent can be enabled through the interface
 camera.set_position(vec(camera_orbit_distance * dcos(25), camera_orbit_distance * 0.5, camera_orbit_distance * dsin(25)));
+
 // camera.set_render_stages(CAMERA_RENDER_STAGE.mixed);
 obj_render_controller.add_camera(camera);					// Assign our camera to be managed by the rendering system
 
