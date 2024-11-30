@@ -14,7 +14,6 @@ var gpu_alpha = draw_get_alpha(); // Two common attributes that would likely nee
 var gpu_color = draw_get_color();
 draw_set_color(c_white);
 draw_set_alpha(1);
-gpu_set_tex_filter(false);
 
 // Regenerate camera GBuffers as needed
 var camera_keys = struct_get_names(camera_map);

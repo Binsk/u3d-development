@@ -121,6 +121,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 	///			upon use, but it can also be called manually to prevent render hiccups at level
 	///			start. Must be executed in a draw event due to the usage of surfaces.
 	function build(){
+		
 		if (not is_undefined(texture_id)) // Already built; we can exit early
 			return;
 		
@@ -144,7 +145,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		}
 		else
 			texture_cube = build_data[$ "texture_id"];
-			
+
 		// Now, with our texture, we must build the MIP levels:
 		final_surface = surface_create(resolution, resolution);
 		var shader = shader_current();

@@ -181,13 +181,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		uniform_set("u_mInvProj", shader_set_uniform_matrix_array, [eye_id.get_inverse_projection_matrix()]);
 		uniform_set("u_mInvView", shader_set_uniform_matrix_array, [eye_id.get_inverse_view_matrix()]);
 		
-		draw_primitive_begin_texture(pr_trianglestrip, -1);
-		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(sw, 0, 1, 0);
-		draw_vertex_texture(0, sh, 0, 1);
-		draw_vertex_texture(sw, sh, 1, 1);
-		draw_primitive_end();
-		
+		draw_quad(0, 0, sw, sh);
 		shader_reset();
 		surface_reset_target();
 		
