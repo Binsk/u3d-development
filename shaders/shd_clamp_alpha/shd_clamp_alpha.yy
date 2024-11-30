@@ -1,7 +1,7 @@
 {
   "$GMShader":"",
-  "%Name":"shd_combine_stages",
-  "name":"shd_combine_stages",
+  "%Name":"shd_clamp_alpha",
+  "name":"shd_clamp_alpha",
   "parent":{
     "name":"Screen Space",
     "path":"folders/Upset 3D/Shaders/Screen Space.yy",

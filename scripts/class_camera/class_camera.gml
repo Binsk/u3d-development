@@ -13,8 +13,7 @@
 ///			re-used across stages.
 ///			Some buffers are not allocated if they are not used.
 enum CAMERA_GBUFFER {
-	albedo_opaque,			// Albedo color (rgba8unorm)
-	albedo_translucent,
+	albedo,					// Albedo color (rgba8unorm)
 	depth,					// Depth map; texture taken from albedo
 	
 	normal,					// Normal map (rgba8unorm)
@@ -22,11 +21,13 @@ enum CAMERA_GBUFFER {
 	pbr,					// PBR properties (rgba8unorm); G: roughness, B: metal
 	view,					// View vector map (rgba16float) in world-space
 	
-	light_opaque,			// Out surface (rgba16float) of lighting passes
-	light_translucent,
+	light,					// Out surface (rgba16float) of lighting passes
+	light_combined,			// Combined lighting surfaces (rgba16float) between passes
 	
 	final,					// Final combined surface before tonemapping (rgba16float)
 	post_process,			// Post-processing middle-man surface (rgba16float)
+	
+	COUNT					// Not a buffer; contains the number of buffers that exist
 }
 
 /// @desc	Used by materials to specify which render stage they should appear in.
@@ -54,6 +55,7 @@ enum CAMERA_DEBUG_FLAG {
 	render_normals				=	0b100,		// Renders normals instead of the final output
 	render_pbr					=	0b1000,		// Renders PBR data instead of final output
 	render_depth				=	0b10000,	// Renders the depth buffer
+	render_albedo				=	0b100000,	// Renders albedo buffer; note it's WIPED for each pass!
 }
 
 /// @desc	Bitwiseable flags to enable / disable specific rendering pipeline features for the specific camara
@@ -86,7 +88,6 @@ function Camera() : Body() constructor {
 	exposure_level = 1.0;
 	white_level = 1.0;
 	gamma_correction = true;
-	update_counter = int64(0);	// Used on compatability platforms to reduce surface-resizes as it can break things when done too often
 	#endregion
 	
 	#region STATIC METHODS
@@ -195,25 +196,25 @@ function Camera() : Body() constructor {
 	/// @desc	Given a buffer index from the GBuffer, returns if it is necessary for
 	///			the current render given the camera's current properties.
 	function get_requires_buffer(buffer_index){
-		if (buffer_index == CAMERA_GBUFFER.albedo_opaque or buffer_index == CAMERA_GBUFFER.light_opaque)
-			return render_stages & CAMERA_RENDER_STAGE.opaque;
-		
-		if (buffer_index == CAMERA_GBUFFER.albedo_translucent or buffer_index == CAMERA_GBUFFER.light_translucent) // Albedo translucent
-			return render_stages & CAMERA_RENDER_STAGE.translucent and render_stages != CAMERA_RENDER_STAGE.mixed;
+		if (buffer_index == CAMERA_GBUFFER.albedo or 
+			buffer_index == CAMERA_GBUFFER.depth or 
+			buffer_index == CAMERA_GBUFFER.light or
+			buffer_index == CAMERA_GBUFFER.light_combined)
+			return (render_stages & CAMERA_RENDER_STAGE.both) > 0;
 		
 		if (buffer_index == CAMERA_GBUFFER.normal or 
 			buffer_index == CAMERA_GBUFFER.pbr or 
 			buffer_index == CAMERA_GBUFFER.view)
-			return render_stages & 3;
+			return (render_stages & CAMERA_RENDER_STAGE.both) > 0;
 		
 		if (buffer_index == CAMERA_GBUFFER.emissive)
-			return (render_stages & 3) and get_has_render_flag(CAMERA_RENDER_FLAG.emission);
+			return ((render_stages & CAMERA_RENDER_STAGE.both) > 0) and get_has_render_flag(CAMERA_RENDER_FLAG.emission);
 		
 		if (buffer_index == CAMERA_GBUFFER.final)
-			return render_stages & 3;
+			return (render_stages & CAMERA_RENDER_STAGE.both) > 0;
 		
 		if (buffer_index == CAMERA_GBUFFER.post_process)
-			return (render_stages & 3) and get_has_render_flag(CAMERA_RENDER_FLAG.ppfx);
+			return ((render_stages & CAMERA_RENDER_STAGE.both) > 0) and get_has_render_flag(CAMERA_RENDER_FLAG.ppfx);
 		
 		return false;
 	}
@@ -255,24 +256,9 @@ function Camera() : Body() constructor {
 			buffer_height = power(2, ceil(log2(buffer_height)));
 		}
 		
-		// Clear surfaces that had size changes; we clear instead of resize as the
-		// resize doesn't seem to keep the surface format correctly.
-		var surface_keys = struct_get_names(surfaces);
-		for (var i = array_length(surface_keys) - 1; i >= 0; --i){
-			var surface = surfaces[$ surface_keys[i]];
-			if (not surface_exists(surface))
-				continue;
-			
-			if (surface_get_width(surface) == buffer_width and surface_get_height(surface) == buffer_height)
-				continue;
-			
-			surface_free(surface);
-			struct_remove(surfaces, surface_keys[i]);
-		}
-	
 		// Check for existence:
 		surface_depth_disable(false);
-		for (var i = 0; i <= CAMERA_GBUFFER.post_process; ++i){
+		for (var i = 0; i < CAMERA_GBUFFER.COUNT; ++i){
 			if (i == CAMERA_GBUFFER.depth)	// Skip depth, as it is taken from albedo
 				continue;
 			
@@ -323,7 +309,7 @@ function Camera() : Body() constructor {
 			surface_clear(array[i], 0, 0);
 	}
 	
-	/// @desc	A function that gets called after the grahpci buffer is rendered to
+	/// @desc	A function that gets called after the graphics buffer is rendered to
 	///			but before any lighting passes happen.
 	function render_midpass(){}
 	
@@ -353,11 +339,13 @@ function Camera() : Body() constructor {
 		gpu_set_texrepeat(true);
 		
 		// Render models w/ materials to primary buffer channels:
-		for (var r = 0; r < (U3D_RENDER_COMPATIBILITY_MODE ? 4 : 1); ++r){
-				// If in compatability; we render each pass separately (significantly more expensive, but renders well)
-			if (U3D_RENDER_COMPATIBILITY_MODE){
+		for (var r = 0; r < (U3D.OS.is_compatability ? 4 : 1); ++r){
+			
+			#region ATTACH RENDER TARGETS
+			// Compatability mode check; must render one texture at a time:
+			if (U3D.OS.is_compatability){
 				var index_array = [
-					CAMERA_GBUFFER.albedo_opaque + is_translucent,
+					CAMERA_GBUFFER.albedo,
 					CAMERA_GBUFFER.normal,
 					CAMERA_GBUFFER.pbr,
 					CAMERA_GBUFFER.emissive
@@ -366,17 +354,22 @@ function Camera() : Body() constructor {
 				if (not surface_exists(gbuffer.surfaces[$ index_array[r]]))
 					continue;
 				
-				surface_set_target(gbuffer.surfaces[$ index_array[r]], gbuffer.surfaces[$ index_array[0]], gbuffer.surfaces[$ CAMERA_GBUFFER.depth]);
+				surface_set_target(gbuffer.surfaces[$ index_array[r]], gbuffer.surfaces[$ CAMERA_GBUFFER.depth]);
 				Camera.ACTIVE_COMPATABILITY_STAGE = r;
 				if (r > 0)
 					gpu_set_zwriteenable(false);
 			}
-				// If not compatability, render all at once as an MRT
+			// Regular render mode; attach all render targets:
 			else{
 				if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth]))
 					return false;
 					
-				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent], gbuffer.surfaces[$ CAMERA_GBUFFER.depth]);
+				// Clear the albedo surface while keeping the depth from the last pass:
+				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
+				draw_clear_ext(0, 0);
+				surface_reset_target();
+					
+				surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
 				surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 				surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
 				if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
@@ -384,7 +377,9 @@ function Camera() : Body() constructor {
 				
 				Camera.ACTIVE_COMPATABILITY_STAGE = -1;
 			}
+			#endregion
 			
+			#region RENDER MODELS
 			var world_matrix = matrix_get(matrix_world); // Cache so we can reset for later stages
 			matrix_set(matrix_view, eye.get_view_matrix());
 			matrix_set(matrix_projection, eye.get_projection_matrix());
@@ -412,13 +407,11 @@ function Camera() : Body() constructor {
 	
 			matrix_set(matrix_world, world_matrix);
 			surface_reset_target();
+			#endregion
 		}
 		
 		Camera.ACTIVE_COMPATABILITY_STAGE = -1;
 		gpu_set_zwriteenable(true);
-		
-		if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.view]))
-			return;
 			
 		// Render view vector buffer for use with lighting
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.view]);
@@ -462,7 +455,7 @@ function Camera() : Body() constructor {
 		
 /// @todo	Batch light types together (a shader for each) and pass in multiple
 ///			lights into the shader
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent], c_black, 0.0);
+		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light], c_black, 0.0);
 		for (var i = array_length(light_array) - 1; i >= 0; --i){
 			var light = light_array[i];
 			
@@ -485,29 +478,36 @@ function Camera() : Body() constructor {
 			
 			var applied_shadows = false;
 			if (render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows)
-				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
+				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
 			
 			if (not applied_shadows){
 				gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_one, bm_one, bm_zero);
-				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
+				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
 				draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
 				surface_reset_target();
 			}
 			gpu_set_blendmode(bm_normal);
 		}
 		
-		if (not get_has_render_flag(CAMERA_RENDER_FLAG.emission))
-			return;
+		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)){
+			// Special render for emissive textures:
+			gpu_set_blendmode(bm_add);
+			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
+			shader_set(shd_lighting_emissive);
+			sampler_set("u_sEmissive", gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
+			draw_quad(0, 0, buffer_width, buffer_height);
+			shader_reset();
+			
+			gpu_set_blendmode(bm_normal);
+			surface_reset_target();
+		}
 		
-		// Special render for emissive textures:
-		gpu_set_blendmode(bm_add);
-		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_opaque + is_translucent]);
-		shader_set(shd_lighting_emissive);
-		sampler_set("u_sEmissive", gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
-		draw_quad(0, 0, buffer_width, buffer_height);
+		// Merge into final light buffer:
+		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_combined]);
+		shader_set(shd_clamp_alpha);
+		gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_inv_src_alpha, bm_one, bm_one);
+		draw_quad(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.light]);
 		shader_reset();
-		
-		gpu_set_blendmode(bm_normal);
 		surface_reset_target();
 	}
 	
@@ -551,23 +551,15 @@ function Camera() : Body() constructor {
 	}
 	/// @desc	Renders all the PostProcessFX added to the camera in order of priority.
 	///			Executes on the current GBuffer state.
-	function render_post_processing(){
+	function render_ppfx(){
 		if (render_stages <= 0)
 			return;
 
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		draw_clear_alpha(0, 0);
-		if (render_stages & CAMERA_RENDER_STAGE.opaque){
-			draw_quad(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.light_opaque]);
-			gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_inv_src_alpha, bm_one, bm_one);
-		}
-		
-		if (render_stages & CAMERA_RENDER_STAGE.translucent > 0 and render_stages != CAMERA_RENDER_STAGE.mixed){
-			draw_quad(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.light_translucent]);
-			gpu_set_blendmode(bm_normal);
-		}
-		
+		shader_set(shd_clamp_alpha);
+		draw_quad(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.light_combined]);
 		gpu_set_blendmode(bm_normal);
 		shader_reset();
 		surface_reset_target();
@@ -667,7 +659,7 @@ function Camera() : Body() constructor {
 		render_postpass();
 		
 		// Post-processing:
-		render_post_processing();
+		render_ppfx();
 		
 		// Debug render:
 		render_debug(eye);
@@ -679,29 +671,27 @@ function Camera() : Body() constructor {
 	/// @desc	Should execute a render_eye for every eye and combine results
 	///			as necessary.
 	function render(body_array, light_array){
-		++update_counter;
-		
 		var eye_array = get_eye_array();
 		for (var i = array_length(eye_array) - 1; i >= 0; --i){
 			render_eye(eye_array[i], body_array, light_array);
 					
-			if (debug_flags & (CAMERA_DEBUG_FLAG.render_normals | CAMERA_DEBUG_FLAG.render_pbr | CAMERA_DEBUG_FLAG.render_depth | CAMERA_DEBUG_FLAG.render_depth)){
+			if (debug_flags > 0){
 				gpu_set_blendmode_ext(bm_one, bm_zero);
+				if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.final]))
+					continue;
+					
 				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
 				if (debug_flags & CAMERA_DEBUG_FLAG.render_normals and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.normal]))
 					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 				if (debug_flags & CAMERA_DEBUG_FLAG.render_pbr and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]))
 					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
-				if (debug_flags & CAMERA_DEBUG_FLAG.render_depth and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque])){
+				if (debug_flags & CAMERA_DEBUG_FLAG.render_depth and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth])){
 					shader_set(shd_depth_to_grayscale);
 					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 					shader_reset();
 				}
-				if (debug_flags & CAMERA_DEBUG_FLAG.render_depth and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_translucent])){
-					shader_set(shd_depth_to_grayscale);
-					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth]);
-					shader_reset();
-				}
+				if (debug_flags & CAMERA_DEBUG_FLAG.render_albedo and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]))
+					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.albedo]);
 					
 				surface_reset_target();
 			}

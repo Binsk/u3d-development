@@ -55,7 +55,7 @@ if (is_maxed) // Only used to prevent GUI overlap, really.
 
 // Exit button:
 var ay = display_get_gui_height() - 12 - 44;
-if (not U3D_RENDER_COMPATIBILITY_MODE){
+if (not U3D.OS.is_compatability){
 	inst = instance_create_depth(ax, ay, 0, obj_button);
 	inst.text = "Exit";
 	inst.signaler.add_signal("pressed", new Callable(id, game_end));
@@ -156,7 +156,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 	}
 });
 
-if (not U3D_RENDER_COMPATIBILITY_MODE){
+if (not U3D.OS.is_compatability){
 	ay -= 32;
 	inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 	inst.text = "V-Sync";

@@ -100,7 +100,7 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		var exposure = exposure_level;
 		var gamma = gamma_correction;
 		
-		if (debug_flags & (CAMERA_DEBUG_FLAG.render_normals | CAMERA_DEBUG_FLAG.render_pbr | CAMERA_DEBUG_FLAG.render_depth)){ // If overriding w/ debugging, remove tonemapping
+		if (debug_flags & ~3){ // If overriding w/ debugging, remove tonemapping
 			tonemap = CAMERA_TONEMAP.linear;
 			exposure = 1.0;
 			gamma = false;
@@ -109,10 +109,10 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		gpu_set_blendmode(bm_normal);
 		shader_set(shd_tonemap);
 		sampler_set("u_sTexture", gbuffer.textures[$ CAMERA_GBUFFER.final]);
-		uniform_set("u_iTonemap", shader_set_uniform_i, render_tonemap);
-		uniform_set("u_fExposure", shader_set_uniform_f, exposure_level);
+		uniform_set("u_iTonemap", shader_set_uniform_i, tonemap);
+		uniform_set("u_fExposure", shader_set_uniform_f, exposure);
 		uniform_set("u_fWhite", shader_set_uniform_f, white_level);
-		uniform_set("u_iGamma", shader_set_uniform_i, gamma_correction);
+		uniform_set("u_iGamma", shader_set_uniform_i, gamma);
 		
 		var u1 = 0, 
 		v1 = 0, 

@@ -18,8 +18,7 @@
 // Note that dead textures may be passed in if a specific stage is disabled by the camera!
 //	UNIFORM					TYPE			DESCRIPTION
 // u_sInput				(sampler2D)		final combined render of all passes including PPFX up to this point
-// u_sFinalOpaque		(sampler2D)		final output of opaque pass 
-// u_sFinalTranslucent	(sampler2D)		final output of translucent pass 
+// u_sLight				(sampler2D)		final output of combined lighting passes before PPFX is applied
 // u_sDepth				(sampler2D)		combined depth buffer of all passes
 // u_sView				(sampler2D)		view vectors for each fragment in world-space
 // u_vTexelSize			(vec2)			texel size of all provided textures
@@ -76,8 +75,7 @@ function PostProcessFX(shader, uniforms={}, samplers={}) : U3DObject() construct
 			shader_set(shader);
 			
 		sampler_set("u_sInput", gbuffer[$ CAMERA_GBUFFER.final] ?? -1);
-		sampler_set("u_sFinalOpaque", gbuffer[$ CAMERA_GBUFFER.light_opaque] ?? -1);
-		sampler_set("u_sFinalTranslucent", gbuffer[$ CAMERA_GBUFFER.light_translucent] ?? -1);
+		sampler_set("u_sLight", gbuffer[$ CAMERA_GBUFFER.light_combined] ?? -1);
 		sampler_set("u_sDepth", gbuffer[$ CAMERA_GBUFFER.depth] ?? -1);
 		sampler_set("u_sView", gbuffer[$ CAMERA_GBUFFER.view] ?? -1);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(surface_get_texture(surface_out)), texture_get_texel_height(surface_get_texture(surface_out))]);

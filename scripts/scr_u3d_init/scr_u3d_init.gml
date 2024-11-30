@@ -54,6 +54,7 @@ function __async_instance_id(){
 	return instance_create_depth(0, 0, 0, obj_async_controller);
 }
 
+// A function to return the garbage collection instance.
 function __u3dgc_instance_id(){
 	with (obj_u3d_gc)
 		return id;
@@ -86,7 +87,6 @@ function __compatability_mode(){
 #macro frame_delta_relative clamp(60 / fps, 0.25, 4.0)
 #macro U3D_ASYNC __async_instance_id()	// The ID for the ASYNC controller
 #macro U3D_GC __u3dgc_instance_id()		// The ID for the garbage collection controller
-#macro U3D_RENDER_COMPATIBILITY_MODE __compatability_mode()	// Whether or not the system is in compatability rendering mode
 
 /// Define U3D structure
 U3D = {
@@ -115,7 +115,7 @@ U3D = {
 	MEMORY : {},	// Used to hold data caches and garbage-collect dynamically generated resources
 	OS : {
 		is_browser : (os_type == os_gxgames or os_browser != browser_not_a_browser),
-		is_compatability : __compatability_mode()
+		is_compatability : __compatability_mode()	// Whether or not the system requires compatability mode
 	}
 }
 

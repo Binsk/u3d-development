@@ -261,7 +261,7 @@ function MaterialSpatial() : Material() constructor {
 		sampler_toggles[1] = 0;
 		sampler_toggles[2] = 0;
 		sampler_toggles[3] = 0;
-		var is_compatability = U3D_RENDER_COMPATIBILITY_MODE;
+		var is_compatability = U3D.OS.is_compatability;
 		
 		if (not is_undefined(texture[$ "albedo"]) and (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0)){
 			if (texture.albedo.texture.apply(is_compatability ? "u_sInput" : "u_sAlbedo"))

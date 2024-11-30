@@ -137,7 +137,7 @@ inst.signaler.add_signal("pressed", new Callable(id, function(){
 	instance_create_depth(0, 0, 0, obj_render_demo);
 }));
 
-if (not U3D_RENDER_COMPATIBILITY_MODE){
+if (not U3D.OS.is_compatability){
 	ay -= 32;
 	inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 	inst.text = "V-Sync";

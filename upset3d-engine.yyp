@@ -168,7 +168,7 @@
     {"id":{"name":"scr_u3d_init","path":"scripts/scr_u3d_init/scr_u3d_init.yy",},},
     {"id":{"name":"scr_vector","path":"scripts/scr_vector/scr_vector.yy",},},
     {"id":{"name":"shd_build_gbuffer","path":"shaders/shd_build_gbuffer/shd_build_gbuffer.yy",},},
-    {"id":{"name":"shd_combine_stages","path":"shaders/shd_combine_stages/shd_combine_stages.yy",},},
+    {"id":{"name":"shd_clamp_alpha","path":"shaders/shd_clamp_alpha/shd_clamp_alpha.yy",},},
     {"id":{"name":"shd_debug_lines","path":"shaders/shd_debug_lines/shd_debug_lines.yy",},},
     {"id":{"name":"shd_depth_to_grayscale","path":"shaders/shd_depth_to_grayscale/shd_depth_to_grayscale.yy",},},
     {"id":{"name":"shd_detect_glsles","path":"shaders/shd_detect_glsles/shd_detect_glsles.yy",},},

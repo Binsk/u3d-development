@@ -71,7 +71,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	function apply_gbuffer(){
 		var camera_id = Camera.ACTIVE_INSTANCE;
 		var is_translucent = Camera.get_is_translucent_stage();
-		sampler_set("u_sAlbedo", camera_id.gbuffer.textures[$ is_translucent ? CAMERA_GBUFFER.albedo_translucent : CAMERA_GBUFFER.albedo_opaque]);
+		sampler_set("u_sAlbedo", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.albedo]);
 		sampler_set("u_sNormal", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]);
 		sampler_set("u_sPBR", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 		sampler_set("u_sView", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.view]);
@@ -155,8 +155,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		else if (is_translucent and not surface_exists(shadow_surface))
 			return false;
 		
-		var sw = surface_get_width(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
-		var sh = surface_get_height(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo_opaque + is_translucent]);
+		var sw = surface_get_width(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
+		var sh = surface_get_height(eye_id.get_camera().gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
 		
 		if (surface_exists(shadowbit_surface) and surface_get_width(shadowbit_surface) != sw or surface_get_height(shadowbit_surface) != sh)
 			surface_free(shadowbit_surface);
