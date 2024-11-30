@@ -505,8 +505,10 @@ function Camera() : Body() constructor {
 		// Merge into final light buffer:
 		surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light_combined]);
 		shader_set(shd_clamp_alpha);
-		gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_inv_src_alpha, bm_one, bm_one);
+		gpu_set_blendequation_sepalpha(bm_eq_add, bm_eq_max);
+		gpu_set_blendmode_ext(bm_src_alpha, bm_inv_src_alpha);
 		draw_quad(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.light]);
+		gpu_set_blendequation_sepalpha(bm_eq_add, bm_eq_add);
 		shader_reset();
 		surface_reset_target();
 	}

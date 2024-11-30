@@ -92,7 +92,7 @@ camera = new CameraView();	// CameraView auto-renders to screen; defaults to ful
 camera.get_eye().set_zfar(128);	// Change zfar since the default is a bit far out for this scene
 
 	// Here we attach post-processing effects. The larger the number, the earlier the effect gets processed:
-// camera.add_ppfx(U3D.RENDERING.PPFX.fog, 3);		// Adds fog to the clipping plane; we set up the fog to turn yellow the fade the alpha to 0
+camera.add_ppfx(U3D.RENDERING.PPFX.fog, 3);		// Adds fog to the clipping plane; we set up the fog to turn yellow the fade the alpha to 0
 camera.add_ppfx(U3D.RENDERING.PPFX.skybox, 2);	// Renders a sky-box 'under' the render so it peaks through any spots where alpha < 1
 camera.add_ppfx(U3D.RENDERING.PPFX.bloom, 1);	// Apply bloom on top of the render
 camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);		// Add some post-processing effects on top of the bloom

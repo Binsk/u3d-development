@@ -30,7 +30,7 @@ if (not instance_exists(obj_bone_scroll)){
 
 // Update camera position:
 if (camera_is_rotating){
-	var pos = vec(cos((current_time - camera_rotation_offset) / 2000), 0.25, -sin((current_time - camera_rotation_offset) / 2000));
+	var pos = vec(cos((current_time - camera_rotation_offset) / 2000), 0.5, -sin((current_time - camera_rotation_offset) / 2000));
 	camera.set_position(vec_set_length(pos, camera_orbit_distance));
 }
 else{
