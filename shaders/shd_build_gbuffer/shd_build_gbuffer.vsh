@@ -18,7 +18,6 @@ uniform int u_iBoneNoScale;         // Whether or not bones have scaling; modifi
 
 varying vec2 v_vTexcoord;
 varying vec4 v_vColor;
-varying vec4 v_vPosition;
 varying mat3 v_mRotation;
 
 /// @desc	Builds a matrix out of a rotational quaternion and translation vector.
@@ -125,8 +124,7 @@ void main()
         vTangent = normalize(vTangentFinal);
     }
     
-    v_vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
-    gl_Position = v_vPosition;
+    gl_Position = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     vNormal = normalize(mat3(gm_Matrices[MATRIX_WORLD]) * vNormal);
     vTangent = normalize(mat3(gm_Matrices[MATRIX_WORLD]) * vTangent);
     vec3 vBiTangent = normalize(cross(vNormal, vTangent));

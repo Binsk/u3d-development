@@ -10,7 +10,7 @@
 	and even shrunk and it still doesn't work right.
 -	Fix "framebuffer" error in browser when loading new textures in (if rendering is off
 	while loading the issue goes away).
--	Fix; depth buffer seemingly not working w/ multi-passes? (Working with all else, though)
+-	Fix browser dithered rendering not mixing right w/ opaque items (?)
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

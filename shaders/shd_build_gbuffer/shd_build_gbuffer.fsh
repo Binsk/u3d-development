@@ -1,7 +1,10 @@
 #ifdef _YY_GLSLES_
 uniform sampler2D u_sInput;		// Input texture (changes per pass type)
 uniform sampler2D u_sAlbedo;	// Albedo specifically, only used in non-albedo pass + dithering
+uniform sampler2D u_sDepth;		// Sharing depth buffers is bugged in browsers so we may need to manually sample it
 uniform int u_iCompatability;	// Which compatability pass we're on
+uniform int u_iBrowser;			// Whether or not this is a browser
+uniform vec2 u_vBufferSize;		// Size of the GBuffer we are rendering to
 #else
 uniform sampler2D u_sAlbedo;
 uniform sampler2D u_sNormal;
@@ -20,7 +23,6 @@ uniform int u_iTranslucent;	// 0 = false, 1 = true, 2 = mixed (required dithered
 varying vec2 v_vTexcoord;
 varying vec4 v_vColor;
 varying vec3 v_vNormal;
-varying vec4 v_vPosition;
 varying mat3 v_mRotation;
 
 float modulo(float fV, float fM){
@@ -140,6 +142,13 @@ void main(){
 	if (u_iTranslucent != 2 && u_iCompatability != 0){
 		vec4 vColor = v_vColor * u_vAlbedo * to_rgb(texture2D(u_sAlbedo, v_vTexcoord));
 		check_dither(vColor.a);
+	}
+	
+		// Work-around since GameMaker goofs the depth buffer sharing on browsers; this discards normals, etc. behind depth.
+		// Switch back to proper depth buffer once the bug is fixed as this is SLOW.
+	if (u_iCompatability != 0 && u_iBrowser > 0){
+		if (gl_FragCoord.z > texture2D(u_sDepth, gl_FragCoord.xy / u_vBufferSize).r)
+			discard;
 	}
 		
 /// @note	could potentially be some conflicts in this case w/ dither mode due to

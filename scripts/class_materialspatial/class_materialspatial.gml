@@ -39,17 +39,17 @@
 #region AVAILABLE UNIFORMS
 // The following are the uniforms that are available to your spatial shader. If a uniform is
 // not specified in your shader then it will not be sent.
+
+/// @note	This class has become a bit messy due to browser compatability; check the apply()
+///			function for a number of uniform / samplers that differ in compatability mode.
+
 //	UNIFORM					TYPE			DESCRIPTION
 // u_sAlbedo			(sampler2D)		4color material w/o lighting
-// u_vAlbedoUV			(vec4)			UV bounds on texture page for albedo
 // u_vAlbedo			(vec4)			color multiplier (or direct color if no texture)
 // u_sNormal			(sampler2D)		normal direction texture in tangent space
-// u_vNormalUV			(vec4)			UV bounds on texture page for normal
 // u_sPBR				(sampler2D)		PBR material in [R: specular, G: roughness, B: metallic] layout
-// u_vPBRUV				(vec4)			UV bounds on texture page for PBR
 // u_vPBR				(vec3)			PBR multiplier (or direct value if no nexture)
 // u_sEmissive			(sampler2D)		3color material for emission
-// u_vEmissiveUV		(vec4)			UV bounds on texture page for Emissive
 // u_vEmissive			(vec3)			Emission multiplier (when texture exists)
 // u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
 // u_fAlphaCutoff		(float)			opaque render sets alpha=0 if < cutoff and 1 if >=
@@ -303,6 +303,16 @@ function MaterialSpatial() : Material() constructor {
 				texture.albedo.texture.apply("u_sAlbedo");
 			else if (Camera.ACTIVE_COMPATABILITY_STAGE == 0)
 				sampler_set("u_sAlbedo", -1);
+			
+			if (U3D.OS.is_browser and Camera.ACTIVE_COMPATABILITY_STAGE > 0){
+				uniform_set("u_iBrowser", shader_set_uniform_i, 1);
+				uniform_set("u_vBufferSize", shader_set_uniform_f, [camera_id.buffer_width, camera_id.buffer_height]);
+				sampler_set("u_sDepth", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth]);
+			}
+			else {
+				uniform_set("u_iBrowser", shader_set_uniform_i, 0);
+				sampler_set("u_sDepth", -1);
+			}
 		}
 		
 		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed)

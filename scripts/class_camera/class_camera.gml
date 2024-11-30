@@ -363,7 +363,13 @@ function Camera() : Body() constructor {
 				if (not surface_exists(gbuffer.surfaces[$ index_array[r]]))
 					continue;
 				
-				surface_set_target(gbuffer.surfaces[$ index_array[r]], gbuffer.surfaces[$ CAMERA_GBUFFER.depth]);
+				/// @note	Seems bugged in browsers; so we unfortunately have to manually sample the depth in the shader.
+				///			Only applies to normals, pbr, and emission. Depth is getting wiped if manually set.
+				if (U3D.OS.is_browser)
+					surface_set_target(gbuffer.surfaces[$ index_array[r]]);
+				else 
+					surface_set_target(gbuffer.surfaces[$ index_array[r]], gbuffer.surfaces[$ CAMERA_GBUFFER.depth]);
+				
 				Camera.ACTIVE_COMPATABILITY_STAGE = r;
 				if (r > 0)
 					gpu_set_zwriteenable(false);
