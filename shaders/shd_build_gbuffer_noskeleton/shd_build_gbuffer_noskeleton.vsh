@@ -2,7 +2,6 @@
 /// The default shader used by spatial materials to build the GBuffer. This shader
 /// writes out all the necessary GBuffer textures and calculates skeletal animation.
 precision highp float;
-#define OPT_SKELETAL
 
 attribute vec3 in_Position;         // Vertex position
 attribute vec3 in_Normal;           // Vertex normal

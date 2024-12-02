@@ -518,24 +518,46 @@ function Camera() : Body() constructor {
 		gpu_set_blendequation_sepalpha(bm_eq_add, bm_eq_add);
 		shader_reset();
 		surface_reset_target();
+		gpu_set_blendmode(bm_normal);
 	}
 	
 	
 	function render_debug(eye){
+		if (debug_flags > 0){
+			gpu_set_blendmode_ext(bm_one, bm_zero);
+			if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.final]))
+				return;
+				
+			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
+			if (debug_flags & CAMERA_DEBUG_FLAG.render_normals and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.normal]))
+				draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.normal]);
+			if (debug_flags & CAMERA_DEBUG_FLAG.render_pbr and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]))
+				draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
+			if (debug_flags & CAMERA_DEBUG_FLAG.render_depth and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth])){
+				shader_set(shd_depth_to_grayscale);
+				uniform_set("u_vZClip", shader_set_uniform_f, [get_eye().get_znear(), get_eye().get_zfar()]);
+				draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth]);
+				shader_reset();
+			}
+			if (debug_flags & CAMERA_DEBUG_FLAG.render_albedo and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]))
+				draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.albedo]);
+				
+			surface_reset_target();
+		}
+		
 		var body_array = [];
 		if (debug_flags & CAMERA_DEBUG_FLAG.render_collisions == CAMERA_DEBUG_FLAG.render_collisions and instance_exists(obj_collision_controller)){
 			var matrix_model = matrix_get(matrix_world);
 			if (array_length(body_array) <= 0)
 				body_array = obj_collision_controller.get_body_array();
 				
-			gpu_set_zwriteenable(false);
-			gpu_set_ztestenable(false);
 			gpu_set_blendmode_ext(bm_one, bm_zero);
 			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
+			
 			matrix_set(matrix_view, eye.get_view_matrix());
 			matrix_set(matrix_projection, eye.get_projection_matrix());
-			shader_set(shd_debug_lines);
 			
+			shader_set(shd_debug_lines);
 			sampler_set("u_sDepth", gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 			uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(gbuffer.textures[$ CAMERA_GBUFFER.depth]), texture_get_texel_height(gbuffer.textures[$ CAMERA_GBUFFER.depth])])
 			
@@ -547,12 +569,11 @@ function Camera() : Body() constructor {
 				
 				collidable.render_debug(body);
 			}
+
 			shader_reset();
-			gpu_set_blendmode(bm_normal);
 			surface_reset_target();
 			
-			gpu_set_zwriteenable(true);
-			gpu_set_ztestenable(true);
+			gpu_set_blendmode(bm_normal);
 			matrix_set(matrix_world, matrix_model);
 			draw_set_color(c_white);
 			draw_set_alpha(1);
@@ -668,31 +689,8 @@ function Camera() : Body() constructor {
 	///			as necessary.
 	function render(body_array, light_array){
 		var eye_array = get_eye_array();
-		for (var i = array_length(eye_array) - 1; i >= 0; --i){
+		for (var i = array_length(eye_array) - 1; i >= 0; --i)
 			render_eye(eye_array[i], body_array, light_array);
-					
-			if (debug_flags > 0){
-				gpu_set_blendmode_ext(bm_one, bm_zero);
-				if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.final]))
-					continue;
-					
-				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
-				if (debug_flags & CAMERA_DEBUG_FLAG.render_normals and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.normal]))
-					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.normal]);
-				if (debug_flags & CAMERA_DEBUG_FLAG.render_pbr and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]))
-					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
-				if (debug_flags & CAMERA_DEBUG_FLAG.render_depth and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth])){
-					shader_set(shd_depth_to_grayscale);
-					uniform_set("u_vZClip", shader_set_uniform_f, [get_eye().get_znear(), get_eye().get_zfar()]);
-					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth]);
-					shader_reset();
-				}
-				if (debug_flags & CAMERA_DEBUG_FLAG.render_albedo and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]))
-					draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.albedo]);
-					
-				surface_reset_target();
-			}
-		}
 	};
 	
 	/// @desc	Should push the final result to the final render destination; 

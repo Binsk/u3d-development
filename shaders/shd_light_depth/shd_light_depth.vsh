@@ -1,13 +1,16 @@
-precision highp float;
-
 /// @about
 /// Renders a simplified version of the gbuffer shader specifically for a light and is
 /// intended for generating a directional shadow map.
+precision highp float;
+#define OPT_SKELETAL
+
 attribute vec3 in_Position;         // Vertex position
 attribute vec3 in_Normal;           // Vertex normal
 attribute vec4 in_Colour;           // Vertex color
 attribute vec2 in_TextureCoord0;    // Texture UV
 attribute vec3 in_TextureCoord1;	// Tangent
+
+#ifdef OPT_SKELETAL
 attribute vec4 in_TextureCoord2;    // Bone IDs
 attribute vec4 in_TextureCoord3;    // Bone weights
 
@@ -16,9 +19,11 @@ const int c_iBoneInfluence = 4; // Number of bones that can influence a vertex
 
 uniform mat4 u_mBone[c_iMaxBones];  // Matrix transforms for each bone
 uniform int u_iBoneNoScale;         // Whether or not bones have scaling; modifies how data is read
+#endif
 
 varying vec2 v_vTexcoord;
 
+#ifdef OPT_SKELETAL
 mat4 build_matrix(vec4 vQuaternion, vec3 vTranslation){
     mat4 mMatrix = mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
     // Set position:
@@ -41,11 +46,13 @@ mat4 build_matrix(vec4 vQuaternion, vec3 vTranslation){
     
     return mMatrix;
 }
+#endif
 
 void main()
 {
     vec4 vPosition = vec4( in_Position.x, in_Position.y, in_Position.z, 1.0);
     
+	#ifdef OPT_SKELETAL
 /// @stub   Figure out how to get skeletal animation working in web browser.
 ///         mMatrix = u_mBone[ivBoneID[i]]; seems to be the issue due to the array access
     // Calculate bone transforms:
@@ -109,6 +116,8 @@ void main()
     if (iLoopCount > 0 && abs(fDivisor) > 0.0001) // Only apply if we actually had bones sent over
         vPosition = vPositionFinal / fDivisor;
     
+	#endif
+	
     vPosition = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vPosition;
     gl_Position = vPosition;
 

@@ -81,10 +81,19 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	Given a primitive, generates a VertexFormat that will correctly
 	///			contain all the data specified by the model file.
 	function get_primitive_format(mesh_index, primitive_index){
-/// @stub	Implement; currently just defaulting to "everything". Will require special
-///			shader combination (ugh) or an external library for dynamic shader compilation
-///			(even more ugh).
-		return VertexFormat.get_format_instance([VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent, VERTEX_DATA.bone_indices, VERTEX_DATA.bone_weights]);
+/// @stub	So this is a pain as GameMaker doesn't support dynamically compiled shaders (hopefully in GMRT?).
+///			Having an option for EVERY combination would be hell so instead the primary elements will be
+///			required (and auto-filled if missing from the model). Animation elements will be conditional as
+///			they are costly both to import (even w/ placeholders) and render.
+///			A better way will be added later; likely through a library if needed or a fake module system of sorts.
+
+		var base = [VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent];
+		if (get_animation_track_count() > 0)
+			base = array_concat(base, [VERTEX_DATA.bone_indices, VERTEX_DATA.bone_weights]);
+
+/// @stub	Add extra channel data for morph targets
+
+		return VertexFormat.get_format_instance(base);
 	}
 	
 	/// @desc	Returns an array of animation track names defined for this model.

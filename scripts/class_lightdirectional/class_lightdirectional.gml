@@ -102,8 +102,8 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		var mp = matrix_get(matrix_projection);
 		var mw = matrix_get(matrix_world);
 		draw_clear(c_white);
-		shader_set(shd_light_depth);
 		
+		shader_set(shd_light_depth);
 		var forward = get_forward_vector();
 		var lookat = vec_add_vec(position, forward);
 		matrix_set(matrix_view, matrix_build_lookat(position.x, position.y, position.z, lookat.x, lookat.y, lookat.z, 0, 1, 0));
@@ -122,7 +122,10 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			matrix_set(matrix_world, body.get_model_matrix());
 			var data = {
 				skeleton : U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos,
-				skeleton_bone_count : U3D_MAXIMUM_BONES * 2 // Only defines that we are using quatvec pairs
+				skeleton_bone_count : U3D_MAXIMUM_BONES * 2, // Only defines that we are using quatvec pairs
+/// @stub	Think of a better way of handling this situation
+				shd_full : shd_light_depth,
+				shd_noskeleton : shd_light_depth_noskeleton
 			}
 			
 			if (not is_undefined(body.animation_instance)){
@@ -132,7 +135,9 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			
 			body.model_instance.render_shadows(data);
 		}
-		shader_reset();
+		if (shader_current() >= 0)
+			shader_reset();
+			
 		matrix_set(matrix_view, mv);
 		matrix_set(matrix_projection, mp);
 		matrix_set(matrix_world, mw);

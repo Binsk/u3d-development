@@ -47,7 +47,8 @@ function Material() : U3DObject() constructor {
 	///			the GBuffer.
 	/// @note	Current rendering camera and pass can be accessed through the Camera static 
 	///			member variables.
-	function apply(){
+	/// @param	{VertexFormat}	vformat		vertex format being used for this pass
+	function apply(vformat){
 		throw new Exception("cannot call virtual function!");
 	}
 	
@@ -59,7 +60,7 @@ function Material() : U3DObject() constructor {
 	}
 	
 	/// @desc	Should return the appropriate shader to apply for this material.
-	function get_shader(){
+	function get_shader(vformat){
 		throw new Exception("cannot call virtual function!");
 	}
 	

@@ -105,9 +105,11 @@ function AABB(extends=vec()) : Collidable() constructor {
 		
 		uniform_set("u_vColor", shader_set_uniform_f, r_color);
 		var matrix_model = matrix_get(matrix_world);
+		
 		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data("collision.offset", vec()))));
 		vertex_submit(vbuffer, pr_linelist, -1);
 		matrix_set(matrix_world, matrix_model);
+		
 		vertex_delete_buffer(vbuffer);
 	}
 	#endregion

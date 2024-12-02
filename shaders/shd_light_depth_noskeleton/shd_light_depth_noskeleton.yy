@@ -1,7 +1,7 @@
 {
   "$GMShader":"",
-  "%Name":"shd_light_depth",
-  "name":"shd_light_depth",
+  "%Name":"shd_light_depth_noskeleton",
+  "name":"shd_light_depth_noskeleton",
   "parent":{
     "name":"Light",
     "path":"folders/Upset 3D/Shaders/Spatial/Light.yy",

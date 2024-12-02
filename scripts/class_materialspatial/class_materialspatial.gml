@@ -1,13 +1,11 @@
 /// @about
 /// This class defines the primary material type used to render 3D objects into
-/// the world. The material comes w/ a default shader that will be used automatically
-/// in the pipline, however the shader used CAN be changed to something custom.
+/// the world. The material comes w/ default shaders that will be used automatically
+/// in the pipline. If you need a custom shader you should inherit this class and
+///	override the relevant functions.
 ///
-/// If a custom shader is set, it will be provided with a number of uniforms and
-/// samplers that you can choose to use. Please see the details in GBUFFER UNIFORMS
-/// and LIGHTING UNIFORMS sections to see what uniforms / samplers are available.
-/// If your shader does not use a specified uniform it will simply not be sent to
-/// the shader.
+/// When overriding, see the uniform chart for available uniforms in the apply()
+///	function.
 
 #region SHADER DETAILS
 // The rendering pipeline is a deferred shading system that splits transluscent objects
@@ -17,7 +15,7 @@
 // This material is used when the primary GBuffer is built. No lighting or visual effects
 // are performed in this stage. Instead, textures will be generated for all details
 // required such as depth, albedo, normals, pbr, and emissive data. This stage will also handle
-// any and all vertex transforms, such as skeletal animation.
+// any and all vertex transforms, such as skeletal animation and morph targets.
 
 // Transluscency:
 // Deferred rendering does not support transluscency as we can only generate one
@@ -40,23 +38,37 @@
 // The following are the uniforms that are available to your spatial shader. If a uniform is
 // not specified in your shader then it will not be sent.
 
-/// @note	This class has become a bit messy due to browser compatability; check the apply()
-///			function for a number of uniform / samplers that differ in compatability mode.
+/// @note	This class has become a bit messy due to browser compatability; different samplers
+///			and uniforms may be sent depending on if compatability mode is being used.
+///			Regular mode renders a material in a single go. Compatability mode uses multiple
+///			passes, one for each texture type.
+///			Compatability mode is ONLY USED when _YY_GLSLES_ is defined in the shader. This
+///			can be used to determine which uniforms to use.
 
+/// === REGULAR ONLY
 //	UNIFORM					TYPE			DESCRIPTION
 // u_sAlbedo			(sampler2D)		4color material w/o lighting
-// u_vAlbedo			(vec4)			color multiplier (or direct color if no texture)
 // u_sNormal			(sampler2D)		normal direction texture in tangent space
 // u_sPBR				(sampler2D)		PBR material in [R: specular, G: roughness, B: metallic] layout
-// u_vPBR				(vec3)			PBR multiplier (or direct value if no nexture)
 // u_sEmissive			(sampler2D)		3color material for emission
+/// === COMPATABILITY ONLY
+//	UNIFORM					TYPE			DESCRIPTION
+// u_sInput				(sampler2D)		4color texture for the current texture (taken from Camera.ACTIVE_COMPATABILITY_STAGE)
+// u_sDepth				(sampler2D)		depth generated in the Albedo pass (only available in passes [1..3])
+// u_sAlbedo			(sampler2D)		albedo texture (only provided in passes [1..3])
+// u_iCompatability		(int)			Compatability pass in compatability mode (-1 = no compat, [0..3] = albedo, normal, pbr, emissive)
+// u_iBrowser			(int)			whether or not the rendering platform is a browser
+// u_vBufferSize		(vec2)			size, in pixels, of u_sInput
+/// === COMPATABILITY + REGULAR
+// u_sDither			(sampler2D)		4color dithering texture (may switch to 1-channel in the future)
+// u_vAlbedo			(vec4)			color multiplier (or direct color if no texture)
+// u_vPBR				(vec3)			PBR multiplier (or direct value if no nexture)
 // u_vEmissive			(vec3)			Emission multiplier (when texture exists)
 // u_iSamplerToggles	(int[3])		true/false for if textures are provided in [albedo, normal, PBR] layout
 // u_fAlphaCutoff		(float)			opaque render sets alpha=0 if < cutoff and 1 if >=
 // u_iTranslucent		(int)			0 = opaque pass, 1 = translucent pass, 2 = mixed
 // u_mBone				(mat4[80])		array of bone transform matrices (up to 80); NOTE: uniform set by mesh, not material!
 // u_iTime				(int)			GameMaker's current_time value
-// u_iCompatability		(int)			Compatability pass in compatability mode (-1 = no compat, [0..3] = albedo, normal, pbr, emissive)
 #endregion
 
 /// @note	The PBR color index for roughness and metalness are defined as part
@@ -69,7 +81,6 @@ enum PBR_COLOR_INDEX {
 
 function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
-	shader_gbuffer = undefined;
 	cull_mode = cull_noculling;
 	shadow_cull_mode = cull_noculling;
 	render_stage = CAMERA_RENDER_STAGE.opaque;
@@ -184,16 +195,6 @@ function MaterialSpatial() : Material() constructor {
 		set_texture("emissive", texture);
 	}
 	
-	/// @desc	Sets the shader to be used when generating the GBuffer.
-	function set_shader(shader){
-		if (not shader_is_compiled(shader)){
-			Exception.throw_conditional(string_ext("shader [{0}] is not compiled!", [shader_get_name(shader)]));
-			return;
-		}
-		
-		shader_gbuffer = shader;
-	}
-	
 	function get_texture(label){
 		var data = self.texture[$ label];
 		if (is_undefined(data))
@@ -244,13 +245,17 @@ function MaterialSpatial() : Material() constructor {
 	}
 	
 	/// @desc	Returns the current shader set for this material.
-	function get_shader(){
-		return shader_gbuffer;
+	function get_shader(vformat){
+		if (vformat.get_has_data(VERTEX_DATA.bone_indices))
+			return shd_build_gbuffer;
+		
+		return shd_build_gbuffer_noskeleton;
 	}
 	
-	function apply(){
-		if (shader_current() != shader_gbuffer)
-			shader_set(shader_gbuffer);
+	function apply(vformat){
+		var shader = get_shader(vformat);
+		if (shader_current() != shader)
+			shader_set(shader);
 		
 		var camera_id = Camera.ACTIVE_INSTANCE;
 		var is_translucent = Camera.get_is_translucent_stage();
@@ -355,7 +360,6 @@ function MaterialSpatial() : Material() constructor {
 	
 	function duplicate(){
 		var material = new MaterialSpatial();
-		material.shader_set_gbuffer(shader_gbuffer);
 		var texture_keys = struct_get_names(texture);
 		for (var i = array_length(texture_keys) - 1; i >= 0; --i)
 			material.set_texture(texture_keys[i], texture[$ texture_keys[i]]);
@@ -368,9 +372,5 @@ function MaterialSpatial() : Material() constructor {
 		super.execute("free");
 		texture_keys = {};
 	}
-	#endregion
-	
-	#region INIT
-	set_shader(shd_build_gbuffer);
 	#endregion
 }

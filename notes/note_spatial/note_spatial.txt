@@ -1,0 +1,21 @@
+# Spatial
+## About
+
+Spatial shaders refer to shaders that handle rendering things in the 3D world using 3D
+coordinates. Several systems render spatially, such as GBuffer generation and shadow mapping.
+
+## Multiple Shaders
+
+GameMaker doesn't allow dynamic shader compiling nor splitting of fragment and vertex shaders.
+This means that we have to have a shader for every combination of model data. This gets messy
+when you mix static models with models that have skeletal animation and, amongst these you may
+have models with or without normals and so-forth.
+
+For now, the GLTFBuilder can fully substitute in fake data for any missing bits so that
+everything can render together; however this can add a LOT of loading time as well as 
+wasted processing in the vertex shader. As such, there is currently a mix of duplicate
+shaders and filled-in fake data. The material will determine which copy to use.
+
+For simplicity, each copy contains the ENTIRETY of the shader but simply uses #define to
+remove pieces at compile time. This allows for optimizing out unnecessary pieces while still
+allowing an easy copy+paste when updating shader code.

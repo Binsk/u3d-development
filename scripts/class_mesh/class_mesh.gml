@@ -68,6 +68,13 @@ function Mesh() : U3DObject() constructor {
 		return array;
 	}
 	
+	function get_primitive_data(index){
+		if (index < 0 or index >= array_length(primitive_array))
+			return undefined;
+			
+		return primitive_array[index];
+	}
+	
 	/// @desc	Adds a primitive into the system to be rendered and pairs it with
 	///			a material index. Note that primitives can be added multiple times
 	///			with different materials, if necessary.
@@ -93,14 +100,13 @@ function Mesh() : U3DObject() constructor {
 	/// @desc	Renders a single primitive.
 	/// @param	{real}	index		index of the primitive to render
 	function render_primitive(index){
-		if (index < 0 or index >= array_length(primitive_array))
-			return;
-			
-		var primitive = primitive_array[index];
+		var primitive = get_primitive_data(index);
 		var triangle_start = primitive[$ "triangle_start"] ?? 0;
 		var triangle_count = primitive[$ "triangle_count"] ?? infinity;
 		primitive.primitive.submit(Camera.ACTIVE_INSTANCE.debug_flags & CAMERA_DEBUG_FLAG.render_wireframe, triangle_start, triangle_count);
 	}
+	
+	
 	
 	/// @desc	Renders out each primitive, applying the specified materials
 	///			according to primitive IDs
@@ -116,7 +122,7 @@ function Mesh() : U3DObject() constructor {
 			if (material.render_stage & Camera.ACTIVE_STAGE <= 0) // Don't render, wrong stage
 				return;
 				
-			material.apply();
+			material.apply(get_primitive_data(i).primitive.vformat);
 
 /// @stub	Optimize it prevent re-sending data
 			if (primitive_array[i].has_bones){
@@ -143,6 +149,15 @@ function Mesh() : U3DObject() constructor {
 			
 			if (not material.get_casts_shadows())
 				continue;
+				
+			// Determine shadow shader:
+/// @stub	Think of a better way of handling this
+			var shd = (data[$ "shd_full"] ?? shader_current());
+			if (not get_primitive_data(i).primitive.vformat.get_has_data(VERTEX_DATA.bone_indices))
+				shd = (data[$ "shd_noskeleton"] ?? shader_current());
+			
+			if (shader_current() != shd)
+				shader_set(shd);
 				
 			material.apply_shadow();
 
