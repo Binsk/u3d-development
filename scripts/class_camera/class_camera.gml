@@ -388,8 +388,7 @@ function Camera() : Body() constructor {
 			
 			#region RENDER MODELS
 			var world_matrix = matrix_get(matrix_world); // Cache so we can reset for later stages
-			matrix_set(matrix_view, eye.get_view_matrix());
-			matrix_set(matrix_projection, eye.get_projection_matrix());
+			eye.apply();
 			for (var i = array_length(body_array) - 1; i >= 0; --i){
 				var body = body_array[i];
 				if (body.get_render_layers() & get_render_layers() == 0) // This camera doesn't render this body
@@ -554,8 +553,7 @@ function Camera() : Body() constructor {
 			gpu_set_blendmode_ext(bm_one, bm_zero);
 			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
 			
-			matrix_set(matrix_view, eye.get_view_matrix());
-			matrix_set(matrix_projection, eye.get_projection_matrix());
+			eye.apply();
 			
 			shader_set(shd_debug_lines);
 			sampler_set("u_sDepth", gbuffer.textures[$ CAMERA_GBUFFER.depth]);

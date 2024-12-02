@@ -8,7 +8,7 @@ float modulo(float fV, float fM){
 
 void main()
 {
-    float fDepth = texture2D(u_sDepthOpaque, gl_FragCoord.xy * u_vTexelSize).r;
+    float fDepth = texture2D(u_sDepth, gl_FragCoord.xy * u_vTexelSize).r;
     vec3 vColor = u_vColor;
 
     if (gl_FragCoord.z > fDepth){

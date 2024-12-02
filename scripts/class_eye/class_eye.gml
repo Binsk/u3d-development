@@ -99,6 +99,11 @@ function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 		return matrix_inv_projection;
 	}
 	
+	function apply(){
+		matrix_set(matrix_view, get_view_matrix());
+		matrix_set(matrix_projection, get_projection_matrix());
+	}
+	
 	super.register("free");
 	function free(){
 		super.execute("free");
