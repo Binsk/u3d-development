@@ -95,6 +95,7 @@
     {"id":{"name":"obj_button_model","path":"objects/obj_button_model/obj_button_model.yy",},},
     {"id":{"name":"obj_button","path":"objects/obj_button/obj_button.yy",},},
     {"id":{"name":"obj_checkbox","path":"objects/obj_checkbox/obj_checkbox.yy",},},
+    {"id":{"name":"obj_collision_box_fade","path":"objects/obj_collision_box_fade/obj_collision_box_fade.yy",},},
     {"id":{"name":"obj_collision_controller","path":"objects/obj_collision_controller/obj_collision_controller.yy",},},
     {"id":{"name":"obj_collision_demo","path":"objects/obj_collision_demo/obj_collision_demo.yy",},},
     {"id":{"name":"obj_menu_item","path":"objects/obj_menu_item/obj_menu_item.yy",},},

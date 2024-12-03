@@ -113,6 +113,26 @@ function Model() : U3DObject() constructor {
 		}
 	}
 	
+	/// @desc	Replaces any materials with a hash with a unique duplicate of
+	///			the material; auto-hashed to the model to be freed when the
+	///			model is. Useful for models that may need custom scalar properties.
+	///			If a material IS NOT HASHED then it will not be duplicated in order
+	///			to prevent any possible memory leaks.
+	/// @note	This does NOT duplicate stored referenced data, such as textures,
+	///			in order to save RAM/vRAM.
+	function generate_unique_materials(){
+		var keys = struct_get_names(material_data);
+		for (var i = array_length(keys) - 1; i >= 0; --i){
+			var material = material_data[$ keys[i]];
+			if (is_undefined(material.hash))
+				continue;
+				
+			var nmaterial = material.duplicate();
+			nmaterial.generate_unique_hash();
+			set_material(nmaterial, real(keys[i]));
+		}
+	}
+	
 	/// @desc		Will execute a buffer freeze on all attached meshes, loading them into
 	///				vRAM. Much faster to render but constantly takes up vRAM.
 	/// @warning	For dynamically generated resources, this will apply a freeze in ALL

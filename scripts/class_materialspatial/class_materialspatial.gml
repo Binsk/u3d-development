@@ -361,12 +361,20 @@ function MaterialSpatial() : Material() constructor {
 	function duplicate(){
 		var material = new MaterialSpatial();
 		var texture_keys = struct_get_names(texture);
+			/// Manually set to make sure references are updated:
 		for (var i = array_length(texture_keys) - 1; i >= 0; --i)
 			material.set_texture(texture_keys[i], texture[$ texture_keys[i]]);
 			
+		material.cull_mode = cull_mode;
+		material.shadow_cull_mode = shadow_cull_mode;
+		material.render_stage = render_stage;
+		material.alpha_cutoff = alpha_cutoff;
+		material.texture = struct_duplicate_shallow(texture);
+		material.scalar = variable_clone(scalar);
+			
 		return material;
 	}
-	
+
 	super.register("free");
 	function free(){
 		super.execute("free");

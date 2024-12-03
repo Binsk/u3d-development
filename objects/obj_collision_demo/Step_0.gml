@@ -54,6 +54,8 @@ if (not is_undefined(dragged_body)){
 		if (iterations > 0) 
 			dragged_body = undefined;
 		else {
+			spawn_dead_cube(vec_add_vec(dragged_body.position, vec(0, 0.55, 0)));
+			
 			dragged_body.free();
 			delete dragged_body;
 			dragged_body = undefined;

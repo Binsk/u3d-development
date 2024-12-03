@@ -32,6 +32,11 @@ collidable_box = undefined;
 
 #region METHODS
 
+function spawn_dead_cube(position){
+	var inst = instance_create_depth(0, 0, 0, obj_collision_box_fade)
+	inst.body.set_position(position);
+}
+
 /// @desc	Handle clicking on a box
 function click_box_detect(data_array){
 	// Delete plane from the array:
@@ -97,6 +102,8 @@ function mouse_collision_left(data_array, pressed=true){
 		obj_render_controller.add_body(body);
 	}
 	else{
+		spawn_dead_cube(vec_add_vec(body.position, vec(0, 0.55, 0)));
+		
 		body.free();
 		delete body;
 	}
@@ -139,6 +146,8 @@ camera.set_position(vec(-2.5, 2.5, -2.5));
 camera.look_at_up(vec());
 camera.add_ppfx(U3D.RENDERING.PPFX.skybox, 1);
 camera.add_ppfx(U3D.RENDERING.PPFX.fog, 2);
+camera.set_render_stages(CAMERA_RENDER_STAGE.mixed);
+
 U3D.RENDERING.PPFX.skybox.set_environment_texture(environment);
 U3D.RENDERING.PPFX.skybox.set_enabled(true);
 U3D.RENDERING.PPFX.fog.set_color(make_color_rgb(99, 99, 99), 1.0, false);

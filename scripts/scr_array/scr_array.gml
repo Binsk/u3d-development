@@ -125,3 +125,16 @@ function array_length_nested(array){
 	
 	return count;
 }
+
+/// @desc	Makes a shallow copy of a struct.
+function struct_duplicate_shallow(struct){
+	if (not is_struct(struct))
+		return undefined;
+		
+	var keys = struct_get_names(struct);
+	var nstruct = {};
+	for (var i = array_length(keys) - 1; i >= 0; --i)
+		struct_set(nstruct, keys[i], struct[$ keys[i]]);
+		
+	return nstruct;
+}

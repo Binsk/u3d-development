@@ -67,6 +67,12 @@ function Material() : U3DObject() constructor {
 	function get_casts_shadows(){
 		return casts_shadows;
 	}
+	
+	/// @desc	Creates a copy of the material with properties in-tact that can
+	///			be modified without affecting the original.
+	function duplicate(){
+		throw new Exception("cannot call virtual function!");
+	}
 	#endregion
 	
 	#region INIT

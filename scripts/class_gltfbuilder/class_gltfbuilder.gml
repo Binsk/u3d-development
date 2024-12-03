@@ -739,15 +739,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		else
 /// @stub	Add proper format auto-calc as appropriate once implemented
 			format = get_primitive_format(-1, -1);
-		
-		var model_hash = md5_string_utf8($"{self.load_directory}{self.name}_model_{format.get_hash()}{generate_materials}{apply_transforms}");
-		var model = U3DObject.get_ref_data(model_hash);
-		if (not is_undefined(model))
-			return model;
-		
-		set_data(["model_data", "minimum"], undefined);
-		set_data(["model_data", "maximum"], undefined);
-		
+
 		// Determine which nodes are in our scene:
 		var node_array = get_scene_nodes(scene);
 		
@@ -789,7 +781,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
-		model = new Model();
+		var model = new Model();
 		
 		// Generate model-specific meshes + transforms
 		for (var i = array_length(node_array) - 1; i >= 0; --i){
@@ -816,8 +808,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 		model.set_data(["import", "aabb_min"], get_data(["model_data", "minimum"]));
 		model.set_data(["import", "aabb_max"], get_data(["model_data", "maximum"]));
-		model.hash = model_hash;
-		add_child_ref(model);
 		
 		if (not generate_materials)
 			return model;
@@ -825,7 +815,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		// Add materials:
 		var material_array = generate_material_array();
 		for (var i = 0; i < array_length(material_array); ++i)
-			/// @note	We mark the material as dynamic so it will auto-free w/ the model and release the textures as needed.
 			model.set_material(material_array[i], i);
 		
 		return model;
