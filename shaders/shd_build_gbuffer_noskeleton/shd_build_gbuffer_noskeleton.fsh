@@ -44,15 +44,10 @@ void check_dither(float fAlpha){
 	if (u_iTranslucent != 2)
 		return;
 		
-	float fX = modulo((gl_FragCoord.x + gl_FragCoord.y), 32.0) / 32.0; // @note: Hard-coded to match sprite
-	float fD = step(0.01, texture2D(u_sDither, vec2(fX, fAlpha)).r);
-	if (fD <= 0.0)
-		discard;
-		
-	fX = modulo((-gl_FragCoord.x + gl_FragCoord.y), 32.0) / 32.0;
-	fD = step(0.01, texture2D(u_sDither, vec2(1.0 - fX, fAlpha)).r);
-	
-	if (fD <= 0.0)
+	float fX = modulo(gl_FragCoord.x, 128.0) / 128.0; // @note: Hard-coded to match sprite
+	float fY = modulo(gl_FragCoord.y, 6.0) / 256.0;
+	float fD = step(0.5, texture2D(u_sDither, vec2(fX, clamp(fAlpha + fY, 0.01, 0.99))).r);
+	if (fD > 0.5)
 		discard;
 }
 

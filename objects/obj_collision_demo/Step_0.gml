@@ -37,6 +37,7 @@ if (not is_undefined(dragged_body)){
 	if (not mouse_check_button(mb_left)){
 		var pos = dragged_body.get_position();
 		pos.y = 0.25;
+		var poso = vec_duplicate(pos);
 		dragged_body.set_position(pos);
 		
 		// Push box out of other boxes:
@@ -54,7 +55,7 @@ if (not is_undefined(dragged_body)){
 		if (iterations > 0) 
 			dragged_body = undefined;
 		else {
-			spawn_dead_cube(vec_add_vec(dragged_body.position, vec(0, 0.55, 0)));
+			spawn_dead_cube(vec_add_vec(poso, vec(0, 0.55, 0)));
 			
 			dragged_body.free();
 			delete dragged_body;

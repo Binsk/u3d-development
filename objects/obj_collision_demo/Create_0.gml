@@ -83,6 +83,7 @@ function mouse_collision_left(data_array, pressed=true){
 	var data = data_array[0]; // Collision data
 	// Set the body up onto the plane (Boxes are 0.5 in scale, centered, so offset up by half a box)
 	body.set_position(vec_add_vec(data.get_intersection_point(), vec(0, 0.25, 0)));
+	var poso = body.get_position();
 	obj_collision_controller.add_body(body);
 
 	// Push box out of other boxes:
@@ -102,7 +103,7 @@ function mouse_collision_left(data_array, pressed=true){
 		obj_render_controller.add_body(body);
 	}
 	else{
-		spawn_dead_cube(vec_add_vec(body.position, vec(0, 0.55, 0)));
+		spawn_dead_cube(vec_add_vec(poso, vec(0, 0.55, 0)));
 		
 		body.free();
 		delete body;
@@ -122,6 +123,9 @@ function mouse_collision_right(data_array){
 		
 		var body = data.get_affected_body();
 		array_delete(body_array, array_get_index(body_array, body), 1);
+		
+		spawn_dead_cube(body.position);
+		
 		body.free();
 		delete body;
 	}
@@ -265,7 +269,7 @@ obj_collision_controller.add_signal(camera, new Callable(id, function(data_array
 		return;
 	}
 	
-	if (mouse_check_button(mb_left)){
+	if (mouse_check_button(mb_left) and not instance_exists(obj_collision_box_fade)){
 		mouse_collision_left(data_array, false);
 		return;
 	}
