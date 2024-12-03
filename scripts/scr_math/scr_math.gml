@@ -42,3 +42,22 @@ function in_range(value, minimum, maximum, min_inclusive=true, max_inclusive=tru
 	
 	return (value == nvalue);
 }
+
+/// @desc	Returns the signed overlapping interval between two sets of values.
+///			If no overlap occurs then 'undefined' is returned.
+function get_interval(x1, x2, y1, y2){
+	var max_x = max(x1, x2);
+	var max_y = max(y1, y2);
+	var min_x = min(x1, x2);
+	var min_y = min(y1, y2);
+	
+	var is_overlap = (min_x < max_y and min_y < max_x);
+	if (not is_overlap)
+		return undefined;
+	
+	var delta = min(max_x, max_y) - max(min_x, min_y);
+	if (min(max_x, max_y) == max_x)
+		return -delta;
+	
+	return delta;
+}

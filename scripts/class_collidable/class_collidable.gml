@@ -47,7 +47,7 @@ function Collidable() : U3DObject() constructor {
 			if (is_instanceof(collidable_b, Plane))
 				return undefined;	/// @stub	Implement!
 			if (is_instanceof(collidable_b, AABB))
-				return undefined;	/// @stub	Implement!
+				return AABB.collide_aabb(collidable_a, collidable_b, node_a, node_b);
 		}
 		#endregion
 		#region SPHERE CHECKS
