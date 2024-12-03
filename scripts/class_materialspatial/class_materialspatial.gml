@@ -81,6 +81,10 @@ enum PBR_COLOR_INDEX {
 
 function MaterialSpatial() : Material() constructor {
 	#region PROPERTIES
+	// The default dithering texture to use in mixed rendering mode. Can also be manually
+	// set per-material.
+	static DEFAULT_DITHER_TEXTURE = undefined;
+	
 	cull_mode = cull_noculling;
 	shadow_cull_mode = cull_noculling;
 	render_stage = CAMERA_RENDER_STAGE.opaque;
@@ -91,7 +95,8 @@ function MaterialSpatial() : Material() constructor {
 		albedo : undefined,
 		normal : undefined,
 		pbr : undefined,
-		emissive : undefined
+		emissive : undefined,
+		dithering : undefined
 	};
 	
 	/// @note	scalar albedo is multiplicative, however if no texture exists and no vertex
@@ -193,6 +198,10 @@ function MaterialSpatial() : Material() constructor {
 	/// @param	{Texture2D}	texture
 	function set_emissive_texture(texture){
 		set_texture("emissive", texture);
+	}
+	
+	function set_dithering_texture(texture){
+		set_texture("dithering", texture)
 	}
 	
 	function get_texture(label){
@@ -320,8 +329,12 @@ function MaterialSpatial() : Material() constructor {
 			}
 		}
 		
-		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed)
-			U3D.RENDERING.TEXTURE.dither.apply("u_sDither");
+		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed){
+			if (is_undefined(texture.dithering))
+				MaterialSpatial.DEFAULT_DITHER_TEXTURE.apply("u_sDither");
+			else
+				texture.dithering.texture.apply("u_sDither");
+		}
 		else
 			sampler_set("u_sDither", -1);	// Required or we get framebuffer issues in browsers
 			

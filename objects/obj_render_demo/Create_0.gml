@@ -86,6 +86,7 @@ instance_create_depth(0, 0, 0, obj_animation_controller);	// Allow auto-handling
 instance_create_depth(0, 0, 0, obj_render_controller);		// Allow auto-handling rendering updates
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
+MaterialSpatial.DEFAULT_DITHER_TEXTURE = U3D.RENDERING.TEXTURE.dither_bayer;
 
 // Create our camera:
 camera = new CameraView();	// CameraView auto-renders to screen; defaults to full screen

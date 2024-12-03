@@ -95,7 +95,8 @@ U3D = {
 			blank : new MaterialSpatial()		// Default material for when material textures are undefined (e.g., color scalars only)
 		},
 		TEXTURE : {
-			dither : new Texture2D(sprite_get_texture(spr_default_dither, 0))	
+			dither_blue : new Texture2D(sprite_get_texture(spr_default_dither, 0)),	// Less apparent repetition, reduces overlap flickering
+			dither_bayer : new Texture2D(sprite_get_texture(spr_default_dither, 1))	// Prettier pattern, severe overlap flickering
 		},
 		PPFX : { // Pre-made PostProcessingFX that can be attached to render cameras
 			fxaa : new PostProcessFX(shd_fxaa),				// Fast approximate anti-aliasing
@@ -132,3 +133,5 @@ U3D.RENDERING.MATERIAL.missing.set_albedo_texture(new Texture2D(sprite_get_textu
 U3D.RENDERING.MATERIAL.missing.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
 U3D.RENDERING.MATERIAL.blank.set_albedo_texture(new Texture2D(sprite_get_texture(spr_default_white, 0)));
 U3D.RENDERING.MATERIAL.blank.scalar.pbr[PBR_COLOR_INDEX.metalness] = 0;
+
+MaterialSpatial.DEFAULT_DITHER_TEXTURE = U3D.RENDERING.TEXTURE.dither_bayer;

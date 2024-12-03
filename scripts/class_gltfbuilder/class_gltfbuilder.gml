@@ -441,8 +441,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (not is_undefined(primitive))
 			return primitive;
 		
-		var min_vec = get_data(["model_data", "minimum"], vec(infinity, infinity, infinity));		// Used to record generic vertex data
-		var max_vec = get_data(["model_data", "maximum"], vec(-infinity, -infinity, -infinity));
 		// Fetch our primitive header so we know what data we have:
 		var primitive_header = json_header.meshes[mesh_index].primitives[primitive_index];
 			// Check topology, we only support one type of many:
@@ -533,6 +531,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var indices = array_create(3);
 		var tangent = array_create(3);
 		#endregion
+		
+		var min_vec = vec(infinity, infinity, infinity);
+		var max_vec = vec(-infinity, -infinity, -infinity);
 		
 		for (var i = 0; i < loop; ++i){
 			var format_label = VertexFormat.get_vertex_data_gltf_label(format.vformat_array[i]);
@@ -641,10 +642,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 		
 		primitive.define_end();
+		primitive.set_data(["import", "aabb_min"], min_vec);	// Model-coordinates min-bound
+		primitive.set_data(["import", "aabb_max"], max_vec);	// Model-coordinates max-bound
+		primitive.set_data(["import", "aabb_center"], vec_lerp(min_vec, max_vec, 0.5));	// Model actual center
+		primitive.set_data(["import", "aabb_extends"], vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5));	// Extends from model center
 		
 		add_child_ref(primitive);
-		set_data(["model_data", "minimum"], min_vec);
-		set_data(["model_data", "maximum"], max_vec);
 		
 		// Cleanup to make GameMaker free memory:
 		missing_data = undefined;
@@ -805,12 +808,32 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			mesh.matrix_model = matrix;
 			model.add_mesh(mesh);
 		}
-			
-		model.set_data(["import", "aabb_min"], get_data(["model_data", "minimum"]));
-		model.set_data(["import", "aabb_max"], get_data(["model_data", "maximum"]));
 		
-		if (not generate_materials)
+		// Calculate "import" data:
+		var min_vec = vec(infinity, infinity, infinity);
+		var max_vec = vec(-infinity, -infinity, -infinity);
+		var array1 = model.get_mesh_array();
+		for (var i = array_length(array1) - 1; i >= 0; --i){
+			var mesh = array1[i];
+			var array2 = mesh.get_primitive_array();
+			for (var j = array_length(array2) - 1; j >= 0; --j){
+				var primitive = array2[j];
+				min_vec = vec_min(min_vec, primitive.get_data(["import", "aabb_min"]));
+				max_vec = vec_max(max_vec, primitive.get_data(["import", "aabb_max"]));
+			}
+		}
+
+		model.set_data(["import", "aabb_min"], min_vec);	// Model-coordinates min-bound
+		model.set_data(["import", "aabb_max"], max_vec);	// Model-coordinates max-bound
+		model.set_data(["import", "aabb_center"], vec_lerp(min_vec, max_vec, 0.5));	// Model actual center
+		model.set_data(["import", "aabb_extends"], vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5));	// Extends from model center
+		
+		if (not generate_materials){
+			model.set_data(["import", "no_textures"], true);			
 			return model;
+		}
+		
+		model.set_data(["import", "no_textures"], false);	
 			
 		// Add materials:
 		var material_array = generate_material_array();

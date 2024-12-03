@@ -61,7 +61,7 @@ function Model() : U3DObject() constructor {
 
 	/// @desc	Returns the array of meshes to be rendered by this model.
 	function get_mesh_array(){
-		return mesh_array;
+		return array_duplicate_shallow(mesh_array);
 	}
 
 	/// @desc	Retruns an array of primitives to be rendered by this model.
