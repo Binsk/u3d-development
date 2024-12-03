@@ -17,6 +17,7 @@ light_directional = new LightDirectional(vec_to_quat(vec(-1, -1, 1)), vec(5, 5, 
 
 plane_body = new Body();	// Used for the 'click plane' detection
 plane_collidable = new Plane();
+plane_body.set_position(vec(0, 0.01, 0));
 
 body_array = [];	// Array of physics bodies
 

@@ -1124,17 +1124,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				var eye = camera.get_eye();
 				eye.set_znear(eye_header[$ "znear"]);
 				eye.set_zfar(eye_header[$ "zfar"] ?? (eye_header[$ "znear"] + 1024));	// glTF says to specify infinity; not doing that
-				
-				/// @note	We work in xfov which auto-calculates the yfov. If we're given
-				///			an aspect ratio then we attempt to reverse-calculate the xfov. If not,
-				///			we just leave the xfov at the default.
-				if (not is_undefined(eye_header[$ "aspectRatio"])){
-					var aspect = eye_header[$ "aspectRatio"];
-					var yfov = eye_header[$ "yfov"];
-
-					var xfov = radtodeg(arctan(tan(yfov * 0.5) / aspect)) * 2.0;
-					eye.set_fov(xfov);
-				}
+				eye.set_yfov(eye_header[$ "yfov"]);
+				if (not is_undefined(eye_header[$ "aspectRatio"]))
+					eye.set_aspect_ratio(eye_header[$ "aspectRatio"]);
 			}
 			else if (camera_header[$ "type"] == "orthographic"){
 				var eye_header = camera_header[$ "orthographic"];

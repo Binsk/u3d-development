@@ -6,6 +6,10 @@
 ///
 /// znear, zfar, and fov is controlled by the Eye attached to this camera. You can grab
 /// the eye instance with get_eye(). By default the eye is perspective.
+
+/// @signals
+///		"set_aspect"	(aspect)	-	Thrown whenever the aspect ratio changes
+
 /// @param	{Anchor2D} anchor	the anchor used to specify where in the window the camera should render
 function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 	#region PROPERTIES
@@ -14,7 +18,7 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 	render_width = 1;	// Size of the canvas we render out on (not our actual render size)
 	render_height = 1;
 	render_tonemap = CAMERA_TONEMAP.linear;
-	eye_id = new EyePerspective(self, 0.01, 1024, 45);
+	eye_id = undefined;
 	
 	#region SHADER UNIFORMS
 	uniform_sampler_texture = -1;
@@ -40,6 +44,12 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 			Exception.throw_conditional("cannot attach eye, invalid camera id!");
 			return;
 		}
+		
+		if (is_instanceof(eye_id, EyePerspective))
+			signaler.remove_signal("set_aspect", new Callable(eye_id, eye_id.set_aspect_ratio));
+			
+		if (is_instanceof(eye, EyePerspective))
+			signaler.add_signal("set_aspect", new Callable(eye, eye.set_aspect_ratio));
 		
 		replace_child_ref(eye, eye_id);
 		eye_id = eye; 
@@ -87,6 +97,8 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		
 		buffer_width = ndx;
 		buffer_height = ndy;
+		
+		signaler.signal("set_aspect", [buffer_width / buffer_height]);
 	}
 	
 	function render_out(){
@@ -214,6 +226,8 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 	
 	#region INIT
 	// Register the eye so it is cleaned up along with this instance:
-	add_child_ref(eye_id.generate_unique_hash());
+	var eye = new EyePerspective(self, 0.01, 1024);
+	eye.generate_unique_hash();
+	set_eye(eye);
 	#endregion
 }

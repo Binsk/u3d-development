@@ -1,15 +1,18 @@
 /// @desc A perspective eye that views the world in a cone-shaped view.
-/// @param	{Camera}	camera		id of the camera this eye belongs to
+/// @param	{Node}		camera		id of the node the eye belongs to (usually a camera)
 /// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
 /// @param	{real}		zfar		furthest point to the eye that can be rendered (in world coords)
-/// @param	{real}		fov			horizontal field-of-view of the cone
-function EyePerspective(camera_id, znear=0.01, zfar=1024, fov=45) : Eye(camera_id, znear, zfar) constructor {
+/// @param	{real}		yfov			vertical field-of-view of the cone (horizontal auto-calculated)
+function EyePerspective(camera_id, znear=0.01, zfar=1024, y_fov=pi/2.5, aspect=1.0) : Eye(camera_id, znear, zfar) constructor {
 	#region PROPERTIES
-	self.fov = fov;
+	self.fov = y_fov;
+	self.aspect = 1.0;
 	#endregion
 	
 	#region METHODS
-	function set_fov(fov){
+	/// @desc	Sets the FOV of the camera on the y-axis.
+	/// @param	{real}	yfov	field-of-view in radians
+	function set_yfov(fov){
 		if (self.fov == fov)
 			return;
 			
@@ -18,18 +21,23 @@ function EyePerspective(camera_id, znear=0.01, zfar=1024, fov=45) : Eye(camera_i
 		self.fov = fov;
 	}
 	
+	/// @desc	Calculates the y-fov based on the specified x-fov.
+	///	@note	x-fov changes with aspect ratio changes.
+	/// @param	{real}	xfov	field-of-view in radians
+	function set_xfov(fov, aspect=1.0){
+		self.fov = 2.0 * arctan(tan(fov * 0.5) * aspect);
+	}
+	
+	function set_aspect_ratio(aspect){
+		self.aspect = aspect;
+	}
+	
 	/// @desc	Return / Build the projection matrix for this eye.
 	function get_projection_matrix(){
 		if (not is_undefined(self.matrix_projection))
 			return self.matrix_projection;
 		
-		if (is_undefined(camera_id.buffer_width)) // Cannot determine render size
-			return matrix_build_identity();
-
-		var aspect = camera_id.buffer_width / camera_id.buffer_height;
-		var yfov = 2.0 * arctan(dtan(fov/2) * aspect);
-		
-		var h = 1 / tan(yfov * 0.5);
+		var h = 1 / tan(fov * 0.5);
 		var w = h / aspect;
 		var a = zfar / (zfar - znear);
 		var b = (-znear * zfar) / (zfar - znear);

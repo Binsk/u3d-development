@@ -7,7 +7,7 @@
 /// instance and do not need to be managed manually unless you are designing a
 /// custom type of Camera() class.
 
-/// @param	{Camera}	camera		id of the camera this eye belongs to
+/// @param	{Node}		camera		id of the node the eye belongs to (usually a camera)
 /// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
 /// @param	{real}		zfar		furthest point to the eye that can be rendered (in world coords)
 function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
@@ -16,7 +16,7 @@ function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 	self.camera_id = camera_id;		// The camera we belong to
 	self.znear = znear;
 	self.zfar = zfar;
-	
+
 	self.matrix_eye = undefined;	// Relative to the camera; if undefined treated is identity (and saves a matrix op)
 	self.matrix_projection = undefined;
 	self.matrix_inv_projection = undefined;
@@ -113,8 +113,8 @@ function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 	#endregion
 	
 	#region INIT
-	if (not is_instanceof(camera_id, Camera))
-		throw new Exception("invalid type, expected [Camera]!");
+	if (not is_instanceof(camera_id, Node))
+		throw new Exception("invalid type, expected [Node]!");
 	
 	// Attach to the camera; if it moves / rotates we reset our cached matrices:
 	var reset_matrix = new Callable(self, function(){self.matrix_view = undefined; self.matrix_inv_view = undefined;});

@@ -1,5 +1,5 @@
 /// @desc	An orthographic eye that views the world in the shape of a box.
-/// @param	{Camera}	camera		id of the camera this eye belongs to
+/// @param	{Node}		camera		id of the node the eye belongs to (usually a camera)
 /// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
 /// @param	{real}		zfar		furthest point to the eye that can be rendered (in world coords)
 /// @param	{real}		width		width of the box, in world units

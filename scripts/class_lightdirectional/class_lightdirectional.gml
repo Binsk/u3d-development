@@ -16,7 +16,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	light_color = c_white;
 	light_intensity = 1.0;
 	texture_environment = undefined;
-	
+
 	shadow_resolution = 4096;	// Texture resolution for the lighting render (larger = sharper shadows but more expensive)
 	shadow_world_units = 64;	// Number of world-units width/height-wise the shadow map should cover (larger = more of the world has shadows but blurrier)
 	shadow_surface = -1;		// Only used to extract the depth buffer ATM (might be used for colored translucent shadows later)
