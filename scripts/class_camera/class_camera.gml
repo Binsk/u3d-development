@@ -64,14 +64,29 @@ enum CAMERA_RENDER_FLAG {
 	shadows				=	0b0010,		// Light shadow processing functions (includes SSAO)
 	environment			=	0b0100,		// Environmental reflections
 	emission			=	0b1000,		// Emissive texture rendering
+	lighting			=	0b10000,	// Lighting (if disabled, renders unlit albedo)
 }
 
+/// @desc	The current rendering pass that is being executed.
+enum CAMERA_RENDER_PASS {
+	gbuffer_mrt = -1,	// All gbuffer textures are rendering (used in normal renderer)
+	
+	gbuffer_albedo,		// Individual gbuffer texture rendering (used in compatability renderer)
+	gbuffer_normal,
+	gbuffer_pbr,
+	gbuffer_emissive,
+	
+	light_shadows,		// Shadow rendering in lighting pass
+	light,				// Lighting itself
+	
+	ppfx,				// Post-processing rendering
+	debug				// Rendering debug info
+}
 function Camera() : Body() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;	// The currently rendering camera instance; not usually used for clarity but available if necessary
-	static ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
-		// Used in compatability mode; -1 = no compatability, [0..3] indicate albedo, normal, pbr, and emissive pass
-	static ACTIVE_COMPATABILITY_STAGE = -1;
+	static ACTIVE_STAGE = undefined;
+	static ACTIVE_PASS = undefined;
 	
 	buffer_width = undefined;	// Render resolution
 	buffer_height = undefined;
@@ -370,7 +385,7 @@ function Camera() : Body() constructor {
 				else 
 					surface_set_target(gbuffer.surfaces[$ index_array[r]], gbuffer.surfaces[$ CAMERA_GBUFFER.depth]);
 				
-				Camera.ACTIVE_COMPATABILITY_STAGE = r;
+				Camera.ACTIVE_PASS = r;
 				if (r > 0)
 					gpu_set_zwriteenable(false);
 			}
@@ -382,7 +397,7 @@ function Camera() : Body() constructor {
 				if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
 					surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.emissive]);
 				
-				Camera.ACTIVE_COMPATABILITY_STAGE = -1;
+				Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.gbuffer_mrt;
 			}
 			#endregion
 			
@@ -416,7 +431,7 @@ function Camera() : Body() constructor {
 			#endregion
 		}
 		
-		Camera.ACTIVE_COMPATABILITY_STAGE = -1;
+		Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.gbuffer_mrt;
 		gpu_set_zwriteenable(true);
 			
 		// Render view vector buffer for use with lighting
@@ -446,70 +461,74 @@ function Camera() : Body() constructor {
 		if (is_translucent and (render_stages & CAMERA_RENDER_STAGE.translucent) <= 0)
 			return;
 			
-		// Render light shadows:
-		if (not is_translucent and render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows){ // We only do so for opaque instances
+		if (get_has_render_flag(CAMERA_RENDER_FLAG.lighting)){
+			Camera.ACTIVE_STAGE = CAMERA_RENDER_PASS.light_shadows;
+			// Render light shadows:
+			if (not is_translucent and render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows){ // We only do so for opaque instances
+				for (var i = array_length(light_array) - 1; i >= 0; --i){
+					if (light_array[i].get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
+						continue;
+					
+					if (not light_array[i].casts_shadows) // Light must have shadows enabled
+						continue;
+					
+					Light.ACTIVE_INSTANCE = light_array[i];
+					light_array[i].render_shadows(eye, body_array);
+					Light.ACTIVE_INSTANCE = undefined;
+				}
+			}
+			
+			Camera.ACTIVE_STAGE = CAMERA_RENDER_PASS.light;
+	/// @todo	Batch light types together (a shader for each) and pass in multiple
+	///			lights into the shader
+			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light], c_black, 0.0);
 			for (var i = array_length(light_array) - 1; i >= 0; --i){
-				if (light_array[i].get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
+				var light = light_array[i];
+				
+				if (light.get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
 					continue;
 				
-				if (not light_array[i].casts_shadows) // Light must have shadows enabled
+				if (is_undefined(light.get_light_shader())) // Invalid light
 					continue;
+	
+				Light.ACTIVE_INSTANCE = light;
+				shader_set(light.get_light_shader());
+				gpu_set_blendmode_ext(bm_one, bm_zero);
+				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
+				draw_clear_alpha(0, 0);
+	/// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
+				light.apply_gbuffer();
+				light.apply();
+				draw_quad(0, 0, buffer_width, buffer_height);
+				shader_reset();
+				surface_reset_target();
 				
-				Light.ACTIVE_INSTANCE = light_array[i];
-				light_array[i].render_shadows(eye, body_array);
+				var applied_shadows = false;
+				if (render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows)
+					applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
+				
+				if (not applied_shadows){
+					gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_one, bm_one, bm_zero);
+					surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
+					draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
+					surface_reset_target();
+				}
+				gpu_set_blendmode(bm_normal);
 				Light.ACTIVE_INSTANCE = undefined;
 			}
-		}
-		
-/// @todo	Batch light types together (a shader for each) and pass in multiple
-///			lights into the shader
-		surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light], c_black, 0.0);
-		for (var i = array_length(light_array) - 1; i >= 0; --i){
-			var light = light_array[i];
 			
-			if (light.get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
-				continue;
-			
-			if (is_undefined(light.get_light_shader())) // Invalid light
-				continue;
-
-			Light.ACTIVE_INSTANCE = light;
-			shader_set(light.get_light_shader());
-			gpu_set_blendmode_ext(bm_one, bm_zero);
-			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
-			draw_clear_alpha(0, 0);
-/// @stub	Optimize having to re-apply the gbuffer for every light. This is due to the deferred shadow pass.
-			light.apply_gbuffer();
-			light.apply();
-			draw_quad(0, 0, buffer_width, buffer_height);
-			shader_reset();
-			surface_reset_target();
-			
-			var applied_shadows = false;
-			if (render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows)
-				applied_shadows = light.apply_shadows(eye, gbuffer.surfaces[$ CAMERA_GBUFFER.final], gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
-			
-			if (not applied_shadows){
-				gpu_set_blendmode_ext_sepalpha(bm_src_alpha, bm_one, bm_one, bm_zero);
+			if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)){
+				// Special render for emissive textures:
+				gpu_set_blendmode(bm_add);
 				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
-				draw_surface(gbuffer.surfaces[$ CAMERA_GBUFFER.final], 0, 0);
+				shader_set(shd_lighting_emissive);
+				sampler_set("u_sEmissive", gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
+				draw_quad(0, 0, buffer_width, buffer_height);
+				shader_reset();
+				
+				gpu_set_blendmode(bm_normal);
 				surface_reset_target();
 			}
-			gpu_set_blendmode(bm_normal);
-			Light.ACTIVE_INSTANCE = undefined;
-		}
-		
-		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)){
-			// Special render for emissive textures:
-			gpu_set_blendmode(bm_add);
-			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
-			shader_set(shd_lighting_emissive);
-			sampler_set("u_sEmissive", gbuffer.textures[$ CAMERA_GBUFFER.emissive]);
-			draw_quad(0, 0, buffer_width, buffer_height);
-			shader_reset();
-			
-			gpu_set_blendmode(bm_normal);
-			surface_reset_target();
 		}
 		
 		// Merge into final light buffer:
@@ -517,7 +536,7 @@ function Camera() : Body() constructor {
 		shader_set(shd_clamp_alpha);
 		gpu_set_blendequation_sepalpha(bm_eq_add, bm_eq_max);
 		gpu_set_blendmode_ext(bm_src_alpha, bm_inv_src_alpha);
-		draw_quad(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.light]);
+		draw_quad(0, 0, buffer_width, buffer_height, get_has_render_flag(CAMERA_RENDER_FLAG.lighting) ? gbuffer.textures[$ CAMERA_GBUFFER.light] : gbuffer.textures[$ CAMERA_GBUFFER.albedo]);
 		gpu_set_blendequation_sepalpha(bm_eq_add, bm_eq_add);
 		shader_reset();
 		surface_reset_target();
@@ -526,6 +545,7 @@ function Camera() : Body() constructor {
 	
 	
 	function render_debug(eye){
+		Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.debug;
 		if (debug_flags > 0){
 			gpu_set_blendmode_ext(bm_one, bm_zero);
 			if (not surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.final]))
@@ -599,6 +619,7 @@ function Camera() : Body() constructor {
 		if (struct_names_count(post_process_effects) <= 0 or render_flags & CAMERA_RENDER_FLAG.ppfx != CAMERA_RENDER_FLAG.ppfx)
 			return;
 
+		Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.ppfx;
 		var priority = ds_priority_create();
 		var keys = struct_get_names(post_process_effects);
 		for (var i = array_length(keys) - 1; i >= 0; --i){
@@ -685,6 +706,7 @@ function Camera() : Body() constructor {
 		
 		Camera.ACTIVE_INSTANCE = undefined;
 		Eye.ACTIVE_INSTANCE = undefined;
+		Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.gbuffer_mrt;
 	}
 	
 	/// @desc	Should execute a render_eye for every eye and combine results

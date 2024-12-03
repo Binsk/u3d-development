@@ -58,7 +58,7 @@ function TextureCubePBR(texture_id=undefined, resolution=1024, mip_count=1) : Te
 		draw_clear(c_black);
 		gpu_set_blendmode_ext(bm_one, bm_zero);
 		gpu_set_cullmode(cull_noculling);
-// /// @stub	Implement PROPER conversion; this gaussian blur is a really hacky 'good enough for now' implementation
+/// @stub	Implement PROPER conversion; this gaussian blur is a really hacky 'good enough for now' implementation
 // 		// https://learnopengl.com/PBR/IBL/Specular-IBL
 // 		// We generate mips as we can fit it all in one column (minus the first image)
 		for (var i = 0; i <= mip_count; ++i){

@@ -11,7 +11,6 @@
 -	Fix "framebuffer" error in browser when loading new textures in (if rendering is off
 	while loading the issue goes away).
 -	Fix browser dithered rendering not mixing right w/ opaque items (?)
--	Fix collision shapes not rendering.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

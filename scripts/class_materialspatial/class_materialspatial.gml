@@ -53,7 +53,7 @@
 // u_sEmissive			(sampler2D)		3color material for emission
 /// === COMPATABILITY ONLY
 //	UNIFORM					TYPE			DESCRIPTION
-// u_sInput				(sampler2D)		4color texture for the current texture (taken from Camera.ACTIVE_COMPATABILITY_STAGE)
+// u_sInput				(sampler2D)		4color texture for the current texture (taken from Camera.ACTIVE_PASS)
 // u_sDepth				(sampler2D)		depth generated in the Albedo pass (only available in passes [1..3])
 // u_sAlbedo			(sampler2D)		albedo texture (only provided in passes [1..3])
 // u_iCompatability		(int)			Compatability pass in compatability mode (-1 = no compat, [0..3] = albedo, normal, pbr, emissive)
@@ -272,44 +272,44 @@ function MaterialSpatial() : Material() constructor {
 		///			errors in browsers since the texture will still be attached from the previous render.
 		
 		if (not is_undefined(texture[$ "albedo"])){
-			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0) and 
+			if ((not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_albedo) and 
 				texture.albedo.texture.apply(is_compatability ? "u_sInput" : "u_sAlbedo"))
 				sampler_toggles[0] = 1;
 		}
-		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 0)
+		else if (not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_albedo)
 			sampler_set(is_compatability ? "u_sInput" : "u_sAlbedo", -1);
 		
 		if (not is_undefined(texture[$ "normal"])){
-			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 1) and 
+			if ((not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_normal) and 
 				texture.normal.texture.apply(is_compatability ? "u_sInput" : "u_sNormal"))
 				sampler_toggles[1] = 1;
 		}
-		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 1)
+		else if (not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_normal)
 			sampler_set(is_compatability ? "u_sInput" : "u_sNormal", -1);
 		
 		if (not is_undefined(texture[$ "pbr"])){
-			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 2) and 
+			if ((not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_pbr) and 
 				texture.pbr.texture.apply(is_compatability ? "u_sInput" : "u_sPBR"))
 				sampler_toggles[2] = 1;
 		}
-		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 2)
+		else if (not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_pbr)
 			sampler_set(is_compatability ? "u_sInput" : "u_sPBR", -1);
 		
 		if (not is_undefined(texture[$ "emissive"])){
-			if ((not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 3) and 
+			if ((not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_emissive) and 
 				texture.emissive.texture.apply(is_compatability ? "u_sInput" : "u_sEmissive"))
 				sampler_toggles[3] = 1;
 		}
-		else if (not is_compatability or Camera.ACTIVE_COMPATABILITY_STAGE == 3)
+		else if (not is_compatability or Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_emissive)
 			sampler_set(is_compatability ? "u_sInput" : "u_sEmissive", -1);
 		
 		if (is_compatability){
-			if (Camera.ACTIVE_COMPATABILITY_STAGE != 0 and not is_undefined(texture[$ "albedo"]))
+			if (Camera.ACTIVE_PASS != CAMERA_RENDER_PASS.gbuffer_albedo and not is_undefined(texture[$ "albedo"]))
 				texture.albedo.texture.apply("u_sAlbedo");
-			else if (Camera.ACTIVE_COMPATABILITY_STAGE == 0)
+			else if (Camera.ACTIVE_PASS == CAMERA_RENDER_PASS.gbuffer_albedo)
 				sampler_set("u_sAlbedo", -1);
 			
-			if (U3D.OS.is_browser and Camera.ACTIVE_COMPATABILITY_STAGE > 0){
+			if (U3D.OS.is_browser and Camera.ACTIVE_PASS > CAMERA_RENDER_PASS.gbuffer_albedo){
 				uniform_set("u_iBrowser", shader_set_uniform_i, 1);
 				uniform_set("u_vBufferSize", shader_set_uniform_f, [camera_id.buffer_width, camera_id.buffer_height]);
 				sampler_set("u_sDepth", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth]);
@@ -338,7 +338,7 @@ function MaterialSpatial() : Material() constructor {
 		uniform_set("u_iTranslucent", shader_set_uniform_i, (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed and render_stage & CAMERA_RENDER_STAGE.translucent ? 2 : is_translucent));
 		
 		uniform_set("u_iTime", shader_set_uniform_i, current_time);
-		uniform_set("u_iCompatability", shader_set_uniform_i, Camera.ACTIVE_COMPATABILITY_STAGE);
+		uniform_set("u_iCompatability", shader_set_uniform_i, Camera.ACTIVE_PASS);
 		
 		gpu_set_cullmode(cull_mode);
 	}
