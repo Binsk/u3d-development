@@ -18,12 +18,10 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	texture_environment = undefined;
 
 	shadow_resolution = 4096;	// Texture resolution for the lighting render (larger = sharper shadows but more expensive)
-	shadow_world_units = 64;	// Number of world-units width/height-wise the shadow map should cover (larger = more of the world has shadows but blurrier)
+	shadow_eye = new EyeOrthographic(self, 0.01, 1024, 64, 64); // By default covers a 64x64 portion of the world
 	shadow_surface = -1;		// Only used to extract the depth buffer ATM (might be used for colored translucent shadows later)
 	shadowbit_surface = -1;		// Used in the deferred pass for shadow sampling
 	shadow_depth_texture = -1;	// Extracted from shadow_surface
-	shadow_znear = 0.01;		// How close to the light things will render
-	shadow_zfar = 1024;			// How far away from the light things will render
 	shadow_bias = 0.0001;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
 	shadow_sample_bias = 0.0001;// Depth-sampling bias (larger causes shadow halos while smaller can cause acne & lack of smoothing; balance w/ view distanec)
 	shadow_viewprojection_matrix = matrix_build_identity();	// Will calculate if shadows are enabled
@@ -32,17 +30,13 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	#region METHODS
 
 	/// @desc	Sets several properties for the shadow rendering, if enabled.
+	/// @note	To modify how much of the world the shadows cover you will need to modify the eye's render size and clipping planes
 	/// @param	{real}	resolution	resolution of shadow texture to render to
-	/// @param	{real}	units		world units the render camera should cover
 	/// @param	{real}	bias		sample depth offset; used to balance shadow acne / peter panning issues
-	/// @param	{real}	znear		near clipping distance for the shadow's camera
-	/// @param	{real}	zfar		far clipping distance for the shadow's camera
-	function set_shadow_properties(resolution=4096, units=64, bias=0.0001, znear=0.01, zfar=1024, sample_bias=0.0001){
+	/// @param	{real}	sample_bias	2D sampling depth margin; used to remove 'halo' effect around model edges
+	function set_shadow_properties(resolution=4096, bias=0.0001, sample_bias=0.0001){
 		shadow_resolution = resolution;
-		shadow_world_units = units;
 		shadow_bias = bias;
-		shadow_znear = znear;
-		shadow_zfar = zfar;
 		shadow_sample_bias = max(0, sample_bias);
 	}
 	
@@ -66,6 +60,12 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			
 		replace_child_ref(texture, texture_environment);
 		texture_environment = texture;
+	}
+	
+	/// @desc	Returns the eye responsible for rendering the shadow-map. This can be
+	///			used to modify projection size, clipping planes, and so-forth.
+	function get_shadow_eye(){
+		return shadow_eye;
 	}
 	
 	function apply_gbuffer(){
@@ -104,10 +104,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		draw_clear(c_white);
 		
 		shader_set(shd_light_depth);
-		var forward = get_forward_vector();
-		var lookat = vec_add_vec(position, forward);
-		matrix_set(matrix_view, matrix_build_lookat(position.x, position.y, position.z, lookat.x, lookat.y, lookat.z, 0, 1, 0));
-		matrix_set(matrix_projection, matrix_build_projection_ortho(shadow_world_units, shadow_world_units, shadow_znear, shadow_zfar));
+		shadow_eye.apply(); // Apply matrices
 		shadow_viewprojection_matrix = matrix_multiply(matrix_get(matrix_view), matrix_get(matrix_projection));
 		
 		for (var i = array_length(body_array) - 1; i >= 0; --i){
@@ -137,7 +134,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		}
 		if (shader_current() >= 0)
 			shader_reset();
-			
+
 		matrix_set(matrix_view, mv);
 		matrix_set(matrix_projection, mp);
 		matrix_set(matrix_world, mw);
@@ -231,5 +228,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	set_position(position);
 	set_rotation(rotation);
 	signaler.add_signal("set_rotation", new Callable(self, _signal_rotation_updated));
+	shadow_eye.generate_unique_hash();
 	#endregion
 }

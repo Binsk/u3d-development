@@ -25,9 +25,6 @@ function EyeOrthographic(camera_id, znear=0.01, zfar=1024, width=1024, height=10
 		if (not is_undefined(self.matrix_projection))
 			return self.matrix_projection;
 		
-		if (is_undefined(camera_id.buffer_width)) // Cannot determine render size
-			return matrix_build_identity();
-		
 		self.matrix_projection = matrix_build_projection_ortho(width, height, znear, zfar);
 		
 		if (not get_is_directx_pipeline()){
