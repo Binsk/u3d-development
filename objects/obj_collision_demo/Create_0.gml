@@ -25,13 +25,31 @@ gltf_box = new GLTFBuilder("demo-box.glb");
 
 body_floor = new Body(); // Done simply for shadow casting
 model_floor = undefined;
+
+dragged_body = undefined;	// The body that is currently being dragged by the mouse
 #endregion
 
 #region METHODS
 
-function mouse_collision_left(data_array){
-	if (array_length(data_array) > 1)	// If only 1, we hit the plane. If > 1 we are hitting other boxes
+/// @desc	Handle clicking on a box
+function click_box_detect(data_array){
+	for (var i = array_length(data_array) - 1; i >= 0; --i){
+		var collision_data = data_array[i];
+		if (collision_data.get_affected_class() != AABB)
+			continue;
+		
+		dragged_body = collision_data.get_affected_body();
+		plane_body.set_position(vec(0, 0.55, 0));
 		return;
+	}
+}
+
+/// @desc	Handle clicking / spawning boxes:
+function mouse_collision_left(data_array){
+	if (array_length(data_array) > 1){	// If only 1, we hit the plane. If > 1 we are hitting other boxes
+		click_box_detect(data_array);
+		return;
+	}
 	
 	// Spawn a new box model:
 	var model = gltf_box.generate_model();
@@ -63,6 +81,9 @@ function mouse_collision_right(data_array){
 		var data = data_array[i];
 		
 		if (data.get_affected_class() == Plane) // Don't allow deleting the plane
+			continue;
+			
+		if (U3DObject.are_equal(data.get_affected_body(), dragged_body))
 			continue;
 		
 		var body = data.get_affected_body();
@@ -98,7 +119,9 @@ U3D.RENDERING.PPFX.fog.set_color(make_color_rgb(99, 99, 99), 1.0, false);
 light_ambient.set_intensity(0.1);
 light_directional.set_intensity(2);
 light_directional.set_casts_shadows(true);
-light_directional.set_shadow_properties(4096, 30, 0.0005, 0.01, 20);
+light_directional.set_shadow_properties(4096, 0.0005);
+light_directional.get_shadow_eye().set_zfar(20);
+light_directional.get_shadow_eye().set_size(30, 30);
 
 var gltf = new GLTFBuilder("demo-collision-floor.glb");
 model_floor = gltf.generate_model();
@@ -190,6 +213,16 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 obj_collision_controller.add_signal(camera, new Callable(id, function(data_array){
 	if (cursor != cr_arrow) // We are hovering a menu item; skip
 		return;
+	
+	if (not is_undefined(dragged_body)){ // Handle box dragging
+		for (var i = array_length(data_array) - 1; i >= 0; i--){
+			var data = data_array[i];
+			if (data.get_affected_class() != Plane)
+				continue;
+			
+			dragged_body.set_position(vec_add_vec(vec(0, 0.25, 0), data.get_intersection_point()));
+		}
+	}
 	
 	if (mouse_check_button_pressed(mb_left)){
 		mouse_collision_left(data_array);

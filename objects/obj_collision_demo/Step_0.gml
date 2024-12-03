@@ -23,7 +23,6 @@ cursor = cr_arrow;
 with (obj_tooltip)
 	text = "";
 	
-/// Bone scroll 'overlays' everything, so disable hovering and such when it exists:
 with (obj_menu_item){
 	if (not is_hovered)
 		continue;
@@ -31,4 +30,15 @@ with (obj_menu_item){
 	obj_tooltip.text = text_tooltip;
 	other.cursor = cr_handpoint;
 	break;
+}
+
+// Dragging boxes:
+if (not is_undefined(dragged_body)){
+	if (not mouse_check_button(mb_left)){
+		var pos = dragged_body.get_position();
+		pos.y = 0.25;
+		dragged_body.set_position(pos);
+		dragged_body = undefined;
+		plane_body.set_position(vec());
+	}
 }

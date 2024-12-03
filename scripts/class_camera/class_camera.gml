@@ -378,6 +378,9 @@ function Camera() : Body() constructor {
 				if (not surface_exists(gbuffer.surfaces[$ index_array[r]]))
 					continue;
 				
+				if (r > 0 and not get_has_render_flag(CAMERA_RENDER_FLAG.lighting))
+					continue;
+				
 				/// @note	Seems bugged in browsers; so we unfortunately have to manually sample the depth in the shader.
 				///			Only applies to normals, pbr, and emission. Depth is getting wiped if manually set.
 				if (U3D.OS.is_browser)

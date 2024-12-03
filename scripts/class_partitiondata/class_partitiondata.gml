@@ -58,7 +58,7 @@ function PartitionData(data) constructor {
 		data.signaler.remove_signal("set_scale", new Callable(self, calculate_properties));
 		data.signaler.remove_signal("set_collidable", new Callable(self, calculate_properties));
 		data.signaler.remove_signal("free", new Callable(self, _detach_signals));
-/// @stub	Make this update the partitioning system so it gets removed
+/// @stub	Make this update the partitioning system so it gets removed from the node it's in
 	}
 	
 	function toString(){

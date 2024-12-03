@@ -157,27 +157,30 @@ function process(){
 			var data = Collidable.calculate_collision(body.get_collidable(), body2.get_collidable(), body, body2);
 			if (is_undefined(data)){ // No collision
 				if (debug_collision_highlights)
-					body2.set_data("collision.debug_highlight", max(1, body2.get_data("collision.debug_highlights", 0)));
+					body2.set_data("collision.debug_highlight", max(1, body2.get_data("collision.debug_highlight", 1)));
+					
 				continue;
 			}
 				
 			// Collision; store data
 			array_push(data_array, data);
-			
-			if (debug_collision_highlights){
-				data.body_a.set_data("collision.debug_highlight", 2);
-				data.body_b.set_data("collision.debug_highlight", 2);
-			}
 		}
 		
 		if (array_length(data_array) > 0){ // If there were collisions then we signal them out
 			signaler.signal($"collision_{body.get_index()}", [data_array]);
 			
-			if (debug_collision_highlights)
-				body.set_data("collision.debug_highlight", max(1, body.get_data("collision.debug_highlights", 2)));
+			if (debug_collision_highlights){
+				for (var j = array_length(data_array) - 1; j >= 0; --j){
+					var data = data_array[j];
+					var body1 = data.get_colliding_body();
+					var body2 = data.get_affected_body();
+					body1.set_data("collision.debug_highlight", max(2, body1.get_data("collision.debug_highlight", 2)));
+					body2.set_data("collision.debug_highlight", max(2, body2.get_data("collision.debug_highlight", 2)));
+				}
+			}
 		}
 		else if (debug_collision_highlights)
-			body.set_data("collision.debug_highlight", max(1, body.get_data("collision.debug_highlights", 1)));
+			body.set_data("collision.debug_highlight", max(1, body.get_data("collision.debug_highlight", 1)));
 	}
 }
 

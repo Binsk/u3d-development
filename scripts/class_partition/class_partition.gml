@@ -39,6 +39,7 @@ function Partition() : U3DObject() constructor {
 	
 	/// @desc	Scan the structure for node intersections and returns an array of all
 	///			data that is contained within the intersecting nodes.
+	/// @param	{PartitionData}	data	data to scan
 	function scan_collisions(data){
 		return [];
 	}
