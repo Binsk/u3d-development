@@ -32,8 +32,8 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		supersample_multiplier = max(0.01, multiplier);
 	}
 	
-	/// @desc	Assigns a new eye to this camera. The eye MUST have bene created
-	///			with this camera set as its parent!
+	/// @desc	Assigns a new eye to this camera. The eye will usually require its
+	///			parent to be set to this camera as well.
 	function set_eye(eye){
 		if (not is_instanceof(eye, Eye)){
 			Exception.throw_conditional("invalid type, expected [Eye]!");
@@ -226,7 +226,8 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 	
 	#region INIT
 	// Register the eye so it is cleaned up along with this instance:
-	var eye = new EyePerspective(self, 0.01, 1024);
+	var eye = new EyePerspective(0.01, 1024);
+	eye.set_camera_node(self);
 	eye.generate_unique_hash();
 	set_eye(eye);
 	#endregion

@@ -1,9 +1,8 @@
 /// @desc A perspective eye that views the world in a cone-shaped view.
-/// @param	{Node}		camera		id of the node the eye belongs to (usually a camera)
 /// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
 /// @param	{real}		zfar		furthest point to the eye that can be rendered (in world coords)
 /// @param	{real}		yfov			vertical field-of-view of the cone (horizontal auto-calculated)
-function EyePerspective(camera_id, znear=0.01, zfar=1024, y_fov=pi/2.5, aspect=1.0) : Eye(camera_id, znear, zfar) constructor {
+function EyePerspective(znear=0.01, zfar=1024, y_fov=pi/2.5, aspect=1.0) : Eye(znear, zfar) constructor {
 	#region PROPERTIES
 	self.fov = y_fov;
 	self.aspect = 1.0;

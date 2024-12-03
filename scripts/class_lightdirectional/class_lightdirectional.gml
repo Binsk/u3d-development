@@ -18,7 +18,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	texture_environment = undefined;
 
 	shadow_resolution = 4096;	// Texture resolution for the lighting render (larger = sharper shadows but more expensive)
-	shadow_eye = new EyeOrthographic(self, 0.01, 1024, 64, 64); // By default covers a 64x64 portion of the world
+	shadow_eye = new EyeOrthographic(0.01, 1024, 64, 64); // By default covers a 64x64 portion of the world
 	shadow_surface = -1;		// Only used to extract the depth buffer ATM (might be used for colored translucent shadows later)
 	shadowbit_surface = -1;		// Used in the deferred pass for shadow sampling
 	shadow_depth_texture = -1;	// Extracted from shadow_surface
@@ -229,5 +229,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	set_rotation(rotation);
 	signaler.add_signal("set_rotation", new Callable(self, _signal_rotation_updated));
 	shadow_eye.generate_unique_hash();
+	shadow_eye.set_camera_node(self);
 	#endregion
 }

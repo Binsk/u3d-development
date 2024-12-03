@@ -7,13 +7,12 @@
 /// instance and do not need to be managed manually unless you are designing a
 /// custom type of Camera() class.
 
-/// @param	{Node}		camera		id of the node the eye belongs to (usually a camera)
 /// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
 /// @param	{real}		zfar		furthest point to the eye that can be rendered (in world coords)
-function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
+function Eye(znear=0.01, zfar=1024) : U3DObject() constructor {
 	#region PROPERTIES
 	static ACTIVE_INSTANCE = undefined;
-	self.camera_id = camera_id;		// The camera we belong to
+	self.camera_id = undefined;		// The camera we belong to (can also be a regular node)
 	self.znear = znear;
 	self.zfar = zfar;
 
@@ -45,6 +44,29 @@ function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 		self.matrix_eye = matrix;
 		self.matrix_view = undefined;
 		self.matrix_inv_view = undefined;
+	}
+	
+	/// @desc	Sets the parent node over this eye; the eye requires a parent in order
+	///			to make a number of calculations.
+	/// @param	{Node}	node
+	function set_camera_node(node){
+		if (not is_instanceof(node, Node) and not is_undefined(node)){
+			Exception.throw_conditional("invalid type, expected [Node]!");
+			return;
+		}
+		
+		if (not is_undefined(camera_id) and not U3DObject.are_equal(node, camera_id)){
+			camera_id.signaler.remove_signal("set_rotation", new Callable(self, clear_matrices));
+			camera_id.signaler.remove_signal("set_position", new Callable(self, clear_matrices));
+		}
+		
+		camera_id = node;
+		
+		// Attach to the camera; if it moves / rotates we reset our cached matrices:
+		if (not is_undefined(camera_id)){
+			camera_id.signaler.add_signal("set_rotation", new Callable(self, clear_matrices));
+			camera_id.signaler.add_signal("set_position", new Callable(self, clear_matrices));
+		}
 	}
 	
 	/// @desc	Return the camera instance the eye belongs to.
@@ -99,6 +121,11 @@ function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 		return matrix_inv_projection;
 	}
 	
+	function clear_matrices(){
+		self.matrix_view = undefined;
+		self.matrix_inv_view = undefined;
+	}
+	
 	function apply(){
 		matrix_set(matrix_view, get_view_matrix());
 		matrix_set(matrix_projection, get_projection_matrix());
@@ -110,15 +137,5 @@ function Eye(camera_id, znear=0.01, zfar=1024) : U3DObject() constructor {
 		delete anchor;
 		anchor = undefined;
 	}
-	#endregion
-	
-	#region INIT
-	if (not is_instanceof(camera_id, Node))
-		throw new Exception("invalid type, expected [Node]!");
-	
-	// Attach to the camera; if it moves / rotates we reset our cached matrices:
-	var reset_matrix = new Callable(self, function(){self.matrix_view = undefined; self.matrix_inv_view = undefined;});
-	camera_id.signaler.add_signal("set_rotation", reset_matrix);
-	camera_id.signaler.add_signal("set_position", reset_matrix);
 	#endregion
 }

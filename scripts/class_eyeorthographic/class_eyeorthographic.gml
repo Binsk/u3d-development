@@ -1,10 +1,9 @@
 /// @desc	An orthographic eye that views the world in the shape of a box.
-/// @param	{Node}		camera		id of the node the eye belongs to (usually a camera)
 /// @param	{real}		znear		nearest point to the eye that can be rendered (in world coords)
 /// @param	{real}		zfar		furthest point to the eye that can be rendered (in world coords)
 /// @param	{real}		width		width of the box, in world units
 /// @param	{real}		height		height of the box, in world units
-function EyeOrthographic(camera_id, znear=0.01, zfar=1024, width=1024, height=1024) : Eye(camera_id, znear, zfar) constructor {
+function EyeOrthographic(znear=0.01, zfar=1024, width=1024, height=1024) : Eye(znear, zfar) constructor {
 	#region PROPERTIES
 	self.width = width;
 	self.height = height;

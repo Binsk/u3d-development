@@ -1130,7 +1130,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 			else if (camera_header[$ "type"] == "orthographic"){
 				var eye_header = camera_header[$ "orthographic"];
-				var eye = new EyeOrthographic(camera);
+				var eye = new EyeOrthographic();
+				eye.set_camera_node(camera);
 				eye.set_znear(eye_header[$ "znear"]);
 				eye.set_zfar(eye_header[$ "zfar"] ?? (eye_header[$ "znear"] + 1024));	// glTF says to specify infinity; not doing that
 				eye.set_size(
