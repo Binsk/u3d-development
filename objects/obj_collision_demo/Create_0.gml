@@ -27,29 +27,39 @@ body_floor = new Body(); // Done simply for shadow casting
 model_floor = undefined;
 
 dragged_body = undefined;	// The body that is currently being dragged by the mouse
+collidable_box = undefined;
 #endregion
 
 #region METHODS
 
 /// @desc	Handle clicking on a box
 function click_box_detect(data_array){
+	// Delete plane from the array:
 	for (var i = array_length(data_array) - 1; i >= 0; --i){
-		var collision_data = data_array[i];
-		if (collision_data.get_affected_class() != AABB)
-			continue;
-		
-		dragged_body = collision_data.get_affected_body();
-		plane_body.set_position(vec(0, 0.55, 0));
-		return;
+		if (data_array[i].get_affected_class() == Plane)
+			array_delete(data_array, i, 1);
 	}
+	
+	// Grab closest box:
+	var data = CollidableDataRay.get_shortest_ray(camera, data_array);
+	if (is_undefined(data))
+		return;
+	
+	dragged_body = data.get_affected_body();
+	plane_body.set_position(vec(0, 0.55, 0));
 }
 
 /// @desc	Handle clicking / spawning boxes:
-function mouse_collision_left(data_array){
+function mouse_collision_left(data_array, pressed=true){
 	if (array_length(data_array) > 1){	// If only 1, we hit the plane. If > 1 we are hitting other boxes
-		click_box_detect(data_array);
+		if (pressed)
+			click_box_detect(data_array);
+		
 		return;
 	}
+	
+	if (not is_undefined(dragged_body))
+		return;
 	
 	// Spawn a new box model:
 	var model = gltf_box.generate_model();
@@ -61,18 +71,35 @@ function mouse_collision_left(data_array){
 	var aabb_size = vec_sub_vec(bounds.aabb_max, bounds.aabb_min);
 	aabb_size = vec_mul_scalar(aabb_size, 0.5);
 	
-	var collidable = new AABB(aabb_size);
-	body.set_collidable(collidable);
-	collidable.set_offset(body, vec_mul_scalar(aabb_center, 0.5));
+	collidable_box ??= new AABB(aabb_size);
+	body.set_collidable(collidable_box);
+	collidable_box.set_offset(body, vec_mul_scalar(aabb_center, 0.5));
 	
 	var data = data_array[0]; // Collision data
 	// Set the body up onto the plane (Boxes are 0.5 in scale, centered, so offset up by half a box)
 	body.set_position(vec_add_vec(data.get_intersection_point(), vec(0, 0.25, 0)));
-	
-	array_push(body_array, body);
-	
-	obj_render_controller.add_body(body);
 	obj_collision_controller.add_body(body);
+
+	// Push box out of other boxes:
+	/// @note	This is NOT an effective way to do this; it should be done through the
+	///			collision system. However this is to demonstrate how to do things manually.
+	var array = obj_collision_controller.process_body(body);
+	var push = CollidableDataAABB.calculate_combined_push_vector(body, array);
+	var iterations = 4;
+	while (not vec_is_zero(push) and --iterations > 0){
+		body.set_position(push, true);
+		array = obj_collision_controller.process_body(body);
+		push = CollidableDataAABB.calculate_combined_push_vector(body, array);
+	}
+	
+	if (iterations > 0){
+		array_push(body_array, body);
+		obj_render_controller.add_body(body);
+	}
+	else{
+		body.free();
+		delete body;
+	}
 }
 
 function mouse_collision_right(data_array){
@@ -225,7 +252,12 @@ obj_collision_controller.add_signal(camera, new Callable(id, function(data_array
 	}
 	
 	if (mouse_check_button_pressed(mb_left)){
-		mouse_collision_left(data_array);
+		mouse_collision_left(data_array, true);
+		return;
+	}
+	
+	if (mouse_check_button(mb_left)){
+		mouse_collision_left(data_array, false);
 		return;
 	}
 	

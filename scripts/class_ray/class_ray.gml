@@ -151,6 +151,32 @@ function CollidableDataRay(body_a, body_b, type_b=Collidable) : CollidableData(R
 	self.body_b = body_b;
 	#endregion
 	
+	#region STATIC METHODS
+	/// @desc	Given an array of CollidableDataRay structures, returns the one with
+	///			the shortest intersection distance.
+	static get_shortest_ray = function(body, array){
+		var data_final = undefined;
+		for (var i = array_length(array) - 1; i >= 0; --i){
+			var data = array[i];
+			if (not is_instanceof(data, CollidableDataRay))
+				continue;
+			
+			if (not U3DObject.are_equal(body, data.get_colliding_body()))
+				continue;
+			
+			if (is_undefined(data_final)){
+				data_final = data;
+				continue;
+			}
+			
+			if (data.get_intersection_distance() < data_final.get_intersection_distance())
+				data_final = data;
+		}
+		
+		return data_final;
+	}
+	#endregion
+	
 	#region METHODS
 	/// @desc	Returns the exact point of intersection.
 	function get_intersection_point(){

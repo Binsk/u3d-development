@@ -109,6 +109,63 @@ function remove_signal(body, callable){
 	body.signaler.remove_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
 }
 
+/// @desc	Scans a single body against collisions. Direct use should generally be
+///			avoided as it discards any potential optimizations but this provides immediate 
+///			results if needed. The body must be inside the collision system.
+/// @param		{Body}	body		body with collision data to scan with
+/// @param		{array}	scan_array	array of PartitionData to check against (if none supplied, auto-calculates)
+/// @returns	{array}		array of CollisionData detected
+function process_body(body, scan_array=undefined){
+	if (not is_instanceof(body, Body)){
+		Exception.throw_conditional("invalid type, expected [Body]");
+		return [];
+	}
+	
+	// Make sure the body is valid and inside the collision system:
+	if (not U3DObject.get_is_valid_object(body) or is_undefined(body_map[$ body.get_index()]))
+		return [];
+	
+	if (is_undefined(body.get_collidable())) // No collidable 
+		return [];
+	
+	if (is_undefined(scan_array))
+		scan_array = partition_system.scan_collisions(body.get_data($"collision.world.{id}"));
+	
+	body.get_collidable().transform(body); // Update body (automatically skips if already up-to-date)
+	var data_array = [];
+
+	for (var j = array_length(scan_array) - 1; j >= 0; --j){
+		var body2 = scan_array[j].get_data();
+		if (not is_instanceof(body2, Body))
+			continue;
+			
+		if (U3DObject.are_equal(body, body2)) // Same body, skip
+			continue;
+		
+		if (is_undefined(body2.get_collidable())) // Scanned body had collidable instance removed
+			continue;
+		
+		if (body.collidable_scan_bits & body2.collidable_mask_bits == 0) // No common layers
+			continue;
+		
+		debug_scan_count++;
+		
+		body2.get_collidable().transform(body2);
+		var data = Collidable.calculate_collision(body.get_collidable(), body2.get_collidable(), body, body2);
+		if (is_undefined(data)){ // No collision
+			if (debug_collision_highlights)
+				body2.set_data("collision.debug_highlight", max(1, body2.get_data("collision.debug_highlight", 1)));
+				
+			continue;
+		}
+			
+		// Collision; store data
+		array_push(data_array, data);
+	}
+	
+	return data_array;
+}
+
 /// @desc	Calculates all collisions for bodies that have been updated.
 function process(){
 	/// @stub	optimize forming the body array
@@ -126,45 +183,7 @@ function process(){
 	var scan_array;
 	for (var i = array_length(instance_array) - 1; i >= 0; --i){
 		var body = instance_array[i];
-		scan_array = partition_system.scan_collisions(body.get_data($"collision.world.{id}"));
-			// Check if the body was removed after the update trigger
-		if (not U3DObject.get_is_valid_object(body) or is_undefined(body_map[$ body.get_index()]))
-			continue;
-		
-		if (is_undefined(body.get_collidable())) // No collidable 
-			continue;
-		
-		body.get_collidable().transform(body); // Update body (automatically skips if already up-to-date)
-		var data_array = [];
-
-		for (var j = array_length(scan_array) - 1; j >= 0; --j){
-			var body2 = scan_array[j].get_data();
-			if (not is_instanceof(body2, Body))
-				continue;
-				
-			if (U3DObject.are_equal(body, body2)) // Same body, skip
-				continue;
-			
-			if (is_undefined(body2.get_collidable())) // Scanned body had collidable instance removed
-				continue;
-			
-			if (body.collidable_scan_bits & body2.collidable_mask_bits == 0) // No common layers
-				continue;
-			
-			debug_scan_count++;
-			
-			body2.get_collidable().transform(body2);
-			var data = Collidable.calculate_collision(body.get_collidable(), body2.get_collidable(), body, body2);
-			if (is_undefined(data)){ // No collision
-				if (debug_collision_highlights)
-					body2.set_data("collision.debug_highlight", max(1, body2.get_data("collision.debug_highlight", 1)));
-					
-				continue;
-			}
-				
-			// Collision; store data
-			array_push(data_array, data);
-		}
+		var data_array = process_body(body);
 		
 		if (array_length(data_array) > 0){ // If there were collisions then we signal them out
 			signaler.signal($"collision_{body.get_index()}", [data_array]);

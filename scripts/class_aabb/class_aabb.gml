@@ -188,6 +188,27 @@ function CollidableDataAABB(body_a, body_b, type_b=Collidable) : CollidableData(
 	self.body_b = body_b;
 	#endregion
 	
+	#region STATIC METHODS
+	/// @desc	Given an array of CollidableDataAABB instances, combines all the
+	///			push vectors applied to the specified body and returns the result.
+	static calculate_combined_push_vector = function(body, array){
+		var vector = vec();
+		for (var i = array_length(array) - 1; i >= 0; --i){
+			var data = array[i];
+			if (not is_instanceof(data, CollidableDataAABB))
+				continue;
+			
+			if (U3DObject.are_equal(body, data.get_colliding_body()))
+				vector = vec_add_vec(vector, data.get_push_vector());
+				
+			if (U3DObject.are_equal(body, data.get_affected_body()))
+				vector = vec_sub_vec(vector, data.get_push_vector());
+		}
+		
+		return vector;
+	}
+	#endregion
+	
 	#region METHODS
 	/// @desc	Returns the push vector required to push body_b out
 	///			of body_a on the shortest side.

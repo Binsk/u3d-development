@@ -38,7 +38,26 @@ if (not is_undefined(dragged_body)){
 		var pos = dragged_body.get_position();
 		pos.y = 0.25;
 		dragged_body.set_position(pos);
-		dragged_body = undefined;
+		
+		// Push box out of other boxes:
+		/// @note	This is NOT an effective way to do this; it should be done through the
+		///			collision system. However this is to demonstrate how to do things manually.
+		var array = obj_collision_controller.process_body(dragged_body);
+		var push = CollidableDataAABB.calculate_combined_push_vector(dragged_body, array);
+		var iterations = 4;
+		while (not vec_is_zero(push) and --iterations > 0){
+			dragged_body.set_position(push, true);
+			array = obj_collision_controller.process_body(dragged_body);
+			push = CollidableDataAABB.calculate_combined_push_vector(dragged_body, array);
+		}
+		
+		if (iterations > 0) 
+			dragged_body = undefined;
+		else {
+			dragged_body.free();
+			delete dragged_body;
+			dragged_body = undefined;
+		}
 		plane_body.set_position(vec());
 	}
 }

@@ -1,4 +1,7 @@
 for (var i = array_length(body_array) - 1; i >= 0; --i){
+	if (not U3DObject.get_is_valid_object(body_array[i]))
+		continue;
+		
 	body_array[i].free();
 	delete body_array[i];
 }
