@@ -455,7 +455,9 @@ function Camera() : Body() constructor {
 				if (not light_array[i].casts_shadows) // Light must have shadows enabled
 					continue;
 				
+				Light.ACTIVE_INSTANCE = light_array[i];
 				light_array[i].render_shadows(eye, body_array);
+				Light.ACTIVE_INSTANCE = undefined;
 			}
 		}
 		
@@ -468,10 +470,11 @@ function Camera() : Body() constructor {
 			if (light.get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
 				continue;
 			
-			if (is_undefined(light.get_shader())) // Invalid light
+			if (is_undefined(light.get_light_shader())) // Invalid light
 				continue;
 
-			shader_set(light.get_shader());
+			Light.ACTIVE_INSTANCE = light;
+			shader_set(light.get_light_shader());
 			gpu_set_blendmode_ext(bm_one, bm_zero);
 			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]); // Repurposed to avoid needing an extra buffer
 			draw_clear_alpha(0, 0);
@@ -493,6 +496,7 @@ function Camera() : Body() constructor {
 				surface_reset_target();
 			}
 			gpu_set_blendmode(bm_normal);
+			Light.ACTIVE_INSTANCE = undefined;
 		}
 		
 		if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)){

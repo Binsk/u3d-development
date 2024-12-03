@@ -11,7 +11,6 @@
 ///			it does become necessary for casting shadows and instance 'culling'.
 function LightDirectional(rotation=quat(), position=vec()) : Light() constructor {
 	#region PROPERTIES
-	shader_lighting = shd_lighting_directional;
 	light_normal = vec_normalize(quat_rotate_vec(rotation, vec(1, 0, 0)));
 	light_color = c_white;
 	light_intensity = 1.0;
@@ -68,6 +67,18 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		return shadow_eye;
 	}
 	
+	// @desc	Returns the shader index that this light type uses.
+	function get_light_shader(){
+		return shd_lighting_directional;
+	}
+	
+	function get_shadow_shader(vformat){
+		if (vformat.get_has_data(VERTEX_DATA.bone_indices))
+			return shd_light_depth;
+		
+		return shd_light_depth_noskeleton;
+	}
+	
 	function apply_gbuffer(){
 		var camera_id = Camera.ACTIVE_INSTANCE;
 		var is_translucent = Camera.get_is_translucent_stage();
@@ -103,7 +114,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		var mw = matrix_get(matrix_world);
 		draw_clear(c_white);
 		
-		shader_set(shd_light_depth);
 		shadow_eye.apply(); // Apply matrices
 		shadow_viewprojection_matrix = matrix_multiply(matrix_get(matrix_view), matrix_get(matrix_projection));
 		
@@ -120,9 +130,6 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			var data = {
 				skeleton : U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos,
 				skeleton_bone_count : U3D_MAXIMUM_BONES * 2, // Only defines that we are using quatvec pairs
-/// @stub	Think of a better way of handling this situation
-				shd_full : shd_light_depth,
-				shd_noskeleton : shd_light_depth_noskeleton
 			}
 			
 			if (not is_undefined(body.animation_instance)){
@@ -132,6 +139,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 			
 			body.model_instance.render_shadows(data);
 		}
+		
 		if (shader_current() >= 0)
 			shader_reset();
 

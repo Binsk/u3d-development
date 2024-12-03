@@ -123,11 +123,13 @@ camera.set_collidable(camera_ray);
 var ax = display_get_gui_width() - 12 - 256;
 var ay = display_get_gui_height() - 12 - 44;
 var inst;
-inst = instance_create_depth(ax, ay, 0, obj_button);
-inst.text = "Exit";
-inst.signaler.add_signal("pressed", new Callable(id, game_end));
+if (not U3D.OS.is_compatability){
+	inst = instance_create_depth(ax, ay, 0, obj_button);
+	inst.text = "Exit";
+	inst.signaler.add_signal("pressed", new Callable(id, game_end));
+	ay -= 44;
+}
 
-ay -= 44;
 inst = instance_create_depth(ax, ay, 0, obj_button);
 inst.text = "Render Test";
 inst.text_tooltip = "Switch to a scene focused on testing rendering.";

@@ -149,13 +149,8 @@ function Mesh() : U3DObject() constructor {
 			
 			if (not material.get_casts_shadows())
 				continue;
-				
-			// Determine shadow shader:
-/// @stub	Think of a better way of handling this
-			var shd = (data[$ "shd_full"] ?? shader_current());
-			if (not get_primitive_data(i).primitive.vformat.get_has_data(VERTEX_DATA.bone_indices))
-				shd = (data[$ "shd_noskeleton"] ?? shader_current());
-			
+
+			var shd = Light.ACTIVE_INSTANCE.get_shadow_shader(get_primitive_data(i).primitive.vformat);
 			if (shader_current() != shd)
 				shader_set(shd);
 				

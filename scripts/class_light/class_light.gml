@@ -2,7 +2,7 @@
 /// A generic light class that all light types inherit from.
 function Light() : Node() constructor {
 	#region PROPERTIES
-	shader_lighting = undefined;
+	static ACTIVE_INSTANCE = undefined;	// The currently rendering light
 	casts_shadows = false;
 	#endregion
 	
@@ -14,8 +14,12 @@ function Light() : Node() constructor {
 	}
 	
 	/// @desc	Returns the shader index that this light type uses.
-	function get_shader(){
-		return shader_lighting;
+	function get_light_shader(){
+		return undefined;
+	}
+	
+	function get_shadow_shader(){
+		return undefined;
 	}
 	
 	/// @desc	An optional pass that occurs before the lighting is applied but

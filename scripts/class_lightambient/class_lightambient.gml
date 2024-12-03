@@ -3,8 +3,6 @@
 /// lighting to everything in the scene equally.
 function LightAmbient() : Light() constructor {
 	#region PROPERTIES
-	shader_lighting = shd_lighting_ambient;
-	shader_ssao = shd_ssao;
 	surface_ssao = -1;
 	light_color = c_white;
 	light_intensity = 1.0;		// Intensity of the ambient lighting
@@ -80,6 +78,14 @@ function LightAmbient() : Light() constructor {
 		self.light_intensity = max(0, intensity);
 	}
 	
+	function get_light_shader(){
+		return shd_lighting_ambient;
+	}
+	
+	function get_shadow_shader(){
+		return shd_ssao;
+	}
+	
 	function render_shadows(eye_id=undefined, body_array=[]){
 		if (ssao_strength <= 0)
 			return;
@@ -93,7 +99,7 @@ function LightAmbient() : Light() constructor {
 			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
 		
 		// Render SSAO intensity:
-		shader_set(shader_ssao);
+		shader_set(get_shadow_shader());
 		surface_set_target(surface_ssao);
 		
 		sampler_set("u_sDepth", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth]);
