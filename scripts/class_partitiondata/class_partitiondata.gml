@@ -11,8 +11,7 @@ function PartitionData(data) constructor {
 	
 	self.index = INDEX_COUNTER++;
 	self.data = data;
-	self.position = vec();
-	self.extends = vec();
+	self.aabb = aabb();
 	#endregion
 	
 	#region METHODS
@@ -40,14 +39,21 @@ function PartitionData(data) constructor {
 		// Attempt to auto-calculate position and extends, based on the data
 		if (is_instanceof(data, Body)){
 			// If no collision instance, we have no size so just use position directly
-			if (is_undefined(data.get_collidable()))
-				self.position = vec_duplicate(data.position);
+			if (is_undefined(data.get_collidable())){
+				self.aabb.position = vec_duplicate(data.position);
+				self.aabb.extends = vec();
+			}
 			else {
-/// @stub	Account for collision shape, offset, scale, etc.
+				var position = vec_add_vec(data.get_data("collision.offset", vec()), data.position);
+				var extends = data.get_data(["collision", "extends"], vec());
+				self.aabb.position = position;
+				self.aabb.extends = extends;
 			}
 		}
-		else if (is_vec(data))
-			self.position = vec_duplicate(data);
+		else if (is_vec(data)){
+			self.aabb.position = vec_duplicate(data);
+			self.aabb.extends = vec();
+		}
 
 /// @stub Make this update the partitioning system so it can adjust for the new size / position
 	}

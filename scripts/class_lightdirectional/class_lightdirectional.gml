@@ -24,7 +24,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shadow_depth_texture = -1;	// Extracted from shadow_surface
 	shadow_bias = 0.0001;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
 	shadow_sample_bias = 0.0001;// Depth-sampling bias (larger causes shadow halos while smaller can cause acne & lack of smoothing; balance w/ view distanec)
-	shadow_sample_radius = 3;	// How wide to sample away from shadow to smooth edges (higher = smoother but more costly)
+	shadow_sample_radius = 3;	// How wide to sample away from shadow to smooth edges (higher = smoother but more costly) NOT available in compatability mode
 	shadow_viewprojection_matrix = matrix_build_identity();	// Will calculate if shadows are enabled
 	#endregion
 	

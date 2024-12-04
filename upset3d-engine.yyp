@@ -160,6 +160,7 @@
     {"id":{"name":"class_u3dobject","path":"scripts/class_u3dobject/class_u3dobject.yy",},},
     {"id":{"name":"class_unsorted","path":"scripts/class_unsorted/class_unsorted.yy",},},
     {"id":{"name":"class_vertexformat","path":"scripts/class_vertexformat/class_vertexformat.yy",},},
+    {"id":{"name":"scr_aabb","path":"scripts/scr_aabb/scr_aabb.yy",},},
     {"id":{"name":"scr_array","path":"scripts/scr_array/scr_array.yy",},},
     {"id":{"name":"scr_buffer","path":"scripts/scr_buffer/scr_buffer.yy",},},
     {"id":{"name":"scr_debug","path":"scripts/scr_debug/scr_debug.yy",},},

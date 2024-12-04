@@ -28,7 +28,11 @@ float calculate_dither(float fShadow, vec2 vUV){
 /// @todo   Add following sample method for much better edges
 // https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-17-efficient-soft-edged-shadows-using
 float calculate_shadow(){
+	#ifdef _YY_GLSLES_
+	const int iRadius = 3;
+	#else
 	int iRadius = u_iSampleRadius;
+	#endif
     float fShadow = 0.0;
     float fDepth = texture2D(u_sDepth, v_vTexcoord).r;
     int iCount = 0;
