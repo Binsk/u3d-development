@@ -66,7 +66,7 @@ function remove_body(body){
 	body.signaler.remove_signal("set_rotation", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	body.signaler.remove_signal("set_scale", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	
-	partition_system.remove_data(body.get_data(["collision.world", real(id)]));
+	partition_system.remove_data(body.get_data($"collision.world.{id}"));
 	body.set_data($"collision.world.{id}", undefined);
 	
 	return true;

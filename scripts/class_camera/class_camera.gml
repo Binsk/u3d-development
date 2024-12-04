@@ -52,10 +52,11 @@ enum CAMERA_TONEMAP {
 enum CAMERA_DEBUG_FLAG {
 	render_wireframe			=	0b1,		// If used, models should be generated with Primitive.GENERATE_WIREFRAMES=true for an accurate wireframe
 	render_collisions			=	0b10,		// Renders collision shapes as wireframe
-	render_normals				=	0b100,		// Renders normals instead of the final output
-	render_pbr					=	0b1000,		// Renders PBR data instead of final output
-	render_depth				=	0b10000,	// Renders the depth buffer
-	render_albedo				=	0b100000,	// Renders albedo buffer; note it's WIPED for each pass!
+	render_partitions			=	0b100,		// Renders collidable partition systems
+	render_normals				=	0b1000,		// Renders normals instead of the final output
+	render_pbr					=	0b10000,	// Renders PBR data instead of final output
+	render_depth				=	0b100000,	// Renders the depth buffer
+	render_albedo				=	0b1000000,	// Renders albedo buffer; note it's WIPED for each pass!
 }
 
 /// @desc	Bitwiseable flags to enable / disable specific rendering pipeline features for the specific camara
@@ -586,6 +587,7 @@ function Camera() : Body() constructor {
 			sampler_set("u_sDepth", gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 			uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(gbuffer.textures[$ CAMERA_GBUFFER.depth]), texture_get_texel_height(gbuffer.textures[$ CAMERA_GBUFFER.depth])])
 			
+			// Individual collision bodies:
 			for (var i = array_length(body_array) - 1; i >= 0; --i){
 				var body = body_array[i];
 				var collidable = body.get_collidable();
@@ -594,6 +596,30 @@ function Camera() : Body() constructor {
 				
 				collidable.render_debug(body);
 			}
+
+			shader_reset();
+			surface_reset_target();
+			
+			gpu_set_blendmode(bm_normal);
+			matrix_set(matrix_world, matrix_model);
+			draw_set_color(c_white);
+			draw_set_alpha(1);
+		}
+		
+		if (debug_flags & CAMERA_DEBUG_FLAG.render_partitions == CAMERA_DEBUG_FLAG.render_partitions and instance_exists(obj_collision_controller)){
+			var matrix_model = matrix_get(matrix_world);
+			gpu_set_blendmode_ext(bm_one, bm_zero);
+			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.final]);
+			
+			eye.apply();
+			
+			shader_set(shd_debug_lines);
+			sampler_set("u_sDepth", gbuffer.textures[$ CAMERA_GBUFFER.depth]);
+			uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(gbuffer.textures[$ CAMERA_GBUFFER.depth]), texture_get_texel_height(gbuffer.textures[$ CAMERA_GBUFFER.depth])])
+			
+			// Partition systems:
+			with (obj_collision_controller)
+				partition_system.render_debug()
 
 			shader_reset();
 			surface_reset_target();

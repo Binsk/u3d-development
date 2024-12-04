@@ -138,6 +138,7 @@ instance_create_depth(0, 0, 0, obj_render_controller);
 instance_create_depth(0, 0, 0, obj_collision_controller);
 instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has set text
 obj_collision_controller.enable_collision_highlights(true);	// Highlight collision shapes yellow when a collision is detected
+obj_collision_controller.partition_system = new BVH(8, 4);	/// @stub	Implement proper way to switch partitioning systems
 MaterialSpatial.DEFAULT_DITHER_TEXTURE = U3D.RENDERING.TEXTURE.dither_blue;
 
 // RENDERING
@@ -227,6 +228,17 @@ inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
 }));
 
 ay -= 36;
+
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.is_checked = false;
+inst.text = "Render Partitioning";
+inst.text_tooltip = "Render collision partitioning system nodes.\n\nColor-code:\nCyan: Leaf Node\nBlue: Parent Node\n\nFor this demo, leaf nodes can contain 4 collision bodies.";
+inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
+	camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_partitions, is_checked);
+}));
+
+ay -= 36;
+
 inst = instance_create_depth(ax, ay, 0, obj_checkbox);
 inst.is_checked = true;
 inst.text = "Render Shadows";

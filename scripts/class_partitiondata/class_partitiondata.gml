@@ -7,24 +7,36 @@
 function PartitionData(data) constructor {
 	#region PROPERTIES
 	static INDEX_COUNTER = 0;
-	static TYPE_METHODS = {};
 	
 	self.index = INDEX_COUNTER++;
 	self.data = data;
 	self.aabb = aabb();
+	self.parent = undefined;	// The partition node we are inside of 
 	#endregion
 	
 	#region METHODS
 	/// @desc	Manually sets the position in 3D space; this will override any
 	///			auto-calculated values.
 	function set_position(position=vec()){
-		self.position = position;
+		self.aabb.position = position;
 	}
 	
 	/// @desc	Manually sets the extends in 3D space; this will override any
 	///			auto-calculated values.
 	function set_extends(extends=vec()){
-		self.extends = extends;
+		self.aabb.extends = extends;
+	}
+	
+	function set_parent(node){
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return;
+		}
+		
+		if (not is_undefined(parent))
+			parent.remove_data(self);
+		
+		parent = node;
 	}
 	
 	function get_index(){
@@ -44,6 +56,7 @@ function PartitionData(data) constructor {
 				self.aabb.extends = vec();
 			}
 			else {
+				data.get_collidable().transform(data);
 				var position = vec_add_vec(data.get_data("collision.offset", vec()), data.position);
 				var extends = data.get_data(["collision", "extends"], vec());
 				self.aabb.position = position;
@@ -55,7 +68,12 @@ function PartitionData(data) constructor {
 			self.aabb.extends = vec();
 		}
 
-/// @stub Make this update the partitioning system so it can adjust for the new size / position
+		if (not is_undefined(parent)){
+			var partition = parent.partition;
+/// @stub	Slow; a temporary measure until proper adjusting is added
+			partition.remove_data(self);
+			partition.add_data(self)
+		}
 	}
 	
 	function _detach_signals(){

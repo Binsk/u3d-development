@@ -10,6 +10,7 @@
 
 function Partition() : U3DObject() constructor {
 	#region PROPERTIES
+	super = new Super(self);
 	#endregion
 	
 	#region METHODS
@@ -43,6 +44,8 @@ function Partition() : U3DObject() constructor {
 	function scan_collisions(data){
 		return [];
 	}
+	
+	function render_debug(){};
 	#endregion
 	
 	#region INIT

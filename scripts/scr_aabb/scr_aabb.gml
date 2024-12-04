@@ -31,6 +31,13 @@ function is_aabb(value){
 	return true;
 }
 
+function aabb_duplicate(_aabb){
+	return {
+		position : vec_duplicate(_aabb.position),
+		extends : vec_duplicate(_aabb.extends)
+	}
+}
+
 /// @desc	Returns if the two AABB shapes overlap. Does NOT check for AABB
 ///			validity for speed reasons.
 /// @param	{aabb}	aabb_a
@@ -93,4 +100,32 @@ function aabb_contains_point(aabb_a, point){
 		return false;
 	
 	return true;
+}
+
+/// @desc	Returns the surface area of the specified aabb
+function aabb_get_surface_area(_aabb){
+	if (not is_aabb(_aabb)){
+		Exception.throw_conditional("invalid type, expected [aabb]!");
+		return 0;
+	}
+	
+	var dx = _aabb.extends.x * 2;
+	var dy = _aabb.extends.y * 2;
+	var dz = _aabb.extends.z * 2;
+	var sa = 0;
+	
+	sa += dx * dy; // +Z
+	sa += dz * dy; // +X
+	sa += dx * dz; // +Y
+	
+	return sa * 2.0;	// *2 to account for both sides
+}
+
+/// @desc	Takes two AABB structures and returns a new one that contains them both.
+function aabb_add_aabb(aabb_a, aabb_b){
+	var min_vec = vec_min(vec_sub_vec(aabb_a.position, aabb_a.extends), vec_sub_vec(aabb_b.position, aabb_b.extends));
+	var max_vec = vec_max(vec_add_vec(aabb_a.position, aabb_a.extends), vec_add_vec(aabb_b.position, aabb_b.extends));
+	var origin = vec_lerp(min_vec, max_vec, 0.5);
+	var extends = vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5);
+	return aabb(origin, extends);
 }
