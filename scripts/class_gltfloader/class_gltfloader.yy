@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"class_gltfloader",
   "parent":{
-    "name":"Data",
-    "path":"folders/Upset 3D/Classes/System/Data.yy",
+    "name":"GLTF",
+    "path":"folders/Upset 3D/Classes/External/GLTF.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

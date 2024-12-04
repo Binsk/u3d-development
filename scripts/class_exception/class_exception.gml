@@ -27,9 +27,9 @@ function Exception(message=undefined, index=0) constructor {
 	#region STATIC METHODS
 	/// @desc	Performs the same as `throw new Exception(message, index)`, except
 	///			it regards the SILENT_THROW setting.
-	static throw_conditional = function(message, index=0){
-		var exception = new Exception(message, index);
-		exception._update_message(2); // Pop throw_conditional() off of the stack trace for cleaner reporting
+	static throw_conditional = function(message, index=0, class=Exception, pop_value=0){
+		var exception = new class(message, index);
+		exception._update_message(2 + pop_value); // Pop throw_conditional() off of the stack trace for cleaner reporting
 		
 		// Print out to console:
 		var marker = "";

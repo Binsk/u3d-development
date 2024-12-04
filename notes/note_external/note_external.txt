@@ -1,0 +1,5 @@
+# External
+## About
+
+External classes deal with processing and/or data outside the direct
+scope of the game. This includes any external libraries and file importing.

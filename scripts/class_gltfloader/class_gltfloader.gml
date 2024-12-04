@@ -172,7 +172,7 @@ function GLTFLoader() : U3DObject() constructor {
 			directory += "/";
 		
 		if (not file_exists(directory + name)){
-			Exception.throw_conditional(string_ext("file does not exist [{0}{1}]!", [directory, name]));
+			ExceptionGLTF.throw_conditional(string_ext("file does not exist [{0}{1}]!", [directory, name]), EXCEPTION_GLTF.missing_file);
 			return false;
 		}
 		
@@ -196,7 +196,7 @@ function GLTFLoader() : U3DObject() constructor {
 				// Calculate relative path to primary file
 				var path = directory + buffer_json.uri;
 				if (not file_exists(path))
-					throw new Exception(string_ext("missing buffer [{0}]", [path]));
+					throw new ExceptionGLTF(string_ext("missing buffer [{0}]", [path]), EXCEPTION_GLTF.missing_file);
 				
 				var buffer = buffer_load(path);
 				array_push(binary_buffer_array, buffer);
@@ -226,11 +226,11 @@ function GLTFLoader() : U3DObject() constructor {
 			var json_string = buffer_read(buffer, buffer_text);
 			var json = json_parse(json_string);
 			if (is_undefined(json[$ "asset"]))
-				throw new Exception("invalid gltf file!");
+				throw new ExceptionGLTF("invalid gltf file!", EXCEPTION_GLTF.invalid_file);
 			
 			gltf_version = real(json.asset[$ "version"] ?? 0);
 			if (gltf_version != 2)
-				throw new Exception(string_ext("unsupported glTF version[{0}]", [gltf_version]));
+				throw new ExceptionGLTF(string_ext("unsupported glTF version[{0}]", [gltf_version]), EXCEPTION_GLTF.invalid_file);
 			
 			buffer_delete(buffer);
 			buffer = undefined;
@@ -251,7 +251,7 @@ function GLTFLoader() : U3DObject() constructor {
 			var required_extensions = get_extensions_required();
 			for (var i = array_length(required_extensions) - 1; i >= 0; --i){
 				if (not get_is_extension_implemented(required_extensions[i]))
-					throw new Exception($"model uses unsupported extension, [{required_extensions[i]}]");
+					throw new ExceptionGLTF($"model uses unsupported extension, [{required_extensions[i]}]", EXCEPTION_GLTF.unsupported_feature);
 			}
 				
 			return success;
@@ -262,7 +262,7 @@ function GLTFLoader() : U3DObject() constructor {
 		// At this point, we know the system is binary so treat it as such
 		gltf_version = buffer_read(buffer, buffer_u32);
 		if (gltf_version != 2)
-			throw new Exception(string_ext("unsupported glTF version[{0}]", [gltf_version]));	
+			throw new ExceptionGLTF(string_ext("unsupported glTF version[{0}]", [gltf_version]), EXCEPTION_GLTF.invalid_file);	
 			
 		var data_length = buffer_read(buffer, buffer_u32); // Data left in the file; excluding the header
 		var json = {};
@@ -313,7 +313,7 @@ function GLTFLoader() : U3DObject() constructor {
 		var required_extensions = get_extensions_required();
 		for (var i = array_length(required_extensions) - 1; i >= 0; --i){
 			if (not get_is_extension_implemented(required_extensions[i]))
-				throw new Exception($"model uses unsupported extension, [{required_extensions[i]}]");
+				throw new ExceptionGLTF($"model uses unsupported extension, [{required_extensions[i]}]", EXCEPTION_GLTF.unsupported_feature);
 		}
 			
 		return success;
@@ -333,7 +333,7 @@ function GLTFLoader() : U3DObject() constructor {
 		for (var i = array_length(keys) - 1; i >= 0; --i){
 			if (not get_is_extension_implemented(keys[i])){
 				if (not get_is_extension_ignoreable(keys[i]))
-					throw new Exception($"model uses unsupported extension, [{keys[i]}]");
+					throw new ExceptionGLTF($"model uses unsupported extension, [{keys[i]}]", EXCEPTION_GLTF.unsupported_feature);
 				else
 					print_traced("WARNING", $"ignoring unsupported glTF extension [{keys[i]}]");
 			}
@@ -353,18 +353,18 @@ function GLTFLoader() : U3DObject() constructor {
 		// External image file:
 		if (not is_undefined(image[$ "uri"])){
 			if (not file_exists(load_directory + image.uri))
-				throw new Exception(string_ext("file not found [{0}]", [load_directory + image.uri]));
+				throw new ExceptionGLTF(string_ext("file not found [{0}]", [load_directory + image.uri]), EXCEPTION_GLTF.missing_file);
 			
 			sprite = sprite_add(load_directory + image.uri, 1, false, false, 0, 0);
 		}
 		// Included buffer data:
 		else{
 			if (string_lower(image.mimeType) != "image/png" and string_lower(image.mimeType) != "image/jpeg")
-				throw new Exception(string_ext("unsupported mime type [{0}]", [image.mimeType]));
+				throw new ExceptionGLTF(string_ext("unsupported mime type [{0}]", [image.mimeType]), EXCEPTION_GLTF.unsupported_feature);
 			
 			var buffer = read_buffer_view(image.bufferView);
 			if (is_undefined(buffer))
-				throw new Exception("invalid image bufferView!");
+				throw new ExceptionGLTF("invalid image bufferView!", EXCEPTION_GLTF.invalid_file);
 			
 			// We can't read PNG/JPG straight from the buffer unless we have our own parser; and
 			// that isn't worth writing. Re-save to disk as image file and load that in through
@@ -417,7 +417,7 @@ function GLTFLoader() : U3DObject() constructor {
 		if (is_undefined(accessor[$ "bufferView"])){
 /// @todo	Implement sparse accessors
 			if (not is_undefined(accessor[$ "sparse"]))
-				throw new Exception("sparse accessors are not currently supported!");
+				throw new ExceptionGLTF("sparse accessors are not currently supported!", EXCEPTION_GLTF.unsupported_feature);
 				
 			// Per the spec, fill components w/ zeros
 			data = array_create(element_count * element_size, 0);
@@ -425,7 +425,7 @@ function GLTFLoader() : U3DObject() constructor {
 		else {
 			var buffer = read_buffer_view(accessor.bufferView);
 			if (is_undefined(buffer)) // Invalid buffer
-				throw new Exception("accessor accessing invalid bufferView!");
+				throw new ExceptionGLTF("accessor accessing invalid bufferView!", EXCEPTION_GLTF.invalid_file);
 			
 			buffer_seek(buffer, buffer_seek_start, accessor[$ "byteOffset"] ?? 0);
 			data = buffer_read_series(buffer, data_type, element_count * element_size);
@@ -489,6 +489,47 @@ function GLTFLoader() : U3DObject() constructor {
 		
 		if (not ignore_super)
 			super.execute("free");
+	}
+	#endregion
+}
+
+// Define special exception data and info for loading glTF files:
+enum EXCEPTION_GLTF {
+	unknown,				// Unrecognized / unclassified exception
+	invalid_arg,			// Invalid argument was passed
+	invalid_file,			// Improperly formatted model file
+	missing_file,			// File doesn't exist
+	unsupported_feature,	// Model file has unsupported features that cannot be ignored
+}
+
+function ExceptionGLTF(message=undefined, index=EXCEPTION_GLTF.unknown) : Exception(message, index) constructor {
+	#region PROPERTIES
+	self.message = "[glTF] " + string(message);
+	path = "";
+	#endregion
+	
+	#region STATIC METHODS
+	static throw_conditional = function(message, index=0){
+		Exception.throw_conditional(message, index, ExceptionGLTF, 1);
+	}
+	#endregion
+	
+	#region METHODS
+	/// @desc	Return the file path that was being loaded when the exception occurred.
+	function get_file(){
+		return path;
+	}
+	#endregion
+	
+	#region INIT
+	_update_message(2);
+	
+	if (is_instanceof(other, GLTFLoader)){
+		var directory = other.load_directory;
+		if (not string_ends_with(directory, "/") and not string_ends_with(directory, "\\") and directory != "")
+			directory += "/";
+			
+		path = directory + (other[$ "name"] ?? "");
 	}
 	#endregion
 }

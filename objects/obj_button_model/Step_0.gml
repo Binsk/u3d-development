@@ -13,7 +13,7 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 		// not supported by the U3D implementation.
 		catch(e){
 			if (is_instanceof(e, Exception)) // It was a U3D error, print it cleanly on the screen
-				obj_render_demo.push_error($"(glTF) {e.get_message()}");
+				obj_render_demo.push_error(e.get_message());
 			else
 				show_error(e, true); // If an unexpected error, let GameMaker throw a normal error
 			

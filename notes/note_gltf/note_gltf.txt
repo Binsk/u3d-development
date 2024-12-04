@@ -1,0 +1,34 @@
+# GLTF
+## About
+
+glTF is widely-used open source 3D file format that can handle a vast swath
+of 3D information. Most, if not all, mainstream 3D modeling software should
+be able to export in the glTF file format.
+
+The following glTF classes here handle importing and parsing glTF files as
+well as converting the data into in-game instances. The `GLTFLoader` handles
+the actual file importing and buffer parsing; it should not generally be
+used directly. The `GLTFBuilder` extends the `GLTFLoader` class and handles
+converting the file data into in-game instances. You will need a new
+`GLTFBuilder` instance per model file you wish to load.
+
+## Spec Support
+
+The importer does *not* support every aspect of the glTF spec, but it aims
+to cover all common use cases. Some cases are simply because they are not
+applicable / supported by this renderer while other cases just haven't yet
+been added but are on the docket to add.
+
+When loading a model that is incompatible with the builder it will throw an
+`ExceptionGLTF` which can be caught and handled appropriately.
+
+## Extension Support
+
+To check the current state of supported glTF extensions, check the header 
+of the `GLTFLoader` class as well as the child function `get_is_extension_implemented()`
+for planned extension support / reasoning. Extension support is slowly being added and 
+there are some extensions that can be ignored and some that prevent loading
+a model file.
+
+If an extension is preventing your model from loading you will need to re-export
+the model without that extension enabled.

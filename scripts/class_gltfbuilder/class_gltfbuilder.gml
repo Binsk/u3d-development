@@ -206,7 +206,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var sprite;
 			if (not is_undefined(data[$ "uri"])){ // External file, load normally
 				if (not file_exists(load_directory + data.uri)){
-					Exception.throw_conditional(string_ext("failed to find image [{0}].", [load_directory + data.uri]));
+					ExceptionGLTF.throw_conditional(string_ext("failed to find image [{0}].", [load_directory + data.uri]), EXCEPTION_GLTF.missing_file);
 					continue;
 				}
 				
@@ -235,13 +235,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 
 			// Data buffer, must write to disk to re-load as PNG/JPG
 			if (string_lower(data.mimeType) != "image/png" and string_lower(data.mimeType) != "image/jpeg"){
-				Exception.throw_conditional(string_ext("unsupported mime type [{0}].", [data.mimeType]));
+				ExceptionGLTF.throw_conditional(string_ext("unsupported mime type [{0}].", [data.mimeType]), EXCEPTION_GLTF.unsupported_feature);
 				continue;
 			}
 
 			var buffer = read_buffer_view(data.bufferView);
 			if (is_undefined(buffer)){
-				Exception.throw_conditional(string_ext("failed to read buffer view [{0}].", [data.bufferView]));
+				ExceptionGLTF.throw_conditional(string_ext("failed to read buffer view [{0}].", [data.bufferView]), EXCEPTION_GLTF.invalid_file);
 				continue;
 			}
 
@@ -382,7 +382,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					is_translucent = true;
 					break;
 				default:
-					Exception.throw_conditional($"invalid alphaMode [{material_data[$ "alphaMode"]}]");
+					ExceptionGLTF.throw_conditional($"invalid alphaMode [{material_data[$ "alphaMode"]}]", EXCEPTION_GLTF.invalid_file);
 			}
 			
 			material = new material_class();
@@ -432,7 +432,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		
 		if (not is_instanceof(format, VertexFormat)){
-			Exception.throw_conditional("invalid type, expected [VertexFormat]!");
+			ExceptionGLTF.throw_conditional("invalid type, expected [VertexFormat]!", EXCEPTION_GLTF.invalid_arg);
 			return undefined;
 		}
 		
@@ -446,7 +446,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			// Check topology, we only support one type of many:
 		if ((primitive_header[$ "mode"] ?? 4) != 4){
 			var mode_labels = ["POINTS", "LINES", "LINE_LOOP", "LINE_STRIP", "TRIANGLES", "TRIANGLE_STRIP", "TRIANGLE_FAN"];
-			Exception.throw_conditional(string_ext("unsupported topology type [{0}], expected [{1}]!", [mode_labels[primitive_header[$ "mode"] ?? 4], mode_labels[4]]));
+			ExceptionGLTF.throw_conditional(string_ext("unsupported topology type [{0}], expected [{1}]!", [mode_labels[primitive_header[$ "mode"] ?? 4], mode_labels[4]]), EXCEPTION_GLTF.unsupported_feature);
 			return undefined;
 		}
 		
@@ -454,12 +454,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 
 		if (not is_undefined(primitive_header[$ "targets"])){
 /// @stub	Implement! This requires a whole new style of animation; must be able to combine w/ skeletal as well
-			throw new Exception("unsupported primitive feature, [morph targets]!");
+			throw new ExceptionGLTF("unsupported primitive feature, [morph targets]!", EXCEPTION_GLTF.unsupported_feature);
 		}
 
 		var accessor_index = primitive_header.indices;
 		if (is_undefined(accessor_index)){ // We only support index definition through accessors
-			Exception.throw_conditional("unsupported primitive definition, indices accessor required!");
+			ExceptionGLTF.throw_conditional("unsupported primitive definition, indices accessor required!", EXCEPTION_GLTF.unsupported_feature);
 			return undefined;
 		}
 		
@@ -467,12 +467,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var primitive_accessor = get_structure(accessor_index, "accessors");
 		
 		if (is_undefined(primitive_accessor)){
-			Exception.throw_conditional(string_ext("invalid accessor index [{0}]!", [accessor_index]));
+			ExceptionGLTF.throw_conditional(string_ext("invalid accessor index [{0}]!", [accessor_index]), EXCEPTION_GLTF.invalid_file);
 			return undefined;
 		}
 	
 		if ((primitive_accessor[$ "type"] ?? "UNKNOWN") != "SCALAR"){
-			Exception.throw_conditional(string_ext("unsupported index type [{0}], expected type [SCALAR].", [primitive_accessor[$ "type"] ?? "UNKNOWN"]));
+			ExceptionGLTF.throw_conditional(string_ext("unsupported index type [{0}], expected type [SCALAR].", [primitive_accessor[$ "type"] ?? "UNKNOWN"]), EXCEPTION_GLTF.unsupported_feature);
 			return undefined;
 		}
 		
@@ -480,7 +480,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		var vertex_index_array = read_accessor(accessor_index); // Array of integers pointing to vertex data indices
 		if (is_undefined(vertex_index_array)){ // If anything goes wrong, throw a generic error
-			Exception.throw_conditional(string_ext("failed to read accessor [{0}]!", [accessor_index]));
+			ExceptionGLTF.throw_conditional(string_ext("failed to read accessor [{0}]!", [accessor_index]), EXCEPTION_GLTF.invalid_file);
 			return undefined;
 		}
 
@@ -592,7 +592,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					// If possible, the tangent will be auto-calculated
 					if (needs_auto_calculation){
 						if (not has_tangent_data)
-							throw new Exception("failed to auto-generate tangents, missing position and/or UV values!");
+							throw new ExceptionGLTF("failed to auto-generate tangents, missing position and/or UV values!", EXCEPTION_GLTF.invalid_file);
 						
 						// Tangents need the whole triangle to calculate, so we fetch the triangle points:
 /// @todo	Lots of repeated calculations here, we could cache things so we only calculate this
@@ -707,7 +707,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				primitive_array[j].free();
 				delete primitive_array[j];
 			}
-			Exception.throw_conditional(string_ext("failed to build mesh, invalid primitive [{0}].", [i]));
+			ExceptionGLTF.throw_conditional(string_ext("failed to build mesh, invalid primitive [{0}].", [i]), EXCEPTION_GLTF.unknown);
 			return undefined;
 		}
 
@@ -738,7 +738,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	function generate_model(scene=-1, generate_materials=true, apply_transforms=true, format=undefined){
 /// @stub	Implement support for custom formats (requires dynamic shader attributes on Windows)
 		if (not is_undefined(format))
-			throw new Exception("custom formats not yet supported!");
+			throw new ExceptionGLTF("custom formats not yet supported!", EXCEPTION_GLTF.unsupported_feature);
 		else
 /// @stub	Add proper format auto-calc as appropriate once implemented
 			format = get_primitive_format(-1, -1);
@@ -780,7 +780,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				mesh_array[j].free();
 				delete mesh_array[j];
 			}
-			Exception.throw_conditional(string_ext("failed to build model, invalid mesh [{0}].", [i]));
+			ExceptionGLTF.throw_conditional(string_ext("failed to build model, invalid mesh [{0}].", [i]), EXCEPTION_GLTF.unknown);
 			return undefined;
 		}
 		
@@ -875,16 +875,16 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			name_or_index = floor(name_or_index);
 			var animation_array = json_header[$ "animations"];
 			if (name_or_index < 0 or name_or_index >= array_length(animation_array))
-				throw new Exception($"invalid track index [{name_or_index}], expected range is [0, {array_length(animation_array)})");
+				throw new ExceptionGLTF($"invalid track index [{name_or_index}], expected range is [0, {array_length(animation_array)})", EXCEPTION_GLTF.invalid_file);
 			
 			animation_data = animation_array[name_or_index];
 			animation_name = (animation_data[$ "name"] ?? string($"track_{name_or_index}"));
 		}
 		else
-			throw new Exception("invalid type, expected [string] or [int]!");
+			throw new ExceptionGLTF("invalid type, expected [string] or [int]!", EXCEPTION_GLTF.invalid_file);
 		
 		if (is_undefined(animation_data))
-			throw new Exception($"invalid track, [{name_or_index}]");
+			throw new ExceptionGLTF($"invalid track, [{name_or_index}]", EXCEPTION_GLTF.invalid_file);
 		#endregion
 		
 		// Quick array key look-ups:
@@ -935,7 +935,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			else if (ttype == 2)
 				animation_channel = new AnimationChannelScale();
 			else
-				throw new Exception($"invalid animation channel path, [{channel.target.path}]!");
+				throw new ExceptionGLTF($"invalid animation channel path, [{channel.target.path}]!", EXCEPTION_GLTF.invalid_file);
 				
 			animation_channel.generate_unique_hash();	// Make sure things are auto-cleaned w/ the AnimationTrack
 			channel_group.set_channel(animation_channel); // Auto-sorts into position, rotation, or scale
@@ -976,7 +976,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = 0; i < track_count; ++i){
 			var track = generate_animation_track(i, skin);
 			if (is_undefined(track)){
-				Exception.throw_conditional($"failed to generate animation track [{i}]");
+				ExceptionGLTF.throw_conditional($"failed to generate animation track [{i}]", EXCEPTION_GLTF.unknown);
 				continue;
 			}
 			
@@ -993,7 +993,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	function generate_skeleton(skin){
 		var skin_data = get_structure(skin, "skins");
 		if (is_undefined(skin_data))
-			throw new Exception($"invalid skin index [{skin}]");
+			throw new ExceptionGLTF($"invalid skin index [{skin}]", EXCEPTION_GLTF.invalid_arg);
 		
 		var joint_array = skin_data.joints;
 		var joint_count = array_length(joint_array);
@@ -1031,7 +1031,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				var child_id = child_array[j];
 				var data = skeleton[$ child_id];
 				if (is_undefined(data))
-					throw new Exception("unsupported skeletal binding; [bone to node]!"); // Not connecting to another bone
+					throw new ExceptionGLTF("unsupported skeletal binding; [bone to node]!", EXCEPTION_GLTF.unsupported_feature); // Not connecting to another bone
 					
 				data.parent_id = i;
 			}
@@ -1158,7 +1158,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var pos = node[$ "translation"];
 			var rotation = node[$ "rotation"];
 			if (is_undefined(pos) or is_undefined(rotation)){
-				Exception.throw_conditional("unsupported camera node transform type, [Matrix]!");
+				ExceptionGLTF.throw_conditional("unsupported camera node transform type, [Matrix]!", EXCEPTION_GLTF.unsupported_feature);
 				continue;
 			}
 			
@@ -1184,7 +1184,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		if (not string_ends_with(directory, "/") and not string_ends_with(directory, "\\") and directory != "")
 				directory += "/";
 				
-		throw new Exception(string_ext("failed to load file [{0}]!", [directory + name]));
+		throw new ExceptionGLTF(string_ext("failed to load file [{0}]!", [directory + name]));
 	}
 	#endregion
 }

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"class_body",
   "parent":{
-    "name":"General",
-    "path":"folders/Upset 3D/Classes/General.yy",
+    "name":"Common",
+    "path":"folders/Upset 3D/Classes/Common.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
