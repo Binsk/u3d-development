@@ -144,7 +144,8 @@ function Mesh() : U3DObject() constructor {
 			if (is_undefined(material))
 				material = U3D.RENDERING.MATERIAL.missing;
 				
-			if (material.render_stage & CAMERA_RENDER_STAGE.opaque != CAMERA_RENDER_STAGE.opaque)
+			if (material.render_stage & CAMERA_RENDER_STAGE.opaque != CAMERA_RENDER_STAGE.opaque and
+				Camera.ACTIVE_STAGE != CAMERA_RENDER_STAGE.mixed)
 				continue;
 			
 			if (not material.get_casts_shadows())

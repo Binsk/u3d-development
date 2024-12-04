@@ -329,7 +329,7 @@ function MaterialSpatial() : Material() constructor {
 			}
 		}
 		
-		if (Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed){
+		if (Camera.ACTIVE_STAGE == CAMERA_RENDER_STAGE.mixed){
 			if (is_undefined(texture.dithering))
 				MaterialSpatial.DEFAULT_DITHER_TEXTURE.apply("u_sDither");
 			else

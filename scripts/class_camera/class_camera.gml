@@ -465,7 +465,7 @@ function Camera() : Body() constructor {
 			return;
 			
 		if (get_has_render_flag(CAMERA_RENDER_FLAG.lighting)){
-			Camera.ACTIVE_STAGE = CAMERA_RENDER_PASS.light_shadows;
+			Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.light_shadows;
 			// Render light shadows:
 			if (not is_translucent and render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows){ // We only do so for opaque instances
 				for (var i = array_length(light_array) - 1; i >= 0; --i){
@@ -481,7 +481,7 @@ function Camera() : Body() constructor {
 				}
 			}
 			
-			Camera.ACTIVE_STAGE = CAMERA_RENDER_PASS.light;
+			Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.light;
 	/// @todo	Batch light types together (a shader for each) and pass in multiple
 	///			lights into the shader
 			surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.light], c_black, 0.0);

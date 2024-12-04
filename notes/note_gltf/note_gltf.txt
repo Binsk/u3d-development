@@ -32,3 +32,8 @@ a model file.
 
 If an extension is preventing your model from loading you will need to re-export
 the model without that extension enabled.
+
+## Exceptions
+
+Both the `GLTFLoader` and the `GLTFBuilder` throw a custom `ExceptionGLTF` that
+will contain a general exception type alongside the regular `Exception` message.
