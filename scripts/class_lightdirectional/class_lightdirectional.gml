@@ -19,10 +19,12 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	shadow_resolution = 4096;	// Texture resolution for the lighting render (larger = sharper shadows but more expensive)
 	shadow_eye = new EyeOrthographic(0.01, 1024, 64, 64); // By default covers a 64x64 portion of the world
 	shadow_surface = -1;		// Only used to extract the depth buffer ATM (might be used for colored translucent shadows later)
+	shadow_dither = true;		// Whether or not shadow edges should have a dither pattern applied
 	shadowbit_surface = -1;		// Used in the deferred pass for shadow sampling
 	shadow_depth_texture = -1;	// Extracted from shadow_surface
 	shadow_bias = 0.0001;		// Depth-map bias (larger can remove shadow acne but may cause 'peter-panning')
 	shadow_sample_bias = 0.0001;// Depth-sampling bias (larger causes shadow halos while smaller can cause acne & lack of smoothing; balance w/ view distanec)
+	shadow_sample_radius = 3;	// How wide to sample away from shadow to smooth edges (higher = smoother but more costly)
 	shadow_viewprojection_matrix = matrix_build_identity();	// Will calculate if shadows are enabled
 	#endregion
 	
@@ -30,13 +32,17 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 
 	/// @desc	Sets several properties for the shadow rendering, if enabled.
 	/// @note	To modify how much of the world the shadows cover you will need to modify the eye's render size and clipping planes
-	/// @param	{real}	resolution	resolution of shadow texture to render to
-	/// @param	{real}	bias		sample depth offset; used to balance shadow acne / peter panning issues
-	/// @param	{real}	sample_bias	2D sampling depth margin; used to remove 'halo' effect around model edges
-	function set_shadow_properties(resolution=4096, bias=0.0001, sample_bias=0.0001){
+	/// @param	{real}	resolution		resolution of shadow texture to render to
+	/// @param	{real}	bias			sample depth offset; used to balance shadow acne / peter panning issues
+	/// @param	{real}	sample_bias		2D sampling depth margin; used to remove 'halo' effect around model edges
+	/// @param	{real}	sample_radius	2D sampling radius; used to smoothen shadow edges
+	/// @param	{bool}	shadow_dither	dithers shadow edges to attempt to hide interpolation effects
+	function set_shadow_properties(resolution=4096, bias=0.0001, sample_bias=0.0001, sample_radius=3, dithering=true){
 		shadow_resolution = resolution;
 		shadow_bias = bias;
 		shadow_sample_bias = max(0, sample_bias);
+		shadow_sample_radius = max(0, sample_radius);
+		shadow_dither = bool(dithering);
 	}
 	
 	/// @desc	Sets the color of the light's albedo.
@@ -203,6 +209,13 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		sampler_set("u_sDepth", eye_id.get_camera().gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_in), 1.0 / surface_get_height(surface_in)]);
 		uniform_set("u_fSampleBias", shader_set_uniform_f, [shadow_sample_bias]);
+		uniform_set("u_iSampleRadius", shader_set_uniform_i, shadow_sample_radius);
+		if (shadow_dither){
+			U3D.RENDERING.TEXTURE.dither_blue.apply("u_sDither");
+			uniform_set("u_iDither", shader_set_uniform_i, true);
+		}
+		else
+			uniform_set("u_iDither", shader_set_uniform_i, false);
 		draw_surface(surface_in, 0, 0);
 		shader_reset();
 		surface_reset_target();

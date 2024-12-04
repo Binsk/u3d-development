@@ -18,7 +18,7 @@
   "gridX":0,
   "gridY":0,
   "height":256,
-  "HTile":false,
+  "HTile":true,
   "layers":[
     {"$GMImageLayer":"","%Name":"c25d6bd2-79f0-458f-be96-c88f95cfcf2e","blendMode":0,"displayName":"default","isLocked":false,"name":"c25d6bd2-79f0-458f-be96-c88f95cfcf2e","opacity":100.0,"resourceType":"GMImageLayer","resourceVersion":"2.0","visible":true,},
   ],
@@ -89,6 +89,6 @@
     "path":"texturegroups/u3d_default",
   },
   "type":0,
-  "VTile":false,
+  "VTile":true,
   "width":128,
 }

@@ -18,6 +18,8 @@
     {"$GMFolder":"","%Name":"Classes","folderPath":"folders/Upset 3D/Classes.yy","name":"Classes","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Collisions","folderPath":"folders/Upset 3D/Classes/Collisions.yy","name":"Collisions","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Common","folderPath":"folders/Upset 3D/Classes/Common.yy","name":"Common","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"External","folderPath":"folders/Upset 3D/Classes/External.yy","name":"External","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"GLTF","folderPath":"folders/Upset 3D/Classes/External/GLTF.yy","name":"GLTF","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Rendering","folderPath":"folders/Upset 3D/Classes/Rendering.yy","name":"Rendering","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Animation","folderPath":"folders/Upset 3D/Classes/Rendering/Animation.yy","name":"Animation","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Channels","folderPath":"folders/Upset 3D/Classes/Rendering/Animation/Channels.yy","name":"Channels","resourceType":"GMFolder","resourceVersion":"2.0",},
@@ -31,8 +33,6 @@
     {"$GMFolder":"","%Name":"Space Partitioning","folderPath":"folders/Upset 3D/Classes/Space Partitioning.yy","name":"Space Partitioning","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"General","folderPath":"folders/Upset 3D/Classes/Space Partitioning/General.yy","name":"General","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"System","folderPath":"folders/Upset 3D/Classes/System.yy","name":"System","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"External","folderPath":"folders/Upset 3D/Classes/External.yy","name":"External","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"GLTF","folderPath":"folders/Upset 3D/Classes/External/GLTF.yy","name":"GLTF","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Functions","folderPath":"folders/Upset 3D/Functions.yy","name":"Functions","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Objects","folderPath":"folders/Upset 3D/Objects.yy","name":"Objects","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"System","folderPath":"folders/Upset 3D/Objects/System.yy","name":"System","resourceType":"GMFolder","resourceVersion":"2.0",},
@@ -206,7 +206,7 @@
   ],
   "templateType":"game",
   "TextureGroups":[
-    {"$GMTextureGroup":"","%Name":"Default","autocrop":false,"border":2,"compressFormat":"bz2","customOptions":"","directory":"","groupParent":null,"isScaled":false,"loadType":"default","mipsToGenerate":0,"name":"Default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
+    {"$GMTextureGroup":"","%Name":"Default","autocrop":false,"border":8,"compressFormat":"bz2","customOptions":"","directory":"","groupParent":null,"isScaled":false,"loadType":"default","mipsToGenerate":-1,"name":"Default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
     {"$GMTextureGroup":"","%Name":"u3d_default","autocrop":false,"border":2,"compressFormat":"bz2","customOptions":"","directory":"u3d_defaults","groupParent":null,"isScaled":false,"loadType":"dynamicpages","mipsToGenerate":0,"name":"u3d_default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
   ],
 }
