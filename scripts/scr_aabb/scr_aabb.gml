@@ -102,6 +102,40 @@ function aabb_contains_point(aabb_a, point){
 	return true;
 }
 
+/// @desc	Given a ray starting position and direction, returns if it intersects
+///			with the specified AABB.
+/// @param	{vec}	position	position of the ray
+/// @param	{vec}	direction	pointing direction of the ray
+/// @param	{aabb}	aabb		aabb to check against
+function ray_intersects_aabb(position, _direction, _aabb){
+	if (aabb_contains_point(_aabb, position))
+		return true;
+		
+	position = vec_sub_vec(position, _aabb.position);
+		
+	var ray_inv = vec_invert(_direction);
+	ray_inv.x = (ray_inv.x >= infinity ? 10000000 : ray_inv.x);
+	ray_inv.y = (ray_inv.y >= infinity ? 10000000 : ray_inv.y);
+	ray_inv.z = (ray_inv.z >= infinity ? 10000000 : ray_inv.z);
+	
+	var t1 = (-_aabb.extends.x - position.x) * ray_inv.x;
+	var t2 = (_aabb.extends.x - position.x) * ray_inv.x;
+	var t3 = (-_aabb.extends.y - position.y) * ray_inv.y;
+	var t4 = (_aabb.extends.y - position.y) * ray_inv.y;
+	var t5 = (-_aabb.extends.z - position.z) * ray_inv.z;
+	var t6 = (_aabb.extends.z - position.z) * ray_inv.z;
+	
+	var tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+	var tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+	if (tmax < 0) // Pointing away from box
+		return false;
+		
+	if (tmin > tmax)	// Doesn't intersect
+		return false;
+	
+	return true;
+}
+
 /// @desc	Returns the surface area of the specified aabb
 function aabb_get_surface_area(_aabb){
 	if (not is_aabb(_aabb)){

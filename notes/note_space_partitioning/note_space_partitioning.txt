@@ -5,9 +5,6 @@ into smaller, manageable sections. This can aid in efficient rendering and
 collision detection, among other things, by quickly ruling out areas that
 are not applicable to the current task.
 
-Space partitioning can be attached to the collision system to help speed-up
-collision scans as well as the renderer for instance culling.
-
-Both systems require some sort of space partitioning to function. If you do 
-not wish to use anything special then you can use the `Unsorted` class
-which effectively acts as a simple unsorted list of bodies.
+The collision system requires some kind of space partitioning to function.
+By default it simply uses an 'unsorted' partitioning system but can easily
+be switched to any other type.

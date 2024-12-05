@@ -11,6 +11,7 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 	static BVH_SPLIT_THRESHOLD = 0.3;	// How much difference there must be before splitting a node
 	
 	self.node_root = new PartitionNode(self);
+	self.node_infinite = new PartitionNode(self);	// Special node for containing 'infinite' shapes (currently a work-around)
 	self.depth_max = depth_max;	
 	self.instance_max = instance_max;
 	#endregion
@@ -418,8 +419,31 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 			node = node.parent;
 		}
 	}
-	#endregion
 	
+	static calculate_collision_aabb_array = function(node, data){
+		if (not aabb_intersects_aabb(data.aabb, node.aabb))
+			return [];
+		
+		if (node.get_is_leaf())
+			return node.data_array;
+			
+		var array_left = BVH.calculate_collision_aabb_array(node.child_array[0], data);
+		var array_right = BVH.calculate_collision_aabb_array(node.child_array[1], data);
+		return array_concat(array_left, array_right);
+	}
+	
+	static calculate_collision_ray_array = function(node, data){
+		if (not ray_intersects_aabb(data.aabb.position, data.ray, node.aabb))
+			return [];
+		
+		if (node.get_is_leaf())
+			return node.data_array;
+			
+		var array_left = BVH.calculate_collision_ray_array(node.child_array[0], data);
+		var array_right = BVH.calculate_collision_ray_array(node.child_array[1], data);
+		return array_concat(array_left, array_right);
+	}
+	#endregion
 	#region METHODS
 	/// @desc	Scans the tree and returns an array of all the node structures:
 	function get_node_array(){
@@ -445,15 +469,33 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 		return array;
 	}
 	
-	function scan_collisions(data){
+	function get_data_array(){
 		var node_array = get_node_array();
-		var array = [];
-		for (var i = array_length(node_array) - 1; i >= 0; --i){
-			var node = node_array[i];
-			array_push(array, node.data_array);
+		var array = array_create(array_length(node_array));
+		for (var i = array_length(array) - 1; i >= 0; --i)
+			array[i] = node_array[i].data_array;
+		
+		return array_concat(array_flatten(array), node_infinite.data_array);
+	}
+	
+	/// @desc	Scans collisions for the specified piece of data. If a node is specified,
+	///			it starts there. If not it starts at the partition root node.
+	function scan_collisions(data, node=undefined){
+		if (not is_instanceof(data, PartitionData)){
+			Exception.throw_conditional("invalid type, expected [PartitionData]!");
+			return [];
 		}
 		
-		return array_flatten(array);
+		
+		var array = [];
+		if (data.data_shape == PARTITION_DATA_SHAPE.aabb)
+			 array = BVH.calculate_collision_aabb_array(node ?? node_root, data);
+		else if (data.data_shape == PARTITION_DATA_SHAPE.ray)
+			array = BVH.calculate_collision_ray_array(node ?? node_root, data);
+		
+		array = array_concat(array, node_infinite.data_array);
+		
+		return array;
 	}
 	
 	/// @desc	Attempts to add a piece of data to the tree; scanning nodes as
@@ -462,6 +504,11 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 	function add_data(data){
 		if (not super.execute("add_data", [data]))
 			return false;
+			
+		if (data.data_shape == PARTITION_DATA_SHAPE.infinite){ // Special-case
+			node_infinite.add_data(data);
+			return;
+		}
 			
 		var depth_current = depth_max;
 		var node = node_root;
@@ -502,12 +549,16 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 	function remove_data(data){
 		if (not super.execute("remove_data", [data]))
 			return false;
-
+			
 		var node = data.parent;
 		if (is_undefined(node))
 			return false;
 
 		node.remove_data(data);
+		
+		if (data.data_shape == PARTITION_DATA_SHAPE.infinite)
+			return;
+		
 		var node_parent = node.parent;
 		if (node.get_is_empty()){
 			BVH.delete_leaf(node);

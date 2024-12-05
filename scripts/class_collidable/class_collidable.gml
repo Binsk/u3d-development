@@ -100,6 +100,11 @@ function Collidable() : U3DObject() constructor {
 	function transform(node){
 		if (node.has_collision_data())
 			return false;
+		
+		call_later(1, time_source_units_frames, method(node, function(){
+			if (not is_undefined(self[$ "signaler"]) and is_struct(signaler))
+				signaler.signal("collision_data_updated");
+		}));
 			
 		var offset = node.get_data("collision.offset", undefined);
 		if (is_undefined(offset))

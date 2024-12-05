@@ -6,6 +6,7 @@
 ///		"set_position"  (from, to)		-	thrown when the position has been modified
 ///		"set_rotation"  (from, to)		-	thrown when the rotation has been modified
 ///		"set_scale" 	(from, to)		-	thrown when the scale has been modified
+///		"collision_data_updated" ()		-	thrown when collision data has been updated by its collision shape
 
 /// @desc	a 3D point in space with a position, rotation, and scale
 /// @param	{vec}	position		a position represented by a vector

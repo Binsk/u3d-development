@@ -69,7 +69,7 @@ function Partition() : U3DObject() constructor {
 	///			PartitionData structures that POTENTIALLY intersect; based on the node structure.
 	/// @param	{PartitionData}	data	data to act as the collider
 	function scan_collisions(data){
-		return [];
+		return get_data_array();
 	}
 	
 	/// @desc	Attempts to prune (or optimize) the partitioning structure. Should return 
