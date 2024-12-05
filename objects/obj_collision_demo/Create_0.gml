@@ -153,6 +153,7 @@ camera.look_at_up(vec());
 camera.add_ppfx(U3D.RENDERING.PPFX.skybox, 1);
 camera.add_ppfx(U3D.RENDERING.PPFX.fog, 2);
 camera.set_render_stages(CAMERA_RENDER_STAGE.mixed);
+camera.set_exposure(1.25);
 
 U3D.RENDERING.PPFX.skybox.set_environment_texture(environment);
 U3D.RENDERING.PPFX.skybox.set_enabled(true);

@@ -402,6 +402,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			material.cull_mode = cull_mode;
 			material.alpha_cutoff = alpha_cutoff;
 			material.render_stage = (is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque);
+			material.casts_shadows = (not is_translucent);
 			material.hash = material_hash;
 			add_child_ref(material);
 			
