@@ -37,7 +37,7 @@ function Unsorted() : Partition() constructor {
 			Exception.throw_conditional("invalid type, expected [PartitionData]!");
 			return [];
 		}
-		
+		debug_scan_count = 1;
 		return array_duplicate_shallow(node_root.data_array);
 	}
 	

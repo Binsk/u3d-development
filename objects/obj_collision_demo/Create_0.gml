@@ -138,7 +138,6 @@ instance_create_depth(0, 0, 0, obj_render_controller);
 instance_create_depth(0, 0, 0, obj_collision_controller);
 instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has set text
 obj_collision_controller.enable_collision_highlights(true);	// Highlight collision shapes yellow when a collision is detected
-// obj_collision_controller.partition_system = new BVH(8, 4);	/// @stub	Implement proper way to switch partitioning systems
 MaterialSpatial.DEFAULT_DITHER_TEXTURE = U3D.RENDERING.TEXTURE.dither_blue;
 
 // RENDERING
@@ -265,7 +264,7 @@ inst.signaler.add_signal("pressed", new Callable(inst, function(){
 	if (partition == 0)
 		obj_collision_controller.set_partition_system(new Unsorted());
 	else if (partition == 1)
-		obj_collision_controller.set_partition_system(new BVH(8, 4));	// 4 bodies just for visual demonstration
+		obj_collision_controller.set_partition_system(new BVH(16, 4));	// 4 bodies just for visual demonstration
 }));
 
 ay -= 36;

@@ -6,7 +6,7 @@
 
 /// @param	{real}	depth_max		the maximum depth the tree can build
 /// @param	{real}	instance_max	the maximum instances stored per leaf; gets overridden if the tree runs out of depth
-function BVH(depth_max=8, instance_max=1) : Partition() constructor {
+function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	#region PROPERTIES
 	static BVH_SPLIT_THRESHOLD = 0.3;	// How much difference there must be before splitting a node
 	
@@ -424,6 +424,7 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 		if (not aabb_intersects_aabb(data.aabb, node.aabb))
 			return [];
 		
+		node.partition.debug_scan_count++;
 		if (node.get_is_leaf())
 			return node.data_array;
 			
@@ -435,7 +436,8 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 	static calculate_collision_ray_array = function(node, data){
 		if (not ray_intersects_aabb(data.aabb.position, data.ray, node.aabb))
 			return [];
-		
+			
+		node.partition.debug_scan_count++;
 		if (node.get_is_leaf())
 			return node.data_array;
 			
@@ -486,7 +488,7 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 			return [];
 		}
 		
-		
+		debug_scan_count = 0;
 		var array = [];
 		if (data.data_shape == PARTITION_DATA_SHAPE.aabb)
 			 array = BVH.calculate_collision_aabb_array(node ?? node_root, data);
@@ -580,6 +582,8 @@ function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 		return true;
 	}
 
+	/// @note	The tree should, for the most part, be self-balancing. However, an explicit
+	///			balance call can be executed here.
 	function optimize(){
 		BVH.balance_node(node_root);
 	}

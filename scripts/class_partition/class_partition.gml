@@ -11,6 +11,7 @@
 function Partition() : U3DObject() constructor {
 	#region PROPERTIES
 	super = new Super(self);
+	debug_scan_count = 0;	// Debugging value that records last scan count of a collision check 
 	#endregion
 	
 	#region METHODS
