@@ -4,18 +4,21 @@
 /// something else is specified.
 function Unsorted() : Partition() constructor {
 	#region PROPERTIES
-	data_struct = {};
-	scan_cache = undefined;	// Because it must scan the data struct per-body, it is faster to keep a cache
+	self.node_root = new PartitionNode(self);
 	#endregion
 	
 	#region METHODS
+	
+	function get_node_array(){
+		return [node_root];
+	}
+	
 	super.register("add_data");
 	function add_data(data){
 		if (not super.execute("add_data", [data]))
 			return false;
 		
-		data_struct[$ data] = data;
-		scan_cache = undefined;
+		self.node_root.add_data(data);
 	}
 	
 	super.register("remove_data");
@@ -23,8 +26,7 @@ function Unsorted() : Partition() constructor {
 		if (not super.execute("remove_data", [data]))
 			return false;
 		
-		struct_remove(data_struct, data);
-		scan_cache = undefined;
+		self.node_root.remove_data(data);
 	}
 	
 	function scan_collisions(data){
@@ -36,11 +38,16 @@ function Unsorted() : Partition() constructor {
 			return [];
 		}
 		
-		if (is_undefined(scan_cache))
-			scan_cache = struct_get_values(data_struct); 
-			
-		return scan_cache;
+		return array_duplicate_shallow(node_root.data_array);
 	}
+	
+	function render_debug(){
+		// We don't actually need the AABB in an unsorted structure so we just update
+		// it when debug rendering for a size visual.
+		node_root.aabb = node_root.calculate_child_data_aabb();
+		node_root.render_debug();
+	}
+	
 	#endregion
 	
 	#region INIT

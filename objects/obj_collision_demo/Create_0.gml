@@ -138,7 +138,7 @@ instance_create_depth(0, 0, 0, obj_render_controller);
 instance_create_depth(0, 0, 0, obj_collision_controller);
 instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has set text
 obj_collision_controller.enable_collision_highlights(true);	// Highlight collision shapes yellow when a collision is detected
-obj_collision_controller.partition_system = new BVH(8, 4);	/// @stub	Implement proper way to switch partitioning systems
+// obj_collision_controller.partition_system = new BVH(8, 4);	/// @stub	Implement proper way to switch partitioning systems
 MaterialSpatial.DEFAULT_DITHER_TEXTURE = U3D.RENDERING.TEXTURE.dither_blue;
 
 // RENDERING
@@ -245,6 +245,27 @@ inst.text = "Render Shadows";
 inst.text_tooltip = "Whether or not to render shadows in this scene.";
 inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
 	light_directional.set_casts_shadows(is_checked);
+}));
+
+ay -= 44;
+inst = instance_create_depth(ax, ay, 0, obj_button);
+inst.partition = 0;
+inst.text = "Partitioning: None";
+inst.text_tooltip_prefix = "Changes the instance partitioning system used to optimize out collisions.\n\n";
+inst.text_tooltip_suffix = [
+	"None: Unsorted or 'no' partitioning simply groups all instances in a single node and scans through them one-by-one.",
+	"BVH: A bounding volume hierarchy is a BSP structure that recursively splits bodies into two groups down to a set maximum number of bodies while trying to minimize containment surface area."
+];
+inst.text_tooltip = inst.text_tooltip_prefix + inst.text_tooltip_suffix[0];
+inst.signaler.add_signal("pressed", new Callable(inst, function(){
+	partition = modwrap(partition + 1, array_length(text_tooltip_suffix));
+	text_tooltip = text_tooltip_prefix + text_tooltip_suffix[partition];
+	text = "Partitioning: " + string_copy(text_tooltip_suffix[partition], 1, string_pos(":", text_tooltip_suffix[partition]) - 1);
+	
+	if (partition == 0)
+		obj_collision_controller.set_partition_system(new Unsorted());
+	else if (partition == 1)
+		obj_collision_controller.set_partition_system(new BVH(8, 4));	// 4 bodies just for visual demonstration
 }));
 
 ay -= 36;

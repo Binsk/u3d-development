@@ -14,6 +14,23 @@ function Partition() : U3DObject() constructor {
 	#endregion
 	
 	#region METHODS
+	/// @desc	Should return all PartitionNode structures in the partition.
+	function get_node_array(){
+		return [];
+	}
+	
+	/// @desc	Should return all PartitionData structures in the partition.
+	function get_data_array(){
+		var node_array = get_node_array();
+		var array = array_create(array_length(node_array));
+		for (var i = array_length(array) - 1; i >= 0; --i)
+			array[i] = node_array[i].data_array;
+		
+		return array_flatten(array);
+	}
+	
+	/// @desc	Add a piece of data to the partitioning system. Returns if successful.
+	/// @param	{PartitionData}	data		data to add
 	function add_data(data){
 		if (is_undefined(data))
 			return false;
@@ -26,6 +43,8 @@ function Partition() : U3DObject() constructor {
 		return true;
 	}
 	
+	/// @desc	Removes a piece of data from the partitioning system. Returns if successful.
+	/// @param	{PartitionData} data		data to remove
 	function remove_data(data){
 		if (is_undefined(data))
 			return false;
@@ -38,11 +57,35 @@ function Partition() : U3DObject() constructor {
 		return true;
 	}
 	
+	/// @desc	Updates a piece of data; usually because of motion, rotation, or scale.
+	function update_data(data){
+		// Fall-back 'update' if the structure doesn't implement one since re-adding will
+		// generally re-calculate part of the structure.
+		remove_data(data);
+		add_data(data);
+	}
+	
 	/// @desc	Scan the structure for node intersections and returns an array of all
-	///			data that is contained within the intersecting nodes.
-	/// @param	{PartitionData}	data	data to scan
+	///			PartitionData structures that POTENTIALLY intersect; based on the node structure.
+	/// @param	{PartitionData}	data	data to act as the collider
 	function scan_collisions(data){
 		return [];
+	}
+	
+	/// @desc	Attempts to prune (or optimize) the partitioning structure. Should return 
+	///			a > 0 value if prunning occurred.
+	function optimize(){
+		return 0;
+	}
+	
+	/// @desc	Completely reconstructs the entire structure.
+	function reconstruct(){
+		var data_array = get_data_array();
+		for (var i = array_length(data_array) - 1; i >= 0; --i)
+			remove_data(data_array[i]);
+			
+		for (var i = array_length(data_array) - 1; i >= 0; --i)
+			add_data(data_array[i]);
 	}
 	
 	function render_debug(){};

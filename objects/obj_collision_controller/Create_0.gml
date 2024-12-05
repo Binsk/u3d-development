@@ -21,6 +21,31 @@ partition_system = new Unsorted();
 #endregion
 
 #region METHODS
+/// @desc	Sets a new partitioning system to be used. All bodies will be transfered
+///			over and the old system cleared. This should generally be avoided when the
+///			system is full of bodies due to performance and optimization reasons.
+/// @note	This gives ownership of the system to this collision controller, meaning
+///			it will be auto-freed and updated accordingly.
+function set_partition_system(partition){
+	if (not is_instanceof(partition, Partition)){
+		Exception.throw_conditional("invalid type, expected [Partition]!");
+		return;
+	}
+	
+	// Transfer data over
+	var data_array = partition_system.get_data_array();
+	for (var i = array_length(data_array) - 1; i >= 0; --i){
+		partition_system.remove_data(data_array[i]);
+		partition.add_data(data_array[i]);
+	}
+	
+	// Delete old system:
+	partition_system.free();
+	delete partition_system;
+	
+	// Assign new system:
+	partition_system = partition;
+}
 
 /// @desc	Set the amount of delay, in ms, between collision scans.
 function set_update_delay(ms=0){

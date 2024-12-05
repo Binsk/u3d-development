@@ -6,7 +6,7 @@
 
 /// @param	{real}	depth_max		the maximum depth the tree can build
 /// @param	{real}	instance_max	the maximum instances stored per leaf; gets overridden if the tree runs out of depth
-function BVH(depth_max=8, instance_max=2) : Partition() constructor {
+function BVH(depth_max=8, instance_max=1) : Partition() constructor {
 	#region PROPERTIES
 	static BVH_SPLIT_THRESHOLD = 0.3;	// How much difference there must be before splitting a node
 	
@@ -16,6 +16,38 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 	#endregion
 	
 	#region STATIC METHODS
+	static set_node_depth = function(node, depth){
+		node.depth = depth;
+		for (var i = array_length(node.child_array) - 1; i >= 0; --i)
+			BVH.set_node_depth(node.child_array[i], depth - 1);
+	}
+	
+	static get_root_node = function(node){
+		var node_parent = node;
+		while (not is_undefined(node_parent.parent))
+			node_parent = node_parent.parent;
+			
+		return node_parent;
+	}
+	
+	/// @desc	Returns the 'left' node, or undefined, stored in the specified node.
+	static get_node_left = function(node){
+		var array = (node[$ "child_array"] ?? []);
+		if (array_length(array) < 1)
+			return undefined;
+		
+		return array[0];
+	}
+	
+	/// @desc	Returns the 'right' node, or undefined, stored in the specified node.
+	static get_node_right = function(node){
+		var array = (node[$ "child_array"] ?? []);
+		if (array_length(array) < 2)
+			return undefined;
+		
+		return array[1];
+	}
+	
 	/// @desc	Returns the surface area of the specific node; used when determining
 	///			how to split.
 	/// @param	{PartitionNode}	node		the node to calculate the surface area of
@@ -39,10 +71,151 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		return aabb_get_surface_area(_aabb);
 	}
 	
-	static set_node_depth = function(node, depth){
-		node.depth = depth;
+	/// @desc	Given a node, returns the maximum branch depth and returns the result.
+	static calculate_node_branch_depth = function(node){
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return 0;
+		}
+		
+		if (node.get_is_leaf())
+			return node.partition.depth_max - node.depth;
+		
+		var value = -infinity;
 		for (var i = array_length(node.child_array) - 1; i >= 0; --i)
-			BVH.set_node_depth(node.child_array[i], depth - 1);
+			value = max(value, BVH.calculate_node_branch_depth(node.child_array[i]));
+			
+		return value;
+	}
+	
+	/// @desc	Attempts to balance the tree starting at the specified node. Returns the
+	///			number of nodes balanced.
+	static balance_node = function(node){
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return;
+		}
+		
+		if (node.get_is_leaf())
+			return 0;
+		
+		var result = 0;
+		result += BVH.balance_node(node.child_array[0]);
+		result += BVH.balance_node(node.child_array[1]);
+			
+		var factor = BVH.calculate_node_branch_depth(node.child_array[0]) - BVH.calculate_node_branch_depth(node.child_array[1]);
+		if (clamp(factor, -1, 1) == factor) // Pretty balanced, we're good to end
+			return result;
+		
+		if (factor < 0)
+			result += BVH.rotate_node_right(node);
+		else
+			result += BVH.rotate_node_left(node);
+			
+		if (node.get_data_count() > node.partition.instance_max and node.depth > 0){
+			BVH.split_node(node);
+			BVH.update_branch(node);
+			result += BVH.balance_node(node.child_array[0]);
+			result += BVH.balance_node(node.child_array[1]);
+		}
+			
+		return result;
+	}
+	
+	static rotate_node_right = function(node){ // From left to right, right to up, up to left
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return 0;
+		}
+
+		if (node.get_is_leaf())
+			return 0;
+
+		var node_left_a = BVH.get_node_left(node);
+		var node_right_a = BVH.get_node_right(node);
+		var node_left_b = BVH.get_node_left(node_right_a);
+		var node_right_b = BVH.get_node_right(node_right_a);
+		
+		if (is_undefined(node_left_b) or is_undefined(node_right_b))
+			return 0;
+		
+		if (not is_undefined(node.parent)){
+			if (BVH.get_node_left(node.parent).index == node.index)
+				node.parent.child_array[0] = node_right_a;
+			else
+				node.parent.child_array[1] = node_right_a;
+			
+			node_right_a.parent = node.parent;
+		}
+		else {
+			node.partition.node_root = node_right_a;
+			node_right_a.parent = undefined;
+		}
+		
+		node_right_a.child_array[0] = node;
+		node.parent = node_right_a;
+		node.child_array[1] = node_left_b;
+		node_left_b.parent = node;
+		
+		node_right_a.depth++;
+		node_right_b.depth++;
+		node_left_a.depth--;
+		node.depth--;
+		
+		BVH.update_node(node_right_a);
+		BVH.update_node(node_right_b);
+		BVH.update_node(node);
+		BVH.update_node(node_left_a);
+		BVH.update_branch(node_left_b);
+		return 1;
+	}
+	
+	static rotate_node_left = function(node){ // From right to left, left to up, up to right
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return 0;
+		}
+		
+		if (node.get_is_leaf())
+			return 0;
+
+		var node_left_a = BVH.get_node_left(node);
+		var node_right_a = BVH.get_node_right(node);
+		var node_left_b = BVH.get_node_left(node_left_a);
+		var node_right_b = BVH.get_node_right(node_left_a);
+		
+		if (is_undefined(node_left_b) or is_undefined(node_right_b))
+			return 0;
+		
+		if (not is_undefined(node.parent)){
+			if (BVH.get_node_left(node.parent).index == node.index)
+				node.parent.child_array[0] = node_left_a;
+			else
+				node.parent.child_array[1] = node_left_a;
+			
+			node_left_a.parent = node.parent;
+		}
+		else {
+			node.partition.node_root = node_left_a;
+			node_left_a.parent = undefined;
+		}
+		
+		node_left_a.child_array[1] = node;
+		node.parent = node_left_a;
+		node.child_array[0] = node_right_b;
+		node_right_b.parent = node;
+		
+		node_left_a.depth++;
+		node_left_b.depth++;
+		node_right_a.depth--;
+		node.depth--;
+		
+		BVH.update_node(node_left_a);
+		BVH.update_node(node_left_b);
+		BVH.update_node(node);
+		BVH.update_node(node_right_a);
+		BVH.update_branch(node_right_b);
+		return 1;
 	}
 	
 	/// @desc	Pushes data down the tree and updates. Does NOT recalculate parents;
@@ -51,27 +224,21 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		var node_merged = new PartitionNode(node.partition);
 		node_merged.child_array = node.child_array;	// Shift child nodes over
 		node_merged.parent = node;
-		node.child_array[0].parent = node_merged;
-		node.child_array[1].parent = node_merged;
+		node_merged.depth = node.depth - 1;
+		BVH.update_node(node_merged);
 		
 		var node_new = new PartitionNode(node.partition);
 		node_new.parent = node;
 		node_new.add_data(data);
-		
-		// Update new nodes bounds:
-		node_merged.aabb = (node_merged.get_is_leaf() ? node_merged.calculate_child_data_aabb() : node_merged.calculate_child_node_aabb());
-		node_merged.surface_area = node_merged.calculate_surface_area();
-		node_new.aabb = (node_new.get_is_leaf() ? node_new.calculate_child_data_aabb() : node_new.calculate_child_node_aabb());
-		node_new.surface_area = node_new.calculate_surface_area();
+		node_new.depth = node.depth - 1;
+		BVH.update_node(node_new);
 		
 		node.child_array = [	// Assign new nodes to old node as children
 			node_merged, 
 			node_new
 		];
 		
-		node.aabb = node.calculate_child_node_aabb();
-		node.surface_area = node.calculate_surface_area();
-		BVH.set_node_depth(node, node.depth);
+		BVH.update_node(node);
 	}
 	
 	static split_node = function(node){
@@ -164,18 +331,16 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		var node_left = new PartitionNode(node.partition);
 		node_left.data_array = left_array;
 		node_left.parent = node;
-		node_left.aabb = node_left.calculate_child_data_aabb();
-		node_left.surface_area = node_left.calculate_surface_area();
 		node_left.depth = node.depth - 1;
+		BVH.update_node(node_left);
 		for (var i = array_length(left_array) - 1; i >= 0; --i)
 			left_array[i].set_parent(node_left);
 		
 		var node_right = new PartitionNode(node.partition);
 		node_right.data_array = right_array;
 		node_right.parent = node;
-		node_right.aabb = node_right.calculate_child_data_aabb();
-		node_right.surface_area = node_right.calculate_surface_area();
 		node_right.depth = node.depth - 1;
+		BVH.update_node(node_right);
 		for (var i = array_length(right_array) - 1; i >= 0; --i)
 			right_array[i].set_parent(node_right);
 		
@@ -186,8 +351,7 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		];
 		
 		node.data_array = [];
-		node.aabb = node.calculate_child_node_aabb();
-		node.surface_area = node.calculate_surface_area();
+		BVH.update_node(node);
 	}
 	
 	static delete_leaf = function(node) {
@@ -213,34 +377,46 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		node_parent.remove_child(node);
 		
 		var node_sibling = node_parent.child_array[0];	// Remaining child node
-		node_parent.remove_child(node_sibling);
 		
 		node_parent.child_array = node_sibling.child_array;
-/// @fixme	The parent SHOULD NOT HAVE data! Only leaves should, something is wrong here!
-		node_parent.data_array = array_concat(node_sibling.data_array, node_parent.data_array);
-		
-		// Update relations:
-		for (var i = array_length(node_parent.data_array) - 1; i >= 0; --i)
-			node_parent.data_array[i].set_parent(node_parent);
-		
-		for (var i = array_length(node_parent.child_array) - 1; i >= 0; --i)
-			node_parent.child_array[i].parent = node_parent;
-		
-		BVH.set_node_depth(node_parent, node_parent.depth);
-		
+		node_parent.data_array = node_sibling.data_array;
+
 		delete node;
 		delete node_sibling;
 		
-		node_parent.aabb = (node_parent.get_is_leaf() ? node_parent.calculate_child_data_aabb() : node_parent.calculate_child_node_aabb());
-		node_parent.surface_area = node_parent.calculate_surface_area();
+		BVH.update_node(node_parent);
 	}
 	
-	static get_root_node = function(node){
-		var node_parent = node;
-		while (not is_undefined(node_parent.parent))
-			node_parent = node_parent.parent;
-			
-		return node_parent;
+	/// @desc	Updates a node's properties, including AABB and so-forth. Does not
+	///			recursively update parents or children.
+	static update_node = function(node){
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return;
+		}
+		
+		node.aabb = (node.get_is_leaf() ? node.calculate_child_data_aabb() : node.calculate_child_node_aabb());
+		node.surface_area = node.calculate_surface_area();
+		BVH.set_node_depth(node, node.depth);
+		for (var i = array_length(node.data_array) - 1; i >= 0; --i)
+			node.data_array[i].set_parent(node);
+		
+		for (var i = array_length(node.child_array) - 1; i >= 0; --i)
+			node.child_array[i].parent = node;
+	}
+	
+	/// @desc	Updates a branch of nodes starting at the specified node and working up
+	///			to the root.
+	static update_branch = function(node){
+		if (not is_instanceof(node, PartitionNode)){
+			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
+			return;
+		}
+		
+		while (not is_undefined(node)){
+			BVH.update_node(node);
+			node = node.parent;
+		}
 	}
 	#endregion
 	
@@ -287,7 +463,6 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		if (not super.execute("add_data", [data]))
 			return false;
 			
-		var update_stack = ds_stack_create(); // Used to update AABBs and surface area of parent nodes
 		var depth_current = depth_max;
 		var node = node_root;
 		while (not node.get_is_leaf() and node.depth > 0){
@@ -299,19 +474,12 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 			var sa_combined = aabb_get_surface_area(aabb_add_aabb(node.child_array[0].aabb, node.child_array[1].aabb)) + aabb_get_surface_area(data.aabb);
 			
 			if (sa_combined < min(sa_left_adj, sa_right_adj) * BVH.BVH_SPLIT_THRESHOLD){ // Push down node
-				ds_stack_push(update_stack, node);
 				BVH.push_data(node, data);
-				while (not ds_stack_empty(update_stack)){
-					var pnode = ds_stack_pop(update_stack);
-					pnode.aabb = pnode.calculate_child_node_aabb();
-					pnode.surface_area = pnode.calculate_surface_area();
-				}
-				ds_stack_destroy(update_stack);
+				BVH.update_branch(node);
 				return true;
 				
 			}
 			else { // Process down the children
-				ds_stack_push(update_stack, node);
 				if (sa_left_adj < sa_right_adj) // Left wins
 					node = node.child_array[0];
 				else // Right wins
@@ -322,21 +490,10 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		// Add the data to the final node:
 		node.add_data(data);
 		
-		if (node.get_data_count() > self.instance_max and node.depth > 0){
-			ds_stack_push(update_stack, node);
+		if (node.get_data_count() > self.instance_max and node.depth > 0)
 			BVH.split_node(node);
-		}
-		else {
-			node.aabb = node.calculate_child_data_aabb();
-			node.surface_area = node.calculate_surface_area();
-		}
-		
-		while (not ds_stack_empty(update_stack)){
-			var pnode = ds_stack_pop(update_stack);
-			pnode.aabb = pnode.calculate_child_node_aabb();
-			pnode.surface_area = pnode.calculate_surface_area();
-		}
-		ds_stack_destroy(update_stack);
+
+		BVH.update_branch(node);
 			
 		return true;
 	}
@@ -371,11 +528,12 @@ function BVH(depth_max=8, instance_max=2) : Partition() constructor {
 		
 		return true;
 	}
-	
+
+	function optimize(){
+		BVH.balance_node(node_root);
+	}
+
 	function render_debug(){
-		if (keyboard_check_pressed(ord("1")))
-			show_message(node_root.child_array);
-		
 		var node_array = get_node_array();
 		
 		for (var i = array_length(node_array) - 1; i >= 0; --i)

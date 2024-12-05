@@ -4,5 +4,5 @@
 /// plane.
 
 function Quadtree() : Partition() constructor {
-	
+/// @stub	Implement	
 }

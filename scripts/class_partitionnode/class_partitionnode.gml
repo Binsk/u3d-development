@@ -34,6 +34,9 @@ function PartitionNode(partition) constructor {
 				return false;
 		}
 		
+		if (not is_undefined(node.parent))
+			node.parent.remove_child(node);
+			
 		array_push(child_array, node);
 		node.parent = self;
 	}

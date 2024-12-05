@@ -7,5 +7,5 @@
 /// generally more preferable.
 
 function Octree() : Partition() constructor {
-	
+/// @stub	Implement
 }

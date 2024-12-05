@@ -32,10 +32,7 @@ function PartitionData(data) constructor {
 			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
 			return;
 		}
-		
-		if (not is_undefined(parent))
-			parent.remove_data(self);
-		
+
 		parent = node;
 	}
 	
@@ -70,9 +67,7 @@ function PartitionData(data) constructor {
 
 		if (not is_undefined(parent)){
 			var partition = parent.partition;
-/// @stub	Slow; a temporary measure until proper adjusting is added
-			partition.remove_data(self);
-			partition.add_data(self)
+			partition.update_data(self);
 		}
 	}
 	
