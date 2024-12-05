@@ -1,7 +1,7 @@
 # GLTF
 ## About
 
-glTF is widely-used open source 3D file format that can handle a vast swath
+glTF is widely used open source 3D file format that can handle a vast swath
 of 3D information. Most, if not all, mainstream 3D modeling software should
 be able to export in the glTF file format.
 
@@ -15,7 +15,7 @@ converting the file data into in-game instances. You will need a new
 ## Spec Support
 
 The importer does *not* support every aspect of the glTF spec, but it aims
-to cover all common use cases. Some cases are simply because they are not
+to cover all common use cases. Some cases are missing simply because they are not
 applicable / supported by this renderer while other cases just haven't yet
 been added but are on the docket to add.
 

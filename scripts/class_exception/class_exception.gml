@@ -9,10 +9,6 @@
 /// error will NOT be thrown but it will still be printed out to the console.
 /// Note that this can cause unexpected problems if the code afterwards does
 /// not handle the error.
-///
-/// Having throw disabling is useful if you wish to have super-strict error
-/// tracking when debugging but wish to supress them and handle things through
-/// value checks upon release.
 
 /// @desc	An exception class that can contain / display an error message.
 /// @param	{string}	message		an error message to display if the exception isn't caught

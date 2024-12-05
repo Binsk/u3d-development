@@ -745,7 +745,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 
 		// Determine which nodes are in our scene:
 		var node_array = get_scene_nodes(scene);
-		
 		count = array_length(node_array);
 		
 		// Add meshes based off of the nodes in the scene

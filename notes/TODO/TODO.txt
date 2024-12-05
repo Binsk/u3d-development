@@ -12,7 +12,6 @@
 	while loading the issue goes away).
 -	Fix browser dithered rendering not mixing right w/ opaque items (?)
 -	Fix max depth not quite working w/ BVH
--	Making a bunch of boxes then switching to BVH seems to take a couple tries to properly build the tree?
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

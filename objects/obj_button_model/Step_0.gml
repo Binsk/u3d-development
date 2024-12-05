@@ -8,6 +8,9 @@ if (is_hovered and mouse_check_button_pressed(mb_left)){
 			animation_tree = gltf.generate_animation_tree();	// Constructs an animation tree (if one exists)
 			model = gltf.generate_model(0, obj_render_demo.import_textures, obj_render_demo.apply_transforms); // Constructs scene 0 of the model (usually all we need)
 			model.freeze(); // Freeze the model into vRAM so we don't have to re-send all the vertex data every frame
+			model.generate_unique_hash();
+			if (not is_undefined(animation_tree))
+				animation_tree.generate_unique_hash();
 		}
 		// Catch any glTF loading errors in this case; generally due to glTF features
 		// not supported by the U3D implementation.

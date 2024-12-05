@@ -69,6 +69,7 @@ function mouse_collision_left(data_array, pressed=true){
 	// Spawn a new box model:
 	var model = gltf_box.generate_model();
 	model.freeze();
+	model.generate_unique_hash();
 	var body = new Body();
 	body.set_model(model);
 	var bounds = model.get_data("import"); // Grab any saved import data from the model
@@ -166,6 +167,7 @@ light_directional.get_shadow_eye().set_size(30, 30);
 
 var gltf = new GLTFBuilder("demo-collision-floor.glb");
 model_floor = gltf.generate_model();
+model_floor.generate_unique_hash();
 body_floor.set_model(model_floor);
 obj_render_controller.add_body(body_floor);
 gltf.free();
@@ -302,7 +304,7 @@ obj_collision_controller.add_signal(camera, new Callable(id, function(data_array
 		return;
 	}
 	
-	if (mouse_check_button(mb_left) and not instance_exists(obj_collision_box_fade)){
+	if (mouse_check_button(mb_left)){
 		mouse_collision_left(data_array, false);
 		return;
 	}

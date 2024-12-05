@@ -20,4 +20,18 @@ delete plane_body;
 gltf_box.free();
 delete gltf_box;
 
+environment.free();
+delete environment;
+
+light_ambient.free();
+delete light_ambient;
+
+light_directional.free();
+delete light_directional;
+
+if (not is_undefined(collidable_box)){
+	collidable_box.free();
+	delete collidable_box;
+}
+
 instance_destroy(obj_u3d_controller);

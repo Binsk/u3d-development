@@ -89,6 +89,8 @@ function Partition() : U3DObject() constructor {
 			add_data(data_array[i]);
 	}
 	
+	/// @desc	Should render out the structure as a 3D line primitive; which will be
+	///			called by the Camera when debugging is enabled.
 	function render_debug(){};
 	#endregion
 	

@@ -14,7 +14,7 @@ U3D system. For example, generating a GLTF model generates empty Texture2D
 structures and attaches them to the model, but the actual textures being
 read off disk are loading asynchronously. 
 
-When the textures are loaded in this controller will signal the event and
+When the textures are loaded in, this controller will signal the event and
 the generated Texture2D instances will be updated with the new data.
 
 This is also why you may see textures flicker in the first time you load

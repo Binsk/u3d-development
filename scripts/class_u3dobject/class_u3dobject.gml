@@ -3,12 +3,8 @@
 /// system elements are available, such as index numbers and metadata functions.
 ///
 /// ALL U3DObject types and their children must call free() before being deleted
-/// to prevent memory leaks.
-///
-/// Dynamically generated resources, such as textures and materials from glTF files,
-/// will be given a hash and auto-managed. If you need to use materials or auto-generated
-/// data outside of the generated scope then you can increase the reference number while 
-/// using it and then decrease it once done to let the system free it up when appropriate.
+/// to prevent memory leaks. They can be thought of as similar to ds_* structures
+/// in terms of memory management.
 
 /// @signals
 ///		"free" ()		-	Thrown when 'free' is called, by the user or the system
