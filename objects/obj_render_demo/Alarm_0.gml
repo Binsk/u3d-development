@@ -82,6 +82,7 @@ inst.signaler.add_signal("checked", function(is_checked){
 		if (is_undefined(body_floor)){
 			var gltf = new GLTFBuilder("demo-floor.glb");
 			var model = gltf.generate_model();
+			model.generate_unique_hash();
 			model.freeze();
 			body_floor = new Body();
 			body_floor.set_model(model);

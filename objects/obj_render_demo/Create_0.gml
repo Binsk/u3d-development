@@ -37,6 +37,7 @@ material_count = 0;				// Counter values for displaying model info in the GUI
 model_count = 0;
 mesh_count = 0;
 primitive_count = 0;
+generic_count = 0;
 
 animation_loop = true;		// Animation properties we will apply to the currently animated models (all global)
 animation_smooth = true;
@@ -61,6 +62,7 @@ function update_data_count(){
 	model_count = get_ref_instance_count(Model);
 	mesh_count = get_ref_instance_count(Mesh);
 	primitive_count = get_ref_instance_count(Primitive);
+	generic_count = get_ref_instance_count();
 }
 
 /// @desc	Pushes a new error to the stack and resets the display timer.

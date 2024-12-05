@@ -32,7 +32,8 @@ draw_text_color(12, 12, $"{gpu_string}\n" +
 						$"\n\nMaterials: {material_count} [{self.material_count} in RAM]\n" +
 						$"Models: {model_count} [{self.model_count} in RAM]\n" + 
 						$"Meshes: {mesh_count} [{self.mesh_count} in RAM]\n" + 
-						$"Primitives: {primitive_count} [{self.primitive_count} in RAM]\nTriangles: {triangle_count}",
+						$"Primitives: {primitive_count} [{self.primitive_count} in RAM]\nTriangles: {triangle_count}\n" + 
+						$"\nU3D Ref. Count: {self.generic_count}",
 						c_white, c_white, c_white, c_white, 1.0);
 
 // Draw animation strings + clickable interaction:

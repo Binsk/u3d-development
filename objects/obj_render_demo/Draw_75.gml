@@ -6,7 +6,7 @@ draw_set_alpha(1.0);
 
 // Render axis display:
 var cx = 12 + 48;
-var cy = 256 + 64;
+var cy = 256 + 96;
 var length = 48;
 var forward = vec(1, 0, 0);
 var right = vec(0, 0, 1);
