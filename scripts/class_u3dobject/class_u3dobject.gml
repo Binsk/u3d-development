@@ -209,6 +209,7 @@ function U3DObject() constructor {
 			return false;
 		
 		set_data(["ref", value.hash], value);
+		value.set_data(["ref.other", get_index()], self);
 		value.inc_ref();
 		return true;
 	}
@@ -226,6 +227,7 @@ function U3DObject() constructor {
 			return false;
 		
 		set_data(["ref", value.hash]); // Delete the data
+		value.set_data(["ref.other", get_index()]);
 		value.dec_ref();
 		return true;
 	}
@@ -256,6 +258,15 @@ function U3DObject() constructor {
 			return;
 		
 		if (not is_undefined(hash)){	// If a manual free, force clean up the references
+			// Since it is a manual free, attempt to remove references TO this instance:
+			var ref_struct = get_data(["ref.other"]);
+			var ref_keys = (is_undefined(ref_struct) ? [] : struct_get_names(ref_struct));
+			for (var i = array_length(ref_keys) - 1; i >= 0; --i){
+				var instance = ref_struct[$ ref_keys[i]];
+				if (not U3DObject.get_is_valid_object(instance))
+					instance.remove_child_ref(self);
+			}
+		
 			struct_remove(U3D.MEMORY, hash);
 			signaler.signal("cleanup");	// Throw a signal for any additional required cleanup
 			hash = undefined;			// Wipe hash as it is now dereferenced
