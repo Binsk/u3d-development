@@ -126,12 +126,13 @@ function Signaler() constructor{
 	/// @param  {array}     argv=[]     argument array to pass
 	function signal(name, argv=[]){
 		// Look up our signal:
-		var array = signal_map[$ name];
+		var array = array_duplicate_shallow(signal_map[$ name]);
 		if (is_undefined(array)) 
 			return; // No signal w/ this name
 			
 		// Loop through each attached signal:
-		for (var i = 0; i < array_length(array); ++i){
+		var loop = array_length(array);
+		for (var i = 0; i < loop; ++i){
 			var callable = array[i];
 			callable.call(argv);
 		}

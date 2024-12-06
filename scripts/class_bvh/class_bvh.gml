@@ -588,7 +588,7 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	/// @note	The tree should, for the most part, be self-balancing. However, an explicit
 	///			balance call can be executed here.
 	function optimize(){
-		for (var i = 0; i < 16; ++i){
+		for (var i = 0; i < 16; ++i){ // Arbitrary loop count; just try re-balancing a few times until the result is close enough
 			if (BVH.balance_node(node_root) < 2)
 				break;
 		}

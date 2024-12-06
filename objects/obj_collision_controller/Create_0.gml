@@ -95,7 +95,6 @@ function remove_body(body){
 	
 	partition_system.remove_data(body.get_data($"collision.world.{id}"));
 	body.set_data($"collision.world.{id}", undefined);
-	
 	return true;
 }
 

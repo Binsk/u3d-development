@@ -35,6 +35,9 @@ function remove_body(body){
 		return false;
 	}
 	
+	if (not U3DObject.get_is_valid_object(body))	// In case a cleanup wipes things before us
+		return false;
+	
 	// If the body doesn't exist, don't bother
 	if (is_undefined(body_map[$ body.get_index()]))
 		return false;

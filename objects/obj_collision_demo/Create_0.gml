@@ -101,8 +101,13 @@ function mouse_collision_left(data_array, pressed=true){
 		push = CollidableDataAABB.calculate_combined_push_vector(body, array);
 	}
 	
-	if (iterations <= 0)
+	if (iterations <= 0){
+		body.free();
+		delete body;
 		spawn_dead_cube(vec_add_vec(poso, vec(0, 0.55, 0)));
+	}
+	else
+		array_push(body_array, body);
 }
 
 function mouse_collision_right(data_array){
@@ -121,6 +126,7 @@ function mouse_collision_right(data_array){
 		
 		spawn_dead_cube(body.position);
 		
+		// obj_collision_controller.remove_body(body);
 		body.free();
 		delete body;
 	}
