@@ -254,6 +254,12 @@ function U3DObject() constructor {
 	function free(){
 		if (not U3DObject.get_is_valid_object(self))
 			return;
+		
+		if (not is_undefined(hash)){	// If a manual free, force clean up the references
+			struct_remove(U3D.MEMORY, hash);
+			signaler.signal("cleanup");	// Throw a signal for any additional required cleanup
+			hash = undefined;			// Wipe hash as it is now dereferenced
+		}
 			
 		signaler.signal("free");
 		signaler.clear();

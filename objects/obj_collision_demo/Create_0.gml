@@ -123,10 +123,8 @@ function mouse_collision_right(data_array){
 		
 		var body = data.get_affected_body();
 		array_delete(body_array, array_get_index(body_array, body), 1);
-		
 		spawn_dead_cube(body.position);
 		
-		// obj_collision_controller.remove_body(body);
 		body.free();
 		delete body;
 	}
