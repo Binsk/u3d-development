@@ -113,6 +113,7 @@ function Mesh() : U3DObject() constructor {
 	/// @param	{struct}	material_data	a struct containing material index -> Material() pairs
 	/// @param	{struct}	data			arbitrary data calculated by the renderer; things like skeletal animation
 	function render(material_data={}, data={}){
+		var is_multimodel = (not is_undefined(data[$ "node_array"]));
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
@@ -129,8 +130,18 @@ function Mesh() : U3DObject() constructor {
 				uniform_set("u_mBone", shader_set_uniform_matrix_array, [data.skeleton]);
 				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > U3D_MAXIMUM_BONES]);
 			}
-				
-			render_primitive(i);
+			
+			if (not is_multimodel)
+				render_primitive(i);
+			else {
+				var array = data.node_array;
+				for (var j = array_length(array) - 1; j >= 0; --j){
+					var node = array[j];
+					matrix_set(matrix_world, node.get_model_matrix());
+					apply_matrix();
+					render_primitive(i);
+				}
+			}
 		}
 	}
 	
@@ -138,6 +149,8 @@ function Mesh() : U3DObject() constructor {
 	/// @param	{struct}	material_data	a struct containing material index -> Material() pairs
 	/// @param	{struct}	data			arbitrary data calculated by the renderer; things like skeletal animation-
 	function render_shadows(material_data={}, data={}){
+		var is_multimodel = (not is_undefined(data[$ "node_array"]));
+		
 		for (var i = get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
@@ -163,7 +176,17 @@ function Mesh() : U3DObject() constructor {
 				uniform_set("u_iBoneNoScale", shader_set_uniform_i, [data.skeleton_bone_count > U3D_MAXIMUM_BONES]);
 			}
 			
-			render_primitive(i);
+			if (not is_multimodel)
+				render_primitive(i);
+			else {
+				var array = data.node_array;
+				for (var j = array_length(array) - 1; j >= 0; --j){
+					var node = array[j];
+					matrix_set(matrix_world, node.get_model_matrix());
+					apply_matrix();
+					render_primitive(i);
+				}
+			}
 		}
 	}
 	

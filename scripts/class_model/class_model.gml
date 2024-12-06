@@ -13,7 +13,7 @@ function Model() : U3DObject() constructor {
 	/// @param	{Material}	material	material to assign
 	/// @param	{real}		index		slot index the material should be applied to
 	function set_material(material, material_index){
-		if (not is_instanceof(material, Material)){
+		if (not is_instanceof(material, Material) and not is_undefined(material)){
 			Exception.throw_conditional("invalid type, expected [Material]!");
 			return;
 		}
@@ -89,6 +89,20 @@ function Model() : U3DObject() constructor {
 		
 		add_child_ref(mesh);
 		array_push(mesh_array, mesh);
+	}
+
+	function remove_mesh(mesh){
+		if (not is_instanceof(mesh, Mesh)){
+			Exception.throw_conditional("invalid type, expected [Mesh]!");
+			return;
+		}
+		
+		for (var i = array_length(mesh_array) - 1; i >=0; --i){
+			if (U3DObject.are_equal(mesh_array[i], mesh)){
+				remove_child_ref(mesh);
+				array_delete(mesh_array, i, 1);
+			}
+		}
 	}
 
 	/// @desc Renders the model out, applying materials as needed.

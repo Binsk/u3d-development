@@ -45,6 +45,8 @@ function set_partition_system(partition){
 	
 	// Assign new system:
 	partition_system = partition;
+	
+	partition_system.optimize();	// Only needed in some cases if there are lots of bodies being transfered
 }
 
 /// @desc	Set the amount of delay, in ms, between collision scans.

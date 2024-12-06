@@ -22,6 +22,9 @@ plane_body.set_position(vec(0, 0.01, 0));
 body_array = [];	// Array of physics bodies
 
 gltf_box = new GLTFBuilder("demo-box.glb");
+gltf_model = gltf_box.generate_model();
+multimodel_box = new MultiModel();	// Will use to render all boxes in one go
+body_box = new Body();
 
 body_floor = new Body(); // Done simply for shadow casting
 model_floor = undefined;
@@ -67,12 +70,11 @@ function mouse_collision_left(data_array, pressed=true){
 		return;
 	
 	// Spawn a new box model:
-	var model = gltf_box.generate_model();
-	model.freeze();
-	model.generate_unique_hash();
 	var body = new Body();
-	body.set_model(model);
-	var bounds = model.get_data("import"); // Grab any saved import data from the model
+	body.generate_unique_hash();
+	multimodel_box.add_node(body);	// The body is only used for collision & transforms; the rendering in this case is done by the multimodel!
+	
+	var bounds = gltf_model.get_data("import"); // Grab any saved import data from the model
 	var aabb_center = vec_add_vec(bounds.aabb_max, bounds.aabb_min);
 	var aabb_size = vec_sub_vec(bounds.aabb_max, bounds.aabb_min);
 	aabb_size = vec_mul_scalar(aabb_size, 0.5);
@@ -99,16 +101,8 @@ function mouse_collision_left(data_array, pressed=true){
 		push = CollidableDataAABB.calculate_combined_push_vector(body, array);
 	}
 	
-	if (iterations > 0){
-		array_push(body_array, body);
-		obj_render_controller.add_body(body);
-	}
-	else{
+	if (iterations <= 0)
 		spawn_dead_cube(vec_add_vec(poso, vec(0, 0.55, 0)));
-		
-		body.free();
-		delete body;
-	}
 }
 
 function mouse_collision_right(data_array){
@@ -183,6 +177,12 @@ plane_body.set_collidable(plane_collidable);
 
 camera_ray.generate_unique_hash();
 camera.set_collidable(camera_ray);
+
+multimodel_box.copy_from_model(gltf_model);
+multimodel_box.freeze();
+multimodel_box.generate_unique_hash();
+body_box.set_model(multimodel_box);
+obj_render_controller.add_body(body_box);
 
 #region GUI INIT
 

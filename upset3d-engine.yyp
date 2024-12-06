@@ -139,6 +139,7 @@
     {"id":{"name":"class_materialspatial","path":"scripts/class_materialspatial/class_materialspatial.yy",},},
     {"id":{"name":"class_mesh","path":"scripts/class_mesh/class_mesh.yy",},},
     {"id":{"name":"class_model","path":"scripts/class_model/class_model.yy",},},
+    {"id":{"name":"class_multimodel","path":"scripts/class_multimodel/class_multimodel.yy",},},
     {"id":{"name":"class_node","path":"scripts/class_node/class_node.yy",},},
     {"id":{"name":"class_octree","path":"scripts/class_octree/class_octree.yy",},},
     {"id":{"name":"class_partition","path":"scripts/class_partition/class_partition.yy",},},

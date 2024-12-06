@@ -1,11 +1,14 @@
 /// @about
-/// This class defines a Bounding Volume Hierarchy in the form of a BSP.
-/// This partitioning system excels at partitioning space for 3D bodies with
-/// volume. BVH structures are generally more expensive to set up than to scan.
-/// This BVH will self-balance as items are added and removed.
+/// This class defines a Bounding Volume Hierarchy in the form of a self-balancing BSP.
+/// This structure excells at partitioning items with volume and is very good for
+/// high-density situations.
 
 /// @param	{real}	depth_max		the maximum depth the tree can build
-/// @param	{real}	instance_max	the maximum instances stored per leaf; gets overridden if the tree runs out of depth
+/// @param	{real}	instance_max	the maximum instances stored per leaf
+/// @note	The 'maximums' are suggestions rather than absolute; the system will keep the maximums
+///			until there are too many instances in the tree where it may extends things.
+///			For most optimize tree building, however, having a large enough depth to handle all
+///			instances while keeping it as small as possible is the way to go.
 function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	#region PROPERTIES
 	static BVH_SPLIT_THRESHOLD = 0.3;	// How much difference there must be before splitting a node
@@ -94,7 +97,7 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	static balance_node = function(node){
 		if (not is_instanceof(node, PartitionNode)){
 			Exception.throw_conditional("invalid type, expected [PartitionNode]!");
-			return;
+			return 0;
 		}
 		
 		if (node.get_is_leaf())
@@ -585,7 +588,10 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	/// @note	The tree should, for the most part, be self-balancing. However, an explicit
 	///			balance call can be executed here.
 	function optimize(){
-		BVH.balance_node(node_root);
+		for (var i = 0; i < 16; ++i){
+			if (BVH.balance_node(node_root) < 2)
+				break;
+		}
 	}
 
 	function render_debug(){
@@ -598,6 +604,5 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	
 	#region INIT
 	self.node_root.depth = depth_max;
-	self.node_root.partition = self;
 	#endregion
 }

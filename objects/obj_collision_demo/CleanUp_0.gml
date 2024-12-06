@@ -1,11 +1,4 @@
-for (var i = array_length(body_array) - 1; i >= 0; --i){
-	if (not U3DObject.get_is_valid_object(body_array[i]))
-		continue;
-		
-	body_array[i].free();
-	delete body_array[i];
-}
-
+// Body array is freed by multimodel_box
 body_array = [];
 
 camera.free();
@@ -19,6 +12,12 @@ delete plane_body;
 
 gltf_box.free();
 delete gltf_box;
+
+gltf_model.free();
+delete gltf_model;
+
+body_box.free();
+delete body_box;
 
 environment.free();
 delete environment;

@@ -1,7 +1,8 @@
 /// @about
 /// This is a very simple unsorted 'partitioning' system that can be used when partitioning
 /// isn't required. This is the default system used with rendering and collisions unless
-/// something else is specified.
+/// something else is specified and is generally only useful for extremely small-scale
+/// situations.
 function Unsorted() : Partition() constructor {
 	#region PROPERTIES
 	self.node_root = new PartitionNode(self);
