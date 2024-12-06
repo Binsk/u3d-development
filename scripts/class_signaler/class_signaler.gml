@@ -155,7 +155,7 @@ function Signaler() constructor{
 /// @param	{array}			argv=[]		the arguments to pass when executed
 function Callable(_instance, _function, argv=[]) constructor {
 		#region PROPERTIES
-		method_ref = method(_instance, _function);
+		method_ref = undefined;
 		identifier = "";
 		self.argv = argv;
 		#endregion
@@ -194,6 +194,20 @@ function Callable(_instance, _function, argv=[]) constructor {
 			return identifier == callable.identifier;
 		}
 	
+		function is_valid(){
+			if (is_undefined(method_ref))
+				return false;
+			
+			var mself = method_get_self(method_ref);
+			if (is_struct(mself))
+				return true;
+			
+			if (is_undefined(mself))
+				return false;
+			
+			return instance_exists(mself);
+		}
+	
 		/// @desc	Creates an identical copy of this callable instance.
 		/// @return {Callable}
 		function duplicate(){
@@ -203,5 +217,10 @@ function Callable(_instance, _function, argv=[]) constructor {
 
 		#region INIT
 		identifier = md5_string_utf8(string(_instance) + string(_function) + string(argv));
+		
+		// Special-case if the instance is freed, called by signal, which calls this Callable.
+		if (is_struct(_instance) or instance_exists(_instance))
+			method_ref = method(_instance, _function);
+			
 		#endregion
 }

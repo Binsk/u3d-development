@@ -7,6 +7,7 @@
 function Super(class) constructor {
 	#region PROPERTIES
 	self.class = class;
+	is_instance = (not is_struct(class) and instance_exists(class));	// Need some special handling for instances
 	data = {};
 	#endregion
 	
@@ -33,6 +34,9 @@ function Super(class) constructor {
 	/// @param	{int}		offset			the offset in the array to start reading from
 	/// @param	{int}		count			the number of array elements to pass in
 	function execute(name, argv=[], offset=0, count=infinity){
+		if (is_instance and not instance_exists(class))	// Special-case early-quit
+			return undefined;
+		
 		var array = data[$ name];
 		if (is_undefined(array)) // Nothing to execute
 			return;
