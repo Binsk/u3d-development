@@ -31,7 +31,7 @@ scene_body = new Body();
 scene_body.set_model(gltf_model);
 obj_render_controller.add_body(scene_body);
 obj_render_controller.add_camera(camera);
-camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions | CAMERA_DEBUG_FLAG.render_partitions);
+camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions);
 camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);
 
 for (var i = array_length(light_array) - 1; i >= 0; --i){
