@@ -29,4 +29,7 @@ animation.start_animation_layer(0);
 
 obj_render_controller.add_body(body);
 obj_animation_controller.add_body(body);
+
+gltf.free();
+delete gltf;
 #endregion

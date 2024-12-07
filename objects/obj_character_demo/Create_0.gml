@@ -34,8 +34,11 @@ for (var i = min(array_length(camera_array) - 1, 0); i >= 0; --i){ // Only spawn
 }
 
 for (var i = array_length(light_array) - 1; i >= 0; --i){
-	if (is_instanceof(light_array[i], LightDirectional))
+	if (is_instanceof(light_array[i], LightDirectional)){
 		light_array[i].set_casts_shadows(true);
+		light_array[i].set_shadow_properties(U3D.OS.is_browser ? 2048 : 4096, 0.0001, 0.00001);
+	}
+		
 	obj_render_controller.add_light(light_array[i]);
 }
 
@@ -57,4 +60,17 @@ camera_ray = new Ray();
 camera_ray.set_static(camera_array[0], true);
 camera_array[0].set_collidable(camera_ray);
 obj_collision_controller.add_body(camera_array[0]);
+
+// Get information about the GPU name:
+gpu_string = "";
+var map = os_get_info();
+if (os_type == os_windows)
+	gpu_string = "GFX: " + map[? "video_adapter_description"];
+else
+	gpu_string = "GFX: " + (map[? "gl_renderer_string"] ?? "[unknown]");
+	
+if (string_pos("(", gpu_string) > 0)
+	gpu_string = string_copy(gpu_string, 1, string_pos("(", gpu_string) - 1);
+
+ds_map_destroy(map);
 #endregion

@@ -44,9 +44,6 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 			Exception.throw_conditional("cannot attach eye, invalid camera id!");
 			return;
 		}
-		
-		if (is_instanceof(eye_id, EyePerspective))
-			signaler.remove_signal("set_aspect", new Callable(eye_id, eye_id.set_aspect_ratio));
 			
 		if (is_instanceof(eye, EyePerspective))
 			signaler.add_signal("set_aspect", new Callable(eye, eye.set_aspect_ratio));

@@ -24,6 +24,9 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	
 	matrix_model = undefined;		// 4x4 transform matrix
 	matrix_inv_model = undefined;	// 4x4 inverse transform matrix
+	forward_vector = undefined;
+	up_vector = undefined;
+	right_vector = undefined;
 	
 	render_layer_bits = int64(-1);		// Which layers we render on (by default, all layers)
 	collidable_scan_bits = int64(-1);	// Which layers we look at for collisions
@@ -66,6 +69,9 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 			
 		matrix_model = undefined;
 		matrix_inv_model = undefined;
+		forward_vector = undefined;
+		up_vector = undefined;
+		right_vector = undefined;
 		signaler.signal("set_rotation", [value_start, self.rotation]);
 	}
 	
@@ -188,17 +194,20 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 /// @todo (?) might be worth caching these like w/ the matrices? Quat OPs are not fast.
 	/// @desc	Returns the current facing vector in world space.
 	function get_forward_vector(){
-		return quat_rotate_vec(rotation, vec(1, 0, 0));
+		forward_vector ??= quat_rotate_vec(rotation, vec(1, 0, 0));
+		return forward_vector;
 	}
 	
 	/// @desc	Returns the current up vector in world space.
 	function get_up_vector(){
-		return quat_rotate_vec(rotation, vec(0, 1, 0));
+		up_vector ??= quat_rotate_vec(rotation, vec(0, 1, 0));
+		return up_vector;
 	}
 	
 	/// @desc	Returns the current right vector in world space.
 	function get_right_vector(){
-		return quat_rotate_vec(rotation, vec(0, 0, 1));
+		right_vector ??= quat_rotate_vec(rotation, vec(0, 0, 1));
+		return right_vector;
 	}
 	
 	/// @desc	Returns the current model matrix.
