@@ -4,6 +4,12 @@
 /// just shape definitions. The collision system can be given a node to represent
 /// a transform to a collidable when detecting collisions; this allows re-use of
 ///	collidable shapes over multiplie bodies.
+///
+/// @note	Several property sets require a body to pair the value with. These properties
+///			are stored in two ways:
+///			"collision.<property>"	-	A static base property value
+///			["collision", "<property>"] - A dynamic property value that must be re-calculated based on body adjustments
+///	The former will remain after bodies are transformed but the later will be cleared.
 function Collidable() : U3DObject() constructor {
 	#region STATIC METHODS
 	/// @desc	Calculates if there is a collision between two collidables and, if so,
@@ -111,10 +117,10 @@ function Collidable() : U3DObject() constructor {
 			return true;
 		
 		if (node.get_data("collision.static", false))
-			node.set_data("collision.offset", offset);
+			node.set_data(["collision", "offset"], offset);
 		else{
 			offset = matrix_multiply_vec(node.get_model_matrix(), offset);	
-			node.set_data("collision.offset", offset);
+			node.set_data(["collision", "offset"], offset);
 		}
 		return true;
 	}

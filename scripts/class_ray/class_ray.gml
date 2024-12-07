@@ -17,8 +17,8 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 	static collide_plane = function(ray_a, plane_b, node_a, node_b){
 		var plane_normal = node_b.get_data(["collision", "orientation"], plane_b.normal);
 		var ray_normal = node_a.get_data(["collision", "orientation"], ray_a.orientation);
-		var ray_position = vec_add_vec(node_a.position, node_a.get_data("collision.offset", vec()));
-		var plane_position = vec_add_vec(node_b.position, node_b.get_data("collision.offset", vec()));
+		var ray_position = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
+		var plane_position = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
 		
 		var dot_direction = vec_dot(ray_normal, plane_normal);
 		var dot_location = -vec_dot(plane_normal, vec_sub_vec(ray_position, plane_position));
@@ -47,8 +47,8 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 
 	/// @desc	Returns collision data between a ray and an AABB.
 	static collide_aabb = function(ray_a, aabb_b, node_a, node_b){
-		var ray_position = vec_add_vec(node_a.position, node_a.get_data("collision.offset", vec()));
-		var aabb_position = vec_add_vec(node_b.position, node_b.get_data("collision.offset", vec()));
+		var ray_position = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
+		var aabb_position = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
 
 		var ray_position_adjusted = vec_sub_vec(ray_position, aabb_position); // Position relative to the aabb
 		var aabb_extends = node_b.get_data(["collision", "extends"], aabb_b.extends); // Get transformed extends
@@ -138,7 +138,7 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		
 		uniform_set("u_vColor", shader_set_uniform_f, r_color);
 		var matrix_model = matrix_get(matrix_world);
-		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data("collision.offset", vec()))));
+		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data(["collision", "offset"], vec()))));
 		vertex_submit(vbuffer, pr_linelist, -1);
 		vertex_delete_buffer(vbuffer);
 	}

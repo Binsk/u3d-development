@@ -15,6 +15,7 @@ cursor = cr_arrow;
 #region INIT
 // Generate character:
 instance_create_depth(0, 0, 0, obj_character);
+obj_collision_controller.set_partition_system(new BVH());
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
 
@@ -29,6 +30,7 @@ scene_body = new Body();
 scene_body.set_model(gltf_model);
 obj_render_controller.add_body(scene_body);
 obj_render_controller.add_camera(camera);
+camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions);
 camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);
 
 for (var i = array_length(light_array) - 1; i >= 0; --i){
@@ -50,8 +52,9 @@ obj_render_controller.add_light(light_ambient);
 
 // Spawn collision shapes:
 body_floor = new Body();
-collidable_floor = new Plane();
+collidable_floor = new AABB(vec(5, 0.1, 5));
 collidable_floor.generate_unique_hash();
+collidable_floor.set_offset(body_floor, vec(0, -0.05, 0));
 body_floor.set_collidable(collidable_floor);
 obj_collision_controller.add_body(body_floor);
 
@@ -59,6 +62,7 @@ camera_ray = new Ray();
 camera_ray.generate_unique_hash();
 camera_ray.set_static(camera, true);
 camera.set_collidable(camera_ray);
+camera.set_collision_mask_layers(2);	// Take us out of layer 1 so other objects don't detect the ray
 obj_collision_controller.add_body(camera);
 
 // Get information about the GPU name:
@@ -109,15 +113,4 @@ inst.signaler.add_signal("pressed", new Callable(id, function(){
 	
 	instance_create_depth(0, 0, 0, obj_render_demo);
 }));
-
-if (not U3D.OS.is_compatability){
-	ay -= 32;
-	inst = instance_create_depth(ax, ay, 0, obj_checkbox);
-	inst.text = "V-Sync";
-	inst.text_tooltip = "Enable full-screen V-Sync";
-	inst.is_checked = true;
-	inst.signaler.add_signal("checked", function(is_checked){
-		display_reset(0, is_checked);
-	});
-}
 #endregion

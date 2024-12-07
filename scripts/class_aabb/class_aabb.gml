@@ -46,8 +46,8 @@ function AABB(extends=vec()) : Collidable() constructor {
 			[0, 0]
 		];
 		
-		var position_a = vec_add_vec(node_a.position, node_a.get_data("collision.offset", vec()));
-		var position_b = vec_add_vec(node_b.position, node_b.get_data("collision.offset", vec()));
+		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
+		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
 		var extends_a = node_a.get_data(["collision", "extends"], aabb_a.extends);
 		var extends_b = node_b.get_data(["collision", "extends"], aabb_b.extends);
 		
@@ -112,7 +112,7 @@ function AABB(extends=vec()) : Collidable() constructor {
 				max(corner_1.y, corner_2.y),
 				max(corner_1.z, corner_2.z),
 			);
-			node.set_data(["collision", "extends"], extends_c);
+			node.set_data(["collision", "extends"], extends_c); 
 		}
 		
 		return true;
@@ -173,7 +173,7 @@ function AABB(extends=vec()) : Collidable() constructor {
 		uniform_set("u_vColor", shader_set_uniform_f, r_color);
 		var matrix_model = matrix_get(matrix_world);
 		
-		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data("collision.offset", vec()))));
+		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data(["collision", "offset"], vec()))));
 		vertex_submit(vbuffer, pr_linelist, -1);
 		matrix_set(matrix_world, matrix_model);
 		

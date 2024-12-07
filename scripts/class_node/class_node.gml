@@ -29,8 +29,8 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	right_vector = undefined;
 	
 	render_layer_bits = int64(-1);		// Which layers we render on (by default, all layers)
-	collidable_scan_bits = int64(-1);	// Which layers we look at for collisions
-	collidable_mask_bits = int64(-1);	// Which layers we occupy for collisions
+	collidable_scan_bits = int64(1);	// Which layers we look at for collisions	(only first layer by default)
+	collidable_mask_bits = int64(1);	// Which layers we occupy for collisions	(only first layer by default)
 	#endregion
 	
 	#region METHODS
@@ -97,6 +97,16 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	///			where each bit represents a layer index.
 	function set_render_layers(bits){
 		render_layer_bits = bits;
+	}
+	
+	/// @desc	Set which layers this node scans through.
+	function set_collision_scan_layers(bits){
+		collidable_scan_bits = bits;
+	}
+	
+	/// @desc	Sets which layers this node rests inside of
+	function set_collision_mask_layers(bits){
+		collidable_mask_bits = bits;
 	}
 	
 	/// @desc	Returns a copy of the position vector.
@@ -242,6 +252,8 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	/// @desc	Collision shapes store data in their calling node to help cache
 	///			calculations. This wipse the data to be re-calculated next collision check.
 	function clear_collision_data(){
+		if (keyboard_check(ord("1")))
+			show_error("TRACE", true);
 		set_data("collision", undefined);
 	}
 	

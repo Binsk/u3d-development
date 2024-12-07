@@ -21,9 +21,9 @@ if (mouse_check_button(mb_left)){
 else
 	movement_speed = max(0, movement_speed - movement_friction);
 	
-if (mouse_check_button(mb_right) and body.position.y <= 0)
+if (mouse_check_button(mb_right) and is_on_ground)
 	vertical_speed = jump_strength;
-
+	
 // Udates:
 movement_speed = clamp(movement_speed, 0, maximum_speed);	// Change run speed
 vertical_speed -= gravity_strength;	// Change fall speed
@@ -37,13 +37,6 @@ if (not vec_is_zero(look)){
 
 body.set_position(vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60)), true);
 body.set_position(vec_mul_scalar(body.get_up_vector(), vertical_speed * (1 / 60)), true);
-
-/// @stub	Until we get a floor:
-if (body.position.y <= 0){
-	vertical_speed = 0;
-	body.set_position(vec(0, -body.position.y, 0), true);
-}
-
 // Animation:
 if (abs(vertical_speed) <= 0.01 and body.position.y <= 0){ // Running / Idle animations
 	if (movement_speed > 0){
@@ -59,3 +52,5 @@ else {	// Jumping / falling animations
 	animation.set_animation_layer_speed(0, 1.0);
 	animation.queue_animation_layer_transition(0, vertical_speed > 0 ? "Jump" : "Fall", 0.25);
 }
+
+is_on_ground = false;
