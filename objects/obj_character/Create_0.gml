@@ -29,6 +29,65 @@ function is_collision(data_array){ // How to handle collisions
 	push_vector.y = 0;
 	movement_speed -= vec_magnitude(push_vector); // Not really precise; good enough for testing
 }
+
+function input(){
+	// User Input:
+	var is_input = false;
+	if (mouse_check_button(mb_left) and obj_character_demo.cursor == cr_arrow){
+		// For immediate results; this is how you would manually ping the physics server.
+		// NOTICE:	It is best to let the server auto-handle as it prevents needless re-calculations, but
+		//			some times you just want an immediate result instead of a signal.
+			// First, update the ray from the mouse coords:
+		var ray = obj_character_demo.camera_ray;	// The ray we want
+		obj_character_demo.camera.calculate_world_ray(gmouse.x, gmouse.y, ray);
+			// Manually ping collision shapes:
+		var collision_array = obj_collision_controller.process_body(obj_character_demo.camera);
+			// Grab the collision closest to the camera:
+		var data = CollidableDataRay.get_shortest_ray(obj_character_demo.camera, collision_array);
+			// Set that as the new target position for the character
+		if (not is_undefined(data))
+			target_vector = data.get_intersection_point();
+		
+		is_input = true;
+	}
+	else
+		
+		
+	if ((mouse_check_button(mb_right) or keyboard_check_pressed(vk_space)) and is_on_ground and obj_character_demo.cursor == cr_arrow)
+		vertical_speed = jump_strength;
+		
+	var look = vec_sub_vec(target_vector, body.position);
+
+		// Add keyboard input since it works way better; mouse was just for testing.
+		// This moves relative to the camera direction
+	if (not mouse_check_button(mb_left) and obj_character_demo.cursor == cr_arrow){
+		var right_vector = obj_character_demo.camera.get_right_vector();
+		var forward_vector = obj_character_demo.camera.get_forward_vector();
+		var m_vec = vec();
+		if (keyboard_check(vk_right))
+			m_vec = vec_add_vec(m_vec, right_vector);
+		if (keyboard_check(vk_left))
+			m_vec = vec_sub_vec(m_vec, right_vector);
+		if (keyboard_check(vk_up))
+			m_vec = vec_add_vec(m_vec, forward_vector);
+		if (keyboard_check(vk_down))
+			m_vec = vec_sub_vec(m_vec, forward_vector);
+		
+		m_vec.y = 0; // Remove tilt
+		look = vec_normalize(m_vec);
+		if (vec_magnitude(look) > 0)
+			is_input = true;
+	}
+	else
+		look.y = 0;	// Cancel out y-axis for rotation
+	
+	if (is_input)
+		movement_speed += movement_acceleration;
+	else 
+		movement_speed = max(0, movement_speed - movement_friction);
+	
+	return look;
+}
 #endregion
 
 #region INIT

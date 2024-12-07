@@ -11,6 +11,9 @@
 -	Fix "framebuffer" error in browser when loading new textures in (if rendering is off
 	while loading the issue goes away).
 -	Fix browser dithered rendering not mixing right w/ opaque items (?)
+-	Add ability to assign collision partitioning systems to individual (or multiple)
+	layers. This should allow players to be in separate smaller partitions but still
+	scan static.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

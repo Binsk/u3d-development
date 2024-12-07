@@ -32,7 +32,7 @@ scene_body = new Body();
 scene_body.set_model(gltf_model);
 obj_render_controller.add_body(scene_body);
 obj_render_controller.add_camera(camera);
-camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions);
+
 camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);
 
 for (var i = array_length(light_array) - 1; i >= 0; --i){
@@ -134,4 +134,26 @@ inst.signaler.add_signal("pressed", new Callable(id, function(){
 	
 	instance_create_depth(0, 0, 0, obj_render_demo);
 }));
+
+ax = 12;
+ay = display_get_gui_height() - 12 - 44;
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.is_checked = false;
+inst.text = "Render Collisions";
+inst.text_tooltip = "Render collision shape outlines. Color codes will relate to collision detection THAT FRAME.\n\nColor-code:\nRed: Not scanned\nGreen: Scanned, no collision\nYellow: Scanned, collision";
+inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
+	camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions, is_checked);
+}));
+
+ay -= 36;
+
+inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+inst.is_checked = false;
+inst.text = "Render Partitioning";
+inst.text_tooltip = "Render collision partitioning system nodes.\n\nColor-code:\nCyan: Leaf Node\nBlue: Parent Node\n\nFor this demo, leaf nodes can contain 4 collision bodies.";
+inst.signaler.add_signal("checked", new Callable(id, function(is_checked){
+	camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_partitions, is_checked);
+}));
+
+ay -= 36;
 #endregion
