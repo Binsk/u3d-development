@@ -648,6 +648,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		primitive.set_data(["import", "aabb_center"], vec_lerp(min_vec, max_vec, 0.5));	// Model actual center
 		primitive.set_data(["import", "aabb_extends"], vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5));	// Extends from model center
 		
+		if (not is_undefined(primitive_header[$ "name"]))
+			primitive.set_data(["import", "name"], primitive_header[$ "name"]);
+		
 		add_child_ref(primitive);
 		
 		// Cleanup to make GameMaker free memory:
@@ -719,6 +722,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
+
+		if (not is_undefined(json_header.meshes[mesh_index][$ "name"]))
+			mesh.set_data(["import", "name"], json_header.meshes[mesh_index][$ "name"]);
 
 		add_child_ref(mesh);
 		return mesh;

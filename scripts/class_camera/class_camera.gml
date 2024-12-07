@@ -591,7 +591,7 @@ function Camera() : Body() constructor {
 			for (var i = array_length(body_array) - 1; i >= 0; --i){
 				var body = body_array[i];
 				var collidable = body.get_collidable();
-				if (is_undefined(collidable))
+				if (U3DObject.get_is_valid_object(collidable))
 					continue;
 				
 				collidable.render_debug(body);

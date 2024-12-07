@@ -26,6 +26,8 @@ function is_collision(data_array){ // How to handle collisions
 	}
 	
 	body.set_position(push_vector, true);	// Push out of object
+	push_vector.y = 0;
+	movement_speed -= vec_magnitude(push_vector); // Not really precise; good enough for testing
 }
 #endregion
 
@@ -35,6 +37,8 @@ model = gltf.generate_model();
 animation = gltf.generate_animation_tree();
 animation.generate_unique_hash();
 model.generate_unique_hash();
+model.freeze();
+
 body = new Body();
 body.set_position(vec(0, 2, 0));
 body.set_model(model);

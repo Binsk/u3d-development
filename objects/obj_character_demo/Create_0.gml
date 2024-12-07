@@ -24,6 +24,7 @@ obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display i
 var gltf_scene = new GLTFBuilder("demo-scene.glb");
 gltf_model = gltf_scene.generate_model();
 gltf_model.generate_unique_hash();
+gltf_model.freeze();
 camera = gltf_scene.generate_cameras()[0];
 light_array = gltf_scene.generate_lights();
 
@@ -51,13 +52,32 @@ light_ambient = new LightAmbient();
 light_ambient.set_intensity(0.2);
 obj_render_controller.add_light(light_ambient);
 
+collidable_bodies = [];	// Used just to free at close
 // Spawn collision shapes:
-body_floor = new Body();
-collidable_floor = new AABB(vec(5, 0.1, 5));
-collidable_floor.generate_unique_hash();
-collidable_floor.set_offset(body_floor, vec(0, -0.05, 0));
-body_floor.set_collidable(collidable_floor);
-obj_collision_controller.add_body(body_floor);
+	// The demo mesh is designed to have cubes labeled as Cube_# w/ a single primitive
+	// so we generate collidables for that. Looking into more automated ways of handling
+	// collidable shapes from Blender.
+var mesh_array = gltf_model.get_mesh_array();
+for (var i = 0; i < array_length(mesh_array); ++i){
+	var mesh = mesh_array[i];
+	if (not string_starts_with(mesh.get_data(["import", "name"], ""), "Cube"))
+		continue;
+		
+	var primitive = mesh_array[i].get_primitive_data(0).primitive;
+	
+	var extends = primitive.get_data(["import", "aabb_extends"]);
+	var center = primitive.get_data(["import", "aabb_center"]);
+	extends = vec_abs_max(extends, vec(0.1, 0.1, 0.1));
+	center = vec_sub_vec(center, vec_sub_vec(extends, primitive.get_data(["import", "aabb_extends"])));
+	
+	var pbody = new Body();
+	var pcol = new AABB(extends);
+	pcol.generate_unique_hash();
+	pbody.set_collidable(pcol);
+	pcol.set_offset(pbody, center);
+	obj_collision_controller.add_body(pbody);
+	array_push(collidable_bodies, pbody)
+}
 
 camera_ray = new Ray();
 camera_ray.generate_unique_hash();

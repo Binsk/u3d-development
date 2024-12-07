@@ -384,6 +384,7 @@ function MaterialSpatial() : Material() constructor {
 		material.alpha_cutoff = alpha_cutoff;
 		material.texture = struct_duplicate_shallow(texture);
 		material.scalar = variable_clone(scalar);
+		material.set_data("import", get_data("import"))
 			
 		return material;
 	}

@@ -215,6 +215,7 @@ function Mesh() : U3DObject() constructor {
 		
 		mesh.matrix_model = matrix_model;
 		mesh.matrix_import = matrix_import;
+		mesh.set_data("import", get_data("import"))
 		return mesh;
 	}
 	

@@ -32,7 +32,7 @@ var look = vec_sub_vec(target_vector, body.position);
 look.y = 0;	// Cancel out y-axis for rotation
 if (not vec_is_zero(look)){
 	var rot = vec_lerp(body.get_forward_vector(), vec_normalize(look), 0.1);
-	body.set_rotation(vec_to_quat(rot));
+	body.look_at_up(vec_add_vec(body.position, rot));
 }
 
 body.set_position(vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60)), true);

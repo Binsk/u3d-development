@@ -11,7 +11,6 @@
 -	Fix "framebuffer" error in browser when loading new textures in (if rendering is off
 	while loading the issue goes away).
 -	Fix browser dithered rendering not mixing right w/ opaque items (?)
--	Browser is 30fps in character test unless Sophia is loaded first in render demo (?)
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
