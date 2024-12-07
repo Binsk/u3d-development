@@ -8,6 +8,8 @@ event_inherited();
 /// @signals
 /// "collision_<id>"	(data[])	-	thrown when a body is scanned w/ collisions where <id> is the body id that triggered the update.
 ///										'data' is an array of CollidableData structs for all collisions with that body.
+/// "process_pre"		()			-	thrown just before processing occurs
+/// "process_post"		()			-	thrown just after processing occurs
 
 /// @stub	Add partitioning system
 #region PROPERTIES

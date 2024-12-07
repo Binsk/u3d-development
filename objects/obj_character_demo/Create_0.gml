@@ -16,6 +16,7 @@ cursor = cr_arrow;
 // Generate character:
 instance_create_depth(0, 0, 0, obj_character);
 obj_collision_controller.set_partition_system(new BVH());
+obj_collision_controller.enable_collision_highlights(true);
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
 
@@ -30,7 +31,7 @@ scene_body = new Body();
 scene_body.set_model(gltf_model);
 obj_render_controller.add_body(scene_body);
 obj_render_controller.add_camera(camera);
-camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions);
+camera.set_debug_flag(CAMERA_DEBUG_FLAG.render_collisions | CAMERA_DEBUG_FLAG.render_partitions);
 camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);
 
 for (var i = array_length(light_array) - 1; i >= 0; --i){

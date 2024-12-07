@@ -14,7 +14,11 @@ is_on_ground = true;
 #endregion
 
 #region METHODS
-function is_collision(data_array){
+function collision_pre(){ // Occurs just before a collision check
+	is_on_ground = false;
+}
+
+function is_collision(data_array){ // How to handle collisions
 	var push_vector = CollidableDataAABB.calculate_combined_push_vector(body, data_array);
 	if (push_vector.y > 0){ // Mark as on-ground for now
 		is_on_ground = true;
@@ -32,6 +36,7 @@ animation = gltf.generate_animation_tree();
 animation.generate_unique_hash();
 model.generate_unique_hash();
 body = new Body();
+body.set_position(vec(0, 2, 0));
 body.set_model(model);
 body.set_animation(animation);
 
@@ -49,6 +54,7 @@ obj_animation_controller.add_body(body);
 obj_collision_controller.add_body(body);
 
 obj_collision_controller.add_signal(body, new Callable(id, is_collision));
+obj_collision_controller.signaler.add_signal("process_pre", new Callable(id, collision_pre));
 
 gltf.free();
 delete gltf;

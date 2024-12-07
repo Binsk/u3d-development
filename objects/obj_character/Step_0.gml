@@ -37,8 +37,9 @@ if (not vec_is_zero(look)){
 
 body.set_position(vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60)), true);
 body.set_position(vec_mul_scalar(body.get_up_vector(), vertical_speed * (1 / 60)), true);
+
 // Animation:
-if (abs(vertical_speed) <= 0.01 and body.position.y <= 0){ // Running / Idle animations
+if (is_on_ground){ // Running / Idle animations
 	if (movement_speed > 0){
 		animation.queue_animation_layer_transition(0, "Run", 0.25);
 		animation.set_animation_layer_speed(0, movement_speed / maximum_speed);
@@ -53,4 +54,8 @@ else {	// Jumping / falling animations
 	animation.queue_animation_layer_transition(0, vertical_speed > 0 ? "Jump" : "Fall", 0.25);
 }
 
-is_on_ground = false;
+// Out-of-world:
+if (body.position.y < -5){
+	vertical_speed = 0;
+	body.set_position(vec(0, 2, 0));
+}
