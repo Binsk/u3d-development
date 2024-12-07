@@ -148,10 +148,8 @@ function process_body(body, scan_array=undefined){
 	}
 	
 	// Make sure the body is valid and inside the collision system:
-	if (not U3DObject.get_is_valid_object(body) or is_undefined(body_map[$ body.get_index()]))
-		return [];
-	
-	if (is_undefined(body.get_collidable())) // No collidable 
+	if (not U3DObject.get_is_valid_object(body) or is_undefined(body_map[$ body.get_index()]) or
+		not U3DObject.get_is_valid_object(body.get_collidable()))
 		return [];
 	
 	if (is_undefined(scan_array))
@@ -168,7 +166,7 @@ function process_body(body, scan_array=undefined){
 		if (U3DObject.are_equal(body, body2)) // Same body, skip
 			continue;
 		
-		if (is_undefined(body2.get_collidable())) // Scanned body had collidable instance removed
+		if (not U3DObject.get_is_valid_object(body2.get_collidable())) // Scanned body had collidable instance removed
 			continue;
 		
 		if (body.collidable_scan_bits & body2.collidable_mask_bits == 0) // No common layers

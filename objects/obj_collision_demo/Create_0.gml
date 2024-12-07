@@ -133,8 +133,6 @@ function mouse_collision_right(data_array){
 #endregion
 
 #region INIT
-instance_create_depth(0, 0, 0, obj_render_controller);
-instance_create_depth(0, 0, 0, obj_collision_controller);
 instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has set text
 obj_collision_controller.enable_collision_highlights(true);	// Highlight collision shapes yellow when a collision is detected
 MaterialSpatial.DEFAULT_DITHER_TEXTURE = U3D.RENDERING.TEXTURE.dither_blue;

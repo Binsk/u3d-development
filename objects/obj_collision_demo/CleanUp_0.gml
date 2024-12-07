@@ -32,5 +32,3 @@ if (not is_undefined(collidable_box)){
 	collidable_box.free();
 	delete collidable_box;
 }
-
-instance_destroy(obj_u3d_controller);

@@ -3,7 +3,7 @@ if (not instance_exists(obj_character_demo))
 	
 // User Input:
 if (mouse_check_button(mb_left)){
-	movement_speed += frame_delta_relative * movement_acceleration;
+	movement_speed += movement_acceleration;
 	// For immediate results; this is how you would manually ping the physics server.
 	// NOTICE:	It is best to let the server auto-handle as it prevents needless re-calculations, but
 	//			some times you just want an immediate result instead of a signal.
@@ -19,24 +19,24 @@ if (mouse_check_button(mb_left)){
 		target_vector = data.get_intersection_point();
 }
 else
-	movement_speed = max(0, movement_speed - frame_delta_relative * movement_friction);
+	movement_speed = max(0, movement_speed - movement_friction);
 	
 if (mouse_check_button(mb_right) and body.position.y <= 0)
 	vertical_speed = jump_strength;
 
 // Udates:
 movement_speed = clamp(movement_speed, 0, maximum_speed);	// Change run speed
-vertical_speed -= gravity_strength * frame_delta_relative;	// Change fall speed
+vertical_speed -= gravity_strength;	// Change fall speed
 	// Update rotation
 var look = vec_sub_vec(target_vector, body.position);
 look.y = 0;	// Cancel out y-axis for rotation
 if (not vec_is_zero(look)){
-	var rot = vec_lerp(body.get_forward_vector(), vec_normalize(look), 0.1 * frame_delta_relative);
+	var rot = vec_lerp(body.get_forward_vector(), vec_normalize(look), 0.1);
 	body.set_rotation(vec_to_quat(rot));
 }
 
-body.set_position(vec_mul_scalar(body.get_forward_vector(), movement_speed * frame_delta), true);
-body.set_position(vec_mul_scalar(body.get_up_vector(), vertical_speed * frame_delta), true);
+body.set_position(vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60)), true);
+body.set_position(vec_mul_scalar(body.get_up_vector(), vertical_speed * (1 / 60)), true);
 
 /// @stub	Until we get a floor:
 if (body.position.y <= 0){

@@ -3,9 +3,9 @@
 
 #region PROPERTIES
 movement_speed = 0;
-movement_acceleration = 1.0;
+movement_acceleration = 0.5;
 movement_friction = 2.0;
-maximum_speed = 10.0;
+maximum_speed = 7.0;
 gravity_strength = 0.25;
 jump_strength = 6.0;
 vertical_speed = 0;

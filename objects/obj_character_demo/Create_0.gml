@@ -1,4 +1,6 @@
+// In the case of this demo, no delta timing and just keeping it set to 60 for simplicity
 display_reset(0, true);
+game_set_speed(60, gamespeed_fps);
 
 #region PROPERTIES
 render_width = display_get_gui_width();
@@ -11,10 +13,7 @@ cursor = cr_arrow;
 #endregion
 
 #region INIT
-// Generate controllers + character:
-instance_create_depth(0, 0, 0, obj_render_controller);
-instance_create_depth(0, 0, 0, obj_collision_controller);
-instance_create_depth(0, 0, 0, obj_animation_controller);
+// Generate character:
 instance_create_depth(0, 0, 0, obj_character);
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution

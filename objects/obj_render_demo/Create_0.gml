@@ -87,8 +87,11 @@ game_set_speed(9999, gamespeed_fps);
 Primitive.GENERATE_WIREFRAMES = true;
 
 // Spawn necessary controllers:
-instance_create_depth(0, 0, 0, obj_animation_controller);	// Allow auto-handling animation updates
-instance_create_depth(0, 0, 0, obj_render_controller);		// Allow auto-handling rendering updates
+if (not instance_exists(obj_animation_controller)){
+	instance_create_depth(0, 0, 0, obj_animation_controller);	// Allow auto-handling animation updates
+	instance_create_depth(0, 0, 0, obj_render_controller);		// Allow auto-handling rendering updates
+	instance_create_depth(0, 0, 0, obj_collision_controller);
+}
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
 MaterialSpatial.DEFAULT_DITHER_TEXTURE = U3D.RENDERING.TEXTURE.dither_bayer;
