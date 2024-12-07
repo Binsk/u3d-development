@@ -22,16 +22,15 @@ obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display i
 // Load in pre-built scene:
 var gltf_scene = new GLTFBuilder("demo-scene.glb");
 gltf_model = gltf_scene.generate_model();
-camera_array = gltf_scene.generate_cameras();
+gltf_model.generate_unique_hash();
+camera = gltf_scene.generate_cameras()[0];
 light_array = gltf_scene.generate_lights();
 
 scene_body = new Body();
 scene_body.set_model(gltf_model);
 obj_render_controller.add_body(scene_body);
-for (var i = min(array_length(camera_array) - 1, 0); i >= 0; --i){ // Only spawn one camera
-	obj_render_controller.add_camera(camera_array[i]);
-	camera_array[i].add_ppfx(U3D.RENDERING.PPFX.fxaa);
-}
+obj_render_controller.add_camera(camera);
+camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);
 
 for (var i = array_length(light_array) - 1; i >= 0; --i){
 	if (is_instanceof(light_array[i], LightDirectional)){
@@ -53,13 +52,15 @@ obj_render_controller.add_light(light_ambient);
 // Spawn collision shapes:
 body_floor = new Body();
 collidable_floor = new Plane();
+collidable_floor.generate_unique_hash();
 body_floor.set_collidable(collidable_floor);
 obj_collision_controller.add_body(body_floor);
 
 camera_ray = new Ray();
-camera_ray.set_static(camera_array[0], true);
-camera_array[0].set_collidable(camera_ray);
-obj_collision_controller.add_body(camera_array[0]);
+camera_ray.generate_unique_hash();
+camera_ray.set_static(camera, true);
+camera.set_collidable(camera_ray);
+obj_collision_controller.add_body(camera);
 
 // Get information about the GPU name:
 gpu_string = "";
@@ -73,4 +74,51 @@ if (string_pos("(", gpu_string) > 0)
 	gpu_string = string_copy(gpu_string, 1, string_pos("(", gpu_string) - 1);
 
 ds_map_destroy(map);
+#endregion
+
+#region GUI INIT
+// Right-side buttons:
+var ax = display_get_gui_width() - 12 - 256;
+var ay = display_get_gui_height() - 12 - 44;
+var inst;
+if (not U3D.OS.is_compatability){
+	inst = instance_create_depth(ax, ay, 0, obj_button);
+	inst.text = "Exit";
+	inst.signaler.add_signal("pressed", new Callable(id, game_end));
+	ay -= 44;
+}
+
+inst = instance_create_depth(ax, ay, 0, obj_button);
+inst.text = "Partition Test";
+inst.text_tooltip = "Switch to a scene focused on testing basic partitioning via block placement and mouse interaction.";
+inst.signaler.add_signal("pressed", new Callable(id, function(){
+	instance_destroy(obj_menu_item);
+	instance_destroy(obj_character);
+	instance_destroy();
+	
+	instance_create_depth(0, 0, 0, obj_collision_demo);
+}));
+ay -= 44;
+
+inst = instance_create_depth(ax, ay, 0, obj_button);
+inst.text = "Render Test";
+inst.text_tooltip = "Switch to a scene focused on testing rendering.";
+inst.signaler.add_signal("pressed", new Callable(id, function(){
+	instance_destroy(obj_menu_item);
+	instance_destroy(obj_character);
+	instance_destroy();
+	
+	instance_create_depth(0, 0, 0, obj_render_demo);
+}));
+
+if (not U3D.OS.is_compatability){
+	ay -= 32;
+	inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+	inst.text = "V-Sync";
+	inst.text_tooltip = "Enable full-screen V-Sync";
+	inst.is_checked = true;
+	inst.signaler.add_signal("checked", function(is_checked){
+		display_reset(0, is_checked);
+	});
+}
 #endregion

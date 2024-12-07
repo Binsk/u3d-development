@@ -42,6 +42,9 @@ with (obj_render_demo)
 
 with (obj_collision_demo)
 	other.controller_id = id;
+
+with (obj_character_demo)
+	other.controller_id = id;
 	
 	// X-Axis
 if (x > controller_id.render_width * 0.5){

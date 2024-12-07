@@ -19,6 +19,7 @@ target_vector = vec();	// Vector we are trying to move to
 var gltf = new GLTFBuilder("demo-sophia.glb");
 model = gltf.generate_model();
 animation = gltf.generate_animation_tree();
+animation.generate_unique_hash();
 model.generate_unique_hash();
 body = new Body();
 body.set_model(model);

@@ -1,3 +1,6 @@
+if (not instance_exists(obj_character_demo))
+	return;
+	
 // User Input:
 if (mouse_check_button(mb_left)){
 	movement_speed += frame_delta_relative * movement_acceleration;
@@ -6,11 +9,11 @@ if (mouse_check_button(mb_left)){
 	//			some times you just want an immediate result instead of a signal.
 		// First, update the ray from the mouse coords:
 	var ray = obj_character_demo.camera_ray;	// The ray we want
-	obj_character_demo.camera_array[0].calculate_world_ray(gmouse.x, gmouse.y, ray);
+	obj_character_demo.camera.calculate_world_ray(gmouse.x, gmouse.y, ray);
 		// Manually ping collision shapes:
-	var collision_array = obj_collision_controller.process_body(obj_character_demo.camera_array[0]);
+	var collision_array = obj_collision_controller.process_body(obj_character_demo.camera);
 		// Grab the collision closest to the camera:
-	var data = CollidableDataRay.get_shortest_ray(obj_character_demo.camera_array[0], collision_array);
+	var data = CollidableDataRay.get_shortest_ray(obj_character_demo.camera, collision_array);
 		// Set that as the new target position for the character
 	if (not is_undefined(data))
 		target_vector = data.get_intersection_point();

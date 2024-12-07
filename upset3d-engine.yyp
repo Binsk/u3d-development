@@ -11,8 +11,8 @@
   "defaultScriptType":1,
   "Folders":[
     {"$GMFolder":"","%Name":"Demo","folderPath":"folders/Demo.yy","name":"Demo","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"Collision Demo","folderPath":"folders/Demo/Collision Demo.yy","name":"Collision Demo","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Character Demo","folderPath":"folders/Demo/Character Demo.yy","name":"Character Demo","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Collision Demo","folderPath":"folders/Demo/Collision Demo.yy","name":"Collision Demo","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Menu Items","folderPath":"folders/Demo/Menu Items.yy","name":"Menu Items","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Rendering Demo","folderPath":"folders/Demo/Rendering Demo.yy","name":"Rendering Demo","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"Upset 3D","folderPath":"folders/Upset 3D.yy","name":"Upset 3D","resourceType":"GMFolder","resourceVersion":"2.0",},
