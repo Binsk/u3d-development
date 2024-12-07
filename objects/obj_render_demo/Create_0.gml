@@ -47,6 +47,9 @@ import_textures = true;
 import_lights = false;
 apply_transforms = true;
 
+y_scroll = 0;		// Actual scroll offset
+y_velocity = 0;		// Movement velocity
+
 error_array = [];			// Used to catch several model loading errors w/ incompatible models; displays these on-screen
 error_time = 0;
 

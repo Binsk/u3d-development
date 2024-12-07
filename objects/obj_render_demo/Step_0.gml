@@ -22,10 +22,20 @@ if (keyboard_check_pressed(vk_f1)){
 
 // Scroll bone attachment menu:
 if (not instance_exists(obj_bone_scroll)){
-	if (mouse_wheel_up())
-		camera_orbit_distance = max(camera_orbit_distance - 1, 1);
-	else if (mouse_wheel_down())
-		camera_orbit_distance = min(camera_orbit_distance + 1, 128);
+	if (gmouse.x < render_width - 256){
+		if (mouse_wheel_up())
+			camera_orbit_distance = max(camera_orbit_distance - 1, 1);
+		else if (mouse_wheel_down())
+			camera_orbit_distance = min(camera_orbit_distance + 1, 128);
+	}
+	
+	// Handle scrolling model buttons:
+	if (gmouse.x >= render_width - 256)
+		y_velocity += (mouse_wheel_up() - mouse_wheel_down()) * 512;
+		
+	y_velocity = clamp(y_velocity, -2048, 2048);
+	y_scroll += y_velocity * frame_delta;
+	y_velocity = lerp(y_velocity, 0, 0.2 * frame_delta_relative);
 }
 
 // Update camera position:

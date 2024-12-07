@@ -11,14 +11,8 @@ instance_create_depth(0, 0, -2, obj_tooltip); // Tooltip only displays if it has
 var file = file_find_first("render-test/*.glb", fa_none);
 var inst;
 var ax = display_get_gui_width() - 12 - 256;
-var max_files = 17;
 var is_maxed = false;
-while (file != "" and not is_maxed){
-	if (instance_number(obj_button_model) >= max_files){
-		is_maxed = true;
-		break;
-	}
-	
+while (file != ""){
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
 	inst.directory = "render-test";
@@ -27,11 +21,7 @@ while (file != "" and not is_maxed){
 file_find_close();
 
 file = file_find_first("render-test/*.gltf", fa_none);
-while (file != "" and not is_maxed){
-	if (instance_number(obj_button_model) >= max_files){
-		is_maxed = true;
-		break;
-	}
+while (file != ""){
 	
 	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
 	inst.text = file;
@@ -40,18 +30,14 @@ while (file != "" and not is_maxed){
 }
 file_find_close();
 
-if (instance_number(obj_button_model) == 0){ // Mostly for GX so there is something to test
-	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
-	inst.text = "demo-box.glb";
-	inst.directory = "";
-	
-	inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
-	inst.text = "alpha-test.glb";
-	inst.directory = "";
-}
+// Force-add some pre-included models:
+inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
+inst.text = "demo-box.glb";
+inst.directory = "";
 
-if (is_maxed) // Only used to prevent GUI overlap, really.
-	push_error($"too many model files, stopping at {max_files}...");
+inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
+inst.text = "demo-sophia.glb";
+inst.directory = "";
 
 // Exit button:
 var ay = display_get_gui_height() - 12 - 44;

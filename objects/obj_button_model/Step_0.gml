@@ -166,3 +166,8 @@ if (not is_undefined(body) and ((not is_unloading and triangle_lerp < 1) or (is_
 }
 	
 event_inherited();
+
+with (obj_render_demo){
+	if (other.y > render_height * 0.5)
+		other.is_hovered = false;
+}

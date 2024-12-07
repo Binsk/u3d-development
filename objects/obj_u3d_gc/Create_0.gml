@@ -51,7 +51,7 @@ function process(){
 	var i = 0;
 	var time_max = (loop >= max_reference_count ? infinity : max_process_time);
 	for (;i < loop; ++i){
-		if (i % 8 == 0 and current_time - time_start >= time_max)
+		if (i % 8 == 0 and current_time - time_start >= time_max)	// Only check to quit in batches of 8 so we guarantee SOME freeing every frame
 			break;
 		
 		var u3d_instance = reference_array[i];
