@@ -10,8 +10,8 @@
   "name":"obj_collision_box_fade",
   "overriddenProperties":[],
   "parent":{
-    "name":"Collision Demo",
-    "path":"folders/Collision Demo.yy",
+    "name":"Collisions",
+    "path":"folders/Demo/Collisions.yy",
   },
   "parentObjectId":null,
   "persistent":false,

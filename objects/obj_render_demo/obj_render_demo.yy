@@ -14,8 +14,8 @@
   "name":"obj_render_demo",
   "overriddenProperties":[],
   "parent":{
-    "name":"Render Demo",
-    "path":"folders/Render Demo.yy",
+    "name":"Rendering",
+    "path":"folders/Demo/Rendering.yy",
   },
   "parentObjectId":null,
   "persistent":false,

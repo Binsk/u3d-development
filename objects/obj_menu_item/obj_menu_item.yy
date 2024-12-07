@@ -10,7 +10,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Menu",
-    "path":"folders/Render Demo/Objects/Menu.yy",
+    "path":"folders/Demo/Menu.yy",
   },
   "parentObjectId":null,
   "persistent":false,

@@ -17,8 +17,8 @@
   ],
   "name":"room_demo",
   "parent":{
-    "name":"Render Demo",
-    "path":"folders/Render Demo.yy",
+    "name":"Rendering",
+    "path":"folders/Demo/Rendering.yy",
   },
   "parentRoom":null,
   "physicsSettings":{

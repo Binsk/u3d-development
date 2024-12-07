@@ -12,8 +12,8 @@
   "name":"obj_button_model",
   "overriddenProperties":[],
   "parent":{
-    "name":"Menu",
-    "path":"folders/Render Demo/Objects/Menu.yy",
+    "name":"Rendering",
+    "path":"folders/Demo/Rendering.yy",
   },
   "parentObjectId":{
     "name":"obj_button",
