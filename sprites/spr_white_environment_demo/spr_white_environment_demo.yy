@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":0,
   "parent":{
-    "name":"Collisions",
-    "path":"folders/Demo/Collisions.yy",
+    "name":"Collision Demo",
+    "path":"folders/Demo/Collision Demo.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

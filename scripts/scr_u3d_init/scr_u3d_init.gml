@@ -45,7 +45,8 @@ delete foo;
 foo = new CollidableDataAABB(undefined, undefined);
 delete foo;
 
-
+foo = new CollidableDataRay(undefined, undefined);
+delete foo;
 // Load necessary fallback textures:
 if (array_get_index(texturegroup_get_names(), "u3d_default") >= 0)
 	texturegroup_load("u3d_default", true);

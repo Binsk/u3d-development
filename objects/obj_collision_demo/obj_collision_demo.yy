@@ -11,8 +11,8 @@
   "name":"obj_collision_demo",
   "overriddenProperties":[],
   "parent":{
-    "name":"Collisions",
-    "path":"folders/Demo/Collisions.yy",
+    "name":"Collision Demo",
+    "path":"folders/Demo/Collision Demo.yy",
   },
   "parentObjectId":null,
   "persistent":false,

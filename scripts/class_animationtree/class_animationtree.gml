@@ -354,8 +354,15 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		if (is_undefined(data) or data.type != 0)
 			return;
 		
-		if (not is_undefined(data.track_to))
+		if (not is_undefined(data.track_to)){
+			if (data.track_to == track_name)	// Already transitioning; cancel
+				return;
+				
+			// Different; cause an immediate switch
 			data.track_from = data.track_to;
+		}
+		else if (data.track_from == track_name)	// Trying to reset to the current track, ignore
+			return;
 			
 		data.track_to = track_name;
 		data.track_lerp = 0;

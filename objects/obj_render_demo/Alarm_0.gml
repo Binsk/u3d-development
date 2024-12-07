@@ -49,8 +49,19 @@ if (not U3D.OS.is_compatability){
 }
 
 inst = instance_create_depth(ax, ay, 0, obj_button);
-inst.text = "Collision Test";
-inst.text_tooltip = "Switch to a scene focused on testing collisions.";
+inst.text = "Character Test";
+inst.text_tooltip = "Switch to a scene focused on testing character collisions over various types of shapes.";
+inst.signaler.add_signal("pressed", new Callable(id, function(){
+	instance_destroy(obj_menu_item);
+	instance_destroy();
+	
+	instance_create_depth(0, 0, 0, obj_character_demo);
+}));
+ay -= 44;
+
+inst = instance_create_depth(ax, ay, 0, obj_button);
+inst.text = "Partition Test";
+inst.text_tooltip = "Switch to a scene focused on testing basic partitioning via block placement and mouse interaction.";
 inst.signaler.add_signal("pressed", new Callable(id, function(){
 	instance_destroy(obj_menu_item);
 	instance_destroy();
