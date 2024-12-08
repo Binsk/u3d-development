@@ -91,7 +91,7 @@ function input(){
 #endregion
 
 #region INIT
-var gltf = new GLTFBuilder("demo-sophia.glb");
+var gltf = new GLTFBuilder("demo-gdbot.glb");
 model = gltf.generate_model();
 animation = gltf.generate_animation_tree();
 animation.generate_unique_hash();

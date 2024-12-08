@@ -36,7 +36,7 @@ inst.text = "demo-box.glb";
 inst.directory = "";
 
 inst = instance_create_depth(ax, 12 + instance_number(obj_button_model) * 44, 0, obj_button_model);
-inst.text = "demo-sophia.glb";
+inst.text = "demo-gdbot.glb";
 inst.directory = "";
 
 // Exit button:

@@ -2,6 +2,15 @@
 /// This PPFX effect adds bloom to the final output. Note that the swap surfaces 
 /// must re-allocate if the camera size changes, as such it is best to have a 
 /// SEPARATE instance of bloom for each camera instead of sharing one instance!
+///
+/// Bloom can be implemented a large number of ways. This bloom works as follows:
+/// 	1.	Grab pixels that cross a certain luminance threshold
+///		2.	Render result to a scaled-down surface
+///		3.	Perform a number of gaussian blurs in varying directions on the small (and fast) surface
+///		4.	Scale up and render twice addatively to the final result at half intensity
+///			while blurring once vertically and once horizontally to help remove pixelization
+
+
 /// @note	Threshold will HIGHLY depend on your scene and lighting setup! If bloom
 ///			doesn't appear or appears to blow everything out make sure to try adjusting
 ///			the threshold first.
@@ -113,7 +122,12 @@ function PPFXBloom(luminance_threshold=1.0, resolution_scale=0.5, blur_passes=5,
 		
 		gpu_set_blendmode(bm_add);
 		// Add bloom on top:
-		draw_quad(0, 0, buffer_width, buffer_height, surface_get_texture(active_index ? surface_a : surface_b));
+		shader_set(shd_gaussian_13);
+		uniform_set("u_vDirection", shader_set_uniform_f, [1, 0]);
+		draw_quad_color(0, 0, buffer_width, buffer_height, surface_get_texture(active_index ? surface_a : surface_b), c_white, 0.5);
+		uniform_set("u_vDirection", shader_set_uniform_f, [0, 1]);
+		draw_quad_color(0, 0, buffer_width, buffer_height, surface_get_texture(active_index ? surface_a : surface_b), c_white, 0.5);
+		shader_reset();
 		
 		surface_reset_target();
 		gpu_set_blendmode(bm_normal);
