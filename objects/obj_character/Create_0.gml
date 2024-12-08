@@ -50,9 +50,7 @@ function input(){
 		
 		is_input = true;
 	}
-	else
-		
-		
+
 	if ((mouse_check_button(mb_right) or keyboard_check_pressed(vk_space)) and is_on_ground and obj_character_demo.cursor == cr_arrow)
 		vertical_speed = jump_strength;
 		
