@@ -678,6 +678,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return mesh;
 			
 		var transform = undefined;
+		var mesh_name = undefined;
 		// Calculate transform matrix for this mesh (if one exists and apply transforms is enabled)
 		if (apply_transforms){
 			var node_array = (json_header[$ "nodes"] ?? []);
@@ -689,6 +690,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				transform = get_node_transform(i);
 				if (matrix_is_identity(transform))
 					transform = undefined; // Unset as it allows faster model building
+					
+				mesh_name = node[$ "name"];
 					
 				break;
 			}
@@ -719,6 +722,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		mesh = new Mesh();
 		mesh.hash = mesh_hash;
 		mesh.matrix_import = transform;
+		mesh.set_data(["import", "name"], mesh_name);
 
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
@@ -1110,6 +1114,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 			if (not is_undefined(light[$ "color"]))
 				light_instance.set_color(make_color_rgb(255 * light[$ "color"][0], 255 * light[$ "color"][1], 255 * light[$ "color"][2]));
+			
+			if (not is_undefined(light[$ "name"]))
+				light_instance.set_data(["import", "name"], light.name);
 
 			array_push(array, light_instance);
 /// @stub	Implement spot lights
@@ -1172,6 +1179,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 			camera.set_position(vec(pos[0], pos[1], pos[2]));
 			camera.set_rotation(rotation);
+			
+			if (not is_undefined(camera_header[$ "name"]))
+				camera.set_data(["import", "name"], camera_header.name);
 			
 			// Due to our camera looking down +X instead of -Z, we rotate to match the difference
 			var up = camera.get_up_vector();
