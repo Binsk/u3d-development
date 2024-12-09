@@ -1,6 +1,6 @@
 // In the case of this demo, no delta timing and just keeping it set to 60 for simplicity
-display_reset(false, false);
-game_set_speed(999, gamespeed_fps);
+display_reset(true, false);
+game_set_speed(60, gamespeed_fps);
 
 #region PROPERTIES
 render_width = display_get_gui_width();

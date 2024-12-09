@@ -112,8 +112,9 @@ body.set_animation(animation);
 body.set_data("parent_id", id);	// Generic data so we can manually manage collisions a bit better
 
 /// @stub	Until we get a pill shape added:
-collidable = new AABB(model.get_data(["import", "aabb_extends"]));
-collidable.set_offset(body, model.get_data(["import", "aabb_center"]));
+var import_extends = model.get_data(["import", "aabb_extends"]);
+collidable = new Capsule(import_extends.y * 2.0, vec_min_component(import_extends));
+collidable.set_offset(body, vec(0, import_extends.y * 0.5 + model.get_data(["import", "aabb_center"]).y * 0.5, 0));
 collidable.set_static(body, true); // Prevent AABB bound re-calc due to character rotation
 body.set_collidable(collidable);
 
