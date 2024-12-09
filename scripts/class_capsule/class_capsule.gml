@@ -1,0 +1,3 @@
+function Capsule() : AABB() constructor {
+	
+}

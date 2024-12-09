@@ -26,45 +26,61 @@ function Collidable() : U3DObject() constructor {
 	/// @param	{Node}			node_a			the first node to use for transforms
 	/// @param	{Node}			node_b			the second node to use for transforms
 	static calculate_collision = function(collidable_a, collidable_b, node_a, node_b) {
-		#region RAY CHECKS
-		if (is_instanceof(collidable_a, Ray)){
-			if (is_instanceof(collidable_b, Ray))
-				return undefined;	/// @stub	Implement!
-			if (is_instanceof(collidable_b, Plane))
-				return Ray.collide_plane(collidable_a, collidable_b, node_a, node_b);
-			if (is_instanceof(collidable_b, AABB))
-				return Ray.collide_aabb(collidable_a, collidable_b, node_a, node_b);
-		}
+		#region CONVEX HULL CHECKS
+/// https://github.com/carolhmj/quickhull-3d/blob/main/Quickhull3D.js
+/// @stub	Implement!
 		#endregion
-		#region PLANE CHECKS
-		if (is_instanceof(collidable_a, Plane)){
-			if (is_instanceof(collidable_b, Ray))
-				return Plane.collide_ray(collidable_a, collidable_b, node_a, node_b);
-			if (is_instanceof(collidable_b, Plane))
+		#region CAPSULE CHECKS
+/// https://wickedengine.net/2020/04/capsule-collision-detection/		
+/// @stub	Implement!
+		#endregion
+		#region SPHERE CHECKS
+		if (is_instanceof(collidable_a, Sphere)){
+			if (is_instanceof(collidable_b, Sphere))
+				return Sphere.collide_sphere(collidable_a, collidable_b, node_a, node_b);
+			else if (is_instanceof(collidable_b, AABB))
+				return Sphere.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+			else if (is_instanceof(collidable_b, Plane))
 				return undefined;	/// @stub	Implement!
-			if (is_instanceof(collidable_b, AABB))
+			else if (is_instanceof(collidable_b, Ray))
 				return undefined;	/// @stub	Implement!
 		}
 		#endregion
 		#region AABB CHECKS
-		if (is_instanceof(collidable_a, AABB)){
-			if (is_instanceof(collidable_b, Ray))
-				return AABB.collide_ray(collidable_a, collidable_b, node_a, node_b);
-			if (is_instanceof(collidable_b, Plane))
-				return undefined;	/// @stub	Implement!
-			if (is_instanceof(collidable_b, AABB))
+		else if (is_instanceof(collidable_a, AABB)){
+			if (is_instanceof(collidable_b, Sphere))
+				return Sphere.collide_aabb(collidable_b, collidable_a, node_b, node_a);
+			else if (is_instanceof(collidable_b, AABB))
 				return AABB.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+			else if (is_instanceof(collidable_b, Plane))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, Ray))
+				return AABB.collide_ray(collidable_a, collidable_b, node_a, node_b);
 		}
 		#endregion
-		#region SPHERE CHECKS
-/// @stub	Implement!
+		#region PLANE CHECKS
+		else if (is_instanceof(collidable_a, Plane)){
+			if (is_instanceof(collidable_b, Sphere))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, AABB))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, Plane))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, Ray))
+				return Plane.collide_ray(collidable_a, collidable_b, node_a, node_b);
+		}
 		#endregion
-		#region CAPSULE CHECKS
-/// @stub	Implement!
-		#endregion
-		#region CONVEX HULL CHECKS
-/// https://github.com/carolhmj/quickhull-3d/blob/main/Quickhull3D.js
-/// @stub	Implement!
+		#region RAY CHECKS
+		else if (is_instanceof(collidable_a, Ray)){
+			if (is_instanceof(collidable_b, Sphere))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, AABB))
+				return Ray.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+			else if (is_instanceof(collidable_b, Plane))
+				return Ray.collide_plane(collidable_a, collidable_b, node_a, node_b);
+			else if (is_instanceof(collidable_b, Ray))
+				return undefined;	/// @stub	Implement!
+		}
 		#endregion
 		
 		return undefined;
