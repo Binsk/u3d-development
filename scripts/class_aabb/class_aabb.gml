@@ -3,7 +3,10 @@
 /// fast at detecting collisions. This shape is commonly used as a first check before proceeding
 /// to more complicated shapes.
 ///
-// If an AABB is NOT static then it will morph its size / shape as the node rotates and scales.
+/// If an AABB is NOT static then it will morph its size / shape as the node rotates and scales.
+///
+/// @note	Most complex collision shaes inherit from the AABB class so as to allow easy addition
+///			and quick-checks to partitioning systems.
 
 /// @param	{vec}	extends		the length from origin the box stretches out it each direction
 function AABB(extends=vec()) : Collidable() constructor {
@@ -48,8 +51,8 @@ function AABB(extends=vec()) : Collidable() constructor {
 		
 		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
 		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
-		var extends_a = node_a.get_data(["collision", "extends"], aabb_a.extends);
-		var extends_b = node_b.get_data(["collision", "extends"], aabb_b.extends);
+		var extends_a = node_a.get_data(["collision", "aabb_extends"], aabb_a.extends);
+		var extends_b = node_b.get_data(["collision", "aabb_extends"], aabb_b.extends);
 		
 		var axis_min = -1;	// Axis w/ minimum push
 		var length_min = infinity;	// Length of shortest push
@@ -97,13 +100,13 @@ function AABB(extends=vec()) : Collidable() constructor {
 		
 		// If static, we don't adjust:
 		if (node.get_data("collision.static", false)){
-			node.set_data(["collision", "extends"], extends);
+			node.set_data(["collision", "aabb_extends"], extends);
 			return true;
 		}
 			
 		// Calculate extends w/ node rotation:
 		if (quat_is_identity(node.rotation)) // If no rotation short-cut the transforms
-			node.set_data(["collision", "extends"], vec_mul_vec(node.scale, extends));
+			node.set_data(["collision", "aabb_extends"], vec_mul_vec(node.scale, extends));
 		else {
 			var corner_1 = vec_abs(quat_rotate_vec(node.rotation, vec_mul_vec(node.scale, extends)));
 			var corner_2 = vec_abs(quat_rotate_vec(node.rotation, vec_mul_vec(node.scale, vec(extends.x, -extends.y, -extends.z))));
@@ -112,7 +115,7 @@ function AABB(extends=vec()) : Collidable() constructor {
 				max(corner_1.y, corner_2.y),
 				max(corner_1.z, corner_2.z),
 			);
-			node.set_data(["collision", "extends"], extends_c); 
+			node.set_data(["collision", "aabb_extends"], extends_c); 
 		}
 		
 		return true;
@@ -124,7 +127,7 @@ function AABB(extends=vec()) : Collidable() constructor {
 		var r_color = [color_get_red(draw_get_color()) / 255, color_get_green(draw_get_color()) / 255, color_get_blue(draw_get_color()) / 255];
 		transform(node);
 		
-		var render_extends = node.get_data(["collision", "extends"], self.extends);
+		var render_extends = node.get_data(["collision", "aabb_extends"], self.extends);
 		var vformat = VertexFormat.get_format_instance([VERTEX_DATA.position]).get_format();
 		var vbuffer = vertex_create_buffer();
 		

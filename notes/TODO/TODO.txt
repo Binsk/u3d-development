@@ -62,3 +62,4 @@
 	texture. May need some modifications to make the samples look better but the result
 	can be worth it: https://momentsingraphics.de/BlueNoise.html
 -	Add BVH 2D representation for checking branch depths
+-	Add "enter" and "exit" collision detection

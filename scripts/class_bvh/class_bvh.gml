@@ -1,7 +1,6 @@
 /// @about
 /// This class defines a Bounding Volume Hierarchy in the form of a self-balancing BSP.
-/// This structure excells at partitioning items with volume and is very good for
-/// high-density situations.
+/// A BVH can separate items into arbitrarily-sized compartments.
 
 /// @param	{real}	depth_max		the maximum depth the tree can build
 /// @param	{real}	instance_max	the maximum instances stored per leaf

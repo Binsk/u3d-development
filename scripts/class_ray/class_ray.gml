@@ -51,7 +51,7 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 		var aabb_position = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
 
 		var ray_position_adjusted = vec_sub_vec(ray_position, aabb_position); // Position relative to the aabb
-		var aabb_extends = node_b.get_data(["collision", "extends"], aabb_b.extends); // Get transformed extends
+		var aabb_extends = node_b.get_data(["collision", "aabb_extends"], aabb_b.extends); // Get transformed extends
 		
 		// Check if the ray falls INSIDE the box; if so, the origin point is the point of intersection
 		/// @note We don't calculate the EDGE position of the ray as if the box is hollow.

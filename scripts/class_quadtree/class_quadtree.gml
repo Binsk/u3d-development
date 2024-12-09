@@ -1,7 +1,5 @@
 /// @about
-/// A Quadtree is used to segment points in 2D space. It can still be used for
-/// optimizations in 3D games, however, if the game's mechanics work on a 2D
-/// plane.
+/// This is a strict Quadtree that subdivides spaces into equally-sized quadrants.
 
 function Quadtree() : Partition() constructor {
 /// @stub	Implement	

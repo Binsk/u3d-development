@@ -66,7 +66,7 @@ function PartitionData(data) constructor {
 			else {
 				data.get_collidable().transform(data);
 				var position = vec_add_vec(data.get_data(["collision", "offset"], vec()), data.position);
-				var extends = data.get_data(["collision", "extends"], vec());
+				var extends = data.get_data(["collision", "aabb_extends"], vec());
 				self.aabb.position = position;
 				self.aabb.extends = extends;
 				
