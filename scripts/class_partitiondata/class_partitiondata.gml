@@ -22,6 +22,7 @@ function PartitionData(data) constructor {
 	self.aabb = aabb();
 	self.ray = undefined;	// If a ray, this is set to an orientation
 	self.parent = undefined;	// The partition node we are inside of 
+	self.partition = undefined;	// The partition struct this belongs to
 	#endregion
 	
 	#region METHODS

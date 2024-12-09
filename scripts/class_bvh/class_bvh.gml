@@ -392,6 +392,7 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	
 	/// @desc	Updates a node's properties, including AABB and so-forth. Does not
 	///			recursively update parents or children.
+/// @todo	VERY SLOW; need to implement a proper update method
 	static update_node = function(node){
 		if (not is_instanceof(node, PartitionNode)){
 			Exception.throw_conditional("invalid type, expected [PartitionNode]!");

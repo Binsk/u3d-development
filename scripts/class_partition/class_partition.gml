@@ -41,6 +41,7 @@ function Partition() : U3DObject() constructor {
 			return false;
 		}
 		
+		data.partition = self;
 		return true;
 	}
 	
@@ -55,6 +56,7 @@ function Partition() : U3DObject() constructor {
 			return false;
 		}
 		
+		data.partition = undefined;
 		return true;
 	}
 	

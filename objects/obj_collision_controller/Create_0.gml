@@ -19,41 +19,53 @@ debug_scan_count = 0;				// Number of bodies scanned from the last tic
 update_map = {};	// Updates queued this frame
 update_delay = 0;	// Number of ms beteewn collision scan updates
 update_last = 0;	// Last time there was an update (in ms)
-partition_system = new Unsorted();
+partition_layers = {
+	"default" : new Unsorted()
+}
 #endregion
 
 #region METHODS
-/// @desc	Sets a new partitioning system to be used. All bodies will be transfered
-///			over and the old system cleared. This should generally be avoided when the
-///			system is full of bodies due to performance and optimization reasons.
+/// @desc	Sets a new partitioning system to be used for a given layer. If the layer
+///			doesn't exist it will be created. If a layer does exist the old partition
+///			system will transfer over the data and then be freed.
 /// @note	This gives ownership of the system to this collision controller, meaning
 ///			it will be auto-freed and updated accordingly.
-function set_partition_system(partition){
+/// @param	{Partition}	partition	partition system to use
+/// @param	{string}	layer		name of the layer to assign it to
+function set_partition_system(partition, layer_name="default"){
 	if (not is_instanceof(partition, Partition)){
 		Exception.throw_conditional("invalid type, expected [Partition]!");
 		return;
 	}
 	
+	var partition_old = partition_layers[$ layer_name];
+	
 	// Transfer data over
-	var data_array = partition_system.get_data_array();
-	for (var i = array_length(data_array) - 1; i >= 0; --i){
-		partition_system.remove_data(data_array[i]);
-		partition.add_data(data_array[i]);
+	if (not is_undefined(partition_old)){
+		var data_array = partition_old.get_data_array();
+		for (var i = array_length(data_array) - 1; i >= 0; --i){
+			partition_old.remove_data(data_array[i]);
+			partition.add_data(data_array[i]);
+		}
+		
+		// Delete old system:
+		partition_old.free();
+		delete partition_old;
+		
+		partition.optimize();
 	}
 	
-	// Delete old system:
-	partition_system.free();
-	delete partition_system;
-	
 	// Assign new system:
-	partition_system = partition;
-	
-	partition_system.optimize();	// Only needed in some cases if there are lots of bodies being transfered
+	partition_layers[$ layer_name] = partition;
 }
 
 /// @desc	Set the amount of delay, in ms, between collision scans.
 function set_update_delay(ms=0){
 	update_delay = max(ms, 0);
+}
+
+function get_partition(label){
+	return partition_layers[$ label];
 }
 
 /// @desc	Return the number of bodies scanned last tic
@@ -70,8 +82,14 @@ function enable_collision_highlights(enable=false){
 	debug_collision_highlights = bool(enable);
 }
 
+/// @desc	Adds a body to the system and in the specified partition layer.
+///			The specified layer must exist otherwise an error will be thrown.
 super.register("add_body");
-function add_body(body){
+function add_body(body, partition_layer="default"){
+	var partition = partition_layers[$ partition_layer];
+	if (is_undefined(partition))
+		throw new Exception($"invalid partition layer, [{partition_layer}]");
+	
 	if (not super.execute("add_body", [body]))
 		return false;
 
@@ -81,7 +99,7 @@ function add_body(body){
 	body.signaler.add_signal("set_scale", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	
 	var data = new PartitionData(body);
-	partition_system.add_data(data);
+	partition.add_data(data);
 	body.set_data($"collision.world.{id}", data);
 	return true;
 }
@@ -95,8 +113,9 @@ function remove_body(body){
 	body.signaler.remove_signal("set_rotation", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	body.signaler.remove_signal("set_scale", new Callable(id, _signal_queue_update, [undefined, undefined, body]));
 	
-	if (U3DObject.get_is_valid_object(partition_system))
-		partition_system.remove_data(body.get_data($"collision.world.{id}"));
+	var partition_data = body.get_data($"collision.world.{id}");
+	if (U3DObject.get_is_valid_object(partition_data.partition))
+		partition_data.partition.remove_data(body.get_data($"collision.world.{id}"));
 
 	body.set_data($"collision.world.{id}", undefined);
 	return true;
@@ -156,8 +175,17 @@ function process_body(body, scan_array=undefined){
 		not U3DObject.get_is_valid_object(body.get_collidable()))
 		return [];
 	
-	if (is_undefined(scan_array))
-		scan_array = partition_system.scan_collisions(body.get_data($"collision.world.{id}"));
+	if (is_undefined(scan_array)){
+/// @todo	Optimize out needless partition scanning; maybe even limit partitions to specific layer groups
+		var partition_array = struct_get_values(partition_layers);
+		for (var i = array_length(partition_array) - 1; i >= 0; --i){
+			var array = partition_array[i].scan_collisions(body.get_data($"collision.world.{id}"));
+			if (is_undefined(scan_array))
+				scan_array = array;
+			else if (array_length(array) > 0 )
+				scan_array = array_concat(scan_array, array);
+		}
+	}
 	
 	body.get_collidable().transform(body); // Update body (automatically skips if already up-to-date)
 	var data_array = [];
@@ -208,7 +236,6 @@ function process(){
 	}
 
 	debug_scan_count = 0;
-	var scan_array;
 	for (var i = array_length(instance_array) - 1; i >= 0; --i){
 		var body = instance_array[i];
 		var data_array = process_body(body);

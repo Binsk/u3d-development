@@ -1,6 +1,6 @@
 // In the case of this demo, no delta timing and just keeping it set to 60 for simplicity
-display_reset(0, true);
-game_set_speed(60, gamespeed_fps);
+display_reset(false, false);
+game_set_speed(999, gamespeed_fps);
 
 #region PROPERTIES
 render_width = display_get_gui_width();
@@ -13,12 +13,14 @@ cursor = cr_arrow;
 #endregion
 
 #region INIT
+obj_collision_controller.set_partition_system(new BVH());	// Static things are in BVH
+obj_collision_controller.set_partition_system(new Unsorted(), "dynamic"); // Dynamic in unsorted; BVH is slow to update
+obj_collision_controller.enable_collision_highlights(true);
+
 // Generate character:
 instance_create_depth(0, 0, 0, obj_character);
-instance_create_depth(-1, 2, 0, obj_sphere);
-instance_create_depth(-1, -2, 0, obj_sphere);
-obj_collision_controller.set_partition_system(new BVH());
-obj_collision_controller.enable_collision_highlights(true);
+instance_create_depth(-4, 12, 0, obj_sphere);
+instance_create_depth(-2, 8, 0, obj_sphere);
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
 

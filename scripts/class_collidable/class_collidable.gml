@@ -26,6 +26,14 @@ function Collidable() : U3DObject() constructor {
 	/// @param	{Node}			node_a			the first node to use for transforms
 	/// @param	{Node}			node_b			the second node to use for transforms
 	static calculate_collision = function(collidable_a, collidable_b, node_a, node_b) {
+		var collision = undefined;
+		// Pre-check for more complex shapes:
+		if (is_instanceof(collidable_a, AABB) and is_instanceof(collidable_b, AABB)){
+			collision = AABB.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+			if (is_undefined(collision))
+				return undefined;
+		}
+		
 		#region CONVEX HULL CHECKS
 /// https://github.com/carolhmj/quickhull-3d/blob/main/Quickhull3D.js
 /// @stub	Implement!
@@ -51,7 +59,7 @@ function Collidable() : U3DObject() constructor {
 			if (is_instanceof(collidable_b, Sphere))
 				return Sphere.collide_aabb(collidable_b, collidable_a, node_b, node_a);
 			else if (is_instanceof(collidable_b, AABB))
-				return AABB.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+				return collision;
 			else if (is_instanceof(collidable_b, Plane))
 				return undefined;	/// @stub	Implement!
 			else if (is_instanceof(collidable_b, Ray))

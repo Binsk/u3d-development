@@ -618,8 +618,11 @@ function Camera() : Body() constructor {
 			uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(gbuffer.textures[$ CAMERA_GBUFFER.depth]), texture_get_texel_height(gbuffer.textures[$ CAMERA_GBUFFER.depth])])
 			
 			// Partition systems:
-			with (obj_collision_controller)
-				partition_system.render_debug()
+			with (obj_collision_controller){
+				var partition_array = struct_get_values(partition_layers);
+				for (var j = array_length(partition_array) - 1; j >= 0; --j)
+					partition_array[j].render_debug()
+			}
 
 			shader_reset();
 			surface_reset_target();
