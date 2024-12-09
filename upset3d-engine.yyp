@@ -112,6 +112,7 @@
     {"id":{"name":"obj_render_controller","path":"objects/obj_render_controller/obj_render_controller.yy",},},
     {"id":{"name":"obj_render_demo","path":"objects/obj_render_demo/obj_render_demo.yy",},},
     {"id":{"name":"obj_slider","path":"objects/obj_slider/obj_slider.yy",},},
+    {"id":{"name":"obj_sphere","path":"objects/obj_sphere/obj_sphere.yy",},},
     {"id":{"name":"obj_tooltip","path":"objects/obj_tooltip/obj_tooltip.yy",},},
     {"id":{"name":"obj_u3d_controller","path":"objects/obj_u3d_controller/obj_u3d_controller.yy",},},
     {"id":{"name":"obj_u3d_gc","path":"objects/obj_u3d_gc/obj_u3d_gc.yy",},},

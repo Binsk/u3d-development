@@ -25,47 +25,88 @@ function Sphere(radius) : AABB(vec(radius, radius, radius)) constructor {
 	}
 	
 	static collide_aabb = function(sphere_a, aabb_b, node_a, node_b){
-		return undefined; /// @stub	Implement!
+		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
+		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
+		var extends_a = node_a.get_data(["collision", "aabb_extends"], sphere_a.extends);
+		var extends_b = node_b.get_data(["collision", "aabb_extends"], aabb_b.extends);
+		var radius_a = vec_min_component(extends_a);
+		
+		var point_edge = aabb_clamp_vec(aabb(position_b, extends_b), position_a);
+		var is_collision = false;
+		var is_inside = false;
+		if (vec_equals_vec(point_edge, position_a)){ // Center of sphere fell inside the bounding box
+			is_collision = true;
+			is_inside = true;
+		}
+		else // See if close enough for intersection
+			is_collision = (vec_magnitude(vec_sub_vec(point_edge, position_a)) < radius_a);
+		
+		if (not is_collision) // No collision; we're done
+			return undefined;
+		
+		var push_vector;
+		var data = new CollidableDataAABB(node_a, node_b, AABB);
+		data.data.push_forward = vec((radius_a - abs(point_edge.x - position_b.x)) * sign(point_edge.x - position_b.x), 0, 0);
+		data.data.push_up = vec(0, (radius_a - abs(point_edge.y - position_b.y)) * sign(point_edge.y - position_b.y), 0);
+		data.data.push_right = vec(0, 0, (radius_a - abs(point_edge.z - position_b.z)) * sign(point_edge.z - position_b.z));
+		
+		if (is_inside) // If fully inside; just find the smallest axis-aligned push vector 
+			push_vector = vec_min_magnitude(data.push_forward, data.push_up, data.push_right);
+		else{ // If not fully inside, push out from the closest point
+			push_vector = vec_sub_vec(position_a, point_edge);
+			push_vector = vec_mul_scalar(vec_normalize(push_vector), radius_a - vec_magnitude(push_vector));
+		}
+		
+		data.data.push_vector = push_vector;
+		return data;
 	}
 	#endregion
-	
+
 	#region METHODS
+	function render_debug(node){
+		super.execute("render_debug", [node]);
+		var r_color = [color_get_red(draw_get_color()) / 255, color_get_green(draw_get_color()) / 255, color_get_blue(draw_get_color()) / 255];
+		transform(node);
+		
+		var render_extends = node.get_data(["collision", "aabb_extends"], self.extends);
+		var radius = vec_min_component(render_extends);
+		var vformat = VertexFormat.get_format_instance([VERTEX_DATA.position]).get_format();
+		var vbuffer = vertex_create_buffer();
+		
+		vertex_begin(vbuffer, vformat);
+		
+		var d = (2 * pi) / 32;
+		for (var i = 0 ; i < 32; ++i){
+			var t1 = d * i;
+			var t2 = d * (i + 1);
+			var ct1 = cos(t1) * radius;
+			var ct2 = cos(t2) * radius;
+			var st1 = sin(t1) * radius;
+			var st2 = sin(t2) * radius;
+			
+			vertex_position_3d(vbuffer, ct1, 0, -st1);
+			vertex_position_3d(vbuffer, ct2, 0, -st2);
+			
+			vertex_position_3d(vbuffer, 0, ct1, -st1);
+			vertex_position_3d(vbuffer, 0, ct2, -st2);
+			
+			vertex_position_3d(vbuffer, ct1, -st1, 0);
+			vertex_position_3d(vbuffer, ct2, -st2, 0);
+		}
+		
+		vertex_end(vbuffer);
+		
+		uniform_set("u_vColor", shader_set_uniform_f, r_color);
+		var matrix_model = matrix_get(matrix_world);
+		
+		matrix_set(matrix_world, matrix_build_translation(vec_add_vec(node.position, node.get_data(["collision", "offset"], vec()))));
+		vertex_submit(vbuffer, pr_linelist, -1);
+		matrix_set(matrix_world, matrix_model);
+		
+		vertex_delete_buffer(vbuffer);
+	}
 	#endregion
 
 	#region INIT
-	#endregion
-}
-
-function CollidableDataSphere(body_a, body_b, type_b=Collidable) : CollidableData(Sphere, type_b) constructor {
-	#region PROPERTIES
-	self.body_a = body_a;
-	self.body_b = body_b;
-	#endregion
-	
-	#region STATIC METHODS
-	/// @desc	Given an array of CollidableDataAABB instances, combines all the
-	///			push vectors applied to the specified body and returns the result.
-	static calculate_combined_push_vector = function(body, array){
-		var vector = vec();
-		for (var i = array_length(array) - 1; i >= 0; --i){
-			var data = array[i];
-		if (not is_instanceof(data, CollidableDataAABB))
-				continue;
-			
-			if (U3DObject.are_equal(body, data.get_colliding_body()))
-				vector = vec_add_vec(vector, data.get_push_vector());
-				
-			if (U3DObject.are_equal(body, data.get_affected_body()))
-				vector = vec_sub_vec(vector, data.get_push_vector());
-		}
-		
-		return vector;
-	}
-	#endregion
-	
-	#region METHODS
-	function get_push_vector(){
-		return data.push_vector;
-	}
 	#endregion
 }

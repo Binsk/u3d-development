@@ -355,6 +355,36 @@ function vec_max(vector1, vector2){
 	);
 }
 
+/// @desc	Returns the vector with the smallest magnitude.
+function vec_min_magnitude(){
+	var min_length = infinity;
+	var min_vec = undefined;
+	for (var i = 0; i < argument_count; ++i){
+		var length = vec_magnitude(argument[i]);
+		if (length < min_length){
+			min_length = length;
+			min_vec = argument[i];
+		}
+	}
+	
+	return min_vec;
+}
+
+/// @desc	Returns the vector with the largest magnitude.
+function vec_max_magnitude(){
+	var max_length = -infinity;
+	var max_vec = undefined;
+	for (var i = 0; i < argument_count; ++i){
+		var length = vec_magnitude(argument[i]);
+		if (length > max_length){
+			max_length = length;
+			max_vec = argument[i];
+		}
+	}
+	
+	return max_vec;
+}
+
 /// @desc	Determines the largest abs value of each component and keeps it, along with
 /// 		  the sign.
 function vec_abs_max(vector1, vector2){

@@ -163,3 +163,10 @@ function aabb_add_aabb(aabb_a, aabb_b){
 	var extends = vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5);
 	return aabb(origin, extends);
 }
+
+/// @desc	Returns the specified point clamped inside of the aabb.
+/// @param	{aabb}	aabb		aabb to clamp to
+/// @param	{vec}	vec			vector to clamp
+function aabb_clamp_vec(_aabb, _vec){
+	return vec_clamp(_vec, vec_sub_vec(_aabb.position, _aabb.extends), vec_add_vec(_aabb.position, _aabb.extends));
+}
