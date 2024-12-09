@@ -19,7 +19,16 @@ function collision_pre(){ // Occurs just before a collision check
 }
 
 function is_collision(data_array){ // How to handle collisions
-	var push_vector = CollidableDataAABB.calculate_combined_push_vector(body, data_array);
+	var push_vector = vec();
+	for (var i = array_length(data_array) - 1; i >= 0; --i){
+		var data = data_array[i];
+		if (not is_undefined(data.get_affected_body().get_data("parent_id")))
+			continue;
+		
+		if (is_instanceof(data, CollidableDataAABB))
+			push_vector = vec_add_vec(push_vector, data.get_push_vector());
+	}
+
 	if (push_vector.y > 0){ // Mark as on-ground for now
 		is_on_ground = true;
 		vertical_speed = max(0, vertical_speed);
@@ -100,6 +109,7 @@ body = new Body();
 body.set_position(vec(0, 2, 0));
 body.set_model(model);
 body.set_animation(animation);
+body.set_data("parent_id", id);	// Generic data so we can manually manage collisions a bit better
 
 /// @stub	Until we get a pill shape added:
 collidable = new AABB(model.get_data(["import", "aabb_extends"]));

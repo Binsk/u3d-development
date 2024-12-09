@@ -17,10 +17,14 @@ function Sphere(radius) : AABB(vec(radius, radius, radius)) constructor {
 		if (distance > radius_a + radius_b)	// No collision
 			return undefined;
 		
+		var radius_combined = radius_a + radius_b;
 		var push_vector = vec_normalize(vec_sub_vec(position_a, position_b));
 		push_vector = vec_mul_scalar(push_vector, (radius_a + radius_b) - distance);
-		var data = new CollidableDataSphere(node_a, node_b, Sphere);
+		var data = new CollidableDataAABB(node_a, node_b, Sphere);
 		data.data.push_vector = push_vector;
+		data.data.push_forward = vec((radius_combined - abs(position_a.x - position_b.x)) * sign(position_a.x - position_b.x), 0, 0);
+		data.data.push_up = vec((radius_combined - abs(position_a.y - position_b.y)) * sign(position_a.y - position_b.y), 0, 0);
+		data.data.push_right = vec((radius_combined - abs(position_a.z - position_b.z)) * sign(position_a.z - position_b.z), 0, 0);
 		return data;
 	}
 	
@@ -51,7 +55,7 @@ function Sphere(radius) : AABB(vec(radius, radius, radius)) constructor {
 		data.data.push_right = vec(0, 0, (radius_a - abs(point_edge.z - position_b.z)) * sign(point_edge.z - position_b.z));
 		
 		if (is_inside) // If fully inside; just find the smallest axis-aligned push vector 
-			push_vector = vec_min_magnitude(data.push_forward, data.push_up, data.push_right);
+			push_vector = vec_min_magnitude(data.data.push_forward, data.data.push_up, data.data.push_right);
 		else{ // If not fully inside, push out from the closest point
 			push_vector = vec_sub_vec(position_a, point_edge);
 			push_vector = vec_mul_scalar(vec_normalize(push_vector), radius_a - vec_magnitude(push_vector));

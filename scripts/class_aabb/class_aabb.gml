@@ -210,31 +210,47 @@ function CollidableDataAABB(body_a, body_b, type_b=Collidable) : CollidableData(
 		
 		return vector;
 	}
+	
+	/// @desc	Given a CollidableDataAAB, creates a copy with all values reversed.
+	/// @note	This can create an invalid collidable structure if the affected type's
+	///			ancestor is not an AABB.
+	static calculate_reverse = function(data){
+		if (not is_instanceof(data, CollidableDataAABB))
+			throw new Exception("invalid type, expected [CollidableDataAABB]!");
+			
+		var ndata = new CollidableDataAABB(data.body_b, data.body_a, data.type_a);
+		ndata.data.push_vector = vec_reverse(data.data.push_vector);
+		ndata.data.push_forward = vec_reverse(data.data.push_forward);
+		ndata.data.push_up = vec_reverse(data.data.push_up);
+		ndata.data.push_right = vec_reverse(data.data.push_right);
+		return ndata;
+	}
 	#endregion
 	
 	#region METHODS
 	/// @desc	Returns the push vector required to push body_b out
-	///			of body_a on the shortest side.
+	///			of body_a in the shortest direction. Depending on the collision
+	///			type this MAY NOT be axis-aligned!
 	function get_push_vector(){
 		return data.push_vector;
 	}
 	
 	/// @desc	Returns the push vector require to push body_b out
-	///			of body_a on the local forward axis.
+	///			of body_a on the global forward axis.
 	/// @note	Vector may be negative.
 	function get_push_x(){
 		return data.push_forward;
 	}
 	
 	/// @desc	Returns the push vector require to push body_b out
-	///			of body_a on the local up axis.
+	///			of body_a on the global up axis.
 	/// @note	Vector may be negative.
 	function get_push_y(){
 		return data.push_up;
 	}
 	
 	/// @desc	Returns the push vector require to push body_b out
-	///			of body_a on the local right axis.
+	///			of body_a on the global right axis.
 	/// @note	Vector may be negative.
 	function get_push_z(){
 		return data.push_right;

@@ -18,7 +18,7 @@ if (not vec_is_zero(look)){
 }
 
 body.set_position(vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60)), true);
-body.set_position(vec_mul_scalar(body.get_up_vector(), vertical_speed * (1 / 60)), true);
+body.set_position(vec_mul_scalar(Node.AXIS_UP, vertical_speed * (1 / 60)), true);
 
 // Animation:
 if (is_on_ground){ // Running / Idle animations

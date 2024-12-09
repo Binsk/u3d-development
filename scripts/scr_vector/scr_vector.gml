@@ -285,11 +285,18 @@ function vec_slerp(vector1, vector2, percent) {
 }
 
 /// @desc	Projects a vector onto a normal (effectively removing that axis from the vector)
-///		 The normal should be normalized.
+///			The normal should be normalized.
 function vec_project(vector, normal){
 	var dot = vec_dot(vector, normal); // Magnitude of vector along the normal
 	var normal_mag = vec_mul_scalar(normal, dot);
 	return vec_sub_vec(vector, normal_mag);
+}
+
+/// @desc	Reflects the vector against the specified normal as if 'bouncing' off a surface
+///			where the normal is the direction of the surface. Normal must be normalized.
+function vec_reflect(vector, normal){
+	var length = vec_magnitude(vector);
+	return vec_sub_vec(vector, vec_mul_scalar(normal, 2 * vec_dot(vector, normal)));
 }
 
 /// @desc	Returns an arbitrary perpendicular vector to the one specified.
@@ -386,7 +393,7 @@ function vec_max_magnitude(){
 }
 
 /// @desc	Determines the largest abs value of each component and keeps it, along with
-/// 		  the sign.
+///			the sign.
 function vec_abs_max(vector1, vector2){
 	return vec(
 		abs_max(vector1.x, vector2.x),

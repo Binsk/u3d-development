@@ -16,6 +16,7 @@ cursor = cr_arrow;
 // Generate character:
 instance_create_depth(0, 0, 0, obj_character);
 instance_create_depth(-1, 2, 0, obj_sphere);
+instance_create_depth(-1, -2, 0, obj_sphere);
 obj_collision_controller.set_partition_system(new BVH());
 obj_collision_controller.enable_collision_highlights(true);
 
