@@ -27,7 +27,7 @@ function Sphere(radius) : AABB(vec(radius, radius, radius)) constructor {
 		data.data.push_right = vec((radius_combined - abs(position_a.z - position_b.z)) * sign(position_a.z - position_b.z), 0, 0);
 		return data;
 	}
-	
+
 	static collide_aabb = function(sphere_a, aabb_b, node_a, node_b){
 		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
 		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
@@ -43,7 +43,7 @@ function Sphere(radius) : AABB(vec(radius, radius, radius)) constructor {
 			is_inside = true;
 		}
 		else // See if close enough for intersection
-			is_collision = (vec_magnitude(vec_sub_vec(point_edge, position_a)) < radius_a);
+			is_collision = (vec_magnitude(vec_sub_vec(point_edge, position_a)) <= radius_a);
 		
 		if (not is_collision) // No collision; we're done
 			return undefined;

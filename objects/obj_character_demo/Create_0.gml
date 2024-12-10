@@ -121,7 +121,6 @@ inst.text = "Partition Test";
 inst.text_tooltip = "Switch to a scene focused on testing basic partitioning via block placement and mouse interaction.";
 inst.signaler.add_signal("pressed", new Callable(id, function(){
 	instance_destroy(obj_menu_item);
-	instance_destroy(obj_character);
 	instance_destroy();
 	
 	instance_create_depth(0, 0, 0, obj_collision_demo);
@@ -133,7 +132,6 @@ inst.text = "Render Test";
 inst.text_tooltip = "Switch to a scene focused on testing rendering.";
 inst.signaler.add_signal("pressed", new Callable(id, function(){
 	instance_destroy(obj_menu_item);
-	instance_destroy(obj_character);
 	instance_destroy();
 	
 	instance_create_depth(0, 0, 0, obj_render_demo);

@@ -437,7 +437,7 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	}
 	
 	static calculate_collision_ray_array = function(node, data){
-		if (not ray_intersects_aabb(data.aabb.position, data.ray, node.aabb))
+		if (is_undefined(ray_intersects_aabb(data.aabb.position, data.ray, node.aabb)))
 			return [];
 			
 		node.partition.debug_scan_count++;

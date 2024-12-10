@@ -47,6 +47,8 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 
 	/// @desc	Returns collision data between a ray and an AABB.
 	static collide_aabb = function(ray_a, aabb_b, node_a, node_b){
+/// @todo	Remove this code and replace with the generalized ray_intersects_aabb()
+///			to get rid of the duplication.
 		var ray_position = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
 		var aabb_position = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
 
@@ -61,7 +63,8 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 			var data = new CollidableDataRay(node_a, node_b, AABB);
 			data.data = {
 				is_inside : true,
-				intersection_point : ray_position
+				intersection_point : ray_position,
+				intersection_distance : 0
 			};
 			
 			return data;

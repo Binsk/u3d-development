@@ -185,6 +185,7 @@ function AABB(extends=vec()) : Collidable() constructor {
 	#endregion
 }
 
+/// @todo	Rename to something more generic as it is used by much more than AABBs at this point.
 function CollidableDataAABB(body_a, body_b, type_b=Collidable) : CollidableData(AABB, type_b) constructor {
 	#region PROPERTIES
 	self.body_a = body_a;

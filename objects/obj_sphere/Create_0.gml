@@ -36,7 +36,7 @@ function is_collision(data_array, recurse=true){ // How to handle collisions
 		if (abs(vertical_speed < 0.05))
 			vertical_speed = 0;
 	}
-
+	
 	body.set_position(push_vector, true);	// Push out of object
 	
 	push_vector.y = 0; // Remove y for 'body push' effect

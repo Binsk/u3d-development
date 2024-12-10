@@ -3,8 +3,72 @@
 /// spheres on each end. Capsules are defined with the height along the y-axis
 /// from sphere end to sphere end with the specified cylindrical radius.
 /// Capsules are aligned at their center.
+
+/// @todo	Add rotation to capsule calculations; ALL capsules ignore rotation ATM.
 function Capsule(height, radius) : AABB(vec(radius, height * 0.5, radius)) constructor {
+	/// @note	Height / Radius is stored in the extends where:
+	///			extends.y == height * 0.5
+	///			extends.x == radius
 	#region STATIC METHODS
+	static collide_aabb = function(capsule_a, aabb_b, node_a, node_b){
+		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
+		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
+		var extends_a = node_a.get_data(["collision", "aabb_extends"], capsule_a.extends);
+		var extends_b = node_b.get_data(["collision", "aabb_extends"], aabb_b.extends);
+		var position_top = vec_add_vec(position_a, vec(0, extends_a.y - extends_a.x, 0));	// Top and bottom accounting for radius
+		var position_bottom = vec_sub_vec(position_a, vec(0, extends_a.y - extends_a.x, 0));
+		var push_vector = undefined;
+
+	/// @stub	At the moment we don't use rotations so we can make some assumptions.
+	///			Will need to account for capsule rotation down the line.
+		// Line collision check w/ expanded AABB
+		var _aabb = aabb(position_b, vec_add_vec(extends_b, vec(extends_a.x, 0, extends_a.x)));	// Extend by radius
+		var position_top_clamped = aabb_clamp_vec(_aabb, position_top);
+		var position_bottom_clamped = aabb_clamp_vec(_aabb, position_bottom);
+		var intersection = undefined;
+			// First detect if ends are inside the box; if so prioritize pushing from that point:
+		if (vec_equals_vec(position_bottom_clamped, position_bottom))	// Bottom is inside a box
+			intersection = position_bottom;
+		else if (vec_equals_vec(position_top_clamped, position_top))	// Top is inside a box
+			intersection = position_top;
+		
+			// Ends are not inside so shoot some rays to determine the best point to push
+			// the body from:
+		if (is_undefined(intersection)){
+			var int_1 = ray_intersects_aabb(vec_add_vec(position_top, vec(0, extends_a.x, 0)), vec(0, -1, 0), _aabb);
+			if (not is_undefined(int_1)){ /// @note	Second ray generally not needed but helps with some edge-cases
+				var int_2 = ray_intersects_aabb(vec_add_vec(position_bottom, vec(0, -extends_a.x, 0)), vec(0, 1, 0), _aabb);
+				if (not is_undefined(int_2))
+					intersection = vec_lerp(int_1, int_2, 0.5);
+				else // Shouldn't be possible
+					intersection = int_1;
+			}
+		}
+		
+		if (is_undefined(intersection))	// No collision
+			return undefined;
+		
+		// Make sure our collision point clamps in to the end-point sphere centers:
+		intersection.y = clamp(intersection.y, position_bottom.y, position_top.y); // Point on the line to check
+		// Perform a spherical check:
+		push_vector = sphere_intersects_aabb(intersection, extends_a.x, aabb(position_b, extends_b));
+		
+		/// @note	Broken edge-case if the capsule is 'cut in half' w/ a very wide/long shape on x/z
+		
+		if (is_undefined(push_vector))
+			return undefined;
+		
+		var data = new CollidableDataAABB(node_a, node_b, AABB);
+/// @stub	Calculate proper push_* vectors for each axis
+		data.data = {
+			push_forward : undefined,
+			push_up : undefined,
+			push_right : undefined,
+			push_vector : push_vector
+		}
+		
+		return data;
+	}
 	#endregion
 	
 	#region METHODS

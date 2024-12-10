@@ -40,11 +40,25 @@ function Collidable() : U3DObject() constructor {
 		#endregion
 		#region CAPSULE CHECKS
 /// https://wickedengine.net/2020/04/capsule-collision-detection/		
-/// @stub	Implement!
+		if (is_instanceof(collidable_a, Capsule)){
+			if (is_instanceof(collidable_b, Capsule))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, Sphere))
+				return undefined;
+			else if (is_instanceof(collidable_b, AABB))
+				return Capsule.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+			else if (is_instanceof(collidable_b, Plane))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, Ray))
+				return undefined;	/// @stub	Implement!
+		}
 		#endregion
 		#region SPHERE CHECKS
-		if (is_instanceof(collidable_a, Sphere)){
-			if (is_instanceof(collidable_b, Sphere))
+		else if (is_instanceof(collidable_a, Sphere)){
+			if (is_instanceof(collidable_b, Capsule))
+				// return undefined;	/// @stub	Implement!
+				return Sphere.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+			else if (is_instanceof(collidable_b, Sphere))
 				return Sphere.collide_sphere(collidable_a, collidable_b, node_a, node_b);
 			else if (is_instanceof(collidable_b, AABB))
 				return Sphere.collide_aabb(collidable_a, collidable_b, node_a, node_b);
@@ -56,7 +70,9 @@ function Collidable() : U3DObject() constructor {
 		#endregion
 		#region AABB CHECKS
 		else if (is_instanceof(collidable_a, AABB)){
-			if (is_instanceof(collidable_b, Sphere))
+			if (is_instanceof(collidable_b, Capsule))
+				return Capsule.collide_aabb(collidable_b, collidable_a, node_b, node_a);
+			else if (is_instanceof(collidable_b, Sphere))
 				return Sphere.collide_aabb(collidable_b, collidable_a, node_b, node_a);
 			else if (is_instanceof(collidable_b, AABB))
 				return collision;
@@ -68,7 +84,9 @@ function Collidable() : U3DObject() constructor {
 		#endregion
 		#region PLANE CHECKS
 		else if (is_instanceof(collidable_a, Plane)){
-			if (is_instanceof(collidable_b, Sphere))
+			if (is_instanceof(collidable_b, Capsule))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, Sphere))
 				return undefined;	/// @stub	Implement!
 			else if (is_instanceof(collidable_b, AABB))
 				return undefined;	/// @stub	Implement!
@@ -80,7 +98,9 @@ function Collidable() : U3DObject() constructor {
 		#endregion
 		#region RAY CHECKS
 		else if (is_instanceof(collidable_a, Ray)){
-			if (is_instanceof(collidable_b, Sphere))
+			if (is_instanceof(collidable_b, Capsule))
+				return undefined;	/// @stub	Implement!
+			else if (is_instanceof(collidable_b, Sphere))
 				return undefined;	/// @stub	Implement!
 			else if (is_instanceof(collidable_b, AABB))
 				return Ray.collide_aabb(collidable_a, collidable_b, node_a, node_b);
