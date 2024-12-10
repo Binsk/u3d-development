@@ -8,9 +8,6 @@ gmouse = {
 render_width = display_get_gui_width();
 render_height = display_get_gui_height();
 
-// Very simple update camera to look at character
-camera.look_at_up(obj_character.body.position);
-
 // Set window cursor to what was calculated last frame:
 window_set_cursor(cursor);
 

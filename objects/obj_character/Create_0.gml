@@ -131,4 +131,8 @@ obj_collision_controller.signaler.add_signal("process_pre", new Callable(id, col
 
 gltf.free();
 delete gltf;
+
+body.signaler.add_signal("set_position", new Callable(obj_character_demo, function(){
+	camera.look_at_up(obj_character.body.position);
+}));
 #endregion

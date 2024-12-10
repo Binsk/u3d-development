@@ -39,13 +39,18 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	/// @param	{bool}	relative	if true, the specified position will be relative to the current position
 	function set_position(position=vec(), relative=false){
 		var value_start = self.position;
-		if (relative)
+		if (relative){
+			if (vec_is_zero(position))
+				return;
+				
 			self.position = vec_add_vec(self.position, position);
-		else
+		}
+		else{
+			if (vec_equals_vec(self.position, position))
+				return;
+				
 			self.position = position;
-			
-		if (vec_equals_vec(value_start, self.position))
-			return;
+		}
 			
 		matrix_model = undefined;
 		matrix_inv_model = undefined;
@@ -59,14 +64,19 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	/// @param	{bool}	relative	if set, the rotation quaternion will be multiplied against the current rotation.
 	function set_rotation(rotation=quat(), relative=false){
 		var value_start = self.rotation;
-		if (relative)
+		if (relative){
+			if (quat_is_identity(rotation))
+				return;
+				
 			self.rotation = quat_mul_quat(rotation, self.rotation);
-		else
+		}
+		else{
+			if (quat_equals_quat(rotation, self.rotation))
+				return;
+				
 			self.rotation = rotation;
-			
-		if (quat_equals_quat(value_start, self.rotation))
-			return;
-			
+		}
+
 		matrix_model = undefined;
 		matrix_inv_model = undefined;
 		forward_vector = undefined;

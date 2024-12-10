@@ -66,3 +66,6 @@
 -	BVH updating instances is WAY TOO SLOW!
 -	Optional automatic animation culling when something is out-of-view of cameras or
 	even an animation update lerp speed
+-	Add a 'queue' mode to the signaler system to allow the async controller to execute
+	all at once; allong w/ a way to override arguments. This, mostly to get around
+	repeated set_position() etc. calls.

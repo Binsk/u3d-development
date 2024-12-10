@@ -43,6 +43,8 @@ function Unsorted() : Partition() constructor {
 		return array_duplicate_shallow(node_root.data_array);
 	}
 	
+	function update_data(){};	// No need to do anything for this one
+	
 	function render_debug(){
 		// We don't actually need the AABB in an unsorted structure so we just update
 		// it when debug rendering for a size visual.

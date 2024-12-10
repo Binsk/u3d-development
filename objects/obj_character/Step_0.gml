@@ -17,8 +17,9 @@ if (not vec_is_zero(look)){
 	body.look_at_up(vec_add_vec(body.position, rot));
 }
 
-body.set_position(vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60)), true);
-body.set_position(vec_mul_scalar(Node.AXIS_UP, vertical_speed * (1 / 60)), true);
+var position = vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60));
+position = vec_add_vec(position, vec_mul_scalar(Node.AXIS_UP, vertical_speed * (1 / 60)));
+body.set_position(position, true);
 
 // Animation:
 if (is_on_ground){ // Running / Idle animations
