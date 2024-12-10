@@ -114,7 +114,7 @@ camera_ray.generate_unique_hash();
 camera_ray.set_static(camera, true);
 camera.set_collidable(camera_ray);
 camera.set_collision_mask_layers(2);	// Take us out of layer 1 so other objects don't detect the ray
-obj_collision_controller.add_body(camera);
+obj_collision_controller.add_body(camera, "dynamic");
 
 // Get information about the GPU name:
 gpu_string = "";

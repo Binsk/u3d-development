@@ -93,16 +93,16 @@ function quat_reverse(quaternion){
 
 /// @desc	Returns if two quaternions are mathematically identical.
 function quat_equals_quat(q1, q2){
-	if (abs(q1.x - q2.x) > 0)
+	if (abs(q1.x - q2.x) > 0.0001)
 		return false;
 	
-	if (abs(q1.y - q2.y) > 0)
+	if (abs(q1.y - q2.y) > 0.0001)
 		return false;
 	
-	if (abs(q1.z - q2.z) > 0)
+	if (abs(q1.z - q2.z) > 0.0001)
 		return false;
 	
-	if (abs(q1.w - q2.w) > 0)
+	if (abs(q1.w - q2.w) > 0.0001)
 		return false;
 	
 	return true;

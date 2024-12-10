@@ -120,6 +120,7 @@ body.set_collidable(collidable);
 
 animation.add_animation_layer_auto(0, "Idle");
 animation.start_animation_layer(0);
+animation.set_update_freq(1 / 15);
 
 obj_render_controller.add_body(body);
 obj_animation_controller.add_body(body);
