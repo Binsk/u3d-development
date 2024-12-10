@@ -45,6 +45,7 @@ function in_range(value, minimum, maximum, min_inclusive=true, max_inclusive=tru
 
 /// @desc	Returns the signed overlapping interval between two sets of values.
 ///			If no overlap occurs then 'undefined' is returned.
+///			Direction returned is the amount to push the y interval.
 function get_interval(x1, x2, y1, y2){
 	var max_x = max(x1, x2);
 	var max_y = max(y1, y2);

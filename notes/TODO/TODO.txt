@@ -64,3 +64,5 @@
 -	Add BVH 2D representation for checking branch depths
 -	Add "enter" and "exit" collision detection
 -	BVH updating instances is WAY TOO SLOW!
+-	Optional automatic animation culling when something is out-of-view of cameras or
+	even an animation update lerp speed

@@ -10,6 +10,63 @@ function Capsule(height, radius) : AABB(vec(radius, height * 0.5, radius)) const
 	///			extends.y == height * 0.5
 	///			extends.x == radius
 	#region STATIC METHODS
+	static collide_capsule = function(capsule_a, capsule_b, node_a, node_b){
+		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
+		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
+		var extends_a = node_a.get_data(["collision", "aabb_extends"], capsule_a.extends);
+		var extends_b = node_b.get_data(["collision", "aabb_extends"], capsule_b.extends);
+		var position_c = vec_add_vec(position_a, vec(0, extends_a.y - extends_a.x, 0));	// Top and bottom accounting for radius
+		var position_bottom = vec_sub_vec(position_a, vec(0, extends_a.y - extends_a.x, 0));
+		position_c.y = clamp(position_b.y, position_bottom.y, position_c.y); // Collision point we should use
+		var position_d = vec_add_vec(position_b, vec(0, extends_b.y - extends_b.x, 0));	// Top and bottom accounting for radius
+		position_bottom = vec_sub_vec(position_a, vec(0, extends_a.y - extends_a.x, 0));
+		position_d.y = clamp(position_a.y, position_bottom.y, position_d.y); // Collision point we should use
+		
+		var radius_a = extends_a.x;
+		var radius_b = vec_min_component(extends_b);
+		
+		var distance = vec_magnitude(vec_sub_vec(position_c, position_d));
+		if (distance > radius_a + radius_b)	// No collision
+			return undefined;
+		
+		var radius_combined = radius_a + radius_b;
+		var push_vector = vec_normalize(vec_sub_vec(position_c, position_d));
+		push_vector = vec_mul_scalar(push_vector, (radius_a + radius_b) - distance);
+		var data = new CollidableDataAABB(node_a, node_b, Sphere);
+		data.data.push_vector = push_vector;
+		data.data.push_forward = vec((radius_combined - abs(position_c.x - position_d.x)) * sign(position_c.x - position_d.x), 0, 0);
+		data.data.push_up = vec((radius_combined - abs(position_c.y - position_d.y)) * sign(position_c.y - position_d.y), 0, 0);
+		data.data.push_right = vec((radius_combined - abs(position_c.z - position_d.z)) * sign(position_c.z - position_d.z), 0, 0);
+		return data;
+	}
+	
+	static collide_sphere = function(capsule_a, sphere_b, node_a, node_b){
+		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
+		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));
+		var extends_a = node_a.get_data(["collision", "aabb_extends"], capsule_a.extends);
+		var extends_b = node_b.get_data(["collision", "aabb_extends"], sphere_b.extends);
+		var position_c = vec_add_vec(position_a, vec(0, extends_a.y - extends_a.x, 0));	// Top and bottom accounting for radius
+		var position_bottom = vec_sub_vec(position_a, vec(0, extends_a.y - extends_a.x, 0));
+		position_c.y = clamp(position_b.y, position_bottom.y, position_c.y); // Collision point we should use
+		
+		var radius_a = extends_a.x;
+		var radius_b = vec_min_component(extends_b);
+		
+		var distance = vec_magnitude(vec_sub_vec(position_c, position_b));
+		if (distance > radius_a + radius_b)	// No collision
+			return undefined;
+		
+		var radius_combined = radius_a + radius_b;
+		var push_vector = vec_normalize(vec_sub_vec(position_c, position_b));
+		push_vector = vec_mul_scalar(push_vector, (radius_a + radius_b) - distance);
+		var data = new CollidableDataAABB(node_a, node_b, Sphere);
+		data.data.push_vector = push_vector;
+		data.data.push_forward = vec((radius_combined - abs(position_c.x - position_b.x)) * sign(position_c.x - position_b.x), 0, 0);
+		data.data.push_up = vec((radius_combined - abs(position_c.y - position_b.y)) * sign(position_c.y - position_b.y), 0, 0);
+		data.data.push_right = vec((radius_combined - abs(position_c.z - position_b.z)) * sign(position_c.z - position_b.z), 0, 0);
+		return data;
+	}
+	
 	static collide_aabb = function(capsule_a, aabb_b, node_a, node_b){
 		var position_a = vec_add_vec(node_a.position, node_a.get_data(["collision", "offset"], vec()));
 		var position_b = vec_add_vec(node_b.position, node_b.get_data(["collision", "offset"], vec()));

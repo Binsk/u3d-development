@@ -17,20 +17,46 @@ obj_collision_controller.set_partition_system(new BVH());	// Static things are i
 obj_collision_controller.set_partition_system(new Unsorted(), "dynamic"); // Dynamic in unsorted; BVH is slow to update
 obj_collision_controller.enable_collision_highlights(true);
 
-// Generate character:
+// Generate character / interactibles:
 instance_create_depth(0, 0, 0, obj_character);
 instance_create_depth(-4, 12, 0, obj_sphere);
 instance_create_depth(-2, 8, 0, obj_sphere);
 
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
 
+dummy_body = new Body();
+var gltf = new GLTFBuilder("demo-gdbot.glb");
+var dummy_model = gltf.generate_model();
+dummy_model.freeze();
+dummy_model.generate_unique_hash();
+var dummy_animation = gltf.generate_animation_tree();
+dummy_animation.generate_unique_hash();
+dummy_animation.set_update_freq(1 / 15);
+
+var import_extends = dummy_model.get_data(["import", "aabb_extends"]);
+var dummy_collidable = new Capsule(import_extends.y * 2.0, vec_min_component(import_extends));
+dummy_collidable.set_offset(dummy_body, vec(0, import_extends.y * 0.5 + dummy_model.get_data(["import", "aabb_center"]).y * 0.5, 0));
+dummy_collidable.set_static(dummy_body, true); // Prevent AABB bound re-calc due to character rotation
+dummy_collidable.generate_unique_hash();
+
+dummy_body.set_model(dummy_model);
+dummy_body.set_animation(dummy_animation);
+dummy_body.set_collidable(dummy_collidable)
+dummy_body.set_position(vec(3, 0, 2));
+dummy_body.set_rotation(veca_to_quat(vec_to_veca(Node.AXIS_UP, -pi / 2 - pi / 4)));
+dummy_animation.add_animation_layer_auto(0, "Idle");
+dummy_animation.start_animation_layer(0);
+obj_render_controller.add_body(dummy_body);
+obj_collision_controller.add_body(dummy_body);
+obj_animation_controller.add_body(dummy_body);
+
 // Load in pre-built scene:
-var gltf_scene = new GLTFBuilder("demo-scene.glb");
-gltf_model = gltf_scene.generate_model();
+gltf = new GLTFBuilder("demo-scene.glb");
+gltf_model = gltf.generate_model();
 gltf_model.generate_unique_hash();
 gltf_model.freeze();
-camera = gltf_scene.generate_cameras()[0];
-light_array = gltf_scene.generate_lights();
+camera = gltf.generate_cameras()[0];
+light_array = gltf.generate_lights();
 
 scene_body = new Body();
 scene_body.set_model(gltf_model);
@@ -48,8 +74,8 @@ for (var i = array_length(light_array) - 1; i >= 0; --i){
 	obj_render_controller.add_light(light_array[i]);
 }
 
-gltf_scene.free();
-delete gltf_scene;
+gltf.free();
+delete gltf;
 
 // Add extra ambient light since Blender doesn't have one:
 light_ambient = new LightAmbient();

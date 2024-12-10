@@ -17,5 +17,8 @@ for (var i = 0; i < array_length(collidable_bodies); ++i){
 scene_body.free();
 delete scene_body;
 
+dummy_body.free();
+delete dummy_body;
+
 instance_destroy(obj_character)
 instance_destroy(obj_sphere);

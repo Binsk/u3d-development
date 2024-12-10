@@ -42,9 +42,9 @@ function Collidable() : U3DObject() constructor {
 /// https://wickedengine.net/2020/04/capsule-collision-detection/		
 		if (is_instanceof(collidable_a, Capsule)){
 			if (is_instanceof(collidable_b, Capsule))
-				return undefined;	/// @stub	Implement!
+				return Capsule.collide_capsule(collidable_a, collidable_b, node_a, node_b);
 			else if (is_instanceof(collidable_b, Sphere))
-				return undefined;
+				return Capsule.collide_sphere(collidable_a, collidable_b, node_a, node_b);
 			else if (is_instanceof(collidable_b, AABB))
 				return Capsule.collide_aabb(collidable_a, collidable_b, node_a, node_b);
 			else if (is_instanceof(collidable_b, Plane))
@@ -56,8 +56,7 @@ function Collidable() : U3DObject() constructor {
 		#region SPHERE CHECKS
 		else if (is_instanceof(collidable_a, Sphere)){
 			if (is_instanceof(collidable_b, Capsule))
-				// return undefined;	/// @stub	Implement!
-				return Sphere.collide_aabb(collidable_a, collidable_b, node_a, node_b);
+				return Capsule.collide_sphere(collidable_b, collidable_a, node_b, node_a);
 			else if (is_instanceof(collidable_b, Sphere))
 				return Sphere.collide_sphere(collidable_a, collidable_b, node_a, node_b);
 			else if (is_instanceof(collidable_b, AABB))
