@@ -7,6 +7,9 @@
 /// @signals
 ///		"transformed_bone_<id>"	(matrix)		Thrown when an animation transform is applied on the specified bone;
 /// 											matrix = local transform
+///		"track_end"	(name)						Thrown when a track gets to the end. Only applies to non-looping tracks.
+///												If a "transitioning to" track ends mid-transition, it will wait until it
+///												is the primary track to throw the signal.
 
 /// @todo	Implement dual-quaternions to remove the need for the quat+pair option &
 ///			to have better volume-conscious skinning.
@@ -601,8 +604,11 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 					var time_max = track_from.get_track_length();
 					if (animation_layer.track_loop and time_max > 0)
 						time = modwrap(time, time_max);
-					else
+					else{
 						time = clamp(time, 0, time_max);
+						if (time >= time_max)
+							signaler.signal("track_end", [animation_layer.track_from]);
+					}
 					
 					animation_layer.track_time = time;
 				}

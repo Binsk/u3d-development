@@ -27,6 +27,19 @@ function is_collision(data_array, recurse=true){ // How to handle collisions
 			if (recurse)
 				parent_id.is_collision([CollidableDataSpatial.calculate_reverse(data)], false);
 		}
+		// If it is the other character model; make it punch us:
+		else if (pbody.get_data("parent_id").object_index == obj_character_demo){
+			pbody = pbody.get_data("parent_id").dummy_body;
+			var animation = pbody.get_animation();
+			animation.set_update_freq(1 / 30); // Increase animation quality briefly
+				// Just delete and re-add a new layer for an immediate transiton
+			animation.delete_animation_layer(0);
+			animation.add_animation_layer_auto(0, "Punch", 0.75);
+			animation.start_animation_layer(0, false);
+			
+				// Throw back the body:
+			velocity_addition = vec_add_vec(velocity_addition, vec(-0.707 * 10, 7, 0.707 * 10));
+		}
 	}
 	
 	velocity_addition.y = max(velocity_addition.y, 0);
@@ -35,6 +48,7 @@ function is_collision(data_array, recurse=true){ // How to handle collisions
 	var push_vector = CollidableDataSpatial.calculate_combined_push_vector(body, data_array);
 	if (push_vector.y > 0){ // If being pushed up we hit some ground:
 		vertical_speed = -vertical_speed * absorption;
+		
 		if (abs(vertical_speed < 0.05))
 			vertical_speed = 0;
 	}
@@ -48,6 +62,8 @@ function is_collision(data_array, recurse=true){ // How to handle collisions
 		velocity.z *= absorption;
 	}
 	
+	vertical_speed += velocity_addition.y;
+	velocity_addition.y = 0;
 	velocity = vec_add_vec(velocity, push_vector); // Push out of bodies
 	velocity = vec_abs_max(velocity, velocity_addition); // Clamp to colliding body's velocity to simulate a continuous push
 }

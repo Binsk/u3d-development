@@ -47,6 +47,13 @@ dummy_body.set_animation(dummy_animation);
 dummy_body.set_collidable(dummy_collidable)
 dummy_body.set_position(vec(3, 0, 2));
 dummy_body.set_rotation(veca_to_quat(vec_to_veca(Node.AXIS_UP, -pi / 2 - pi / 4)));
+dummy_body.set_data("parent_id", id);
+
+dummy_animation.signaler.add_signal("track_end", new Callable(dummy_animation, function(){
+	set_update_freq(1 / 15);
+	queue_animation_layer_transition(0, "Idle", 0.25);
+}));
+
 dummy_animation.add_animation_layer_auto(0, "Idle");
 dummy_animation.start_animation_layer(0);
 obj_render_controller.add_body(dummy_body);

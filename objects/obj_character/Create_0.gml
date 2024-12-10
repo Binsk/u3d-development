@@ -9,6 +9,7 @@ maximum_speed = 7.0;
 gravity_strength = 0.25;
 jump_strength = 6.0;
 vertical_speed = 0;
+punch_velocity = undefined;
 target_vector = vec();	// Vector we are trying to move to
 is_on_ground = true;
 #endregion
@@ -26,7 +27,26 @@ function is_collision(data_array){ // How to handle collisions
 				// Allow standing on the balls, but it is pretty glitch; I'm not trying to make
 				// realistic interaction physics here.
 			push_vector = vec_add_vec(push_vector, vec(0, data.get_push_vector().y, 0));
-			continue;
+			
+			// If it is the other character model; make it punch us:
+			if (data.get_affected_body().get_data("parent_id").object_index == obj_character_demo){
+				if (vec_dot(vec_normalize(data.get_push_vector()), vec(-0.707, 0, 0.707)) > 0.2){
+					var pbody = data.get_affected_body().get_data("parent_id").dummy_body;
+					var animation = pbody.get_animation();
+					animation.set_update_freq(1 / 30); // Increase animation quality briefly
+						// Just delete and re-add a new layer for an immediate transiton
+					animation.delete_animation_layer(0);
+					animation.add_animation_layer_auto(0, "Punch", 0.75);
+					animation.start_animation_layer(0, false);
+					
+						// Throw back the body:
+					vertical_speed = jump_strength;
+					movement_speed = maximum_speed;
+					punch_velocity = vec(-0.707 * 10, 0, 0.707 * 10);
+				}
+			}
+			else
+				continue;
 		}
 		
 		if (is_instanceof(data, CollidableDataSpatial))
@@ -36,6 +56,7 @@ function is_collision(data_array){ // How to handle collisions
 	if (push_vector.y > 0){ // Mark as on-ground for now
 		is_on_ground = true;
 		vertical_speed = max(0, vertical_speed);
+		punch_velocity = undefined;
 	}
 	
 	body.set_position(push_vector, true);	// Push out of object
@@ -46,7 +67,7 @@ function is_collision(data_array){ // How to handle collisions
 function input(){
 	// User Input:
 	var is_input = false;
-	if (mouse_check_button(mb_left) and obj_character_demo.cursor == cr_arrow){
+	if (mouse_check_button(mb_left) and obj_character_demo.cursor == cr_arrow and is_undefined(punch_velocity)){
 		// For immediate results; this is how you would manually ping the physics server.
 		// NOTICE:	It is best to let the server auto-handle as it prevents needless re-calculations, but
 		//			some times you just want an immediate result instead of a signal.
@@ -64,14 +85,14 @@ function input(){
 		is_input = true;
 	}
 
-	if ((mouse_check_button(mb_right) or keyboard_check_pressed(vk_space)) and is_on_ground and obj_character_demo.cursor == cr_arrow)
+	if ((mouse_check_button(mb_right) or keyboard_check_pressed(vk_space)) and is_on_ground and obj_character_demo.cursor == cr_arrow and is_undefined(punch_velocity))
 		vertical_speed = jump_strength;
 		
 	var look = vec_sub_vec(target_vector, body.position);
 
 		// Add keyboard input since it works way better; mouse was just for testing.
 		// This moves relative to the camera direction
-	if (not mouse_check_button(mb_left) and obj_character_demo.cursor == cr_arrow){
+	if (not mouse_check_button(mb_left) and obj_character_demo.cursor == cr_arrow and is_undefined(punch_velocity)){
 		var right_vector = obj_character_demo.camera.get_right_vector();
 		var forward_vector = obj_character_demo.camera.get_forward_vector();
 		var m_vec = vec();

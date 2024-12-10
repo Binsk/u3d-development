@@ -19,6 +19,9 @@ if (not vec_is_zero(look)){
 
 var position = vec_mul_scalar(body.get_forward_vector(), movement_speed * (frame_delta));
 position = vec_add_vec(position, vec_mul_scalar(Node.AXIS_UP, vertical_speed * (frame_delta)));
+if (not is_undefined(punch_velocity))
+	position = vec_add_vec(position, vec_mul_scalar(punch_velocity, frame_delta));
+	
 body.set_position(position, true);
 
 // Animation:
