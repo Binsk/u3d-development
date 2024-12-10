@@ -38,6 +38,17 @@ function CollidableData(type_a=Collidable, type_b=Collidable) constructor {
 		return type_b;
 	}
 	
+	/// @desc	Returns the class of the body that isn't the one specified.
+	function get_other_class(body){
+		if (not is_instanceof(body, Body))
+			throw new Exception("invalid type, expected [Body]!");
+		
+		if (body.get_index() == body_a.get_index())
+			return type_b;
+		
+		return type_a;
+	}
+	
 	/// @desc	Returns the body containing the instance of the collidable checking for the collision.
 	function get_colliding_body(){
 		return body_a;
@@ -47,7 +58,17 @@ function CollidableData(type_a=Collidable, type_b=Collidable) constructor {
 	function get_affected_body(){
 		return body_b;
 	}
+	
+	/// @desc	Returns the OTHER body that isn't the one specified, whether it is colliding or affected.
+	function get_other_body(body){
+		if (not is_instanceof(body, Body))
+			throw new Exception("invalid type, expected [Body]!");
+		
+		if (body.get_index() == body_a.get_index())
+			return body_b;
+		
+		return body_a;
+	}
 	#endregion
 }
-
 

@@ -42,7 +42,7 @@ foo.free();
 delete foo;
 
 // Define static functions
-foo = new CollidableDataAABB(undefined, undefined);
+foo = new CollidableDataSpatial(undefined, undefined);
 delete foo;
 
 foo = new CollidableDataRay(undefined, undefined);

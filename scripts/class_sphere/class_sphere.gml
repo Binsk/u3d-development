@@ -20,7 +20,7 @@ function Sphere(radius) : AABB(vec(radius, radius, radius)) constructor {
 		var radius_combined = radius_a + radius_b;
 		var push_vector = vec_normalize(vec_sub_vec(position_a, position_b));
 		push_vector = vec_mul_scalar(push_vector, (radius_a + radius_b) - distance);
-		var data = new CollidableDataAABB(node_a, node_b, Sphere);
+		var data = new CollidableDataSpatial(node_a, node_b, Sphere, Sphere);
 		data.data.push_vector = push_vector;
 		data.data.push_forward = vec((radius_combined - abs(position_a.x - position_b.x)) * sign(position_a.x - position_b.x), 0, 0);
 		data.data.push_up = vec((radius_combined - abs(position_a.y - position_b.y)) * sign(position_a.y - position_b.y), 0, 0);
@@ -49,7 +49,7 @@ function Sphere(radius) : AABB(vec(radius, radius, radius)) constructor {
 			return undefined;
 		
 		var push_vector;
-		var data = new CollidableDataAABB(node_a, node_b, AABB);
+		var data = new CollidableDataSpatial(node_a, node_b, Sphere, AABB);
 		data.data.push_forward = vec((radius_a - abs(point_edge.x - position_b.x)) * sign(point_edge.x - position_b.x), 0, 0);
 		data.data.push_up = vec(0, (radius_a - abs(point_edge.y - position_b.y)) * sign(point_edge.y - position_b.y), 0);
 		data.data.push_right = vec(0, 0, (radius_a - abs(point_edge.z - position_b.z)) * sign(point_edge.z - position_b.z));

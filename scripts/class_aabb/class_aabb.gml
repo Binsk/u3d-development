@@ -80,7 +80,7 @@ function AABB(extends=vec()) : Collidable() constructor {
 		}
 		
 		// We had a collision, create the data:
-		var data = new CollidableDataAABB(node_a, node_b, AABB);
+		var data = new CollidableDataSpatial(node_a, node_b, AABB);
 		data.data = {
 			push_vector : push_array[axis_min],	// Shortest push vector
 			push_forward : push_array[0],		// X-axis push vector
@@ -185,21 +185,21 @@ function AABB(extends=vec()) : Collidable() constructor {
 	#endregion
 }
 
-/// @todo	Rename to something more generic as it is used by much more than AABBs at this point.
-function CollidableDataAABB(body_a, body_b, type_b=Collidable) : CollidableData(AABB, type_b) constructor {
+/// @desc	Base collidable data for 'spatial' objects that have a volume.
+function CollidableDataSpatial(body_a, body_b, type_a=Collidable, type_b=Collidable) : CollidableData(type_a, type_b) constructor {
 	#region PROPERTIES
 	self.body_a = body_a;
 	self.body_b = body_b;
 	#endregion
 	
 	#region STATIC METHODS
-	/// @desc	Given an array of CollidableDataAABB instances, combines all the
+	/// @desc	Given an array of CollidableDataSpatial instances, combines all the
 	///			push vectors applied to the specified body and returns the result.
 	static calculate_combined_push_vector = function(body, array){
 		var vector = vec();
 		for (var i = array_length(array) - 1; i >= 0; --i){
 			var data = array[i];
-			if (not is_instanceof(data, CollidableDataAABB))
+			if (not is_instanceof(data, CollidableDataSpatial))
 				continue;
 			
 			if (U3DObject.are_equal(body, data.get_colliding_body()))
@@ -216,10 +216,10 @@ function CollidableDataAABB(body_a, body_b, type_b=Collidable) : CollidableData(
 	/// @note	This can create an invalid collidable structure if the affected type's
 	///			ancestor is not an AABB.
 	static calculate_reverse = function(data){
-		if (not is_instanceof(data, CollidableDataAABB))
-			throw new Exception("invalid type, expected [CollidableDataAABB]!");
+		if (not is_instanceof(data, CollidableDataSpatial))
+			throw new Exception("invalid type, expected [CollidableDataSpatial]!");
 			
-		var ndata = new CollidableDataAABB(data.body_b, data.body_a, data.type_a);
+		var ndata = new CollidableDataSpatial(data.body_b, data.body_a, data.type_b, data.type_a);
 		ndata.data.push_vector = vec_reverse(data.data.push_vector);
 		ndata.data.push_forward = vec_reverse(data.data.push_forward);
 		ndata.data.push_up = vec_reverse(data.data.push_up);
@@ -233,28 +233,28 @@ function CollidableDataAABB(body_a, body_b, type_b=Collidable) : CollidableData(
 	///			of body_a in the shortest direction. Depending on the collision
 	///			type this MAY NOT be axis-aligned!
 	function get_push_vector(){
-		return data.push_vector;
+		return data[$ "push_vector"] ?? vec();
 	}
 	
 	/// @desc	Returns the push vector require to push body_b out
 	///			of body_a on the global forward axis.
 	/// @note	Vector may be negative.
 	function get_push_x(){
-		return data.push_forward;
+		return data[$ "push_forward"] ?? vec();
 	}
 	
 	/// @desc	Returns the push vector require to push body_b out
 	///			of body_a on the global up axis.
 	/// @note	Vector may be negative.
 	function get_push_y(){
-		return data.push_up;
+		return data[$ "push_up"] ?? vec();
 	}
 	
 	/// @desc	Returns the push vector require to push body_b out
 	///			of body_a on the global right axis.
 	/// @note	Vector may be negative.
 	function get_push_z(){
-		return data.push_right;
+		return data[$ "push_right"] ?? vec();
 	}
 	#endregion
 	

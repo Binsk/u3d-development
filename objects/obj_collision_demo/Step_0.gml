@@ -44,12 +44,12 @@ if (not is_undefined(dragged_body)){
 		/// @note	This is NOT an effective way to do this; it should be done through the
 		///			collision system. However this is to demonstrate how to do things manually.
 		var array = obj_collision_controller.process_body(dragged_body);
-		var push = CollidableDataAABB.calculate_combined_push_vector(dragged_body, array);
+		var push = CollidableDataSpatial.calculate_combined_push_vector(dragged_body, array);
 		var iterations = 4;
 		while (not vec_is_zero(push) and --iterations > 0){
 			dragged_body.set_position(push, true);
 			array = obj_collision_controller.process_body(dragged_body);
-			push = CollidableDataAABB.calculate_combined_push_vector(dragged_body, array);
+			push = CollidableDataSpatial.calculate_combined_push_vector(dragged_body, array);
 		}
 		
 		if (iterations > 0) 

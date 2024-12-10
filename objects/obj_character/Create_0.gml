@@ -25,7 +25,7 @@ function is_collision(data_array){ // How to handle collisions
 		if (not is_undefined(data.get_affected_body().get_data("parent_id")))
 			continue;
 		
-		if (is_instanceof(data, CollidableDataAABB))
+		if (is_instanceof(data, CollidableDataSpatial))
 			push_vector = vec_add_vec(push_vector, data.get_push_vector());
 	}
 
@@ -120,7 +120,7 @@ body.set_collidable(collidable);
 
 animation.add_animation_layer_auto(0, "Idle");
 animation.start_animation_layer(0);
-animation.set_update_freq(1 / 15);
+// animation.set_update_freq(1 / 15);
 
 obj_render_controller.add_body(body);
 obj_animation_controller.add_body(body);

@@ -262,8 +262,6 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	/// @desc	Collision shapes store data in their calling node to help cache
 	///			calculations. This wipse the data to be re-calculated next collision check.
 	function clear_collision_data(){
-		if (keyboard_check(ord("1")))
-			show_error("TRACE", true);
 		set_data("collision", undefined);
 	}
 	

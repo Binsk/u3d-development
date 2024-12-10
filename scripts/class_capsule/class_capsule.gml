@@ -32,7 +32,7 @@ function Capsule(height, radius) : AABB(vec(radius, height * 0.5, radius)) const
 		var radius_combined = radius_a + radius_b;
 		var push_vector = vec_normalize(vec_sub_vec(position_c, position_d));
 		push_vector = vec_mul_scalar(push_vector, (radius_a + radius_b) - distance);
-		var data = new CollidableDataAABB(node_a, node_b, Sphere);
+		var data = new CollidableDataSpatial(node_a, node_b, Capsule, Sphere);
 		data.data.push_vector = push_vector;
 		data.data.push_forward = vec((radius_combined - abs(position_c.x - position_d.x)) * sign(position_c.x - position_d.x), 0, 0);
 		data.data.push_up = vec((radius_combined - abs(position_c.y - position_d.y)) * sign(position_c.y - position_d.y), 0, 0);
@@ -59,7 +59,7 @@ function Capsule(height, radius) : AABB(vec(radius, height * 0.5, radius)) const
 		var radius_combined = radius_a + radius_b;
 		var push_vector = vec_normalize(vec_sub_vec(position_c, position_b));
 		push_vector = vec_mul_scalar(push_vector, (radius_a + radius_b) - distance);
-		var data = new CollidableDataAABB(node_a, node_b, Sphere);
+		var data = new CollidableDataSpatial(node_a, node_b, Capsule, Sphere);
 		data.data.push_vector = push_vector;
 		data.data.push_forward = vec((radius_combined - abs(position_c.x - position_b.x)) * sign(position_c.x - position_b.x), 0, 0);
 		data.data.push_up = vec((radius_combined - abs(position_c.y - position_b.y)) * sign(position_c.y - position_b.y), 0, 0);
@@ -115,7 +115,7 @@ function Capsule(height, radius) : AABB(vec(radius, height * 0.5, radius)) const
 		if (is_undefined(push_vector))
 			return undefined;
 		
-		var data = new CollidableDataAABB(node_a, node_b, AABB);
+		var data = new CollidableDataSpatial(node_a, node_b, Capsule, AABB);
 /// @stub	Calculate proper push_* vectors for each axis
 		data.data = {
 			push_forward : undefined,

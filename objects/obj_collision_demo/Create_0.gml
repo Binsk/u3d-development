@@ -93,12 +93,12 @@ function mouse_collision_left(data_array, pressed=true){
 	/// @note	This is NOT an effective way to do this; it should be done through the
 	///			collision system. However this is to demonstrate how to do things manually.
 	var array = obj_collision_controller.process_body(body);
-	var push = CollidableDataAABB.calculate_combined_push_vector(body, array);
+	var push = CollidableDataSpatial.calculate_combined_push_vector(body, array);
 	var iterations = 4;
 	while (not vec_is_zero(push) and --iterations > 0){
 		body.set_position(push, true);
 		array = obj_collision_controller.process_body(body);
-		push = CollidableDataAABB.calculate_combined_push_vector(body, array);
+		push = CollidableDataSpatial.calculate_combined_push_vector(body, array);
 	}
 	
 	if (iterations <= 0){
