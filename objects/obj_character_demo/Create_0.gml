@@ -1,6 +1,9 @@
 // In the case of this demo, no delta timing and just keeping it set to 60 for simplicity
-display_reset(true, false);
-game_set_speed(60, gamespeed_fps);
+// display_reset(true, false);
+// game_set_speed(60, gamespeed_fps);
+
+display_reset(0, true);
+game_set_speed(999, gamespeed_fps);
 
 #region PROPERTIES
 render_width = display_get_gui_width();
@@ -162,6 +165,17 @@ inst.signaler.add_signal("pressed", new Callable(id, function(){
 	
 	instance_create_depth(0, 0, 0, obj_render_demo);
 }));
+
+if (not U3D.OS.is_compatability){
+	ay -= 32;
+	inst = instance_create_depth(ax, ay, 0, obj_checkbox);
+	inst.text = "V-Sync";
+	inst.text_tooltip = "Enable full-screen V-Sync";
+	inst.is_checked = true;
+	inst.signaler.add_signal("checked", function(is_checked){
+		display_reset(0, is_checked);
+	});
+}
 
 ax = 12;
 ay = display_get_gui_height() - 12 - 44;

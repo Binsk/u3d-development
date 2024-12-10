@@ -22,8 +22,12 @@ function is_collision(data_array){ // How to handle collisions
 	var push_vector = vec();
 	for (var i = array_length(data_array) - 1; i >= 0; --i){
 		var data = data_array[i];
-		if (not is_undefined(data.get_affected_body().get_data("parent_id")))
+		if (not is_undefined(data.get_affected_body().get_data("parent_id"))){
+				// Allow standing on the balls, but it is pretty glitch; I'm not trying to make
+				// realistic interaction physics here.
+			push_vector = vec_add_vec(push_vector, vec(0, data.get_push_vector().y, 0));
 			continue;
+		}
 		
 		if (is_instanceof(data, CollidableDataSpatial))
 			push_vector = vec_add_vec(push_vector, data.get_push_vector());

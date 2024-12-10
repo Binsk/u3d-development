@@ -5,7 +5,7 @@ var look = input();
 	
 // Update speeds:
 movement_speed = clamp(movement_speed, 0, maximum_speed);	// Change run speed
-vertical_speed -= gravity_strength;	// Change fall speed
+vertical_speed -= gravity_strength * frame_delta_relative;	// Change fall speed (note: frame_delta_relative is an imprecise hack instead of using fixed time)
 
 // Update rotation / position
 if (not vec_is_zero(look)){
@@ -17,8 +17,8 @@ if (not vec_is_zero(look)){
 	body.look_at_up(vec_add_vec(body.position, rot));
 }
 
-var position = vec_mul_scalar(body.get_forward_vector(), movement_speed * (1 / 60));
-position = vec_add_vec(position, vec_mul_scalar(Node.AXIS_UP, vertical_speed * (1 / 60)));
+var position = vec_mul_scalar(body.get_forward_vector(), movement_speed * (frame_delta));
+position = vec_add_vec(position, vec_mul_scalar(Node.AXIS_UP, vertical_speed * (frame_delta)));
 body.set_position(position, true);
 
 // Animation:
