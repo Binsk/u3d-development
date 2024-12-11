@@ -14,7 +14,6 @@
 -	Add ability to assign collision partitioning systems to individual (or multiple)
 	layers. This should allow players to be in separate smaller partitions but still
 	scan static.
--	Attaching AABBs to multiple instances seem to shift them incorrectly
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders

@@ -171,12 +171,18 @@ for (var i = array_length(scene_nodes) - 1; i >= 0; --i){
 	// stands on top:
 if (not is_undefined(body_platform)){
 	body_motion_trigger = new Body();
-	// body_motion_trigger.set_collidable(body_platform.get_collidable());	// Go ahead and share collidables
-	// body_motion_trigger.set_scale(vec(0.8, 0.1, 0.8));	// Scale so the collision shape scales
-	// var pos = body_platform.get_data("collision.offset", vec());	// A bit of a hack; we steal the collision shape's offset for the body for our position
-	// pos.y *= 2.05;
-	// body_motion_trigger.set_position(pos);
-	// obj_collision_controller.add_body(body_motion_trigger, true, "dynamic"); // Mark as 'area' so it doesn't do collision triggers but does enter/exit checks
+	body_motion_trigger.set_collidable(body_platform.get_collidable());	// Go ahead and share collidables
+	body_motion_trigger.set_scale(vec(0.8, 0.1, 0.8));	// Scale so the collision shape scales
+	var pos = body_platform.get_data("collision.offset", vec());	// A bit of a hack; we steal the collision shape's offset for the body for our position
+	pos = vec_duplicate(pos);
+	pos.y *= 2.05;
+	body_motion_trigger.set_position(pos);
+	obj_collision_controller.add_body(body_motion_trigger, true, "dynamic"); // Mark as 'area' so it doesn't do collision triggers but does enter/exit checks
+	
+	// Make the trigger update every time the block moves:
+	body_platform.signaler.add_signal("set_position", new Callable(body_motion_trigger, function(from, to){
+		set_position(vec_sub_vec(to, from), true);
+	}));
 }
 
 // Camera / light
@@ -199,86 +205,10 @@ gltf.free();
 delete gltf;
 #endregion
 
-// Load in pre-built scene:
-// gltf = new GLTFBuilder("demo-scene.glb");
-// gltf_model = gltf.generate_model(1);
-// gltf_model.generate_unique_hash();
-// gltf_model.freeze();
-// camera = gltf.generate_cameras()[0];
-// light_array = gltf.generate_lights();
-
-// scene_body = new Body();
-// scene_body.set_model(gltf_model);
-// obj_render_controller.add_body(scene_body);
-// obj_render_controller.add_camera(camera);
-
-// camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);
-// U3D.RENDERING.PPFX.fxaa.set_enabled(true);
-
-// for (var i = array_length(light_array) - 1; i >= 0; --i){
-// 	if (is_instanceof(light_array[i], LightDirectional)){
-// 		light_array[i].set_casts_shadows(true);
-// 		light_array[i].set_shadow_properties(U3D.OS.is_browser ? 2048 : 4048, 0.0001, 0.00001);
-// 	}
-		
-// 	obj_render_controller.add_light(light_array[i]);
-// }
-
-// gltf.free();
-// delete gltf;
-
 // Add extra ambient light since Blender doesn't have one:
 light_ambient = new LightAmbient();
 light_ambient.set_intensity(0.2);
 obj_render_controller.add_light(light_ambient);
-
-// is_platform_moving = false;
-// block_move_delta = 0;
-// Spawn collision shapes:
-	// The demo mesh is designed to have cubes labeled as Cube_# w/ a single primitive
-	// so we generate collidables for that. Looking into more automated ways of handling
-	// collidable shapes from Blender.
-	
-// cube_dynamic_body = undefined;	// One of the cubes needes to move when landed on; we pick one and set up the signal here
-// var mesh_array = gltf_model.get_mesh_array();
-// for (var i = 0; i < array_length(mesh_array); ++i){
-// 	var mesh = mesh_array[i];
-// 	if (not string_starts_with(mesh.get_data(["import", "name"], ""), "Cube"))
-// 		continue;
-		
-// 	var primitive = mesh_array[i].get_primitive_data(0).primitive;
-	
-// 	var extends = primitive.get_data(["import", "aabb_extends"]);
-// 	var center = primitive.get_data(["import", "aabb_center"]);
-// 	extends = vec_abs_max(extends, vec(0.1, 0.1, 0.1));
-// 	center = vec_sub_vec(center, vec_sub_vec(extends, primitive.get_data(["import", "aabb_extends"])));
-	
-// 	var pbody = new Body();
-// 	var pcol = new AABB(extends);
-// 	pcol.generate_unique_hash();
-// 	pbody.set_collidable(pcol);
-// 	pbody.set_position(center);
-// 	obj_collision_controller.add_body(pbody);
-// 	array_push(collidable_bodies, pbody)
-	
-// 	if (mesh.get_data(["import", "name"]) == "Cube_Dynamic")
-// 		cube_dynamic_body = pbody;
-// }
-
-// // Set up the movement trigger:
-// body_motion = new Body();
-// if (not is_undefined(cube_dynamic_body)){
-// 	body_motion.set_collidable(cube_dynamic_body.get_collidable());
-// 	body_motion.set_scale(vec(0.8, 0.1, 0.8));
-// 	var pos = cube_dynamic_body.get_position();
-// 	pos.y *= 2.05;
-// 	body_motion.set_position(pos);
-// 	obj_collision_controller.add_body(body_motion, true);	// Add as an 'area' so it ignores collisions but detects enter/exit
-	
-// 	cube_dynamic_body.signaler.add_signal("set_position", new Callable(body_motion, function(from, to){
-// 		set_position(vec_sub_vec(to, from), true);
-// 	}));
-// }
 
 camera_ray = new Ray();
 camera_ray.generate_unique_hash();
