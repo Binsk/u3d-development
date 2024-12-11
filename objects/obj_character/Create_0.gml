@@ -58,6 +58,8 @@ function is_collision(data_array){ // How to handle collisions
 		vertical_speed = max(0, vertical_speed);
 		punch_velocity = undefined;
 	}
+	else if (push_vector.y < 0 and is_undefined(punch_velocity))
+		vertical_speed = min(vertical_speed, 0);
 	
 	body.set_position(push_vector, true);	// Push out of object
 	push_vector.y = 0;

@@ -1,6 +1,8 @@
-// In the case of this demo, no delta timing and just keeping it set to 60 for simplicity
-// display_reset(true, false);
-// game_set_speed(60, gamespeed_fps);
+/// @about
+/// A scene to test different collision shapes. There is a player-controlled
+/// character and simple collision reactions to play around with. Static objects
+/// are loaded straight from the mode file while dynamic objects are added 
+/// separately.
 
 display_reset(0, true);
 game_set_speed(999, gamespeed_fps);
@@ -74,11 +76,12 @@ obj_render_controller.add_body(scene_body);
 obj_render_controller.add_camera(camera);
 
 camera.add_ppfx(U3D.RENDERING.PPFX.fxaa);
+U3D.RENDERING.PPFX.fxaa.set_enabled(true);
 
 for (var i = array_length(light_array) - 1; i >= 0; --i){
 	if (is_instanceof(light_array[i], LightDirectional)){
 		light_array[i].set_casts_shadows(true);
-		light_array[i].set_shadow_properties(U3D.OS.is_browser ? 2048 : 4096, 0.0001, 0.00001);
+		light_array[i].set_shadow_properties(U3D.OS.is_browser ? 2048 : 4048, 0.0001, 0.00001);
 	}
 		
 	obj_render_controller.add_light(light_array[i]);

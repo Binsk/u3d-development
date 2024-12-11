@@ -13,7 +13,7 @@ if (not vec_is_zero(look)){
 	if (vec_angle_difference(body.get_forward_vector(), vec_normalize(look)) > pi / 2)
 		rot_lerp = 0.25;
 		
-	var rot = vec_lerp(body.get_forward_vector(), vec_normalize(look), rot_lerp);
+	var rot = vec_lerp(body.get_forward_vector(), vec_normalize(look), rot_lerp * frame_delta_relative);
 	body.look_at_up(vec_add_vec(body.position, rot));
 }
 
