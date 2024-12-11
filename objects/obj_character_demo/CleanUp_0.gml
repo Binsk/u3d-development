@@ -20,5 +20,8 @@ delete scene_body;
 dummy_body.free();
 delete dummy_body;
 
+body_motion.free();
+delete body_motion;
+
 instance_destroy(obj_character)
 instance_destroy(obj_sphere);

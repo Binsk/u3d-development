@@ -24,3 +24,9 @@ with (obj_menu_item){
 	other.cursor = cr_handpoint;
 	break;
 }
+
+if (is_block_moving){
+	block_move_delta += frame_delta * 0.5;
+	var pos = vec(sin(block_move_delta) * frame_delta * 1.2, 0, 0);
+	cube_dynamic_body.set_position(pos, true);
+}

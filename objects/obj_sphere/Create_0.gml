@@ -87,7 +87,7 @@ body.set_collidable(collidable);
 body.set_data("parent_id", id);	// Generic data so we can manually manage collisions a bit better
 
 obj_render_controller.add_body(body);
-obj_collision_controller.add_body(body, "dynamic");
+obj_collision_controller.add_body(body, false, "dynamic");
 obj_collision_controller.add_collision_signal(body, new Callable(id, is_collision));
 
 gltf.free();

@@ -23,10 +23,6 @@ obj_collision_controller.set_partition_system(new Unsorted(), "dynamic"); // Dyn
 obj_collision_controller.enable_collision_highlights(true);
 
 // Generate character / interactibles:
-instance_create_depth(0, 0, 0, obj_character);
-instance_create_depth(-4, 12, 0, obj_sphere);
-instance_create_depth(-2, 8, 0, obj_sphere);
-
 obj_render_controller.set_render_mode(RENDER_MODE.draw_gui);	// Set to display in GUI just for simplicity in rendering resolution
 
 dummy_body = new Body();
@@ -64,7 +60,7 @@ obj_animation_controller.add_body(dummy_body);
 
 // Load in pre-built scene:
 gltf = new GLTFBuilder("demo-scene.glb");
-gltf_model = gltf.generate_model();
+gltf_model = gltf.generate_model(0);
 gltf_model.generate_unique_hash();
 gltf_model.freeze();
 camera = gltf.generate_cameras()[0];
@@ -95,11 +91,15 @@ light_ambient = new LightAmbient();
 light_ambient.set_intensity(0.2);
 obj_render_controller.add_light(light_ambient);
 
+is_block_moving = false;
+block_move_delta = 0;
 collidable_bodies = [];	// Used just to free at close
 // Spawn collision shapes:
 	// The demo mesh is designed to have cubes labeled as Cube_# w/ a single primitive
 	// so we generate collidables for that. Looking into more automated ways of handling
 	// collidable shapes from Blender.
+	
+cube_dynamic_body = undefined;	// One of the cubes needes to move when landed on; we pick one and set up the signal here
 var mesh_array = gltf_model.get_mesh_array();
 for (var i = 0; i < array_length(mesh_array); ++i){
 	var mesh = mesh_array[i];
@@ -117,9 +117,27 @@ for (var i = 0; i < array_length(mesh_array); ++i){
 	var pcol = new AABB(extends);
 	pcol.generate_unique_hash();
 	pbody.set_collidable(pcol);
-	pcol.set_offset(pbody, center);
+	pbody.set_position(center);
 	obj_collision_controller.add_body(pbody);
 	array_push(collidable_bodies, pbody)
+	
+	if (mesh.get_data(["import", "name"]) == "Cube_Dynamic")
+		cube_dynamic_body = pbody;
+}
+
+// Set up the movement trigger:
+body_motion = new Body();
+if (not is_undefined(cube_dynamic_body)){
+	body_motion.set_collidable(cube_dynamic_body.get_collidable());
+	body_motion.set_scale(vec(0.8, 0.1, 0.8));
+	var pos = cube_dynamic_body.get_position();
+	pos.y *= 2.05;
+	body_motion.set_position(pos);
+	obj_collision_controller.add_body(body_motion, true);	// Add as an 'area' so it ignores collisions but detects enter/exit
+	
+	cube_dynamic_body.signaler.add_signal("set_position", new Callable(body_motion, function(from, to){
+		set_position(vec_sub_vec(to, from), true);
+	}));
 }
 
 camera_ray = new Ray();
@@ -127,7 +145,11 @@ camera_ray.generate_unique_hash();
 camera_ray.set_static(camera, true);
 camera.set_collidable(camera_ray);
 camera.set_collision_mask_layers(2);	// Take us out of layer 1 so other objects don't detect the ray
-obj_collision_controller.add_body(camera, "dynamic");
+obj_collision_controller.add_body(camera, false, "dynamic");
+
+instance_create_depth(0, 0, 0, obj_character);
+instance_create_depth(-4, 12, 0, obj_sphere);
+instance_create_depth(-2, 8, 0, obj_sphere);
 
 // Get information about the GPU name:
 gpu_string = "";

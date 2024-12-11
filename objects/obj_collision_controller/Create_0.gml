@@ -90,8 +90,11 @@ function enable_collision_highlights(enable=false){
 
 /// @desc	Adds a body to the system and in the specified partition layer.
 ///			The specified layer must exist otherwise an error will be thrown.
+/// @param	{Body}	body		body to attach to the system
+/// @param	{bool}	is_area		if true, does NOT throw collision signals, but DOES throw entered/exit signals
+/// @param	{string}layer		partition layer to add to
 super.register("add_body");
-function add_body(body, partition_layer="default"){
+function add_body(body, is_area=false, partition_layer="default"){
 	var partition = partition_layers[$ partition_layer];
 	if (is_undefined(partition))
 		throw new Exception($"invalid partition layer, [{partition_layer}]");
@@ -107,7 +110,8 @@ function add_body(body, partition_layer="default"){
 	var data = new PartitionData(body);
 	partition.add_data(data);
 	body.set_data($"collision.world.{id}", data);
-	overlap_map[$ body.get_index] = {};
+	body.set_data($"collision.is_area.{id}", is_area);
+	overlap_map[$ body.get_index()] = {};
 	return true;
 }
 
@@ -125,6 +129,7 @@ function remove_body(body){
 		partition_data.partition.remove_data(body.get_data($"collision.world.{id}"));
 
 	body.set_data($"collision.world.{id}", undefined);
+	body.set_data($"collision.is_area.{id}", undefined);
 	struct_remove(overlap_map, body.get_index());
 	return true;
 }
@@ -223,7 +228,7 @@ function add_exited_signal(body, callable){
 		return;
 	}
 	
-	var label = $"collision_entered_{body.get_index()}";
+	var label = $"collision_exited_{body.get_index()}";
 	signaler.add_signal(label, callable);
 	body.signaler.add_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
 	
@@ -330,7 +335,14 @@ function process(){
 		var data_array = process_body(body);
 		
 		if (array_length(data_array) > 0){ // If there were collisions then we signal them out
-			signaler.signal($"collision_{body.get_index()}", [data_array]);
+			if (not body.get_data($"collision.is_area.{id}", false)){
+				var data_array_mod = array_duplicate_shallow(data_array);
+				for (var j = array_length(data_array_mod) - 1; j >= 0; --j){ // Remove 'area' bodies
+					if (data_array_mod[j].get_other_body(body).get_data($"collision.is_area.{id}"))
+						array_delete(data_array_mod, j, 1);
+				}
+				signaler.signal($"collision_{body.get_index()}", [data_array_mod]);
+			}
 			
 			if (debug_collision_highlights){
 				for (var j = array_length(data_array) - 1; j >= 0; --j){
@@ -348,43 +360,34 @@ function process(){
 		#region ENTERED / EXITED SIGNALS
 		// Signal entered / exited:
 		var data = overlap_map[$ body.get_index()];
-		if (not is_undefined(data)){ // Existing data; process
-			var keys = struct_get_names(data);
-			// Entered:
-			for (var j = array_length(data_array) - 1; j >= 0; --j){
-				var obody = data_array[j].get_other_body(body);
-				if (not is_undefined(data[$ obody.get_index()]))
-					continue;
-				
-				signaler.signal($"collision_entered_{body.get_index()}", [obody]);
-			}
-			
-			data = {}; // Wipe data
-			// Add new data:
-			for (var j = array_length(data_array) - 1; j >= 0; --j){
-				var obody = data_array[j].get_other_body(body);
-				data[$ obody.get_index()] = obody;
-			}
-			
-			// Exited:
-			for (var j = array_length(keys) - 1; j >= 0; --j){
-				var obody = data[$ keys[j]];
-				if (not is_undefined(obody))	// Still exists
-					continue;
-				
-				// No longer exists; notify:
-				signaler.signal($"collision_exited_{body.get_index()}", [obody]); 
-			}
-			overlap_map[$ body.get_index()] = data;
+		var keys = struct_get_names(data);
+		// Entered:
+		for (var j = array_length(data_array) - 1; j >= 0; --j){
+			var obody = data_array[j].get_other_body(body);
+			if (not is_undefined(data[$ obody.get_index()]))
+				continue;
+
+			signaler.signal($"collision_entered_{body.get_index()}", [obody]);
 		}
-		else { // Add new data
-			data = {};
-			for (var j = array_length(data_array) - 1; j >= 0; --j){
-				var obody = data_array[j].get_other_body(body);
-				data[$ obody.get_index()] = obody;
-				signaler.signal($"collision_entered_{body.get_index()}", [obody]);
-			}
+		
+		var ndata = {};
+		// Add new data:
+		for (var j = array_length(data_array) - 1; j >= 0; --j){
+			var obody = data_array[j].get_other_body(body);
+			ndata[$ obody.get_index()] = obody;
 		}
+		
+		// Exited:
+		for (var j = array_length(keys) - 1; j >= 0; --j){
+			var obody = ndata[$ keys[j]];
+			if (not is_undefined(obody))	// Still exists
+				continue;
+			
+			obody = data[$ keys[j]];
+			// No longer exists; notify:
+			signaler.signal($"collision_exited_{body.get_index()}", [obody]); 
+		}
+		overlap_map[$ body.get_index()] = ndata;
 		#endregion
 	}
 }

@@ -122,6 +122,11 @@ function input(){
 	
 	return look;
 }
+
+function platform_change_position(from, to){
+	body.set_position(vec_sub_vec(to, from), true);
+}
+
 #endregion
 
 #region INIT
@@ -151,7 +156,7 @@ animation.start_animation_layer(0);
 
 obj_render_controller.add_body(body);
 obj_animation_controller.add_body(body);
-obj_collision_controller.add_body(body, "dynamic");
+obj_collision_controller.add_body(body, false, "dynamic");
 
 obj_collision_controller.add_collision_signal(body, new Callable(id, is_collision));
 obj_collision_controller.signaler.add_signal("process_pre", new Callable(id, collision_pre));
@@ -162,4 +167,22 @@ delete gltf;
 body.signaler.add_signal("set_position", new Callable(obj_character_demo, function(){
 	camera.look_at_up(obj_character.body.position);
 }));
+
+// Set up attachment to the moving platform:
+obj_collision_controller.add_entered_signal(body, new Callable(id, function(body){
+	if (not U3DObject.are_equal(body, obj_character_demo.body_motion))
+		return;
+
+	body.signaler.add_signal("set_position", new Callable(id, platform_change_position));
+	obj_character_demo.is_block_moving = true;
+}));
+
+obj_collision_controller.add_exited_signal(body, new Callable(id, function(body){
+	if (not U3DObject.are_equal(body, obj_character_demo.body_motion))
+		return;
+	
+	body.signaler.remove_signal("set_position", new Callable(id, platform_change_position));
+	obj_character_demo.is_block_moving = false;
+}));
+
 #endregion
