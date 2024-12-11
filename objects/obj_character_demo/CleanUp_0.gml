@@ -9,19 +9,19 @@ for (var i = 0; i < array_length(light_array); ++i){
 	delete light_array[i];
 }
 
-for (var i = 0; i < array_length(collidable_bodies); ++i){
-	collidable_bodies[i].free();
-	delete collidable_bodies[i];
-}
-
-scene_body.free();
-delete scene_body;
+scene0_body.free();
+delete scene0_body;
 
 dummy_body.free();
 delete dummy_body;
 
-body_motion.free();
-delete body_motion;
+for (var i = array_length(scene_body_array) - 1; i >= 0; --i){
+	scene_body_array[i].free();
+	delete scene_body_array[i];
+}
+
+body_motion_trigger.free();
+delete body_motion_trigger;
 
 instance_destroy(obj_character)
 instance_destroy(obj_sphere);

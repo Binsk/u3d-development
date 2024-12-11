@@ -25,8 +25,9 @@ with (obj_menu_item){
 	break;
 }
 
-if (is_block_moving){
-	block_move_delta += frame_delta * 0.5;
-	var pos = vec(sin(block_move_delta) * frame_delta * 1.2, 0, 0);
-	cube_dynamic_body.set_position(pos, true);
+// if (not is_undefined(body_platform) and is_platform_moving){
+if (true){
+	platform_delta += frame_delta * 0.5;
+	var pos = vec(sin(platform_delta) * frame_delta * 1.2, 0, 0);
+	body_platform.set_position(pos, true);
 }

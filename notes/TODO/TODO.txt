@@ -14,6 +14,7 @@
 -	Add ability to assign collision partitioning systems to individual (or multiple)
 	layers. This should allow players to be in separate smaller partitions but still
 	scan static.
+-	Attaching AABBs to multiple instances seem to shift them incorrectly
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -69,3 +70,5 @@
 -	Add a 'queue' mode to the signaler system to allow the async controller to execute
 	all at once; allong w/ a way to override arguments. This, mostly to get around
 	repeated set_position() etc. calls.
+-	Add static option in U3DObject to auto-generate unique hash upon spawn. Should be easy,
+	but requires the special dynamic hashes to work through the system.

@@ -164,25 +164,28 @@ obj_collision_controller.signaler.add_signal("process_pre", new Callable(id, col
 gltf.free();
 delete gltf;
 
+// Set a signal so the camera updates where it looks every time the character moves:
 body.signaler.add_signal("set_position", new Callable(obj_character_demo, function(){
 	camera.look_at_up(obj_character.body.position);
 }));
 
 // Set up attachment to the moving platform:
+	// If we enter the 'hotspot' on top of the platform; attach the body to it and start moving the platform.
 obj_collision_controller.add_entered_signal(body, new Callable(id, function(body){
-	if (not U3DObject.are_equal(body, obj_character_demo.body_motion))
+	if (not U3DObject.are_equal(body, obj_character_demo.body_motion_trigger))
 		return;
 
 	body.signaler.add_signal("set_position", new Callable(id, platform_change_position));
-	obj_character_demo.is_block_moving = true;
+	obj_character_demo.is_platform_moving = true;
 }));
 
+	// If we leave the 'hotspot' on top of the platform, detach the body and stop the motion.
 obj_collision_controller.add_exited_signal(body, new Callable(id, function(body){
-	if (not U3DObject.are_equal(body, obj_character_demo.body_motion))
+	if (not U3DObject.are_equal(body, obj_character_demo.body_motion_trigger))
 		return;
 	
 	body.signaler.remove_signal("set_position", new Callable(id, platform_change_position));
-	obj_character_demo.is_block_moving = false;
+	obj_character_demo.is_platform_moving = false;
 }));
 
 #endregion

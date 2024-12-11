@@ -13,6 +13,7 @@
 function U3DObject() constructor {
 	#region PROPERTIES
 	static INDEX_COUNTER = int64(0);	// Generic data index for quick comparisons
+	
 	is_freed = false;					// Once freed, this is set to true where NOTHING SHOULD BE USED AT THIS POINT
 	index = INDEX_COUNTER++;			// Unique identifier, should never be modified directly
 	super = new Super(self);			// Used to fake function inheritance

@@ -647,9 +647,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		primitive.set_data(["import", "aabb_max"], max_vec);	// Model-coordinates max-bound
 		primitive.set_data(["import", "aabb_center"], vec_lerp(min_vec, max_vec, 0.5));	// Model actual center
 		primitive.set_data(["import", "aabb_extends"], vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5));	// Extends from model center
-		
-		if (not is_undefined(primitive_header[$ "name"]))
-			primitive.set_data(["import", "name"], primitive_header[$ "name"]);
+		primitive.set_data(["import", "name"], json_header.meshes[mesh_index][$ "name"]);	// Correct primitive name; mesh name is in a separate scene node
 		
 		add_child_ref(primitive);
 		
@@ -664,15 +662,21 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	
 	/// @desc	Given a mesh index, attempts to generate a Mesh. See generate_primitive for more
 	///			specifics in regards to data handling.
-	/// @param	{real}			index				index of the mesh in the glTF array
+	/// @param	{real}			index_or_name		index of the mesh in the glTF array or its name
 	///	@param	{VertexFormat}	format				vertex format to use when building the primitives
 	/// @param	{bool}			apply_transforms	if true, applies node transforms directly to vertex buffers
-	function generate_mesh(mesh_index, format, apply_transforms=true){
+	function generate_mesh(mesh_index, apply_transforms=true){
+		if (is_string(mesh_index))
+			mesh_index = get_structure_index(mesh_index, "meshes");
+			
+		if (mesh_index < 0)
+			return undefined;
+		
 		var count = get_primitive_count(mesh_index);
 		if (count <= 0)
 			return undefined;
 			
-		var mesh_hash = md5_string_utf8($"{self.load_directory}{self.name}_mesh_{mesh_index}{format.get_hash()}{apply_transforms}");
+		var mesh_hash = md5_string_utf8($"{self.load_directory}{self.name}_mesh_{mesh_index}{apply_transforms}");
 		var mesh = U3DObject.get_ref_data(mesh_hash);
 		if (not is_undefined(mesh))
 			return mesh;
@@ -680,8 +684,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var transform = undefined;
 		var mesh_name = undefined;
 		// Calculate transform matrix for this mesh (if one exists and apply transforms is enabled)
+		var node_array = (json_header[$ "nodes"] ?? []);
 		if (apply_transforms){
-			var node_array = (json_header[$ "nodes"] ?? []);
 			for (var i = array_length(node_array) - 1; i >= 0; --i){
 				var node = node_array[i];
 				if ((node[$ "mesh"] ?? -1) != mesh_index)
@@ -691,16 +695,25 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				if (matrix_is_identity(transform))
 					transform = undefined; // Unset as it allows faster model building
 					
-				mesh_name = node[$ "name"];
-					
 				break;
 			}
 		}
+		
+		// Grab mesh name (useful when scannign import data)
+		for (var i = array_length(node_array) - 1; i >= 0; --i){
+			var node = node_array[i];
+			if ((node[$ "mesh"] ?? -1) == mesh_index){
+				mesh_name = node[$ "name"];
+				break;
+			}
+		}
+		
+		// Generate primitives
 		var primitive_array = array_create(count, undefined);
 		var is_invalid = false;
 		var i;
 		for (i = 0; i < count; ++i){
-			var primitive = generate_primitive(mesh_index, i, format, transform);
+			var primitive = generate_primitive(mesh_index, i, get_primitive_format(mesh_index, i), transform);
 			if (is_undefined(primitive)){
 				is_invalid = true;
 				break;
@@ -727,9 +740,6 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
 
-		if (not is_undefined(json_header.meshes[mesh_index][$ "name"]))
-			mesh.set_data(["import", "name"], json_header.meshes[mesh_index][$ "name"]);
-
 		add_child_ref(mesh);
 		return mesh;
 	}
@@ -742,17 +752,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			The resources auto-generated and attached to the model itself, however, will be auto-managed
 	///			by the system.
 	/// @note	If an invalid scene is defined then EVERY MESH will be added to the model!
-	///	@param	{real}			scene				Which scene from the model to generate a model from (-1 all meshes, regardless of scene)
+	///	@param	{any}			index_or_name		Which scene from the model to generate a model from (-1 all meshes, regardless of scene)
 	/// @param	{bool}			materials			Whether or not to generate materials for the model (Material indices will still be set)
 	/// @param	{bool}			apply_transforms	Whether or not node transforms should be applied to the primitives
-	/// @param	{VertexFormat}	vformat				VertexFormat to generate with, will attempt to fill missing data
-	function generate_model(scene=-1, generate_materials=true, apply_transforms=true, format=undefined){
-/// @stub	Implement support for custom formats (requires dynamic shader attributes on Windows)
-		if (not is_undefined(format))
-			throw new ExceptionGLTF("custom formats not yet supported!", EXCEPTION_GLTF.unsupported_feature);
-		else
-/// @stub	Add proper format auto-calc as appropriate once implemented
-			format = get_primitive_format(-1, -1);
+	function generate_model(scene=-1, generate_materials=true, apply_transforms=true){
+		if (is_string(scene))
+			scene = get_structure_index(scene, "scenes");
 
 		// Determine which nodes are in our scene:
 		var node_array = get_scene_nodes(scene);
@@ -771,8 +776,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			if (not is_undefined(mesh_struct[$ mesh_id])) // Already defined
 				continue;
 			
-/// @stub	Determine the format correctly per-mesh
-			var mesh = generate_mesh(mesh_id, format, apply_transforms);
+			var mesh = generate_mesh(mesh_id, apply_transforms);
 			if (is_undefined(mesh)){
 				is_invalid = true;
 				break;

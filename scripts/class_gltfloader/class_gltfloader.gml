@@ -112,6 +112,36 @@ function GLTFLoader() : U3DObject() constructor {
 		return json_header[$ label][index];
 	}
 	
+	/// @desc	Given a name and the label type, returns the structure with the
+	///			matching name (or undefined).
+	function get_structure_by_name(name, label=""){
+		if (is_undefined(json_header[$ label]))
+			return undefined;
+		
+		var array = json_header[$ label];
+		for (var i = array_length(array) - 1; i >= 0; --i){
+			if ((array[i][$ "name"] ?? "") == name)
+				return array[i];
+		}
+		
+		return undefined;
+	}
+	
+	/// @desc	Given the structure's name and label type, returns the index it is
+	///			found at (or -1 if not found)
+	function get_structure_index(name, label=""){
+		if (is_undefined(json_header[$ label]))
+			return -1;
+		
+		var array = json_header[$ label];
+		for (var i = array_length(array) - 1; i >= 0; --i){
+			if ((array[i][$ "name"] ?? "") == name)
+				return i;
+		}
+		
+		return -1;
+	}
+	
 	/// @desc	Returns an array of extension names specified as used in this model that
 	///			may be able to be ignored.
 	function get_extensions_used(){
