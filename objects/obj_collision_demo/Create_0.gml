@@ -300,7 +300,7 @@ inst.signaler.add_signal("drag", new Callable(id, function(drag_value, inst){
 
 #region MOUSE INTERACTION
 	// Collision ray detection w/ mouse:
-obj_collision_controller.add_signal(camera, new Callable(id, function(data_array){
+obj_collision_controller.add_collision_signal(camera, new Callable(id, function(data_array){
 	if (cursor != cr_arrow) // We are hovering a menu item; skip
 		return;
 	

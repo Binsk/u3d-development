@@ -153,7 +153,7 @@ obj_render_controller.add_body(body);
 obj_animation_controller.add_body(body);
 obj_collision_controller.add_body(body, "dynamic");
 
-obj_collision_controller.add_signal(body, new Callable(id, is_collision));
+obj_collision_controller.add_collision_signal(body, new Callable(id, is_collision));
 obj_collision_controller.signaler.add_signal("process_pre", new Callable(id, collision_pre));
 
 gltf.free();

@@ -6,10 +6,15 @@ event_inherited();
 /// signals.
 
 /// @signals
-/// "collision_<id>"	(data[])	-	thrown when a body is scanned w/ collisions where <id> is the body id that triggered the update.
-///										'data' is an array of CollidableData structs for all collisions with that body.
-/// "process_pre"		()			-	thrown just before processing occurs
-/// "process_post"		()			-	thrown just after processing occurs
+/// "collision_<id>"			(data[])	-	thrown when a body is scanned w/ collisions where <id> is the body id that triggered the update.
+///												'data' is an array of CollidableData structs for all collisions with that body.
+/// "collision_entered_<id>"	(data[])	-	thrown when a body enters the space of another body.
+///												'data' is an array of the bodies/data stored in PartitionData that was collided with
+/// "collision_exited_<id>"		(data[])	-	thrown when a body exits the space of another body.
+///												Note: If a body had entered and then been freed, the 'exited' signal will occur on the
+///													  next body scan.
+/// "process_pre"				()			-	thrown just before processing occurs
+/// "process_post"				()			-	thrown just after processing occurs
 
 /// @stub	Add partitioning system
 #region PROPERTIES
@@ -17,6 +22,7 @@ debug_collision_highlights = false; // If enabled along w/ camera debug shapes, 
 debug_scan_count = 0;				// Number of bodies scanned from the last tic
 
 update_map = {};	// Updates queued this frame
+overlap_map = {};	// Stores <body_id> -> {<body_id> : <body>} of overlapping collisions
 update_delay = 0;	// Number of ms beteewn collision scan updates
 update_last = 0;	// Last time there was an update (in ms)
 partition_layers = {
@@ -101,6 +107,7 @@ function add_body(body, partition_layer="default"){
 	var data = new PartitionData(body);
 	partition.add_data(data);
 	body.set_data($"collision.world.{id}", data);
+	overlap_map[$ body.get_index] = {};
 	return true;
 }
 
@@ -118,12 +125,18 @@ function remove_body(body){
 		partition_data.partition.remove_data(body.get_data($"collision.world.{id}"));
 
 	body.set_data($"collision.world.{id}", undefined);
+	struct_remove(overlap_map, body.get_index());
 	return true;
 }
 
-/// @desc	Attaches a body to the signaling system and returns the signal label that will be used.
+#region ATTACH SIGNALS
+// Signals can easily be manually attached / removed, but the following functions
+// handle doing so to simplify the process.
+
+/// @desc	Attaches a callable to the system to be executed every time the body
+///			is causing a collision.
 ///			Signal is auto-removed if the body is freed while attached.
-function add_signal(body, callable){
+function add_collision_signal(body, callable){
 	if (not is_instanceof(body, Body)){
 		Exception.throw_conditional("invalid type, expected [Body]!");
 		return;
@@ -141,8 +154,9 @@ function add_signal(body, callable){
 	return label;
 }
 
-/// @desc	Removes an existing body <-> callable signal from the system
-function remove_signal(body, callable){
+/// @desc	Removes an existing 'collision' signal for the specified body; requires
+///			the callable originally used to define it.
+function remove_collision_signal(body, callable){
 	if (not is_instanceof(body, Body)){
 		Exception.throw_conditional("invalid type, expected [Body]!");
 		return;
@@ -157,6 +171,81 @@ function remove_signal(body, callable){
 	signaler.remove_signal(label, callable);
 	body.signaler.remove_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
 }
+
+/// @desc	Attaches a callable to the system to be executed every time the body
+///			enters a fresh collision.
+///			Signal is auto-removed if the body is freed while attached.
+function add_entered_signal(body, callable){
+	if (not is_instanceof(body, Body)){
+		Exception.throw_conditional("invalid type, expected [Body]!");
+		return;
+	}
+	
+	if (not is_instanceof(callable, Callable)){
+		Exception.throw_conditional("invalid type, expected [Callable]!");
+		return;
+	}
+	
+	var label = $"collision_entered_{body.get_index()}";
+	signaler.add_signal(label, callable);
+	body.signaler.add_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
+	
+	return label;
+}
+
+function remove_entered_signal(body, callable){
+	if (not is_instanceof(body, Body)){
+		Exception.throw_conditional("invalid type, expected [Body]!");
+		return;
+	}
+	
+	if (not is_instanceof(callable, Callable)){
+		Exception.throw_conditional("invalid type, expected [Callable]!");
+		return;
+	}
+	
+	var label = $"collision_entered_{body.get_index()}";
+	signaler.remove_signal(label, callable);
+	body.signaler.remove_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
+}
+
+/// @desc	Attaches a callable to the system to be executed every time the body
+///			enters a fresh collision.
+///			Signal is auto-removed if the body is freed while attached.
+function add_exited_signal(body, callable){
+	if (not is_instanceof(body, Body)){
+		Exception.throw_conditional("invalid type, expected [Body]!");
+		return;
+	}
+	
+	if (not is_instanceof(callable, Callable)){
+		Exception.throw_conditional("invalid type, expected [Callable]!");
+		return;
+	}
+	
+	var label = $"collision_entered_{body.get_index()}";
+	signaler.add_signal(label, callable);
+	body.signaler.add_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
+	
+	return label;
+}
+
+function remove_exited_signal(body, callable){
+	if (not is_instanceof(body, Body)){
+		Exception.throw_conditional("invalid type, expected [Body]!");
+		return;
+	}
+	
+	if (not is_instanceof(callable, Callable)){
+		Exception.throw_conditional("invalid type, expected [Callable]!");
+		return;
+	}
+	
+	var label = $"collision_exited_{body.get_index()}";
+	signaler.remove_signal(label, callable);
+	body.signaler.remove_signal("free", new Callable(id, _signal_free_signal, [label, callable]));
+}
+#endregion
 
 /// @desc	Scans a single body against collisions. Direct use should generally be
 ///			avoided as it discards any potential optimizations but this provides immediate 
@@ -255,6 +344,48 @@ function process(){
 		}
 		else if (debug_collision_highlights)
 			body.set_data("collision.debug_highlight", max(1, body.get_data("collision.debug_highlight", 1)));
+		
+		#region ENTERED / EXITED SIGNALS
+		// Signal entered / exited:
+		var data = overlap_map[$ body.get_index()];
+		if (not is_undefined(data)){ // Existing data; process
+			var keys = struct_get_names(data);
+			// Entered:
+			for (var j = array_length(data_array) - 1; j >= 0; --j){
+				var obody = data_array[j].get_other_body(body);
+				if (not is_undefined(data[$ obody.get_index()]))
+					continue;
+				
+				signaler.signal($"collision_entered_{body.get_index()}", [obody]);
+			}
+			
+			data = {}; // Wipe data
+			// Add new data:
+			for (var j = array_length(data_array) - 1; j >= 0; --j){
+				var obody = data_array[j].get_other_body(body);
+				data[$ obody.get_index()] = obody;
+			}
+			
+			// Exited:
+			for (var j = array_length(keys) - 1; j >= 0; --j){
+				var obody = data[$ keys[j]];
+				if (not is_undefined(obody))	// Still exists
+					continue;
+				
+				// No longer exists; notify:
+				signaler.signal($"collision_exited_{body.get_index()}", [obody]); 
+			}
+			overlap_map[$ body.get_index()] = data;
+		}
+		else { // Add new data
+			data = {};
+			for (var j = array_length(data_array) - 1; j >= 0; --j){
+				var obody = data_array[j].get_other_body(body);
+				data[$ obody.get_index()] = obody;
+				signaler.signal($"collision_entered_{body.get_index()}", [obody]);
+			}
+		}
+		#endregion
 	}
 }
 
