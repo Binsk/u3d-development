@@ -359,7 +359,7 @@ function process(){
 		
 		#region ENTERED / EXITED SIGNALS
 		// Signal entered / exited:
-		var data = overlap_map[$ body.get_index()];
+		var data = (overlap_map[$ body.get_index()] ?? {});
 		var keys = struct_get_names(data);
 		// Entered:
 		for (var j = array_length(data_array) - 1; j >= 0; --j){
