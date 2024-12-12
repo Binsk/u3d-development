@@ -134,6 +134,7 @@
     {"id":{"name":"class_capsule","path":"scripts/class_capsule/class_capsule.yy",},},
     {"id":{"name":"class_collidable","path":"scripts/class_collidable/class_collidable.yy",},},
     {"id":{"name":"class_collidabledata","path":"scripts/class_collidabledata/class_collidabledata.yy",},},
+    {"id":{"name":"class_convexhull","path":"scripts/class_convexhull/class_convexhull.yy",},},
     {"id":{"name":"class_exception","path":"scripts/class_exception/class_exception.yy",},},
     {"id":{"name":"class_eye","path":"scripts/class_eye/class_eye.yy",},},
     {"id":{"name":"class_eyeorthographic","path":"scripts/class_eyeorthographic/class_eyeorthographic.yy",},},

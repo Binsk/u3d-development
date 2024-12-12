@@ -95,6 +95,10 @@ for (var i = array_length(mesh_array) - 1; i >= 0; --i){
 			collidable = new AABB(primitive.get_data(["import", "aabb_extends"]));
 		else if (string_starts_with(name, "Sphere"))
 			collidable = new Sphere(vec_min_component(primitive.get_data(["import", "aabb_extends"])));
+		else if (string_starts_with(name, "Convex")){
+			collidable = new ConvexHull();
+			collidable.add_primitive(primitive);
+		}
 		
 		if (is_undefined(collidable)){ // Invalid collidable; ignore
 			body.free();
@@ -109,6 +113,8 @@ for (var i = array_length(mesh_array) - 1; i >= 0; --i){
 		array_push(scene_body_array, body);
 	}
 }
+
+scene0_model.freeze();
 
 // Dynamic elements:
 body_platform = undefined;	// Moving platform from the dynamic objects
@@ -175,7 +181,7 @@ if (not is_undefined(body_platform)){
 	body_motion_trigger.set_scale(vec(0.8, 0.1, 0.8));	// Scale so the collision shape scales
 	var pos = body_platform.get_data("collision.offset", vec());	// A bit of a hack; we steal the collision shape's offset for the body for our position
 	pos = vec_duplicate(pos);
-	pos.y *= 2.05;
+	pos.y *= 1.85;
 	body_motion_trigger.set_position(pos);
 	obj_collision_controller.add_body(body_motion_trigger, true, "dynamic"); // Mark as 'area' so it doesn't do collision triggers but does enter/exit checks
 	

@@ -28,6 +28,6 @@ with (obj_menu_item){
 // Move the platform if it is actively set to moving or if it is still returnning to its start position:
 if (not is_undefined(body_platform) and (is_platform_moving or body_platform.position.x > 0.01)){
 	platform_delta += frame_delta * 0.5;
-	var pos = vec(sin(platform_delta) * frame_delta * 1.2, 0, 0);
+	var pos = vec(sin(platform_delta) * frame_delta * 1.6, 0, 0);
 	body_platform.set_position(pos, true);
 }
