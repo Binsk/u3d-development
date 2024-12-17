@@ -1,6 +1,5 @@
 function LightPoint(position=vec()) : Light() constructor {
 	#region PROPERTIES
-	shader_lighting = shd_lighting_point;
 	light_color = c_white;
 	light_intensity = 1.0;
 	light_range = infinity;	// How far the light can reach
@@ -37,6 +36,11 @@ function LightPoint(position=vec()) : Light() constructor {
 			
 		replace_child_ref(texture, texture_environment);
 		texture_environment = texture;
+	}
+	
+	/// @desc	Returns the shader index that this light type uses.
+	function get_light_shader(){
+		return shd_lighting_point;
 	}
 	
 	function apply_gbuffer(){

@@ -73,7 +73,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		return shadow_eye;
 	}
 	
-	// @desc	Returns the shader index that this light type uses.
+	/// @desc	Returns the shader index that this light type uses.
 	function get_light_shader(){
 		return shd_lighting_directional;
 	}
