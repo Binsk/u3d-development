@@ -10,8 +10,10 @@
 ///			be very slow but may be needed for static object placement in-game.
 
 /// https://gamedev.stackexchange.com/questions/43855/how-do-i-get-the-axes-for-sat-collision-detection/43856#43856
+/// https://dyn4j.org/2010/01/sat/#sat-mtv
 function ConvexHull(point_count=0, edge_count=0, axis_count=0) : AABB() constructor {
 	#region PROPERTIES
+/// @stub	May need normal <-> point relation; look into it
 	point_array = array_create(point_count, vec());	// Array of all vertex points for the shape
 	edge_array = array_create(edge_count, vec());	// Array of all edge directions for the shape
 	axis_array = array_create(axis_count, vec());	// Array of all normalized axes (face normals) for the shape
@@ -22,6 +24,10 @@ function ConvexHull(point_count=0, edge_count=0, axis_count=0) : AABB() construc
 	#endregion
 	
 	#region STATIC METHODS
+	/// @desc	Returns if there is a separating plane between two CovexHull shapes
+	static get_separating_plane = function(plane_position, plane_normal, ch_a, ch_b, node_a, node_b){
+/// @stub	Implement!
+	}
 	#endregion
 	
 	#region METHODS
