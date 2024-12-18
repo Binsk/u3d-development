@@ -91,14 +91,15 @@ for (var i = array_length(mesh_array) - 1; i >= 0; --i){
 		body.set_position(primitive.get_data(["import", "aabb_center"]));
 		var name = primitive.get_data(["import", "name"]);
 		var collidable = undefined;
-		if (string_starts_with(name, "Cube"))
+/// @stub	Re-enable convex once implemented
+		if (string_starts_with(name, "Cube") or string_starts_with(name, "Convex"))
 			collidable = new AABB(primitive.get_data(["import", "aabb_extends"]));
 		else if (string_starts_with(name, "Sphere"))
 			collidable = new Sphere(vec_min_component(primitive.get_data(["import", "aabb_extends"])));
-		else if (string_starts_with(name, "Convex")){
-			collidable = new ConvexHull();
-			collidable.add_primitive(primitive);
-		}
+		// else if (string_starts_with(name, "Convex")){
+		// 	collidable = new ConvexHull();
+		// 	collidable.add_primitive(primitive);
+		// }
 		
 		if (is_undefined(collidable)){ // Invalid collidable; ignore
 			body.free();
