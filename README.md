@@ -25,12 +25,3 @@ The system does have an experimental 'fall-back' rendering mode for platforms th
 Are you finding this project useful? Feel free to buy me a [coffee](https://ko-fi.com/binsk) if you are so inclined!
 
 If that's not to your taste then I'd still be happy just to see what you've created with this project! Shoot me a link on the [GameMaker forums](https://forum.gamemaker.io/index.php?members/binsk.1097/)!
-
-## Known GameMaker Issues
-
-There are a few bugs in GameMaker that have yet to be patched in the latest beta. As these are somewhat severe they are listed here:
-
-* A memory-leak issue with creating nested arrays in a loop where they do not free. This can result in upwards up 5+GB RAM usage loading model files with a large number of triangles.
-* Silent crash loading some PNG images. This means loading some models may silently crash the game (did not see this very frequently, though).
-
-The bugs for these have been closed and marked as fixed, so hopefully they will arrive in GameMaker in the January update but for now, they are worth being aware of.

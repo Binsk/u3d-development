@@ -11,9 +11,6 @@
 -	Fix "framebuffer" error in browser when loading new textures in (if rendering is off
 	while loading the issue goes away).
 -	Fix browser dithered rendering not mixing right w/ opaque items (?)
--	Add ability to assign collision partitioning systems to individual (or multiple)
-	layers. This should allow players to be in separate smaller partitions but still
-	scan static.
 
 # TODO
 -	[widows] address multple 'attribute' inputs for shaders
@@ -52,22 +49,16 @@
 	and sky-boxes since they are blended at different stages of the pipeline.
 -	Add support for 'hooks' w/ custom properties when loading glTF; this will allow
 	changing generation w/ game-specific properties defined in blender.
--	Add dithered translucency to opaque pass.
--	Add async controller handling of reference freeing so it only does so at frame end,
-	this allows passing things around in a script w/o accidental immediate freeing.
+-	Add dithered translucency to opaque pass (apart form current mixed rendering)
 -	Add dynamic number of 'translucent' render layers; user defined
 -	Add optimized culling of buffers in compatability mode (e.g., if no emissive materials
 	drop that pass entirely).
--	Increase shadow sample radius / stride and add blue-noise dithering from our dither
-	texture. May need some modifications to make the samples look better but the result
-	can be worth it: https://momentsingraphics.de/BlueNoise.html
 -	Add BVH 2D representation for checking branch depths
--	Add "enter" and "exit" collision detection
 -	BVH updating instances is WAY TOO SLOW!
 -	Optional automatic animation culling when something is out-of-view of cameras or
 	even an animation update lerp speed
 -	Add a 'queue' mode to the signaler system to allow the async controller to execute
-	all at once; allong w/ a way to override arguments. This, mostly to get around
+	all at once; along w/ a way to override arguments. This, mostly to get around
 	repeated set_position() etc. calls.
 -	Add static option in U3DObject to auto-generate unique hash upon spawn. Should be easy,
 	but requires the special dynamic hashes to work through the system.
