@@ -2,7 +2,8 @@ precision highp float;
 
 uniform sampler2D u_sInput; // Input color
 uniform sampler2D u_sEnvironment;   // Cube-map to sample
-uniform sampler2D u_sView;          // Vie vectors in world-space
+uniform sampler2D u_sView;          // View vectors in world-space
+uniform int u_iMipCount;            // Used to detect if a PBR texture was passed
 
 varying vec2 v_vTexcoord;
 
@@ -49,6 +50,9 @@ vec2 cube_uv(vec3 vNormal){
         vUV += vec2(fDX * 2.0, fDY);
     else                            // -Z
         vUV += vec2(0.0, fDY);
+    
+    if (u_iMipCount > 0)    // Only grab non-blurred half of texture if PBR
+        vUV.x *= 0.5;
     
     return vUV;
 }
