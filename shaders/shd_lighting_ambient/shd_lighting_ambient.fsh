@@ -130,6 +130,9 @@ void main()
     #ifndef _YY_GLSLES_
     if (u_iSSAO > 0)
         fSSAO = sample_ssao(u_iBlurSamples);
+    #else
+    if (u_iSSAO > 0)    // GLSL ES can't have dynamic loop bounds; we force 1 blur sample
+        fSSAO = sample_ssao();
     #endif
  
     if (u_iEnvironment > 0){

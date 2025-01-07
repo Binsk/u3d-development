@@ -24,6 +24,7 @@ function LightAmbient() : Light() constructor {
 	///			must be enabled to allow SSAO to render. If SSAO strength <= 0
 	///			then the SSAO pass will simply be skipped.
 	///			Property values will highly depend on game asthetics and perceived rendering scale.
+	/// @note	Compatability mode IGNORES blur_passes and always does 1 pass!
 	/// @param	{real}	samples		how many samples per pixel when generating SSAO (more = less noise)
 	/// @param	{real}	strength	how intense the SSAO effect is (higher = darker)
 	/// @param	{real}	radius		radius scalar for sampling distance from original point (higher = wider SSAO effect)
