@@ -90,7 +90,7 @@ function PostProcessFX(shader, uniforms={}, samplers={}) : U3DObject() construct
 		
 		for (var i = array_length(sampler_keys) - 1; i >= 0; --i){
 			var data = samplers[$ sampler_keys[i]];
-			sampler_set(sampler_keys[i], data.get_texture());
+			data.apply(sampler_keys[i]);
 		}
 			
 		draw_quad(0, 0, buffer_width, buffer_height);
