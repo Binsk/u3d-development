@@ -170,10 +170,7 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 			Exception.throw_conditional("invalid type, expected [Ray]!");
 			return;
 		}
-		
-		px *= supersample_multiplier;
-		py *= supersample_multiplier;
-		
+
 		if (px < 0 or py < 0)
 			return;
 		if (px >= render_width or py >= render_height)
