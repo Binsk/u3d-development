@@ -25,7 +25,7 @@ function Body() : Node() constructor {
 		}
 		
 		var m_old = model_instance;
-		replace_child_ref(model, model_instance);
+		self.replace_child_ref(model, model_instance);
 		model_instance = model;
 		signaler.signal("set_model", [m_old, model]);
 	}
@@ -39,7 +39,7 @@ function Body() : Node() constructor {
 			return;
 		}
 		
-		replace_child_ref(tree, animation_instance);
+		self.replace_child_ref(tree, animation_instance);
 		animation_instance = tree;
 	}
 	
@@ -52,9 +52,9 @@ function Body() : Node() constructor {
 		}
 		
 		var c_old = collidable_instance;
-		replace_child_ref(collidable, collidable_instance);
+		self.replace_child_ref(collidable, collidable_instance);
 		collidable_instance = collidable;
-		set_data("collision", undefined);	// Remove cached collidable data
+		self.set_data("collision", undefined);	// Remove cached collidable data
 		signaler.signal("set_collidable", [c_old, collidable]);
 	}
 	

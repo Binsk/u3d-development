@@ -301,9 +301,9 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 		}
 		
 		// Calculate potential surface areas:
-		var sa_x = calculate_surface_areas(priority_x);
-		var sa_y = calculate_surface_areas(priority_y);
-		var sa_z = calculate_surface_areas(priority_z);
+		var sa_x = self.calculate_surface_areas(priority_x);
+		var sa_y = self.calculate_surface_areas(priority_y);
+		var sa_z = self.calculate_surface_areas(priority_z);
 		
 		// Pick the split w/ the smallest surface area:
 		var left_array, right_array;
@@ -475,7 +475,7 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	}
 	
 	function get_data_array(){
-		var node_array = get_node_array();
+		var node_array = self.get_node_array();
 		var array = array_create(array_length(node_array));
 		for (var i = array_length(array) - 1; i >= 0; --i)
 			array[i] = node_array[i].data_array;
@@ -595,7 +595,7 @@ function BVH(depth_max=16, instance_max=1) : Partition() constructor {
 	}
 
 	function render_debug(){
-		var node_array = get_node_array();
+		var node_array = self.get_node_array();
 		
 		for (var i = array_length(node_array) - 1; i >= 0; --i)
 			node_array[i].render_debug();

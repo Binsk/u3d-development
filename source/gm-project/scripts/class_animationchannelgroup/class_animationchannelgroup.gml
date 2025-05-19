@@ -20,7 +20,7 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		if (not is_instanceof(channel, AnimationChannelPosition) and not is_undefined(channel))
 			throw new Exception("invalid type, expected [AnimationChannelPosition]!");
 		
-		replace_child_ref(channel, position_channel);
+		self.replace_child_ref(channel, position_channel);
 		position_channel = channel;
 	}
 	
@@ -30,7 +30,7 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		if (not is_instanceof(channel, AnimationChannelRotation) and not is_undefined(channel))
 			throw new Exception("invalid type, expected [AnimationChannelPosition]!");
 		
-		replace_child_ref(channel, rotation_channel);
+		self.replace_child_ref(channel, rotation_channel);
 		rotation_channel = channel;
 	}
 	
@@ -40,7 +40,7 @@ function AnimationChannelGroup() : U3DObject() constructor {
 		if (not is_instanceof(channel, AnimationChannelScale) and not is_undefined(channel))
 			throw new Exception("invalid type, expected [AnimationChannelScale]!");
 		
-		replace_child_ref(channel, scale_channel);
+		self.replace_child_ref(channel, scale_channel);
 		scale_channel = channel;
 	}
 	
@@ -49,11 +49,11 @@ function AnimationChannelGroup() : U3DObject() constructor {
 	/// @param	{AnimationChannel}	channel
 	function set_channel(channel){
 		if (is_instanceof(channel, AnimationChannelScale))
-			set_scale_channel(channel);
+			self.set_scale_channel(channel);
 		else if (is_instanceof(channel, AnimationChannelRotation))
-			set_rotation_channel(channel);
+			self.set_rotation_channel(channel);
 		else if (is_instanceof(channel, AnimationChannelPosition))
-			set_position_channel(channel);
+			self.set_position_channel(channel);
 		else if (is_instanceof(channel, AnimationChannel))
 			throw new Exception("failed to set channel, [AnimationChannel] is a template class!");
 		else

@@ -130,7 +130,7 @@ function PartitionNode(partition) constructor {
 	}
 	
 	function calculate_child_data_surface_area(){
-		return aabb_get_surface_area(calculate_child_data_aabb());
+		return aabb_get_surface_area(self.calculate_child_data_aabb());
 	}
 	
 	/// @desc	Calculates the necessary AABB to wrap around all child nodes.
@@ -151,11 +151,11 @@ function PartitionNode(partition) constructor {
 	}
 	
 	function calculate_child_node_surface_area(){
-		return aabb_get_surface_area(calculate_child_node_aabb());
+		return aabb_get_surface_area(self.calculate_child_node_aabb());
 	}
 	
 	function render_debug(){
-		var r_color = [0, get_is_leaf(), 1];
+		var r_color = [0, self.get_is_leaf(), 1];
 		var render_extends = self.aabb.extends;
 		if (vec_is_zero(render_extends))
 			return;

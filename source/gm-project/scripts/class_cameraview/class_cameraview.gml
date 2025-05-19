@@ -48,14 +48,14 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		if (is_instanceof(eye, EyePerspective))
 			signaler.add_signal("set_aspect", new Callable(eye, eye.set_aspect_ratio));
 		
-		replace_child_ref(eye, eye_id);
+		self.replace_child_ref(eye, eye_id);
 		eye_id = eye; 
 	}
 	
 	/// @desc	A function specific to this camera type; returns the eye attached
 	///			to this class.
 	function get_eye(){
-		return get_eye_array()[0];
+		return self.get_eye_array()[0];
 	}
 	
 	function get_eye_array(){
@@ -88,8 +88,8 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 		var ndx = anchor.get_dx(rwidth);
 		var ndy = anchor.get_dy(rheight);
 		if ((buffer_width ?? 1 != ndx) or (buffer_height ?? 1) != ndy){
-			eye_id.matrix_projection = undefined;
-			eye_id.matrix_inv_projection = undefined;
+			eye_id.matrix_p = undefined;
+			eye_id.matrix_inv_p = undefined;
 		}
 		
 		buffer_width = ndx;
@@ -223,6 +223,6 @@ function CameraView(anchor=new Anchor2D()) : Camera() constructor {
 	var eye = new EyePerspective(0.01, 1024);
 	eye.set_camera_node(self);
 	eye.generate_unique_hash();
-	set_eye(eye);
+	self.set_eye(eye);
 	#endregion
 }

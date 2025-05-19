@@ -34,7 +34,7 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	function set_texture(texture_id){
 		self.texture_id = texture_id;
 		if (not is_undefined(texture_id))
-			cache_properties();
+			self.cache_properties();
 	}
 	/// @desc	Sets whether the texture should render with mipmapping.
 	function set_tex_mip_enable(enabled){
@@ -165,7 +165,7 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 		}
 		
 		if (uniform >= 0){ // Uniform exists in the shader; set it
-			apply_properties(uniform);
+			self.apply_properties(uniform);
 			texture_set_stage(uniform, texture_id);
 			return true;
 		}
@@ -182,6 +182,6 @@ function Texture2D(texture_id=undefined) : U3DObject() constructor {
 	
 	#region INIT
 	if (not is_undefined(texture_id))
-		cache_properties();
+		self.cache_properties();
 	#endregion
 }

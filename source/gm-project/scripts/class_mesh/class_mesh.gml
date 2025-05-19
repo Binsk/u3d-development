@@ -100,7 +100,7 @@ function Mesh() : U3DObject() constructor {
 	/// @desc	Renders a single primitive.
 	/// @param	{real}	index		index of the primitive to render
 	function render_primitive(index){
-		var primitive = get_primitive_data(index);
+		var primitive = self.get_primitive_data(index);
 		var triangle_start = primitive[$ "triangle_start"] ?? 0;
 		var triangle_count = primitive[$ "triangle_count"] ?? infinity;
 		primitive.primitive.submit(Camera.ACTIVE_INSTANCE.debug_flags & CAMERA_DEBUG_FLAG.render_wireframe, triangle_start, triangle_count);
@@ -114,7 +114,7 @@ function Mesh() : U3DObject() constructor {
 	/// @param	{struct}	data			arbitrary data calculated by the renderer; things like skeletal animation
 	function render(material_data={}, data={}){
 		var is_multimodel = (not is_undefined(data[$ "node_array"]));
-		for (var i = get_primitive_count() - 1; i >= 0; --i){
+		for (var i = self.get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
 			if (is_undefined(material))
@@ -123,7 +123,7 @@ function Mesh() : U3DObject() constructor {
 			if (material.render_stage & Camera.ACTIVE_STAGE <= 0) // Don't render, wrong stage
 				return;
 				
-			material.apply(get_primitive_data(i).primitive.vformat);
+			material.apply(self.get_primitive_data(i).primitive.vformat);
 
 /// @stub	Optimize it prevent re-sending data
 			if (primitive_array[i].has_bones){
@@ -132,14 +132,14 @@ function Mesh() : U3DObject() constructor {
 			}
 			
 			if (not is_multimodel)
-				render_primitive(i);
+				self.render_primitive(i);
 			else {
 				var array = data.node_array;
 				for (var j = array_length(array) - 1; j >= 0; --j){
 					var node = array[j];
 					matrix_set(matrix_world, node.get_model_matrix());
-					apply_matrix();
-					render_primitive(i);
+					self.apply_matrix();
+					self.render_primitive(i);
 				}
 			}
 		}
@@ -151,7 +151,7 @@ function Mesh() : U3DObject() constructor {
 	function render_shadows(material_data={}, data={}){
 		var is_multimodel = (not is_undefined(data[$ "node_array"]));
 		
-		for (var i = get_primitive_count() - 1; i >= 0; --i){
+		for (var i = self.get_primitive_count() - 1; i >= 0; --i){
 			var material_index = primitive_array[i].material_index;
 			var material = material_data[$ material_index];
 			if (is_undefined(material))
@@ -164,7 +164,7 @@ function Mesh() : U3DObject() constructor {
 			if (not material.get_casts_shadows())
 				continue;
 
-			var shd = Light.ACTIVE_INSTANCE.get_shadow_shader(get_primitive_data(i).primitive.vformat);
+			var shd = Light.ACTIVE_INSTANCE.get_shadow_shader(self.get_primitive_data(i).primitive.vformat);
 			if (shader_current() != shd)
 				shader_set(shd);
 				
@@ -177,14 +177,14 @@ function Mesh() : U3DObject() constructor {
 			}
 			
 			if (not is_multimodel)
-				render_primitive(i);
+				self.render_primitive(i);
 			else {
 				var array = data.node_array;
 				for (var j = array_length(array) - 1; j >= 0; --j){
 					var node = array[j];
 					matrix_set(matrix_world, node.get_model_matrix());
-					apply_matrix();
-					render_primitive(i);
+					self.apply_matrix();
+					self.render_primitive(i);
 				}
 			}
 		}
@@ -215,7 +215,7 @@ function Mesh() : U3DObject() constructor {
 		
 		mesh.matrix_model = matrix_model;
 		mesh.matrix_import = matrix_import;
-		mesh.set_data("import", get_data("import"))
+		mesh.set_data("import", self.get_data("import"))
 		return mesh;
 	}
 	

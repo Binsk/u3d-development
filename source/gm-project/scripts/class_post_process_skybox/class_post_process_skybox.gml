@@ -24,7 +24,7 @@ function PPFXSkybox(cubemap=undefined) : PostProcessFX(shd_skybox) constructor {
 	if (not is_instanceof(cubemap, TextureCube) and not is_undefined(cubemap))
 		throw new Exception("invalid type, expected [TextureCube]!");
 		
-	set_custom_samplers({
+	self.set_custom_samplers({
 		"u_sEnvironment" : cubemap
 	});
 	#endregion

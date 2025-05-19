@@ -15,8 +15,8 @@ function EyePerspective(znear=0.01, zfar=1024, y_fov=pi/2.5, aspect=1.0) : Eye(z
 		if (self.fov == fov)
 			return;
 			
-		self.matrix_projection = undefined;
-		self.matrix_inv_projection = undefined;
+		self.matrix_p = undefined;
+		self.matrix_inv_p = undefined;
 		self.fov = fov;
 	}
 	
@@ -33,8 +33,8 @@ function EyePerspective(znear=0.01, zfar=1024, y_fov=pi/2.5, aspect=1.0) : Eye(z
 	
 	/// @desc	Return / Build the projection matrix for this eye.
 	function get_projection_matrix(){
-		if (not is_undefined(self.matrix_projection))
-			return self.matrix_projection;
+		if (not is_undefined(self.matrix_p))
+			return self.matrix_p;
 		
 		var h = 1 / tan(fov * 0.5);
 		var w = h / aspect;
@@ -47,7 +47,7 @@ function EyePerspective(znear=0.01, zfar=1024, y_fov=pi/2.5, aspect=1.0) : Eye(z
 			0, 0, b, 0
 		];
 		
-		self.matrix_projection = matrix;
+		self.matrix_p = matrix;
 		return matrix;
 	}
 	#endregion

@@ -68,7 +68,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		build_data = {
 			texture_id
 		};
-		TextureCube.BUILD_MAP[$ get_index()] = self;
+		TextureCube.BUILD_MAP[$ self.get_index()] = self;
 	}
 	
 	/// @desc	Sets a texture to be used as a cube face. Setting a face will wipe
@@ -88,7 +88,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 		
 		struct_remove(build_data, "texture_id"); // Remove pre-defined texture
 		build_data[$ face_index] = texture;
-		TextureCube.BUILD_MAP[$ get_index()] = self;
+		TextureCube.BUILD_MAP[$ self.get_index()] = self;
 	}
 	
 	/// @desc	Renders the 6 cube faces to the specified surface in the proper layout.
@@ -140,7 +140,7 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 			}
 			// Set texture_cube to the next texture
 			texture_surface = surface_create(resolution, resolution);
-			render_faces_to_cubemap(texture_surface);
+			self.render_faces_to_cubemap(texture_surface);
 			texture_cube = surface_get_texture(texture_surface);
 		}
 		else
@@ -177,8 +177,8 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 			surface_free(final_surface);
 		
 		build_data = {};
-		cache_properties(); // Re-cache UVs and the like for quick look-ups
-		struct_remove(TextureCube.BUILD_MAP, get_index());
+		self.cache_properties(); // Re-cache UVs and the like for quick look-ups
+		struct_remove(TextureCube.BUILD_MAP, self.get_index());
 	}
 	
 	super.register("apply");
@@ -196,13 +196,13 @@ function TextureCube(texture_id=undefined, resolution=1024) : Texture2D(texture_
 			self.texture_id = undefined;
 		}
 		build_data = {};
-		struct_remove(TextureCube.BUILD_MAP, get_index());
+		struct_remove(TextureCube.BUILD_MAP, self.get_index());
 		super.execute("free");
 	}
 	#endregion
 	
 	#region INIT
 	if (not is_undefined(texture_id))
-		set_texture(texture_id);
+		self.set_texture(texture_id);
 	#endregion
 }

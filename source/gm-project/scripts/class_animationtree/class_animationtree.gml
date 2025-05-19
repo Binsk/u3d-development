@@ -113,7 +113,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	
 	/// @desc	Returns an array of root IDs (usually just 1, but sometimes > 1)
 	function get_root_bone_ids(){
-		var bone_count = get_max_bone_count();
+		var bone_count = self.get_max_bone_count();
 		var root_array = [];
 		for (var i = 0; i < bone_count; ++i){
 			var bone = skeleton[$ i];
@@ -166,7 +166,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	/// @desc	Returns the name of the specified animation index. If the
 	///			index is invalid, an empty string is returned.
 	function get_animation_layer_track_name(animation_layer){
-		if (not get_animation_layer_exists(animation_layer))
+		if (not self.get_animation_layer_exists(animation_layer))
 			return "";
 		
 		var data = animation_layers[$ real(animation_layer)];
@@ -197,7 +197,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		
 		// Loop through bones and multiply matrices by parents
-		var root_bone_ids = get_root_bone_ids();
+		var root_bone_ids = self.get_root_bone_ids();
 		if (array_length(root_bone_ids) <= 0)
 			throw new Exception("unable to determine root bone!");
 			
@@ -248,7 +248,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		// Write data into final array:
 		if (array_length(keys) <= U3D_MAXIMUM_BONES){
 			// If not skipping, we write the whole matrix
-			var array = array_flatten(array_create(get_max_bone_count(), matrix_build_identity()));
+			var array = array_flatten(array_create(self.get_max_bone_count(), matrix_build_identity()));
 			for (var i = array_length(keys) - 1; i >= 0; --i){
 				var bone_id = keys[i];
 				var matrix = (matrix_data[$ bone_id] ?? matrix_identity);
@@ -259,7 +259,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		}
 		else{
 			// If skipping we just need a quaternion + translation pair
-			var bone_count = get_max_bone_count();
+			var bone_count = self.get_max_bone_count();
 				// Create quat + translation defaults; note add an extra to the end if uneven as we are sending in as 16-value sets
 			var array = array_flatten(array_create(bone_count + (bone_count % 2), [0, 0, 0, 1, 0, 0, 0, 0]));
 			for (var i = array_length(keys) - 1; i >= 0; --i){
@@ -286,7 +286,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		if (not is_instanceof(track, AnimationTrack))
 			throw new Exception("invalid type, expected [AnimationTrack]!");
 		
-		replace_child_ref(track, track_struct[$ track.get_name()]);
+		self.replace_child_ref(track, track_struct[$ track.get_name()]);
 		track_struct[$ track.get_name()] = track;
 	}
 	
@@ -415,7 +415,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		
 		data.track_is_active = true;
 		if (is_undefined(data.track_time))
-			start_animation_layer(layer_index);
+			self.start_animation_layer(layer_index);
 	}
 
 	/// @desc	Interpolates between two sets of TRS data based on the specified
@@ -503,11 +503,11 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			return;
 		}
 		
-		detach_body(child_body, bone_id); // In case it was already attached
+		self.detach_body(child_body); // In case it was already attached
 
 		// Create a callable to use every time the bone updates:
 		var callable_bone = new Callable(child_body, function(matrix, parent_node){
-			matrix_model = matrix_multiply_post(parent_node.get_model_matrix(), matrix, get_model_matrix(true));
+			matrix_model = matrix_multiply_post(parent_node.get_model_matrix(), matrix, self.get_model_matrix(true));
 			matrix_inv_model = undefined;
 		}, [undefined, parent_node]);
 		
@@ -535,7 +535,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		
 		// Attach the body to the animation tree:
 		signaler.add_signal($"transformed_bone_{bone_id}", callable_bone);
-		child_body.signaler.add_signal("free", new Callable(self, detach_body, [child_body]));
+		child_body.signaler.add_signal("free", new Callable(self, self.detach_body, [child_body]));
 		
 		// Attach the animation tree to the body's updates:
 		child_body.signaler.add_signal("set_position", callable_body);
@@ -556,7 +556,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 			return;
 		
 		signaler.remove_signal($"transformed_bone_{data.bone_id}", data.callable_bone);
-		child_body.signaler.remove_signal("free", new Callable(self, detach_body, [child_body]));
+		child_body.signaler.remove_signal("free", new Callable(self, self.detach_body, [child_body]));
 		child_body.signaler.remove_signal("set_position", data.callable_body);
 		child_body.signaler.remove_signal("set_rotation", data.callable_body);
 		child_body.signaler.remove_signal("set_scale", data.callable_body);
@@ -628,7 +628,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 					else
 						time2 = clamp(time2, 0, time_max);
 					
-					trs_data = interpolate_trs_data(trs_data, track_to.get_trs_data_time(time2) , clamp(animation_layer.track_lerp, 0, 1));
+					trs_data = self.interpolate_trs_data(trs_data, track_to.get_trs_data_time(time2) , clamp(animation_layer.track_lerp, 0, 1));
 						// If finished lerp, reset channel to new track:
 					if (animation_layer.track_lerp >= 1){
 						animation_layer.track_lerp = 0;
@@ -662,7 +662,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 		ds_priority_destroy(priority);
 		
 		if (not is_undefined(trs_final))
-			transform_data = generate_transform_array(trs_final);
+			transform_data = self.generate_transform_array(trs_final);
 		else{
 			if (struct_names_count(skeleton ?? {}) > U3D_MAXIMUM_BONES)
 				transform_data = U3D.RENDERING.ANIMATION.SKELETON.missing_quatpos;
@@ -677,7 +677,7 @@ function AnimationTree(update_freq=0.033) : U3DObject() constructor {
 	function free(){
 		var values = struct_get_values(attached_bodies);
 		for (var i = array_length(values) - 1; i >= 0; --i)
-			detach_body(values[i].child_body); // Detach to clean up the signals
+			self.detach_body(values[i].child_body); // Detach to clean up the signals
 		
 		super.execute("free");
 	}

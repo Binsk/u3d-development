@@ -95,7 +95,7 @@ function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture])
 	}
 	
 	function toString(){
-		return string(get_format());
+		return string(self.get_format());
 	}
 	
 	/// @desc	Returns the number of bytes required for a single vertex with this format
@@ -111,7 +111,7 @@ function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture])
 	
 	super.register("free");
 	function free(){
-		struct_remove(FORMAT_MAP, get_hash());
+		struct_remove(FORMAT_MAP, self.get_hash());
 		vertex_format_delete(vformat);
 		super.execute("free");
 	}
@@ -180,6 +180,6 @@ function VertexFormat(vformat_array=[VERTEX_DATA.position, VERTEX_DATA.texture])
 	
 	vformat = vertex_format_end();
 	
-	FORMAT_MAP[$ get_hash()] = self; // Note, will overwrite anything already cached
+	FORMAT_MAP[$ self.get_hash()] = self; // Note, will overwrite anything already cached
 	#endregion
 }

@@ -16,22 +16,22 @@ function EyeOrthographic(znear=0.01, zfar=1024, width=1024, height=1024) : Eye(z
 			
 		self.width = width;
 		self.height = height;
-		self.matrix_projection = undefined;
-		self.matrix_inv_projection = undefined;
+		self.matrix_p = undefined;
+		self.matrix_inv_p = undefined;
 	}
 	
 	function get_projection_matrix(){
-		if (not is_undefined(self.matrix_projection))
-			return self.matrix_projection;
+		if (not is_undefined(self.matrix_p))
+			return self.matrix_p;
 		
-		self.matrix_projection = matrix_build_projection_ortho(width, height, znear, zfar);
+		self.matrix_p = matrix_build_projection_ortho(width, height, znear, zfar);
 		
 		if (not get_is_directx_pipeline()){
-			self.matrix_projection[5] = -self.matrix_projection[5];
-			self.matrix_projection[13] = -self.matrix_projection[13];
+			self.matrix_p[5] = -self.matrix_p[5];
+			self.matrix_p[13] = -self.matrix_p[13];
 		}
 		
-		return self.matrix_projection;
+		return self.matrix_p;
 	}
 	#endregion
 

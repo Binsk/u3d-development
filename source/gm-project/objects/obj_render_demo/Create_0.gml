@@ -8,6 +8,7 @@
 
 // Good source of test models:
 // https://github.com/mrdoob/three.js/tree/master/examples/models/gltf
+
 #macro gmouse global.mouse
 #region PROPERTIES
 gmouse = {

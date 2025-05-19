@@ -111,7 +111,7 @@ function ConvexHull(point_count=0, edge_count=0, axis_count=0) : AABB() construc
 			triangle[imod] = vec(position[0], position[1], position[2]);
 			
 			// Process point:
-			add_point(triangle[imod]);
+			self.add_point(triangle[imod]);
 			
 			if (imod != 2)
 				continue;
@@ -120,12 +120,12 @@ function ConvexHull(point_count=0, edge_count=0, axis_count=0) : AABB() construc
 			var e1 = vec_sub_vec(triangle[1], triangle[0]);
 			var e2 = vec_sub_vec(triangle[2], triangle[1]);
 			var e3 = vec_sub_vec(triangle[0], triangle[2]);
-			add_edge(e1);
-			add_edge(e2);
-			add_edge(e3);
+			self.add_edge(e1);
+			self.add_edge(e2);
+			self.add_edge(e3);
 			
 			// Process face:
-			add_axis(vec_cross(e1, e2));
+			self.add_axis(vec_cross(e1, e2));
 		}
 		
 		buffer_delete(buffer);
@@ -151,7 +151,7 @@ function ConvexHull(point_count=0, edge_count=0, axis_count=0) : AABB() construc
 	
 	super.register("transform");
 	function transform(node){
-		reprocess_bounds();
+		self.reprocess_bounds();
 		
 		if (not super.execute("transform", [node]))
 			return false;

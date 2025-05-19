@@ -44,7 +44,7 @@ function AnimationTrack(name) : U3DObject() constructor {
 			return;
 		}
 
-		replace_child_ref(group, channel_data[$ bone_index]);
+		self.replace_child_ref(group, channel_data[$ bone_index]);
 		channel_data[$ bone_index] = group;
 		channel_length = max(channel_length, group.get_channel_length());
 	}

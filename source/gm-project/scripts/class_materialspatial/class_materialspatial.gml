@@ -162,13 +162,13 @@ function MaterialSpatial() : Material() constructor {
 		
 		if (is_undefined(texture)){ // Wipe the texture if unset
 			if (not is_undefined(self.texture[$ label]))
-				remove_child_ref(texture[$ label].texture);
+				self.remove_child_ref(texture[$ label].texture);
 				
 			self.texture[$ label] = undefined;
 			return;
 		}
 		
-		add_child_ref(texture);
+		self.add_child_ref(texture);
 		
 		self.texture[$ label] = {
 			texture : texture,
@@ -179,29 +179,29 @@ function MaterialSpatial() : Material() constructor {
 	/// @desc	Sets the Texture2D to use for the albedo texture, or undefined.
 	/// @param	{Texture2D}	texture
 	function set_albedo_texture(texture){
-		set_texture("albedo", texture);
+		self.set_texture("albedo", texture);
 	}
 	
 	/// @desc	Sets the Texture2D to use for the normal texture, or undefined.
 	/// @param	{Texture2D}	texture
 	function set_normal_texture(texture){
-		set_texture("normal", texture);
+		self.set_texture("normal", texture);
 	}
 	
 	/// @desc	Sets the Texture2D to use for the pbr texture, or undefined.
 	/// @param	{Texture2D}	texture
 	function set_pbr_texture(texture){
-		set_texture("pbr", texture);
+		self.set_texture("pbr", texture);
 	}
 	
 	/// @desc	Sets the Texture2D to use for the emissive texture, or undefined.
 	/// @param	{Texture2D}	texture
 	function set_emissive_texture(texture){
-		set_texture("emissive", texture);
+		self.set_texture("emissive", texture);
 	}
 	
 	function set_dithering_texture(texture){
-		set_texture("dithering", texture)
+		self.set_texture("dithering", texture)
 	}
 	
 	function get_texture(label){
@@ -213,19 +213,19 @@ function MaterialSpatial() : Material() constructor {
 	}
 	
 	function get_albedo_texture(){
-		return get_texture("albedo");
+		return self.get_texture("albedo");
 	}
 	
 	function get_normal_texture(){
-		return get_texture("normal");
+		return self.get_texture("normal");
 	}
 	
 	function get_pbr_texture(){
-		return get_texture("pbr");
+		return self.get_texture("pbr");
 	}
 	
 	function get_emissive_texture(){
-		return get_texture("emissive");
+		return self.get_texture("emissive");
 	}
 	
 	/// @desc	Returns the color component of the albedo factor.
@@ -262,7 +262,7 @@ function MaterialSpatial() : Material() constructor {
 	}
 	
 	function apply(vformat){
-		var shader = get_shader(vformat);
+		var shader = self.get_shader(vformat);
 		if (shader_current() != shader)
 			shader_set(shader);
 		
@@ -384,7 +384,7 @@ function MaterialSpatial() : Material() constructor {
 		material.alpha_cutoff = alpha_cutoff;
 		material.texture = struct_duplicate_shallow(texture);
 		material.scalar = variable_clone(scalar);
-		material.set_data("import", get_data("import"))
+		material.set_data("import", self.get_data("import"))
 			
 		return material;
 	}

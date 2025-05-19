@@ -32,8 +32,8 @@ Upset 3D only fully supports Windows and Linux platforms at this time and are th
 | MT | Supports the external C++ libraries necessary to add multi-threading support |
 | VM | Has been tested and works fully with GameMaker's VM target |
 | YYC | Has been tested and works fully with GameMaker's YYC target |
+| GMRT VM | Has been tested and works fully with GameMaker's new GMRT VM target |
 | GMRT | Has been tested and works fully with GameMaker's new GMRT target |
-| GMRT YYC | Has been tested and works fully with GameMaker's new GMRT YYC target |
 
 Upset 3D's target platforms are Windows and Linux. These are the only two platforms, at the moment, that are guaranteed to work fully.
 

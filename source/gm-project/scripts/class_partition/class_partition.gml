@@ -22,7 +22,7 @@ function Partition() : U3DObject() constructor {
 	
 	/// @desc	Should return all PartitionData structures in the partition.
 	function get_data_array(){
-		var node_array = get_node_array();
+		var node_array = self.get_node_array();
 		var array = array_create(array_length(node_array));
 		for (var i = array_length(array) - 1; i >= 0; --i)
 			array[i] = node_array[i].data_array;
@@ -64,15 +64,15 @@ function Partition() : U3DObject() constructor {
 	function update_data(data){
 		// Fall-back 'update' if the structure doesn't implement one since re-adding will
 		// generally re-calculate part of the structure.
-		remove_data(data);
-		add_data(data);
+		self.remove_data(data);
+		self.add_data(data);
 	}
 	
 	/// @desc	Scan the structure for node intersections and returns an array of all
 	///			PartitionData structures that POTENTIALLY intersect; based on the node structure.
 	/// @param	{PartitionData}	data	data to act as the collider
 	function scan_collisions(data){
-		return get_data_array();
+		return self.get_data_array();
 	}
 	
 	/// @desc	Attempts to prune (or optimize) the partitioning structure. Should return 
@@ -83,12 +83,12 @@ function Partition() : U3DObject() constructor {
 	
 	/// @desc	Completely reconstructs the entire structure.
 	function reconstruct(){
-		var data_array = get_data_array();
+		var data_array = self.get_data_array();
 		for (var i = array_length(data_array) - 1; i >= 0; --i)
-			remove_data(data_array[i]);
+			self.remove_data(data_array[i]);
 			
 		for (var i = array_length(data_array) - 1; i >= 0; --i)
-			add_data(data_array[i]);
+			self.add_data(data_array[i]);
 	}
 	
 	/// @desc	Should render out the structure as a 3D line primitive; which will be

@@ -58,7 +58,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var parent_node = node_array[i];
 			var child_array = (parent_node[$ "children"] ?? []);
 			if (array_contains(child_array, node_index))
-				return matrix_multiply(transform, get_node_transform(i));
+				return matrix_multiply(transform, self.get_node_transform(i));
 		}
 		
 		return transform;
@@ -72,7 +72,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @desc	Given a mesh index in the file, returns the number of primitives
 	///			required to define the mesh.
 	function get_primitive_count(mesh_index){
-		if (not in_range(mesh_index, 0, get_mesh_count() - 1)) // Invalid mesh
+		if (not in_range(mesh_index, 0, self.get_mesh_count() - 1)) // Invalid mesh
 			return 0;
 		
 		return array_length(json_header.meshes[mesh_index][$ "primitives"] ?? []);
@@ -88,7 +88,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 ///			A better way will be added later; likely through a library if needed or a fake module system of sorts.
 
 		var base = [VERTEX_DATA.position, VERTEX_DATA.color, VERTEX_DATA.texture, VERTEX_DATA.normal, VERTEX_DATA.tangent];
-		if (get_animation_track_count() > 0)
+		if (self.get_animation_track_count() > 0)
 			base = array_concat(base, [VERTEX_DATA.bone_indices, VERTEX_DATA.bone_weights]);
 
 /// @stub	Add extra channel data for morph targets
@@ -135,7 +135,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{struct}	state		the current scan state; should be left empty when calling
 	/// @return	{array}
 	function get_node_list(node_id, state={}){
-		var node = get_structure(node_id, "nodes");
+		var node = self.get_structure(node_id, "nodes");
 		if (is_undefined(node))
 			return [];
 		
@@ -147,7 +147,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var children = node[$ "children"];
 		if (not is_undefined(children)){
 			for (var i = array_length(children) - 1; i >= 0; --i)
-				get_node_list(children[i], state);
+				self.get_node_list(children[i], state);
 		}
 
 		return struct_get_names(state);
@@ -157,13 +157,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///			specified is -1 then all nodes in the model are returned
 	function get_scene_nodes(scene=-1){
 		var node_array;
-		var scene_data = get_structure(scene, "scenes");
+		var scene_data = self.get_structure(scene, "scenes");
 		if (not is_undefined(scene_data)){
 			if (not is_undefined(scene_data[$ "nodes"])){
 				var narray = scene_data[$ "nodes"];
 				var array = [];
 				for (var i = array_length(narray) - 1; i >= 0; --i)
-					array_push(array, get_node_list(narray[i]));
+					array_push(array, self.get_node_list(narray[i]));
 			
 				node_array = array_flatten(array);
 			}
@@ -223,12 +223,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 						sprite_delete(sprite);
 						return;
 					}
-					set_texture(sprite_get_texture(sprite, 0));
+					self.set_texture(sprite_get_texture(sprite, 0));
 					signaler.add_signal("cleanup", new Callable(self, sprite_delete, [sprite]));
 				}, [sprite, label]));
 
 				
-				add_child_ref(texture);
+				self.add_child_ref(texture);
 				array_push(texture_array, texture);
 				continue;
 			}
@@ -239,7 +239,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			}
 
-			var buffer = read_buffer_view(data.bufferView);
+			var buffer = self.read_buffer_view(data.bufferView);
 			if (is_undefined(buffer)){
 				ExceptionGLTF.throw_conditional(string_ext("failed to read buffer view [{0}].", [data.bufferView]), EXCEPTION_GLTF.invalid_file);
 				continue;
@@ -261,13 +261,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 					return;
 				}
 				
-				set_texture(sprite_get_texture(sprite, 0));
+				self.set_texture(sprite_get_texture(sprite, 0));
 				signaler.add_signal("cleanup", new Callable(self, sprite_delete, [sprite]));
 			}, [sprite, label]));
 	
 			buffer_delete(buffer);
 			
-			add_child_ref(texture);
+			self.add_child_ref(texture);
 			array_push(texture_array, texture);
 		}
 		
@@ -282,7 +282,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 			var material_data = material_data_array[i];
 			
-			check_unsupported_extensions(material_data);
+			self.check_unsupported_extensions(material_data);
 			
 			var pbr_data = material_data[$ "pbrMetallicRoughness"]; // May not be set!
 			// First, a quick check to see if we failed to load the sprite and fill w/ 'no texture'
@@ -293,11 +293,11 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			
 				// Define a lambda function to auto-handle applying mipmap and filter settings
 			function apply_texture_data(texture_id, texture_struct){
-				var texture_data = get_structure(texture_id, "textures");
+				var texture_data = self.get_structure(texture_id, "textures");
 				if (is_undefined(texture_data[$ "sampler"]))
 					return;
 
-				var source = get_structure(texture_data[$ "sampler"], "samplers");
+				var source = self.get_structure(texture_data[$ "sampler"], "samplers");
 				if (is_undefined(source))
 					return;
 				
@@ -341,15 +341,15 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				color_base = pbr_data[$ "baseColorFactor"] ?? color_base;
 				// Albedo Texture
 				if (not is_undefined(pbr_data[$ "baseColorTexture"])){
-					var texture_index = get_structure(pbr_data[$ "baseColorTexture"].index, "textures").source;
+					var texture_index = self.get_structure(pbr_data[$ "baseColorTexture"].index, "textures").source;
 					color_texture = texture_array[texture_index];
-					apply_texture_data(pbr_data[$ "baseColorTexture"].index, color_texture);
+					self.apply_texture_data(pbr_data[$ "baseColorTexture"].index, color_texture);
 				}
 				// PBR Texture
 				if (not is_undefined(pbr_data[$ "metallicRoughnessTexture"])){
-					var texture_index = get_structure(pbr_data[$ "metallicRoughnessTexture"].index, "textures").source;
+					var texture_index = self.get_structure(pbr_data[$ "metallicRoughnessTexture"].index, "textures").source;
 					pbr_texture = texture_array[texture_index];
-					apply_texture_data(pbr_data[$ "metallicRoughnessTexture"].index, pbr_texture);
+					self.apply_texture_data(pbr_data[$ "metallicRoughnessTexture"].index, pbr_texture);
 				}
 				// PBR Factors (note, specular is always 1):
 				if (not is_undefined(pbr_data[$ "roughnessFactor"]))
@@ -360,16 +360,16 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			}
 			
 			if (not is_undefined(material_data[$ "normalTexture"])){
-				var texture_index = get_structure(material_data[$ "normalTexture"].index, "textures").source;
+				var texture_index = self.get_structure(material_data[$ "normalTexture"].index, "textures").source;
 				normal_texture = texture_array[texture_index];
-				apply_texture_data(material_data[$ "normalTexture"].index, normal_texture);
+				self.apply_texture_data(material_data[$ "normalTexture"].index, normal_texture);
 			}
 			
 			if (not is_undefined(material_data[$ "emissiveTexture"])){
-				var texture_index = get_structure(material_data[$ "emissiveTexture"].index, "textures").source;
+				var texture_index = self.get_structure(material_data[$ "emissiveTexture"].index, "textures").source;
 				emissive_texture = texture_array[texture_index];
 				emissive_base = (material_data[$ "emissiveFactor"] ?? [1, 1, 1]);
-				apply_texture_data(material_data[$ "emissiveTexture"].index, emissive_texture);
+				self.apply_texture_data(material_data[$ "emissiveTexture"].index, emissive_texture);
 			}
 			
 			switch (material_data[$ "alphaMode"] ?? "OPAQUE"){
@@ -404,7 +404,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			material.render_stage = (is_translucent ? CAMERA_RENDER_STAGE.translucent : CAMERA_RENDER_STAGE.opaque);
 			material.casts_shadows = (not is_translucent);
 			material.hash = material_hash;
-			add_child_ref(material);
+			self.add_child_ref(material);
 			
 			/// @note	The material will auto-dereference the texture
 			material_array[i] = material;
@@ -426,10 +426,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{VertexFormat} vertex_format	vertex format to specify data layout and inclusion
 	/// @param	{real}	transform=undefined		transform matrix to apply to each vertex position
 	function generate_primitive(mesh_index, primitive_index, format, transform=undefined) {
-		if (not in_range(mesh_index, 0, get_mesh_count() - 1))	// Invalid mesh index
+		if (not in_range(mesh_index, 0, self.get_mesh_count() - 1))	// Invalid mesh index
 			return undefined;
 		
-		if (not in_range(primitive_index, 0, get_primitive_count(mesh_index) - 1)) // Invalid primitive index
+		if (not in_range(primitive_index, 0, self.get_primitive_count(mesh_index) - 1)) // Invalid primitive index
 			return undefined;
 		
 		if (not is_instanceof(format, VertexFormat)){
@@ -451,7 +451,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
-		check_unsupported_extensions(primitive_header);
+		self.check_unsupported_extensions(primitive_header);
 
 		if (not is_undefined(primitive_header[$ "targets"])){
 /// @stub	Implement! This requires a whole new style of animation; must be able to combine w/ skeletal as well
@@ -465,7 +465,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		}
 		
 		// Grab the accessor so we can fetch a list of vertex indices
-		var primitive_accessor = get_structure(accessor_index, "accessors");
+		var primitive_accessor = self.get_structure(accessor_index, "accessors");
 		
 		if (is_undefined(primitive_accessor)){
 			ExceptionGLTF.throw_conditional(string_ext("invalid accessor index [{0}]!", [accessor_index]), EXCEPTION_GLTF.invalid_file);
@@ -477,9 +477,9 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return undefined;
 		}
 		
-		check_unsupported_extensions(primitive_accessor);
+		self.check_unsupported_extensions(primitive_accessor);
 		
-		var vertex_index_array = read_accessor(accessor_index); // Array of integers pointing to vertex data indices
+		var vertex_index_array = self.read_accessor(accessor_index); // Array of integers pointing to vertex data indices
 		if (is_undefined(vertex_index_array)){ // If anything goes wrong, throw a generic error
 			ExceptionGLTF.throw_conditional(string_ext("failed to read accessor [{0}]!", [accessor_index]), EXCEPTION_GLTF.invalid_file);
 			return undefined;
@@ -503,7 +503,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				array_push(missing_data, format_label);
 			}
 			else{
-				array = read_accessor(accessor_index);
+				array = self.read_accessor(accessor_index);
 				component_type_map[$ format_label] = get_buffer_ctype_from_gltf_ctype(get_structure(accessor_index, "accessors").componentType);
 			}
 			
@@ -649,7 +649,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		primitive.set_data(["import", "aabb_extends"], vec_mul_scalar(vec_sub_vec(max_vec, min_vec), 0.5));	// Extends from model center
 		primitive.set_data(["import", "name"], json_header.meshes[mesh_index][$ "name"]);	// Correct primitive name; mesh name is in a separate scene node
 		
-		add_child_ref(primitive);
+		self.add_child_ref(primitive);
 		
 		// Cleanup to make GameMaker free memory:
 		missing_data = undefined;
@@ -667,12 +667,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{bool}			apply_transforms	if true, applies node transforms directly to vertex buffers
 	function generate_mesh(mesh_index, apply_transforms=true){
 		if (is_string(mesh_index))
-			mesh_index = get_structure_index(mesh_index, "meshes");
+			mesh_index = self.get_structure_index(mesh_index, "meshes");
 			
 		if (mesh_index < 0)
 			return undefined;
 		
-		var count = get_primitive_count(mesh_index);
+		var count = self.get_primitive_count(mesh_index);
 		if (count <= 0)
 			return undefined;
 			
@@ -691,7 +691,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				if ((node[$ "mesh"] ?? -1) != mesh_index)
 					continue;
 				
-				transform = get_node_transform(i);
+				transform = self.get_node_transform(i);
 				if (matrix_is_identity(transform))
 					transform = undefined; // Unset as it allows faster model building
 					
@@ -713,7 +713,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		var is_invalid = false;
 		var i;
 		for (i = 0; i < count; ++i){
-			var primitive = generate_primitive(mesh_index, i, get_primitive_format(mesh_index, i), transform);
+			var primitive = self.generate_primitive(mesh_index, i, self.get_primitive_format(mesh_index, i), transform);
 			if (is_undefined(primitive)){
 				is_invalid = true;
 				break;
@@ -740,7 +740,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		for (var i = 0; i < count; ++i)
 			mesh.add_primitive(primitive_array[i], json_header.meshes[mesh_index].primitives[i][$ "material"] ?? -1);
 
-		add_child_ref(mesh);
+		self.add_child_ref(mesh);
 		return mesh;
 	}
 	
@@ -757,10 +757,10 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{bool}			apply_transforms	Whether or not node transforms should be applied to the primitives
 	function generate_model(scene=-1, generate_materials=true, apply_transforms=true){
 		if (is_string(scene))
-			scene = get_structure_index(scene, "scenes");
+			scene = self.get_structure_index(scene, "scenes");
 
 		// Determine which nodes are in our scene:
-		var node_array = get_scene_nodes(scene);
+		var node_array = self.get_scene_nodes(scene);
 		count = array_length(node_array);
 		
 		// Add meshes based off of the nodes in the scene
@@ -776,7 +776,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			if (not is_undefined(mesh_struct[$ mesh_id])) // Already defined
 				continue;
 			
-			var mesh = generate_mesh(mesh_id, apply_transforms);
+			var mesh = self.generate_mesh(mesh_id, apply_transforms);
 			if (is_undefined(mesh)){
 				is_invalid = true;
 				break;
@@ -802,12 +802,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		
 		// Generate model-specific meshes + transforms
 		for (var i = array_length(node_array) - 1; i >= 0; --i){
-			var node = get_structure(node_array[i], "nodes");
+			var node = self.get_structure(node_array[i], "nodes");
 			if (is_undefined(node[$ "mesh"]))
 				continue;
 
 			var mesh_id = node[$ "mesh"];
-			var matrix = get_node_transform(node_array[i]);
+			var matrix = self.get_node_transform(node_array[i]);
 			if (matrix_is_identity(matrix))
 				matrix = undefined; // Prevents needless multiplications when rendering
 				
@@ -850,7 +850,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 		model.set_data(["import", "no_textures"], false);	
 			
 		// Add materials:
-		var material_array = generate_material_array();
+		var material_array = self.generate_material_array();
 		for (var i = 0; i < array_length(material_array); ++i)
 			model.set_material(material_array[i], i);
 		
@@ -954,8 +954,8 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			animation_channel.generate_unique_hash();	// Make sure things are auto-cleaned w/ the AnimationTrack
 			channel_group.set_channel(animation_channel); // Auto-sorts into position, rotation, or scale
 			
-			var time_range = read_accessor(sampler.input);
-			var morph_range = read_accessor(sampler.output);
+			var time_range = self.read_accessor(sampler.input);
+			var morph_range = self.read_accessor(sampler.output);
 			var count = json_header.accessors[sampler.input].count;
 			
 			// Read each channel morph and add it to the channel:
@@ -982,13 +982,13 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	///				and morphs generated will be freed automatically along with the tree.
 	/// @param	{real}	skin		the skin index to use when generating the animation tracks and skeleton
 	function generate_animation_tree(skin=0){
-		var track_count = get_animation_track_count();
+		var track_count = self.get_animation_track_count();
 		if (track_count <= 0)
 			return undefined;
 			
 		var animation_tree = new AnimationTree();
 		for (var i = 0; i < track_count; ++i){
-			var track = generate_animation_track(i, skin);
+			var track = self.generate_animation_track(i, skin);
 			if (is_undefined(track)){
 				ExceptionGLTF.throw_conditional($"failed to generate animation track [{i}]", EXCEPTION_GLTF.unknown);
 				continue;
@@ -998,20 +998,20 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			animation_tree.add_animation_track(track);
 		}
 		
-		animation_tree.set_skeleton(generate_skeleton(skin));
+		animation_tree.set_skeleton(self.generate_skeleton(skin));
 		return animation_tree;
 	}
 	
 	/// @desc	Generates a bone relational struct. Does NOT contain transform data
 	///			apart from the inverse bone matrices.
 	function generate_skeleton(skin){
-		var skin_data = get_structure(skin, "skins");
+		var skin_data = self.get_structure(skin, "skins");
 		if (is_undefined(skin_data))
 			throw new ExceptionGLTF($"invalid skin index [{skin}]", EXCEPTION_GLTF.invalid_arg);
 		
 		var joint_array = skin_data.joints;
 		var joint_count = array_length(joint_array);
-		var matrix_inv_array = read_accessor(skin_data.inverseBindMatrices);
+		var matrix_inv_array = self.read_accessor(skin_data.inverseBindMatrices);
 		
 		var skeleton = {};
 		// Generate bone data child relations w/o parent relations
@@ -1061,7 +1061,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @param	{real}	scene		scene to spawn lights from or -1 for all lights in the model
 	/// @return {array}	of Light instances
 	function generate_lights(scene=-1){
-		if (not get_has_extension("KHR_lights_punctual"))
+		if (not self.get_has_extension("KHR_lights_punctual"))
 			return [];
 
 		if (is_undefined(json_header[$ "extensions"]))
@@ -1072,12 +1072,12 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			return [];
 		
 		light_array = light_array.lights;
-		var node_array = get_scene_nodes(scene);
+		var node_array = self.get_scene_nodes(scene);
 		var array = [];
 		
 		// Scan nodes and generate lights:
 		for (var i = array_length(node_array) - 1; i >= 0; --i){
-			var node = get_structure(node_array[i], "nodes");
+			var node = self.get_structure(node_array[i], "nodes");
 			if (is_undefined(node[$ "extensions"]))
 				continue;
 			
@@ -1093,7 +1093,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 			var light_instance;
 			switch (light.type){
 				case "directional":
-					var transform = get_node_transform(node_array[i]);
+					var transform = self.get_node_transform(node_array[i]);
 					var rotation = quat_reverse(quat_normalize(matrix_get_quat(transform)));
 					rotation = quat_rotate_vec(rotation, vec(0, 0, -1));	// glTF specifies lights point down -Z, not +X like in U3D, so we rotate
 					
@@ -1103,7 +1103,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				break;
 				
 				case "point":
-					var transform = get_node_transform(node_array[i]);
+					var transform = self.get_node_transform(node_array[i]);
 					var translation = matrix_get_translation(transform);
 					light_instance = new LightPoint(translation);
 /// @fixme	Figure out correct lighting conversion; ATM this looks good enough
@@ -1135,7 +1135,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 	/// @note	Cameras ARE NOT RESOURCE MANAGED, meaning that the array of cameras returned MUST be
 	///			manually freed!
 	function generate_cameras(scene=-1){
-		var node_array = get_scene_nodes(scene);
+		var node_array = self.get_scene_nodes(scene);
 		var array = [];
 		for (var i = array_length(node_array) - 1; i >= 0; --i){
 			var node = json_header[$ "nodes"][node_array[i]];
@@ -1143,7 +1143,7 @@ function GLTFBuilder(name="", directory="") : GLTFLoader() constructor {
 				continue;
 			
 			var camera_id = node[$ "camera"];
-			var camera_header = get_structure(camera_id, "cameras");
+			var camera_header = self.get_structure(camera_id, "cameras");
 			if (is_undefined(camera_header))
 				continue;
 			

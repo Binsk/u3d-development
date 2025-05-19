@@ -177,7 +177,7 @@ function Collidable() : U3DObject() constructor {
 				if (not is_undefined(self[$ "signaler"]) and is_struct(signaler))
 					signaler.signal("collision_data_updated");
 				
-				set_data("collision.update_queued", false);
+				self.set_data("collision.update_queued", false);
 			}));
 		}
 			

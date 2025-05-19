@@ -80,7 +80,7 @@ function Primitive(vformat) : U3DObject() constructor {
 	
 	/// @desc	Short-hand for define_set_data(-1, ...).
 	function define_add_data(type=VERTEX_DATA.position, data=[]){
-		define_set_data(-1, type, data);
+		self.define_set_data(-1, type, data);
 	}
 	
 	/// @desc	Sets a piece of data in the vertex definition at the specified vertex index

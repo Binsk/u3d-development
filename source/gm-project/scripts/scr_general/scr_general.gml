@@ -78,6 +78,9 @@ function sampler_set(name, texture, texrepeat=false, mip_enabled=false, mip_filt
 	var shader = shader_current();
 	if (shader < 0) // Skip if no shader set
 		return false;
+	
+	if (is_undefined(texture))
+		return false;
 		
 	var data = (UNIFORM_CACHE[$ name] ?? {});
 	var uniform = data[$ shader];

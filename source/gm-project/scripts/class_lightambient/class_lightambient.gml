@@ -54,7 +54,7 @@ function LightAmbient() : Light() constructor {
 	/// @desc	Enables / Disables ambient occlusion for this light. Same as enabling shadows 
 	///			since AO is an ambient light's 'shadow'. Simply here for naming convenience.
 	function set_ambient_occlusion(enabled=false){
-		set_casts_shadows(enabled);
+		self.set_casts_shadows(enabled);
 	}
 	
 	/// @desc	Sets the color of the light's albedo.
@@ -69,7 +69,7 @@ function LightAmbient() : Light() constructor {
 		if (not is_undefined(texture) and not is_instanceof(texture, TextureCube))
 			throw new Exception("invalid type, expected [TextureCube]!");
 			
-		replace_child_ref(texture, texture_environment);
+		self.replace_child_ref(texture, texture_environment);
 		texture_environment = texture;
 	}
 	
@@ -100,7 +100,7 @@ function LightAmbient() : Light() constructor {
 			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
 		
 		// Render SSAO intensity:
-		shader_set(get_shadow_shader());
+		shader_set(self.get_shadow_shader());
 		surface_set_target(surface_ssao);
 		
 		sampler_set("u_sDepth", camera_id.gbuffer.textures[$ CAMERA_GBUFFER.depth]);
@@ -171,6 +171,6 @@ function LightAmbient() : Light() constructor {
 	#endregion
 	
 	#region INIT
-	set_ssao_properties(ssao_samples, ssao_strength, ssao_radius, ssao_bias, ssao_scale, ssao_blur_samples, ssao_blur_stride);
+	self.set_ssao_properties(ssao_samples, ssao_strength, ssao_radius, ssao_bias, ssao_scale, ssao_blur_samples, ssao_blur_stride);
 	#endregion
 }

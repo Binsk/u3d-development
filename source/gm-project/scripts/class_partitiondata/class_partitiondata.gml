@@ -102,12 +102,12 @@ function PartitionData(data) constructor {
 	}
 	
 	function _detach_signals(){
-		data.signaler.remove_signal("set_position", new Callable(self, calculate_properties));
-		data.signaler.remove_signal("set_rotation", new Callable(self, calculate_properties));
-		data.signaler.remove_signal("set_scale", new Callable(self, calculate_properties));
-		data.signaler.remove_signal("set_collidable", new Callable(self, calculate_properties));
-		data.signaler.remove_signal("collision_data_updated", new Callable(self, calculate_properties));
-		data.signaler.remove_signal("free", new Callable(self, _detach_signals));
+		data.signaler.remove_signal("set_position", new Callable(self, self.calculate_properties));
+		data.signaler.remove_signal("set_rotation", new Callable(self, self.calculate_properties));
+		data.signaler.remove_signal("set_scale", new Callable(self, self.calculate_properties));
+		data.signaler.remove_signal("set_collidable", new Callable(self, self.calculate_properties));
+		data.signaler.remove_signal("collision_data_updated", new Callable(self, self.calculate_properties));
+		data.signaler.remove_signal("free", new Callable(self, self._detach_signals));
 /// @stub	Make this update the partitioning system so it gets removed from the node it's in
 	}
 	
@@ -119,13 +119,13 @@ function PartitionData(data) constructor {
 	#region INIT
 	// If a body, connect signals so we auto-update properties every time the bdoy changes
 	if (is_instanceof(data, Body)){
-		data.signaler.add_signal("set_position", new Callable(self, calculate_properties));
-		data.signaler.add_signal("set_rotation", new Callable(self, calculate_properties));
-		data.signaler.add_signal("set_scale", new Callable(self, calculate_properties));
-		data.signaler.add_signal("set_collidable", new Callable(self, calculate_properties));
-		data.signaler.add_signal("collision_data_updated", new Callable(self, calculate_properties));
-		data.signaler.add_signal("free", new Callable(self, _detach_signals));
+		data.signaler.add_signal("set_position", new Callable(self, self.calculate_properties));
+		data.signaler.add_signal("set_rotation", new Callable(self, self.calculate_properties));
+		data.signaler.add_signal("set_scale", new Callable(self, self.calculate_properties));
+		data.signaler.add_signal("set_collidable", new Callable(self, self.calculate_properties));
+		data.signaler.add_signal("collision_data_updated", new Callable(self, self.calculate_properties));
+		data.signaler.add_signal("free", new Callable(self, self._detach_signals));
 	}
-	calculate_properties();
+	self.calculate_properties();
 	#endregion
 }

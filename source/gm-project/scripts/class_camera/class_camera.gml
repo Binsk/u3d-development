@@ -61,10 +61,10 @@ enum CAMERA_DEBUG_FLAG {
 
 /// @desc	Bitwiseable flags to enable / disable specific rendering pipeline features for the specific camara
 enum CAMERA_RENDER_FLAG {
-	ppfx				=	0b0001,		// Post processing effects
-	shadows				=	0b0010,		// Light shadow processing functions (includes SSAO)
-	environment			=	0b0100,		// Environmental reflections
-	emission			=	0b1000,		// Emissive texture rendering
+	ppfx				=	0b00001,		// Post processing effects
+	shadows				=	0b00010,		// Light shadow processing functions (includes SSAO)
+	environment			=	0b00100,		// Environmental reflections
+	emission			=	0b01000,		// Emissive texture rendering
 	lighting			=	0b10000,	// Lighting (if disabled, renders unlit albedo)
 }
 
@@ -224,13 +224,13 @@ function Camera() : Body() constructor {
 			return (render_stages & CAMERA_RENDER_STAGE.both) > 0;
 		
 		if (buffer_index == CAMERA_GBUFFER.emissive)
-			return ((render_stages & CAMERA_RENDER_STAGE.both) > 0) and get_has_render_flag(CAMERA_RENDER_FLAG.emission);
+			return ((render_stages & CAMERA_RENDER_STAGE.both) > 0) and self.get_has_render_flag(CAMERA_RENDER_FLAG.emission);
 		
 		if (buffer_index == CAMERA_GBUFFER.final)
 			return (render_stages & CAMERA_RENDER_STAGE.both) > 0;
 		
 		if (buffer_index == CAMERA_GBUFFER.post_process)
-			return ((render_stages & CAMERA_RENDER_STAGE.both) > 0) and get_has_render_flag(CAMERA_RENDER_FLAG.ppfx);
+			return ((render_stages & CAMERA_RENDER_STAGE.both) > 0) and self.get_has_render_flag(CAMERA_RENDER_FLAG.ppfx);
 		
 		return false;
 	}
@@ -281,7 +281,7 @@ function Camera() : Body() constructor {
 			var format = (i >= CAMERA_GBUFFER.view ? surface_rgba16float : surface_rgba8unorm);
 			var surface = surfaces[$ i];
 				// Don't need the buffer; free if it is allocated:
-			if (not get_requires_buffer(i)){
+			if (not self.get_requires_buffer(i)){
 				if (surface_exists(surface))
 					surface_free(surface);
 				
@@ -360,7 +360,7 @@ function Camera() : Body() constructor {
 			surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
 			draw_clear_ext(0, 0);
 			surface_reset_target();
-			if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)) // Clear emission; albeit it shouldn't ever exist for translucent pass
+			if (self.get_has_render_flag(CAMERA_RENDER_FLAG.emission)) // Clear emission; albeit it shouldn't ever exist for translucent pass
 				surface_clear(gbuffer.surfaces[$ CAMERA_GBUFFER.emissive], 0, 0);
 		}
 		
@@ -379,7 +379,7 @@ function Camera() : Body() constructor {
 				if (not surface_exists(gbuffer.surfaces[$ index_array[r]]))
 					continue;
 				
-				if (r > 0 and not get_has_render_flag(CAMERA_RENDER_FLAG.lighting))
+				if (r > 0 and not self.get_has_render_flag(CAMERA_RENDER_FLAG.lighting))
 					continue;
 				
 				/// @note	Seems bugged in browsers; so we unfortunately have to manually sample the depth in the shader.
@@ -398,7 +398,7 @@ function Camera() : Body() constructor {
 				surface_set_target_ext(0, gbuffer.surfaces[$ CAMERA_GBUFFER.albedo]);
 				surface_set_target_ext(1, gbuffer.surfaces[$ CAMERA_GBUFFER.normal]);
 				surface_set_target_ext(2, gbuffer.surfaces[$ CAMERA_GBUFFER.pbr]);
-				if (get_has_render_flag(CAMERA_RENDER_FLAG.emission))
+				if (self.get_has_render_flag(CAMERA_RENDER_FLAG.emission))
 					surface_set_target_ext(3, gbuffer.surfaces[$ CAMERA_GBUFFER.emissive]);
 				
 				Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.gbuffer_mrt;
@@ -410,7 +410,7 @@ function Camera() : Body() constructor {
 			eye.apply();
 			for (var i = array_length(body_array) - 1; i >= 0; --i){
 				var body = body_array[i];
-				if (body.get_render_layers() & get_render_layers() == 0) // This camera doesn't render this body
+				if (body.get_render_layers() & self.get_render_layers() == 0) // This camera doesn't render this body
 					continue;
 					
 				// Make sure model is renderable for this camera
@@ -465,12 +465,12 @@ function Camera() : Body() constructor {
 		if (is_translucent and (render_stages & CAMERA_RENDER_STAGE.translucent) <= 0)
 			return;
 			
-		if (get_has_render_flag(CAMERA_RENDER_FLAG.lighting)){
+		if (self.get_has_render_flag(CAMERA_RENDER_FLAG.lighting)){
 			Camera.ACTIVE_PASS = CAMERA_RENDER_PASS.light_shadows;
 			// Render light shadows:
 			if (not is_translucent and render_flags & CAMERA_RENDER_FLAG.shadows == CAMERA_RENDER_FLAG.shadows){ // We only do so for opaque instances
 				for (var i = array_length(light_array) - 1; i >= 0; --i){
-					if (light_array[i].get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
+					if (light_array[i].get_render_layers() & self.get_render_layers() == 0) // This light is not on the camera's render layer
 						continue;
 					
 					if (not light_array[i].casts_shadows) // Light must have shadows enabled
@@ -489,7 +489,7 @@ function Camera() : Body() constructor {
 			for (var i = array_length(light_array) - 1; i >= 0; --i){
 				var light = light_array[i];
 				
-				if (light.get_render_layers() & get_render_layers() == 0) // This light is not on the camera's render layer
+				if (light.get_render_layers() & self.get_render_layers() == 0) // This light is not on the camera's render layer
 					continue;
 				
 				if (is_undefined(light.get_light_shader())) // Invalid light
@@ -521,7 +521,7 @@ function Camera() : Body() constructor {
 				Light.ACTIVE_INSTANCE = undefined;
 			}
 			
-			if (get_has_render_flag(CAMERA_RENDER_FLAG.emission)){
+			if (self.get_has_render_flag(CAMERA_RENDER_FLAG.emission)){
 				// Special render for emissive textures:
 				gpu_set_blendmode(bm_add);
 				surface_set_target(gbuffer.surfaces[$ CAMERA_GBUFFER.light]);
@@ -540,7 +540,7 @@ function Camera() : Body() constructor {
 		shader_set(shd_clamp_alpha);
 		gpu_set_blendequation_sepalpha(bm_eq_add, bm_eq_max);
 		gpu_set_blendmode_ext(bm_src_alpha, bm_inv_src_alpha);
-		draw_quad(0, 0, buffer_width, buffer_height, get_has_render_flag(CAMERA_RENDER_FLAG.lighting) ? gbuffer.textures[$ CAMERA_GBUFFER.light] : gbuffer.textures[$ CAMERA_GBUFFER.albedo]);
+		draw_quad(0, 0, buffer_width, buffer_height, self.get_has_render_flag(CAMERA_RENDER_FLAG.lighting) ? gbuffer.textures[$ CAMERA_GBUFFER.light] : gbuffer.textures[$ CAMERA_GBUFFER.albedo]);
 		gpu_set_blendequation_sepalpha(bm_eq_add, bm_eq_add);
 		shader_reset();
 		surface_reset_target();
@@ -562,7 +562,7 @@ function Camera() : Body() constructor {
 				draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.pbr]);
 			if (debug_flags & CAMERA_DEBUG_FLAG.render_depth and surface_exists(gbuffer.surfaces[$ CAMERA_GBUFFER.depth])){
 				shader_set(shd_depth_to_grayscale);
-				uniform_set("u_vZClip", shader_set_uniform_f, [get_eye().get_znear(), get_eye().get_zfar()]);
+				uniform_set("u_vZClip", shader_set_uniform_f, [self.get_eye().get_znear(), self.get_eye().get_zfar()]);
 				draw_quad_color(0, 0, buffer_width, buffer_height, gbuffer.textures[$ CAMERA_GBUFFER.depth]);
 				shader_reset();
 			}
@@ -698,43 +698,43 @@ function Camera() : Body() constructor {
 		Eye.ACTIVE_INSTANCE = eye;
 
 		// Make sure the GBuffer exists and is valid
-		if (not generate_gbuffer())
+		if (not self.generate_gbuffer())
 			return;
 			
-		render_prepass();
+		self.render_prepass();
 
 		if (render_stages == CAMERA_RENDER_STAGE.mixed){
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.mixed;
-			render_gbuffer(eye, body_array);
+			self.render_gbuffer(eye, body_array);
 			
-			render_midpass();
-			render_lighting(eye, light_array, body_array);
+			self.render_midpass();
+			self.render_lighting(eye, light_array, body_array);
 		}
 		else {
 			// Opaque pass:
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.opaque;
-			render_gbuffer(eye, body_array);
+			self.render_gbuffer(eye, body_array);
 			
-			render_midpass();
-			render_lighting(eye, light_array, body_array);
+			self.render_midpass();
+			self.render_lighting(eye, light_array, body_array);
 	
 			// Translucent pass:
 			Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.translucent;
-			render_gbuffer(eye, body_array);
+			self.render_gbuffer(eye, body_array);
 			
-			render_midpass();
-			render_lighting(eye, light_array, body_array);
+			self.render_midpass();
+			self.render_lighting(eye, light_array, body_array);
 		}
 		
 		Camera.ACTIVE_STAGE = CAMERA_RENDER_STAGE.none;
 		
-		render_postpass();
+		self.render_postpass();
 		
 		// Post-processing:
-		render_ppfx();
+		self.render_ppfx();
 		
 		// Debug render:
-		render_debug(eye);
+		self.render_debug(eye);
 		
 		Camera.ACTIVE_INSTANCE = undefined;
 		Eye.ACTIVE_INSTANCE = undefined;
@@ -744,9 +744,9 @@ function Camera() : Body() constructor {
 	/// @desc	Should execute a render_eye for every eye and combine results
 	///			as necessary.
 	function render(body_array, light_array){
-		var eye_array = get_eye_array();
+		var eye_array = self.get_eye_array();
 		for (var i = array_length(eye_array) - 1; i >= 0; --i)
-			render_eye(eye_array[i], body_array, light_array);
+			self.render_eye(eye_array[i], body_array, light_array);
 	};
 	
 	/// @desc	Should push the final result to the final render destination; 

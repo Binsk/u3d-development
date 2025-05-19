@@ -31,7 +31,7 @@ function AnimationChannel() : U3DObject() constructor {
 	///			[0..1] of the entire animation track.
 	function get_transformed_lerp(lerpvalue){
 		lerpvalue = clamp(lerpvalue, 0, 1);
-		return get_transformed_time(morph_length * lerpvalue);
+		return self.get_transformed_time(morph_length * lerpvalue);
 	}
 	
 	/// @desc	Returns the morphed value at the specific time value between
@@ -46,9 +46,9 @@ function AnimationChannel() : U3DObject() constructor {
 			return array[0].value;
 	
 		if (array[0].type == ANIMATION_CHANNEL_TRANSFORM.step)
-			return transform_step(time, array[0], array[1]);
+			return self.transform_step(time, array[0], array[1]);
 		else if (array[0].type == ANIMATION_CHANNEL_TRANSFORM.linear)
-			return transform_linear(time, array[0], array[1]);
+			return self.transform_linear(time, array[0], array[1]);
 		
 		throw new Exception($"invalid/unsupported channel transform type [{array[0].type}]");
 	}

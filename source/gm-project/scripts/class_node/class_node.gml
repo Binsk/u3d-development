@@ -162,13 +162,13 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 		var nlook = vec_normalize(look);
 		var dot = vec_dot(forward_vector, nlook);
 		if (dot >= 1.0){ // Pointing same direction, don't rotate
-			set_rotation(quat());
+			self.set_rotation(quat());
 			return self.rotation;
 		}
 			
 		var axis;
 		if (dot <= -1.0){ // Opposite directions, rotate 180 degrees
-			set_rotation(quat(0, 1, 0, 0)); // Rotate 180 degrees on y axis
+			self.set_rotation(quat(0, 1, 0, 0)); // Rotate 180 degrees on y axis
 			return self.rotation;
 		}
 		else
@@ -176,7 +176,7 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 
 		var naxis = vec_normalize(axis);
 		var angle = vec_angle_difference(forward_vector, look);
-		set_rotation(veca_to_quat(vec_to_veca(naxis, angle)));
+		self.set_rotation(veca_to_quat(vec_to_veca(naxis, angle)));
 			
 		return self.rotation;
 	}
@@ -187,11 +187,11 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	/// @param	{vec}	position	the position to rotate towards
 	/// @param	{vec}	up			the vector to treat as the local up value
 	function look_at_up(position, up=Node.AXIS_UP){
-		look_at(position); // Perform regular look_at
+		self.look_at(position); // Perform regular look_at
 		
 		// Add another rotation to point 'up'
-		var up_vector = get_up_vector();
-		var forward_vector = get_forward_vector();
+		var up_vector = self.get_up_vector();
+		var forward_vector = self.get_forward_vector();
 		var left = vec_cross(up, forward_vector);
 		var target_vector = vec_normalize(vec_cross(forward_vector, left));
 		
@@ -205,7 +205,7 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 		if (dot > -1.0 and vec_dot(forward_vector, vec_cross(up_vector, target_vector)) < 0)
 			angle = -angle;
 		
-		set_rotation(veca_to_quat(vec_to_veca(forward_vector, angle)), true);
+		self.set_rotation(veca_to_quat(vec_to_veca(forward_vector, angle)), true);
 			
 		return self.rotation;
 		
@@ -250,7 +250,7 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 		if (not is_undefined(matrix_inv_model) and not force_update)
 			return matrix_inv_model;
 		
-		matrix_inv_model = matrix_inverse(get_model_matrix());
+		matrix_inv_model = matrix_inverse(self.get_model_matrix());
 		return matrix_inv_model;
 	}
 
@@ -262,17 +262,17 @@ function Node(position=vec(), rotation=quat(), scale=vec(1, 1, 1)) : U3DObject()
 	/// @desc	Collision shapes store data in their calling node to help cache
 	///			calculations. This wipse the data to be re-calculated next collision check.
 	function clear_collision_data(){
-		set_data("collision", undefined);
+		self.set_data("collision", undefined);
 	}
 	
 	function has_collision_data(){
-		return not is_undefined((get_data("collision", undefined)));
+		return not is_undefined((self.get_data("collision", undefined)));
 	}
 	#endregion
 	
 	#region INIT
-	signaler.add_signal("set_position", new Callable(self, clear_collision_data));
-	signaler.add_signal("set_scale", new Callable(self, clear_collision_data));
-	signaler.add_signal("set_rotation", new Callable(self, clear_collision_data));
+	signaler.add_signal("set_position", new Callable(self, self.clear_collision_data));
+	signaler.add_signal("set_scale", new Callable(self, self.clear_collision_data));
+	signaler.add_signal("set_rotation", new Callable(self, self.clear_collision_data));
 	#endregion
 }

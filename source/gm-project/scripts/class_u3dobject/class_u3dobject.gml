@@ -94,7 +94,7 @@ function U3DObject() constructor {
 		if (not is_undefined(hash))
 			throw new Exception("cannot assign hash to already hashed instance!");
 		
-		hash = md5_string_utf8($"u3dobject_{get_index()}");
+		hash = md5_string_utf8($"u3dobject_{self.get_index()}");
 		U3D_GC.add_ref(self); // Add for clean-up in case this instances isn't ever actually passed into a ref
 		
 		return self; // Return self for function chaining
@@ -161,7 +161,7 @@ function U3DObject() constructor {
 		if (not is_struct(data))
 			return false;
 		
-		return (data[$ "index"] ?? -1) == get_index();
+		return (data[$ "index"] ?? -1) == self.get_index();
 	}
 	
 	/// @desc	Increment the reference count if dynamically loaded. Do NOT CALL THIS
@@ -209,8 +209,8 @@ function U3DObject() constructor {
 		if (not is_undefined(get_data(["ref", value.hash]))) // Already a child
 			return false;
 		
-		set_data(["ref", value.hash], value);
-		value.set_data(["ref.other", get_index()], self);
+		self.set_data(["ref", value.hash], value);
+		value.set_data(["ref.other", self.get_index()], self);
 		value.inc_ref();
 		return true;
 	}
@@ -227,8 +227,8 @@ function U3DObject() constructor {
 		if (is_undefined(get_data(["ref", value.hash]))) // Not a child
 			return false;
 		
-		set_data(["ref", value.hash]); // Delete the data
-		value.set_data(["ref.other", get_index()]);
+		self.set_data(["ref", value.hash]); // Delete the data
+		value.set_data(["ref.other", self.get_index()]);
 		value.dec_ref();
 		return true;
 	}
@@ -241,8 +241,8 @@ function U3DObject() constructor {
 		if (U3DObject.are_equal(value_new, value_old))
 			return false;
 		
-		remove_child_ref(value_old);
-		return add_child_ref(value_new);
+		self.remove_child_ref(value_old);
+		return self.add_child_ref(value_new);
 	}
 	
 	/// @desc	string() override; prints out [U3DOBject:<index>]. This string should remain
@@ -260,7 +260,7 @@ function U3DObject() constructor {
 		
 		if (not is_undefined(hash)){	// If a manual free, force clean up the references
 			// Since it is a manual free, attempt to remove references TO this instance:
-			var ref_struct = get_data(["ref.other"]);
+			var ref_struct = self.get_data(["ref.other"]);
 			var ref_keys = (is_undefined(ref_struct) ? [] : struct_get_names(ref_struct));
 			for (var i = array_length(ref_keys) - 1; i >= 0; --i){
 				var instance = ref_struct[$ ref_keys[i]];
@@ -280,11 +280,11 @@ function U3DObject() constructor {
 		delete super;
 		
 		// Free references:
-		var	data = get_data("ref");
+		var	data = self.get_data("ref");
 		var instance_array = struct_get_values(data);
 		for (var i = array_length(instance_array) - 1; i >= 0; --i){
 			var instance = instance_array[i];
-			remove_child_ref(instance);
+			self.remove_child_ref(instance);
 		}
 		
 		is_freed = true;

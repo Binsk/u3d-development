@@ -40,7 +40,7 @@ function Material() : U3DObject() constructor {
 	/// @desc	Returns if this material is the default "Missing" material. Useful to check
 	///			if a material was correctly loaded.
 	function get_is_missing_material(){
-		return get_index() == U3D.RENDERING.MATERIAL.missing.get_index();
+		return self.get_index() == U3D.RENDERING.MATERIAL.missing.get_index();
 	}
 	
 	/// @desc	Should apply the necessary shader, uniforms, and textures necessary to build

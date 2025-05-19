@@ -45,7 +45,7 @@ function Plane(normal=vec(0, 1, 0)) : Collidable() constructor {
 	function render_debug(node){
 		super.execute("render_debug", [node]);
 		var r_color = [color_get_red(draw_get_color()) / 255, color_get_green(draw_get_color()) / 255, color_get_blue(draw_get_color()) / 255];
-		transform(node);
+		self.transform(node);
 		
 		var normal = vec_normalize(node.get_data(["collision", "orientation"], self.normal));
 		var tangent = vec_normalize(vec_get_perpendicular(normal));

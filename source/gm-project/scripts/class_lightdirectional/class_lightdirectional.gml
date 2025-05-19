@@ -63,7 +63,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		if (not is_undefined(texture) and not is_instanceof(texture, TextureCube))
 			throw new Exception("invalid type, expected [TextureCube]!");
 			
-		replace_child_ref(texture, texture_environment);
+		self.replace_child_ref(texture, texture_environment);
 		texture_environment = texture;
 	}
 	
@@ -125,7 +125,7 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 		
 		for (var i = array_length(body_array) - 1; i >= 0; --i){
 			var body = body_array[i];
-			if (body.get_render_layers() & get_render_layers() == 0) // This light doesn't render this body
+			if (body.get_render_layers() & self.get_render_layers() == 0) // This light doesn't render this body
 				continue;
 				
 			// Make sure model is renderable for this light
@@ -246,9 +246,9 @@ function LightDirectional(rotation=quat(), position=vec()) : Light() constructor
 	#endregion
 	
 	#region INIT
-	set_position(position);
-	set_rotation(rotation);
-	signaler.add_signal("set_rotation", new Callable(self, _signal_rotation_updated));
+	self.set_position(position);
+	self.set_rotation(rotation);
+	signaler.add_signal("set_rotation", new Callable(self, self._signal_rotation_updated));
 	shadow_eye.generate_unique_hash();
 	shadow_eye.set_camera_node(self);
 	#endregion

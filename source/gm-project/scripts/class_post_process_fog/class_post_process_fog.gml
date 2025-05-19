@@ -18,7 +18,7 @@ function PPFXFog(znear=0.75, zfar=0.9, color=c_black, alpha=1.0, alpha_only=fals
 	#endregion
 	
 	#region INIT
-	set_custom_uniforms({
+	self.set_custom_uniforms({
 		"u_vRange" : {
 			value : [znear, zfar],
 			set_func : shader_set_uniform_f

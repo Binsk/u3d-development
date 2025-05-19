@@ -31,8 +31,8 @@ function MultiModel() : Model() constructor {
 		}
 		
 		array_push(node_array, node);
-		node.signaler.add_signal("free", new Callable(self, remove_node, [node]));
-		add_child_ref(node);
+		node.signaler.add_signal("free", new Callable(self, self.remove_node, [node]));
+		self.add_child_ref(node);
 		return true;
 	}
 	
@@ -46,8 +46,8 @@ function MultiModel() : Model() constructor {
 		for (var i = array_length(node_array) - 1; i >= 0; --i){
 			if (U3DObject.are_equal(node, node_array[i])){
 				array_delete(node_array, i, 1);
-				node.signaler.remove_signal("free", new Callable(self, remove_node, [node]));
-				remove_child_ref(node);
+				node.signaler.remove_signal("free", new Callable(self, self.remove_node, [node]));
+				self.remove_child_ref(node);
 				return true;
 			}
 		}
@@ -63,23 +63,23 @@ function MultiModel() : Model() constructor {
 		}
 		
 		// Manually remove resources so references get cleaned up:
-		var array = get_mesh_array();
+		var array = self.get_mesh_array();
 		for (var i = array_length(array) - 1; i >= 0; --i)
-			remove_mesh(array[i]);
+			self.remove_mesh(array[i]);
 			
 		array = struct_get_names(material_data);
 		for (var i = array_length(array) - 1; i >= 0; --i)
-			set_material(undefined, array[i]);
+			self.set_material(undefined, array[i]);
 		
 		// Copy in other model's data:
 		array = model.get_mesh_array();
 		var loop = array_length(array);
 		for (var i = 0; i < loop; ++i)
-			add_mesh(array[i]);
+			self.add_mesh(array[i]);
 		
 		array = struct_get_names(model.material_data);
 		for (var i = array_length(array) - 1; i >= 0; --i)
-			set_material(model.material_data[$ array[i]], array[i]);
+			self.set_material(model.material_data[$ array[i]], array[i]);
 	}
 	
 	super.register("render");

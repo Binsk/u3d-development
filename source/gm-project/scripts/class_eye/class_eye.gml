@@ -17,23 +17,23 @@ function Eye(znear=0.01, zfar=1024) : U3DObject() constructor {
 	self.zfar = zfar;
 
 	self.matrix_eye = undefined;	// Relative to the camera; if undefined treated is identity (and saves a matrix op)
-	self.matrix_projection = undefined;
-	self.matrix_inv_projection = undefined;
+	self.matrix_p = undefined;		// Projection matrix
+	self.matrix_inv_p = undefined;
 
-	self.matrix_view = undefined; // Combined w/ camera's matrices
-	self.matrix_inv_view = undefined;
+	self.matrix_v = undefined; // Combined w/ camera's matrices
+	self.matrix_inv_v = undefined;
 	#endregion
 	
 	#region METHODS
 	function set_znear(znear){
-		self.matrix_projection = undefined;
-		self.matrix_inv_projection = undefined;
+		self.matrix_p = undefined;
+		self.matrix_inv_p = undefined;
 		self.znear = znear;
 	}
 	
 	function set_zfar(zfar){
-		self.matrix_projection = undefined;
-		self.matrix_inv_projection = undefined;
+		self.matrix_p = undefined;
+		self.matrix_inv_p = undefined;
 		self.zfar = zfar;
 	}
 	
@@ -42,8 +42,8 @@ function Eye(znear=0.01, zfar=1024) : U3DObject() constructor {
 	///			the identity matrix.
 	function set_eye_matrix(matrix=undefined){
 		self.matrix_eye = matrix;
-		self.matrix_view = undefined;
-		self.matrix_inv_view = undefined;
+		self.matrix_v = undefined;
+		self.matrix_inv_v = undefined;
 	}
 	
 	/// @desc	Sets the parent node over this eye; the eye requires a parent in order
@@ -56,16 +56,16 @@ function Eye(znear=0.01, zfar=1024) : U3DObject() constructor {
 		}
 		
 		if (not is_undefined(camera_id) and not U3DObject.are_equal(node, camera_id)){
-			camera_id.signaler.remove_signal("set_rotation", new Callable(self, clear_matrices));
-			camera_id.signaler.remove_signal("set_position", new Callable(self, clear_matrices));
+			camera_id.signaler.remove_signal("set_rotation", new Callable(self, self.clear_matrices));
+			camera_id.signaler.remove_signal("set_position", new Callable(self, self.clear_matrices));
 		}
 		
 		camera_id = node;
 		
 		// Attach to the camera; if it moves / rotates we reset our cached matrices:
 		if (not is_undefined(camera_id)){
-			camera_id.signaler.add_signal("set_rotation", new Callable(self, clear_matrices));
-			camera_id.signaler.add_signal("set_position", new Callable(self, clear_matrices));
+			camera_id.signaler.add_signal("set_rotation", new Callable(self, self.clear_matrices));
+			camera_id.signaler.add_signal("set_position", new Callable(self, self.clear_matrices));
 		}
 	}
 	
@@ -84,27 +84,27 @@ function Eye(znear=0.01, zfar=1024) : U3DObject() constructor {
 	
 	/// @desc	Return / Build the view matrix for this eye.
 	function get_view_matrix(){
-		if (not is_undefined(self.matrix_view))
-			return self.matrix_view;
+		if (not is_undefined(self.matrix_v))
+			return self.matrix_v;
 		
 		var forward = camera_id.get_forward_vector();
 		var up = camera_id.get_up_vector();
 		var to = vec_add_vec(camera_id.position, forward);
-		self.matrix_view = matrix_build_lookat(camera_id.position.x, camera_id.position.y, camera_id.position.z, to.x, to.y, to.z, up.x, up.y, up.z);
+		self.matrix_v = matrix_build_lookat(camera_id.position.x, camera_id.position.y, camera_id.position.z, to.x, to.y, to.z, up.x, up.y, up.z);
 		
 		if (not is_undefined(self.matrix_eye))
-			self.matrix_view = matrix_multiply(self.matrix_eye, self.matrix_view);
+			self.matrix_v = matrix_multiply(self.matrix_eye, self.matrix_v);
 		
-		return self.matrix_view;
+		return self.matrix_v;
 	}
 	
 	/// @desc	Return / Build the inverse of the view matrix for this eye.
 	function get_inverse_view_matrix(){
-		if (not is_undefined(matrix_inv_view))
-			return matrix_inv_view;
+		if (not is_undefined(matrix_inv_v))
+			return matrix_inv_v;
 		
-		matrix_inv_view = matrix_inverse(get_view_matrix());;
-		return matrix_inv_view;
+		matrix_inv_v = matrix_inverse(self.get_view_matrix());;
+		return matrix_inv_v;
 	}
 	
 	
@@ -114,21 +114,21 @@ function Eye(znear=0.01, zfar=1024) : U3DObject() constructor {
 	
 	/// @desc	Return / Build the inverse projection matrix for this eye.
 	function get_inverse_projection_matrix(){
-		if (not is_undefined(matrix_inv_projection))
-			return matrix_inv_projection;
+		if (not is_undefined(matrix_inv_p))
+			return matrix_inv_p;
 		
-		matrix_inv_projection = matrix_inverse(get_projection_matrix());
-		return matrix_inv_projection;
+		matrix_inv_p = matrix_inverse(self.get_projection_matrix());
+		return matrix_inv_p;
 	}
 	
 	function clear_matrices(){
-		self.matrix_view = undefined;
-		self.matrix_inv_view = undefined;
+		self.matrix_v = undefined;
+		self.matrix_inv_v = undefined;
 	}
 	
 	function apply(){
-		matrix_set(matrix_view, get_view_matrix());
-		matrix_set(matrix_projection, get_projection_matrix());
+		matrix_set(matrix_view, self.get_view_matrix());
+		matrix_set(matrix_projection, self.get_projection_matrix());
 	}
 	
 	super.register("free");

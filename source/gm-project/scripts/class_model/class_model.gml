@@ -18,7 +18,7 @@ function Model() : U3DObject() constructor {
 			return;
 		}
 			
-		replace_child_ref(material, material_data[$ material_index]);
+		self.replace_child_ref(material, material_data[$ material_index]);
 		material_data[$ material_index] = material;
 	}
 	
@@ -87,7 +87,7 @@ function Model() : U3DObject() constructor {
 			return;
 		}
 		
-		add_child_ref(mesh);
+		self.add_child_ref(mesh);
 		array_push(mesh_array, mesh);
 	}
 
@@ -99,7 +99,7 @@ function Model() : U3DObject() constructor {
 		
 		for (var i = array_length(mesh_array) - 1; i >=0; --i){
 			if (U3DObject.are_equal(mesh_array[i], mesh)){
-				remove_child_ref(mesh);
+				self.remove_child_ref(mesh);
 				array_delete(mesh_array, i, 1);
 			}
 		}
@@ -143,7 +143,7 @@ function Model() : U3DObject() constructor {
 				
 			var nmaterial = material.duplicate();
 			nmaterial.generate_unique_hash();
-			set_material(nmaterial, real(keys[i]));
+			self.set_material(nmaterial, real(keys[i]));
 		}
 	}
 	

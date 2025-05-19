@@ -206,7 +206,7 @@ function GLTFLoader() : U3DObject() constructor {
 			return false;
 		}
 		
-		free(true);	// Wipe and free up all old data
+		self.free(true);	// Wipe and free up all old data
 		load_directory = directory;
 		
 		#region IMPORT FUNC
@@ -269,18 +269,18 @@ function GLTFLoader() : U3DObject() constructor {
 			
 			var success = false;
 			try{
-				success = import_buffers(directory);
+				success = self.import_buffers(directory);
 				if (not success)
-					free();
+					self.free();
 			}
 			catch(e){
-				free();
+				self.free();
 				throw e;
 			}
 				
-			var required_extensions = get_extensions_required();
+			var required_extensions = self.get_extensions_required();
 			for (var i = array_length(required_extensions) - 1; i >= 0; --i){
-				if (not get_is_extension_implemented(required_extensions[i]))
+				if (not self.get_is_extension_implemented(required_extensions[i]))
 					throw new ExceptionGLTF($"model uses unsupported extension, [{required_extensions[i]}]", EXCEPTION_GLTF.unsupported_feature);
 			}
 				
@@ -330,19 +330,19 @@ function GLTFLoader() : U3DObject() constructor {
 		json_header = json;
 		var success = false;
 		try{
-			success = import_buffers(directory);
+			success = self.import_buffers(directory);
 
 			if (not success)
-				free();
+				self.free();
 		}
 		catch (e){
-			free();
+			self.free();
 			throw e;
 		}
 		
-		var required_extensions = get_extensions_required();
+		var required_extensions = self.get_extensions_required();
 		for (var i = array_length(required_extensions) - 1; i >= 0; --i){
-			if (not get_is_extension_implemented(required_extensions[i]))
+			if (not self.get_is_extension_implemented(required_extensions[i]))
 				throw new ExceptionGLTF($"model uses unsupported extension, [{required_extensions[i]}]", EXCEPTION_GLTF.unsupported_feature);
 		}
 			
@@ -361,8 +361,8 @@ function GLTFLoader() : U3DObject() constructor {
 		
 		var keys = struct_get_names(header_data.extensions);
 		for (var i = array_length(keys) - 1; i >= 0; --i){
-			if (not get_is_extension_implemented(keys[i])){
-				if (not get_is_extension_ignoreable(keys[i]))
+			if (not self.get_is_extension_implemented(keys[i])){
+				if (not self.get_is_extension_ignoreable(keys[i]))
 					throw new ExceptionGLTF($"model uses unsupported extension, [{keys[i]}]", EXCEPTION_GLTF.unsupported_feature);
 				else
 					print_traced("WARNING", $"ignoring unsupported glTF extension [{keys[i]}]");
@@ -375,7 +375,7 @@ function GLTFLoader() : U3DObject() constructor {
 	///			Note that the sprite will not be automatically freed and will need to
 	///			be deleted when no longer needed.
 	function generate_sprite(index){
-		var image = get_structure(index, "images");
+		var image = self.get_structure(index, "images");
 		if (is_undefined(image)) // Invalid index
 			return undefined;
 		
@@ -392,7 +392,7 @@ function GLTFLoader() : U3DObject() constructor {
 			if (string_lower(image.mimeType) != "image/png" and string_lower(image.mimeType) != "image/jpeg")
 				throw new ExceptionGLTF(string_ext("unsupported mime type [{0}]", [image.mimeType]), EXCEPTION_GLTF.unsupported_feature);
 			
-			var buffer = read_buffer_view(image.bufferView);
+			var buffer = self.read_buffer_view(image.bufferView);
 			if (is_undefined(buffer))
 				throw new ExceptionGLTF("invalid image bufferView!", EXCEPTION_GLTF.invalid_file);
 			
@@ -413,7 +413,7 @@ function GLTFLoader() : U3DObject() constructor {
 	///			The returned buffer must be manually destroyed. If there is an issue, undefined
 	///			is returned.
 	function read_buffer_view(index){
-		var buffer_view = get_structure(index, "bufferViews");
+		var buffer_view = self.get_structure(index, "bufferViews");
 		if (is_undefined(buffer_view))
 			return undefined;
 		
@@ -435,7 +435,7 @@ function GLTFLoader() : U3DObject() constructor {
 	///	@param	{bool}	skip_parse	if true datatype parsing is skipped and only arrays are retruned (faster)
 	/// @note	If parsing is skipped, MAT3 is NOT converted and the array returned is a 1D array!
 	function read_accessor(index, skip_parse=false){
-		var accessor = get_structure(index, "accessors");
+		var accessor = self.get_structure(index, "accessors");
 		if (is_undefined(accessor))
 			return undefined;
 		
@@ -453,7 +453,7 @@ function GLTFLoader() : U3DObject() constructor {
 			data = array_create(element_count * element_size, 0);
 		}
 		else {
-			var buffer = read_buffer_view(accessor.bufferView);
+			var buffer = self.read_buffer_view(accessor.bufferView);
 			if (is_undefined(buffer)) // Invalid buffer
 				throw new ExceptionGLTF("accessor accessing invalid bufferView!", EXCEPTION_GLTF.invalid_file);
 			
@@ -552,7 +552,7 @@ function ExceptionGLTF(message=undefined, index=EXCEPTION_GLTF.unknown) : Except
 	#endregion
 	
 	#region INIT
-	_update_message(2);
+	self._update_message(2);
 	
 	if (is_instanceof(other, GLTFLoader)){
 		var directory = other.load_directory;

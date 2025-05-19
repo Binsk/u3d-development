@@ -132,7 +132,7 @@ function Capsule(height, radius) : AABB(vec(radius, height * 0.5, radius)) const
 	function render_debug(node){
 		super.execute("render_debug", [node]);
 		var r_color = [color_get_red(draw_get_color()) / 255, color_get_green(draw_get_color()) / 255, color_get_blue(draw_get_color()) / 255];
-		transform(node);
+		self.transform(node);
 		
 		var render_extends = node.get_data(["collision", "aabb_extends"], self.extends);
 		var vformat = VertexFormat.get_format_instance([VERTEX_DATA.position]).get_format();

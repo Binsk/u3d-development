@@ -83,6 +83,6 @@ function Exception(message=undefined, index=0) constructor {
 	#endregion
 	
 	#region INIT
-	_update_message(2);
+	self._update_message(2);
 	#endregion
 }

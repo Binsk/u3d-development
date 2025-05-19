@@ -128,7 +128,7 @@ function Ray(orientation=vec(1, 0, 0)) : Collidable() constructor {
 	function render_debug(node){
 		super.execute("render_debug", [node]);
 		var r_color = [color_get_red(draw_get_color()) / 255, color_get_green(draw_get_color()) / 255, color_get_blue(draw_get_color()) / 255];
-		transform(node);
+		self.transform(node);
 		var length = Eye.ACTIVE_INSTANCE.zfar;
 		var rotation = node.get_data(["collision", "orientation"], vec(1, 0, 0)); 
 		

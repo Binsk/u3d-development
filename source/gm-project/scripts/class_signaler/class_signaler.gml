@@ -24,7 +24,7 @@ function Signaler() constructor{
 	function clear(){
 		var array = struct_get_names(signal_map);
 		for (var i = array_length(array) - 1; i >= 0; --i)
-			clear_label(array[i]);
+			self.clear_label(array[i]);
 	}
 	
 	/// @desc   Cleans the signaler, removing all attached signals for a given label.

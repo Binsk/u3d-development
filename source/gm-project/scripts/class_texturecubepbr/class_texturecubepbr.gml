@@ -36,7 +36,7 @@ function TextureCubePBR(texture_id=undefined, resolution=1024, mip_count=1) : Te
 			}
 			// Set texture_cube to the next texture
 			texture_surface = surface_create(resolution, resolution);
-			render_faces_to_cubemap(texture_surface);
+			self.render_faces_to_cubemap(texture_surface);
 			texture_cube = surface_get_texture(texture_surface);
 		}
 		else
@@ -117,8 +117,8 @@ function TextureCubePBR(texture_id=undefined, resolution=1024, mip_count=1) : Te
 			surface_free(mip_surface);
 		
 		build_data = {};
-		cache_properties(); // Re-cache UVs and the like for quick look-ups
-		struct_remove(TextureCube.BUILD_MAP, get_index());
+		self.cache_properties(); // Re-cache UVs and the like for quick look-ups
+		struct_remove(TextureCube.BUILD_MAP, self.get_index());
 	}
 	
 	super.register("apply");
