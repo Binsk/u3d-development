@@ -9,7 +9,7 @@ GameMaker does not support user-defined threading, compute shaders, nor shader s
 
 ## Requirements
 
-* GameMaker 2024.1100 ~~(or later)~~
+* GameMaker 2024.1400 (or later)
 
 ## Platform Support
 
