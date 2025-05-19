@@ -47,7 +47,7 @@ This repository contains a GameMaker project with the Upset3D native code, along
 
 ### Pre-Built (recommended)
 
-You can download a project template from the [releases](https://github.com/Binsk/u3d-development/releases) section which will include the Upset3D system along with compiled C++ libraries for any external systems.
+You can download the project as a 'local package' from the [releases](https://github.com/Binsk/u3d-development/releases) section which will include the Upset3D system along with compiled C++ libraries for any external systems. The package can be added into your project through `Tools -> Import Local Package`.
 
 ### Manual Build
 
