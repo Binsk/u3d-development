@@ -5,7 +5,11 @@ Upset 3D is a collection of classes, scripts, sprite, and objects that provide a
 
 Upset 3D lays down the groundwork for small-cale 3D games while leaving the door open for easy expansion that may be necessary for your project. This suite provides a PBR rendering system with glTF model importing and skeletal animation as well as a basic 3D collision detection system with spatial partitioning.
 
+**Note: Multithreaded libraries are not yet implemented but they are coming.**
+<details>
+<summary>C++ MT Implementations</summary>
 GameMaker does not support user-defined threading, compute shaders, nor shader storage buffers at this time. As such, a number of important systems will be slow and limited; two of which being collision detection and skeletal animation. Some limitations are worked around through custom C++ libraries but note that these libraries are only supported and compiled for the explicitly supported platforms below. Should GameMaker start including some of these necessary features, the systems will be moved over to GameMaker-native calls.
+</details>
 
 ## Requirements
 
@@ -29,15 +33,13 @@ Upset 3D only fully supports Windows and Linux platforms at this time and are th
 | --- | --- |
 | U3D Full | Uses the full rendering pipeline with all available optimizations |
 | U3D Compatability | Uses a limited rendering pipeline with much slower rendering performance |
-| MT | Supports the external C++ libraries necessary to add multi-threading support |
+| MT | **(To-be-implemented)** Supports the external C++ libraries necessary to add multi-threading support |
 | VM | Has been tested and works fully with GameMaker's VM target |
 | YYC | Has been tested and works fully with GameMaker's YYC target |
 | GMRT VM | Has been tested and works fully with GameMaker's new GMRT VM target |
 | GMRT | Has been tested and works fully with GameMaker's new GMRT target |
 
-Upset 3D's target platforms are Windows and Linux. These are the only two platforms, at the moment, that are guaranteed to work fully.
-
-The system does have an experimental 'fall-back' rendering mode for platforms that require GLSL ES and this has been tested on GX (VM), Android (VM / YYC) and some consoles (VM) with success. Rendering features are not optimized in this case and  performance will be sub-par. I would like to improve this mode down the line but it is currently low-prio.
+Note: Compatability rendering is low priority.
 
 ## Getting the Code
 
@@ -56,7 +58,7 @@ git clone https://github.com/Binsk/u3d-development.git
 
 Launch GameMaker and load the project file located in `./u3d-development/source/gm-project/upset3d-engine.yyp`
 
-The project should be runnable and will contain both Upset3D code and the code for a tech-demo, which is used to test various aspects of the system. At this point **no** C++ libraries will be available. This need to be built manually.
+The project should be runnable and will contain both Upset3D code and the code for a tech-demo, which is used to test various aspects of the system. At this point **no** C++ libraries will be available. These need to be built manually.
 
 #### Linux Setup
 
