@@ -1,5 +1,5 @@
 # Windows
-datafiles/render-test/ 
+source/gm-project/datafiles/render-test/ 
 # Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
