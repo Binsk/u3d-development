@@ -13,7 +13,8 @@ function LightAmbient() : Light() constructor {
 	ssao_radius = 1.0;		// Unitless sample radius around pixel (multiplies against auto-scaled radius)
 	ssao_strength = 1.0;	// SSAO contribution (more = darker)
 	ssao_bias = 0.01;		// Depth delta cut-off to prevent self-sampling
-	ssao_scale = 1.0;		// Scales SSAO depth comparisons (more = larger effect for smaller depth changes)
+	ssao_depth_scale = 1.0;		// Scales SSAO depth comparisons (more = larger effect for smaller depth changes)
+	ssao_render_scale = 0.5;	// Render size of SSAO compared to the camera's GBuffer (smaller = faster but lower quality)
 	ssao_blur_samples = 2;	// `(2x + 1)^2` samples to use when blurring (so 4 = 81 samples) (more = more blurry, more expensive)
 	ssao_blur_stride = 1.0;	// Number of texels to stride after each blur sample (more = more blurry but lower quality blur)
 	ssao_sample_array = [];	// Pre-computed sample directions to prevent sin/cos in the frag shader
@@ -29,15 +30,17 @@ function LightAmbient() : Light() constructor {
 	/// @param	{real}	strength	how intense the SSAO effect is (higher = darker)
 	/// @param	{real}	radius		radius scalar for sampling distance from original point (higher = wider SSAO effect)
 	/// @param	{real}	bias		normal bias when comparing surface directions (larger = less likely to cause SSAO)
-	/// @param	{real}	scale		depth scale between samples (higher = greater perceived distance between samples)
+	/// @param	{real}	depth_scale		depth scale between samples (higher = greater perceived distance between samples)
+	/// @param	{real}	render_scale	render scale multiplier for texture generation size
 	/// @param	{real}	blur_passes	blur pass multiplier for SSAO application where the value will be (2x + 1)^2 (more = blurrier)
 	/// @param	{real}	blur_stride	number of texels to stride per blur pass (more = blurrier but lower quality blur)
-	function set_ssao_properties(samples=8, strength=1.0, radius=1.0, bias=0.01, scale=1.0, blur_passes=2, blur_stride=1.0){
+	function set_ssao_properties(samples=8, strength=1.0, radius=1.0, bias=0.01, depth_scale=1.0, render_scale=0.5, blur_passes=2, blur_stride=1.0){
 		ssao_samples = floor(clamp(samples, 1, 64)); // Shader is limited to max of 64
 		ssao_strength = max(0.0, strength)
 		ssao_radius = max(0.0, radius);
 		ssao_bias = max(0.0, bias);
-		ssao_scale = max(0.0, scale);
+		ssao_depth_scale = max(0.0, depth_scale);
+		ssao_render_scale = max(0.1, render_scale);
 		ssao_blur_samples = max(0, blur_passes);
 		ssao_blur_stride = blur_stride;
 		
@@ -97,7 +100,7 @@ function LightAmbient() : Light() constructor {
 			surface_free(surface_ssao);
 			
 		if (not surface_exists(surface_ssao))
-			surface_ssao = surface_create(camera_id.buffer_width, camera_id.buffer_height, not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
+			surface_ssao = surface_create(camera_id.buffer_width * ssao_render_scale, camera_id.buffer_height * ssao_render_scale, not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
 		
 		// Render SSAO intensity:
 		shader_set(self.get_shadow_shader());
@@ -112,17 +115,17 @@ function LightAmbient() : Light() constructor {
 		uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal]), texture_get_texel_height(camera_id.gbuffer.textures[$ CAMERA_GBUFFER.normal])]);
 		uniform_set("u_iSamples", shader_set_uniform_i, [ssao_samples]);
 		uniform_set("u_vaSampleDirections", shader_set_uniform_f_array, [ssao_sample_array]);
-		uniform_set("u_fSampleRadius", shader_set_uniform_f, [ssao_radius]);
-		uniform_set("u_fScale", shader_set_uniform_f, [ssao_scale]);
+		uniform_set("u_fSampleRadius", shader_set_uniform_f, [ssao_radius * ssao_render_scale]);
+		uniform_set("u_fScale", shader_set_uniform_f, [ssao_depth_scale]);
 		uniform_set("u_fBias", shader_set_uniform_f, [ssao_bias]);
 		uniform_set("u_fIntensity", shader_set_uniform_f, [ssao_strength]);
 		
 		draw_clear(c_black);
 		draw_primitive_begin_texture(pr_trianglestrip, -1);
 		draw_vertex_texture(0, 0, 0, 0);
-		draw_vertex_texture(camera_id.buffer_width, 0, 1, 0);
-		draw_vertex_texture(0, camera_id.buffer_height, 0, 1);
-		draw_vertex_texture(camera_id.buffer_width, camera_id.buffer_height, 1, 1);
+		draw_vertex_texture(camera_id.buffer_width * ssao_render_scale, 0, 1, 0);
+		draw_vertex_texture(0, camera_id.buffer_height * ssao_render_scale, 0, 1);
+		draw_vertex_texture(camera_id.buffer_width * ssao_render_scale, camera_id.buffer_height * ssao_render_scale, 1, 1);
 		draw_primitive_end();
 		surface_reset_target();
 		shader_reset();
@@ -146,7 +149,7 @@ function LightAmbient() : Light() constructor {
 		if (not is_translucent and casts_shadows and surface_exists(surface_ssao) and ssao_strength > 0 and camera_id.get_has_render_flag(CAMERA_RENDER_FLAG.shadows)){
 			sampler_set("u_sSSAO", surface_get_texture(surface_ssao));
 			
-			uniform_set("u_vTexelSize", shader_set_uniform_f, [1.0 / surface_get_width(surface_ssao), 1.0 / surface_get_height(surface_ssao)]);
+			uniform_set("u_vTexelSize", shader_set_uniform_f, [texture_get_texel_width(surface_get_texture(surface_ssao)), texture_get_texel_height(surface_get_texture(surface_ssao))]);
 			uniform_set("u_iBlurSamples", shader_set_uniform_i, ssao_blur_samples);
 			uniform_set("u_fBlurStride", shader_set_uniform_f, ssao_blur_stride);
 		}
@@ -171,6 +174,6 @@ function LightAmbient() : Light() constructor {
 	#endregion
 	
 	#region INIT
-	self.set_ssao_properties(ssao_samples, ssao_strength, ssao_radius, ssao_bias, ssao_scale, ssao_blur_samples, ssao_blur_stride);
+	self.set_ssao_properties(ssao_samples, ssao_strength, ssao_radius, ssao_bias, ssao_depth_scale, ssao_render_scale, ssao_blur_samples, ssao_blur_stride);
 	#endregion
 }

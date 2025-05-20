@@ -1,9 +1,9 @@
 # Upset 3D
 ## 3D Code Suite for GameMaker
 
-Upset 3D is a collection of classes, scripts, sprite, and objects that provide a clean starting point for anyone who wishes to make 3D games in the GameMaker engine. The system is designed to be modular, clean, and flexible to make customizing or expanding it as easy as possible for your project.
+Upset 3D is a collection of classes, scripts, sprites, and objects that provide a clean starting point for anyone who wishes to make 3D games in the GameMaker engine. The system is designed to be modular, clean, and flexible to make customizing or expanding it as easy as possible for your project.
 
-Upset 3D lays down the groundwork for small-cale 3D games while leaving the door open for easy expansion that may be necessary for your project. This suite provides a PBR rendering system with glTF model importing and skeletal animation as well as a basic 3D collision detection system with spatial partitioning.
+Upset 3D lays down the groundwork for small-scale 3D games while leaving the door open for easy expansion that may be necessary for your project. This suite provides a PBR rendering system with glTF model importing and skeletal animation as well as a basic 3D collision detection system with spatial partitioning.
 
 **Note: Multithreaded libraries are not yet implemented but they are coming.**
 <details>
@@ -60,11 +60,11 @@ Launch GameMaker and load the project file located in `./u3d-development/source/
 
 The project should be runnable and will contain both Upset3D code and the code for a tech-demo, which is used to test various aspects of the system. At this point **no** C++ libraries will be available. These need to be built manually.
 
-#### Linux Setup
+<details>
+<summary>Linux Setup</summary>
+Make sure you have `gcc` and `make` installed. 
 
-Make sure you have gcc installed. 
-
-Once gcc is installed, navigate into `./u3d-development/source/cpp` where you can then execute the following to build and install the C++ libraries into the local GameMaker project.
+Once both are installed, navigate into `./u3d-development/source/cpp` where you can then execute the following to build and install the C++ libraries into the local GameMaker project.
 
 ```
 make build
@@ -77,7 +77,9 @@ make install
 ```
 
 This will copy the compiled binaries into the relevant `./u3d-development/source/gm-project/extensions/*` folders.
-
+</details>
+<details>
+<summary>Windows Setup</summary>
 #### Windows Setup
 
 Make sure you have MinGW installed. The version used for my own personal testing is [WinLibs](https://winlibs.com/). Once installed make sure that the executable `mingw32-make` is accessible globaly in your terminal of choice.
@@ -103,9 +105,12 @@ On Windows you will also require three MinGW DLLs to be packaged along with your
 * libwinpthread-1.dll
 
 These DLLs are MIT licensed.
+</details>
+
+Once completed, you can export the files as a local package via `Tools -> Create Local Package` in order to pass it around various projects.
 
 ## Developer Support
 
 Are you finding this project useful? Feel free to buy me a [coffee](https://ko-fi.com/binsk) if you are so inclined!
 
-If that's not to your taste then I'd still be happy just to see what you've created with this project! Shoot me a link on the [GameMaker forums](https://forum.gamemaker.io/index.php?members/binsk.1097/)!
+If that's not to your taste then I'd still be happy just to see what you've created with this project! Shoot me a link on the [GameMaker forums](https://forum.gamemaker.io/index.php?threads/upset-3d-model-import-rendering-collisions.117013/)!
