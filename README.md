@@ -23,7 +23,7 @@ GameMaker does not support user-defined threading, compute shaders, nor shader s
 | Linux | Full | True | VM, YYC |
 | Mac OS | *Untested* |
 | GX | Compatability | False | VM |
-| Android | Compatability | False | VM |
+| Android | Compatability | False | VM, YYC |
 | iOS | *Untested* |
 | Switch | Compatability | False | VM |
 | XBox | *TBD* |
