@@ -85,7 +85,6 @@
     {"id":{"name":"note_system_controllers","path":"notes/note_system_controllers/note_system_controllers.yy",},},
     {"id":{"name":"note_system","path":"notes/note_system/note_system.yy",},},
     {"id":{"name":"note_textures","path":"notes/note_textures/note_textures.yy",},},
-    {"id":{"name":"TODO","path":"notes/TODO/TODO.yy",},},
     {"id":{"name":"obj_animation_controller","path":"objects/obj_animation_controller/obj_animation_controller.yy",},},
     {"id":{"name":"obj_async_controller","path":"objects/obj_async_controller/obj_async_controller.yy",},},
     {"id":{"name":"obj_bone_scroll","path":"objects/obj_bone_scroll/obj_bone_scroll.yy",},},
@@ -209,6 +208,6 @@
   "templateType":"game",
   "TextureGroups":[
     {"$GMTextureGroup":"","%Name":"Default","autocrop":false,"border":8,"compressFormat":"bz2","customOptions":"","directory":"","groupParent":null,"isScaled":false,"loadType":"default","mipsToGenerate":-1,"name":"Default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
-    {"$GMTextureGroup":"","%Name":"u3d_default","autocrop":false,"border":2,"compressFormat":"bz2","customOptions":"","directory":"u3d_defaults","groupParent":null,"isScaled":false,"loadType":"dynamicpages","mipsToGenerate":0,"name":"u3d_default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
+    {"$GMTextureGroup":"","%Name":"u3d_default","autocrop":false,"border":2,"compressFormat":"bz2","customOptions":"","directory":"u3d_defaults","groupParent":null,"isScaled":false,"loadType":"default","mipsToGenerate":0,"name":"u3d_default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
   ],
 }

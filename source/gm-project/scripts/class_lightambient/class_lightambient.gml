@@ -96,11 +96,11 @@ function LightAmbient() : Light() constructor {
 			
 		var camera_id = eye_id.get_camera();
 
-		if (surface_exists(surface_ssao) and (surface_get_width(surface_ssao) != camera_id.buffer_width or surface_get_height(surface_ssao) != camera_id.buffer_height))
+		if (surface_exists(surface_ssao) and (surface_get_width(surface_ssao) != floor(camera_id.buffer_width * ssao_render_scale) or surface_get_height(surface_ssao) != floor(camera_id.buffer_height * ssao_render_scale)))
 			surface_free(surface_ssao);
 			
 		if (not surface_exists(surface_ssao))
-			surface_ssao = surface_create(camera_id.buffer_width * ssao_render_scale, camera_id.buffer_height * ssao_render_scale, not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
+			surface_ssao = surface_create(floor(camera_id.buffer_width * ssao_render_scale), floor(camera_id.buffer_height * ssao_render_scale), not surface_format_is_supported(surface_r8unorm) ? surface_rgba8unorm : surface_r8unorm);
 		
 		// Render SSAO intensity:
 		shader_set(self.get_shadow_shader());
