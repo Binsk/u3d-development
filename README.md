@@ -1,5 +1,5 @@
 # NOTICE
-This project is now on (Codeberg)[https://codeberg.org/Binsk/Upset3D]!
+This project is now maintained on [Codeberg](https://codeberg.org/Binsk/Upset3D)!
 
 I will likely be archiving this repo soon as updates will be occuring on the above link instead of here.
 
